@@ -706,6 +706,41 @@ func (builder *InfraEnvBuilder) Get() (*agentInstallV1Beta1.InfraEnv, error) {
 	return infraEnv, err
 }
 
+// PullInfraEnvInstall pulls existing infraenv from cluster.
+func PullInfraEnvInstall(apiClient *clients.Settings, name, nsname string) (*InfraEnvBuilder, error) {
+	glog.V(100).Infof("Pulling existing infraenv name %s under namespace %s from cluster", name, nsname)
+
+	builder := InfraEnvBuilder{
+		apiClient: apiClient,
+		Definition: &agentInstallV1Beta1.InfraEnv{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The name of the infraenv is empty")
+
+		builder.errorMsg = "infraenv 'name' cannot be empty"
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The namespace of the infraenv is empty")
+
+		builder.errorMsg = "infraenv 'namespace' cannot be empty"
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("infraenv object %s doesn't exist in namespace %s", name, nsname)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
+}
+
 // Create generates a infraenv on the cluster.
 func (builder *InfraEnvBuilder) Create() (*InfraEnvBuilder, error) {
 	glog.V(100).Infof("Creating the infraenv %s in namespace %s",
