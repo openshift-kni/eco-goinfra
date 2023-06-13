@@ -94,6 +94,37 @@ func (builder *Builder) WithNodePort() *Builder {
 	return builder
 }
 
+// Pull loads an existing service into Builder struct.
+func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
+	glog.V(100).Infof("Pulling existing service name: %s under namespace: %s", name, nsname)
+
+	builder := Builder{
+		apiClient: apiClient,
+		Definition: &v1.Service{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
+	}
+
+	if name == "" {
+		builder.errorMsg = "service 'name' cannot be empty"
+	}
+
+	if nsname == "" {
+		builder.errorMsg = "service 'namespace' cannot be empty"
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("service object %s doesn't exist in namespace %s", name, nsname)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
+}
+
 // Create the service in the cluster and store the created object in Object.
 func (builder *Builder) Create() (*Builder, error) {
 	glog.V(100).Infof("Creating the service %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
