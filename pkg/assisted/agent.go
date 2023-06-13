@@ -29,6 +29,9 @@ type agentBuilder struct {
 	apiClient  *clients.Settings
 }
 
+// AgentAdditionalOptions additional options for agent object.
+type AgentAdditionalOptions func(builder *agentBuilder) (*agentBuilder, error)
+
 // newAgentBuilder creates a new instance of agentBuilder
 // Users cannot create agent resources themselves as they are generated from the operator.
 func newAgentBuilder(apiClient *clients.Settings, definition *agentInstallV1Beta1.Agent) *agentBuilder {
@@ -259,6 +262,37 @@ func (builder *agentBuilder) WaitForStateInfo(stateInfo string, timeout time.Dur
 	}
 
 	return nil, err
+}
+
+// WithOptions creates agent with generic mutation options.
+func (builder *agentBuilder) WithOptions(options ...AgentAdditionalOptions) *agentBuilder {
+	glog.V(100).Infof("Setting agent additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The agent is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("agent")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
+
+	return builder
 }
 
 // Get fetches the defined agent from the cluster.

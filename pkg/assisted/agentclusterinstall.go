@@ -33,6 +33,9 @@ type agentClusterInstallCondition struct {
 	index int
 }
 
+// AgentClusterInstallAdditionalOptions additional options for AgentClusterInstall object.
+type AgentClusterInstallAdditionalOptions func(builder *AgentClusterInstallBuilder) (*AgentClusterInstallBuilder, error)
+
 // NewAgentClusterInstallBuilder creates a new instance of AgentClusterInstallBuilder.
 func NewAgentClusterInstallBuilder(
 	apiClient *clients.Settings,
@@ -411,6 +414,38 @@ func (builder *AgentClusterInstallBuilder) WaitForStateInfo(
 	}
 
 	return nil, err
+}
+
+// WithOptions creates AgentClusterInstall with generic mutation options.
+func (builder *AgentClusterInstallBuilder) WithOptions(
+	options ...AgentClusterInstallAdditionalOptions) *AgentClusterInstallBuilder {
+	glog.V(100).Infof("Setting AgentClusterInstall additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The AgentClusterInstall is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentClusterInstall")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
+
+	return builder
 }
 
 // GetCondition creates and returns a new agentClusterInstallCondition based on the condition type provided.
