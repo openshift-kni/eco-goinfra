@@ -25,6 +25,9 @@ type BFDBuilder struct {
 	errorMsg   string
 }
 
+// BFDAdditionalOptions additional options for BFDProfile object.
+type BFDAdditionalOptions func(builder *BFDBuilder) (*BFDBuilder, error)
+
 // NewBFDBuilder creates a new instance of BFDBuilder.
 func NewBFDBuilder(apiClient *clients.Settings, name, nsname string) *BFDBuilder {
 	glog.V(100).Infof(
@@ -266,6 +269,37 @@ func (builder *BFDBuilder) WithMinimumTTL(minimumTTL uint32) *BFDBuilder {
 	}
 
 	builder.Definition.Spec.MinimumTTL = &minimumTTL
+
+	return builder
+}
+
+// WithOptions creates BFDProfile with generic mutation options.
+func (builder *BFDBuilder) WithOptions(options ...BFDAdditionalOptions) *BFDBuilder {
+	glog.V(100).Infof("Setting BFDProfile additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The BFDProfile is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("BFDProfile")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
 
 	return builder
 }

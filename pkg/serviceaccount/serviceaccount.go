@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	v1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,6 +24,9 @@ type Builder struct {
 	errorMsg  string
 	apiClient *clients.Settings
 }
+
+// AdditionalOptions additional options for ServiceAccount object.
+type AdditionalOptions func(builder *Builder) (*Builder, error)
 
 // NewBuilder creates a new instance of Builder.
 func NewBuilder(apiClient *clients.Settings, name, nsname string) *Builder {
@@ -136,4 +140,35 @@ func (builder *Builder) Exists() bool {
 		context.Background(), builder.Definition.Name, metaV1.GetOptions{})
 
 	return err == nil || !k8serrors.IsNotFound(err)
+}
+
+// WithOptions creates serviceAccount with generic mutation options.
+func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
+	glog.V(100).Infof("Setting serviceAccount additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The serviceAccount is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("serviceAccount")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
+
+	return builder
 }

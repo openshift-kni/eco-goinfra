@@ -27,6 +27,9 @@ type ModuleBuilder struct {
 	errorMsg  string
 }
 
+// ModuleAdditionalOptions additional options for module object.
+type ModuleAdditionalOptions func(builder *ModuleBuilder) (*ModuleBuilder, error)
+
 // NewModuleBuilder creates a new instance of ModuleBuilder.
 func NewModuleBuilder(
 	apiClient *clients.Settings, name, nsname string) *ModuleBuilder {
@@ -179,6 +182,37 @@ func (builder *ModuleBuilder) WithDevicePluginContainer(
 	}
 
 	builder.Definition.Spec.DevicePlugin.Container = *container
+
+	return builder
+}
+
+// WithOptions creates Module with generic mutation options.
+func (builder *ModuleBuilder) WithOptions(options ...ModuleAdditionalOptions) *ModuleBuilder {
+	glog.V(100).Infof("Setting Module additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The Module is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("Module")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
 
 	return builder
 }

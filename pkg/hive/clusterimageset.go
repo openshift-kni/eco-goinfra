@@ -91,7 +91,8 @@ func (builder *ClusterImageSetBuilder) WithReleaseImage(image string) *ClusterIm
 }
 
 // WithOptions creates ClusterDeployment with generic mutation options.
-func (builder *ClusterImageSetBuilder) WithOptions(options ...ClusterImageSetAdditionalOptions) *ClusterImageSetBuilder {
+func (builder *ClusterImageSetBuilder) WithOptions(
+	options ...ClusterImageSetAdditionalOptions) *ClusterImageSetBuilder {
 	glog.V(100).Infof("Setting ClusterImageSet additional options")
 
 	if builder.Definition == nil {

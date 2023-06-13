@@ -25,6 +25,9 @@ type BGPPeerBuilder struct {
 	errorMsg   string
 }
 
+// BGPPeerAdditionalOptions additional options for BGPPeer object.
+type BGPPeerAdditionalOptions func(builder *BGPPeerBuilder) (*BGPPeerBuilder, error)
+
 // NewBPGPeerBuilder creates a new instance of BGPPeer.
 func NewBPGPeerBuilder(
 	apiClient *clients.Settings, name, nsname, peerIP string, asn, remoteASN uint32) *BGPPeerBuilder {
@@ -418,6 +421,37 @@ func (builder *BGPPeerBuilder) WithEBGPMultiHop(eBGPMultiHop bool) *BGPPeerBuild
 	}
 
 	builder.Definition.Spec.EBGPMultiHop = eBGPMultiHop
+
+	return builder
+}
+
+// WithOptions creates BGPPeer with generic mutation options.
+func (builder *BGPPeerBuilder) WithOptions(options ...BGPPeerAdditionalOptions) *BGPPeerBuilder {
+	glog.V(100).Infof("Setting BGPPeer additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The BGPPeer is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPPeer")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
 
 	return builder
 }

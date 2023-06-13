@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
+	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	moduleV1Beta1 "github.com/rh-ecosystem-edge/kernel-module-management/api/v1beta1"
 	v1 "k8s.io/api/core/v1"
 )
@@ -16,6 +17,9 @@ type KernelMappingBuilder struct {
 	// object is created.
 	errorMsg string
 }
+
+// KernelMappingAdditionalOptions additional options for KernelMapping object.
+type KernelMappingAdditionalOptions func(builder *KernelMappingBuilder) (*KernelMappingBuilder, error)
 
 // NewRegExKernelMappingBuilder creates new kernel mapping element based on regex.
 func NewRegExKernelMappingBuilder(regex string) *KernelMappingBuilder {
@@ -227,6 +231,37 @@ func (builder *KernelMappingBuilder) RegistryTLS(insecure, skipTLSVerify bool) *
 
 	builder.definition.RegistryTLS.Insecure = insecure
 	builder.definition.RegistryTLS.InsecureSkipTLSVerify = skipTLSVerify
+
+	return builder
+}
+
+// WithOptions creates KernelMapping with generic mutation options.
+func (builder *KernelMappingBuilder) WithOptions(options ...KernelMappingAdditionalOptions) *KernelMappingBuilder {
+	glog.V(100).Infof("Setting KernelMapping additional options")
+
+	if builder.definition == nil {
+		glog.V(100).Infof("The KernelMapping is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("KernelMapping")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
 
 	return builder
 }

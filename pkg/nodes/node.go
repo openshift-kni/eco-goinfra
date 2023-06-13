@@ -22,6 +22,9 @@ type NodeBuilder struct {
 	errorMsg   string
 }
 
+// AdditionalOptions additional options for node object.
+type AdditionalOptions func(builder *NodeBuilder) (*NodeBuilder, error)
+
 // PullNode pulls existing node from cluster.
 func PullNode(apiClient *clients.Settings, nodeName string) (*NodeBuilder, error) {
 	glog.V(100).Infof("Pulling existing node object: %s", nodeName)
@@ -102,6 +105,37 @@ func (builder *NodeBuilder) WithNewLabel(key, value string) *NodeBuilder {
 			builder.Definition.Labels[key] = value
 		} else {
 			builder.errorMsg = fmt.Sprintf("cannot overwrite existing node label: %s", key)
+		}
+	}
+
+	return builder
+}
+
+// WithOptions creates node with generic mutation options.
+func (builder *NodeBuilder) WithOptions(options ...AdditionalOptions) *NodeBuilder {
+	glog.V(100).Infof("Setting node additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The node is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("node")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
 		}
 	}
 

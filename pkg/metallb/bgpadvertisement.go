@@ -23,6 +23,9 @@ type BGPAdvertisementBuilder struct {
 	errorMsg   string
 }
 
+// BGPAdvertisementAdditionalOptions additional options for BGPAdvertisement object.
+type BGPAdvertisementAdditionalOptions func(builder *BGPAdvertisementBuilder) (*BGPAdvertisementBuilder, error)
+
 // NewBGPAdvertisementBuilder creates a new instance of BGPAdvertisementBuilder.
 func NewBGPAdvertisementBuilder(apiClient *clients.Settings, name, nsname string) *BGPAdvertisementBuilder {
 	glog.V(100).Infof(
@@ -397,6 +400,38 @@ func (builder *BGPAdvertisementBuilder) WithPeers(peers []string) *BGPAdvertisem
 	}
 
 	builder.Definition.Spec.Peers = peers
+
+	return builder
+}
+
+// WithOptions creates BGPAdvertisement with generic mutation options.
+func (builder *BGPAdvertisementBuilder) WithOptions(
+	options ...BGPAdvertisementAdditionalOptions) *BGPAdvertisementBuilder {
+	glog.V(100).Infof("Setting BGPAdvertisement additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The BGPAdvertisement is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPAdvertisement")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
 
 	return builder
 }

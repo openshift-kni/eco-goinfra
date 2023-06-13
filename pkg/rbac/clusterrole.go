@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	v1 "k8s.io/api/rbac/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,6 +27,9 @@ type ClusterRoleBuilder struct {
 	errorMsg  string
 	apiClient *clients.Settings
 }
+
+// ClusterRoleAdditionalOptions additional options for ClusterRole object.
+type ClusterRoleAdditionalOptions func(builder *ClusterRoleBuilder) (*ClusterRoleBuilder, error)
 
 // NewClusterRoleBuilder creates new instance of ClusterRoleBuilder.
 func NewClusterRoleBuilder(apiClient *clients.Settings, name string, rule v1.PolicyRule) *ClusterRoleBuilder {
@@ -108,6 +112,37 @@ func (builder *ClusterRoleBuilder) WithRules(rules []v1.PolicyRule) *ClusterRole
 	}
 
 	builder.Definition.Rules = append(builder.Definition.Rules, rules...)
+
+	return builder
+}
+
+// WithOptions creates ClusterRole with generic mutation options.
+func (builder *ClusterRoleBuilder) WithOptions(options ...ClusterRoleAdditionalOptions) *ClusterRoleBuilder {
+	glog.V(100).Infof("Setting ClusterRole additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The ClusterRole is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("ClusterRole")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
 
 	return builder
 }

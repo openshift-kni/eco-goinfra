@@ -268,7 +268,8 @@ func (builder *ClusterDeploymentBuilder) Create() (*ClusterDeploymentBuilder, er
 }
 
 // WithOptions creates ClusterDeployment with generic mutation options.
-func (builder *ClusterDeploymentBuilder) WithOptions(options ...ClusterDeploymentAdditionalOptions) *ClusterDeploymentBuilder {
+func (builder *ClusterDeploymentBuilder) WithOptions(
+	options ...ClusterDeploymentAdditionalOptions) *ClusterDeploymentBuilder {
 	glog.V(100).Infof("Setting ClusterDeployment additional options")
 
 	if builder.Definition == nil {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
+	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	moduleV1Beta1 "github.com/rh-ecosystem-edge/kernel-module-management/api/v1beta1"
 	v1 "k8s.io/api/core/v1"
 )
@@ -16,6 +17,10 @@ type ModuleLoaderContainerBuilder struct {
 	// errorMsg is processed before the Module object is created.
 	errorMsg string
 }
+
+// ModuleLoaderContainerAdditionalOptions additional options for ModuleLoaderContainer object.
+type ModuleLoaderContainerAdditionalOptions func(
+	builder *ModuleLoaderContainerBuilder) (*ModuleLoaderContainerBuilder, error)
 
 // NewModLoaderContainerBuilder creates a new instance of ModuleLoaderContainerBuilder.
 func NewModLoaderContainerBuilder(modName string) *ModuleLoaderContainerBuilder {
@@ -90,6 +95,38 @@ func (builder *ModuleLoaderContainerBuilder) WithImagePullPolicy(policy string) 
 	}
 
 	builder.definition.ImagePullPolicy = v1.PullPolicy(policy)
+
+	return builder
+}
+
+// WithOptions creates ModuleLoaderContainer with generic mutation options.
+func (builder *ModuleLoaderContainerBuilder) WithOptions(
+	options ...ModuleLoaderContainerAdditionalOptions) *ModuleLoaderContainerBuilder {
+	glog.V(100).Infof("Setting ModuleLoaderContainer additional options")
+
+	if builder.definition == nil {
+		glog.V(100).Infof("The ModuleLoaderContainer is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("ModuleLoaderContainer")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
 
 	return builder
 }
