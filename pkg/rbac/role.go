@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	v1 "k8s.io/api/rbac/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,6 +24,9 @@ type RoleBuilder struct {
 	errorMsg  string
 	apiClient *clients.Settings
 }
+
+// RoleAdditionalOptions additional options for Role object.
+type RoleAdditionalOptions func(builder *RoleBuilder) (*RoleBuilder, error)
 
 // NewRoleBuilder create a new instance of RoleBuilder.
 func NewRoleBuilder(apiClient *clients.Settings, name, nsname string, rule v1.PolicyRule) *RoleBuilder {
@@ -106,6 +110,38 @@ func (builder *RoleBuilder) WithRules(rules []v1.PolicyRule) *RoleBuilder {
 		builder.Definition.Rules = rules
 	} else {
 		builder.Definition.Rules = append(builder.Definition.Rules, rules...)
+	}
+
+	return builder
+}
+
+// WithOptions creates Role with generic mutation options.
+func (builder *RoleBuilder) WithOptions(
+	options ...RoleAdditionalOptions) *RoleBuilder {
+	glog.V(100).Infof("Setting Role additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The Role is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("Role")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
 	}
 
 	return builder

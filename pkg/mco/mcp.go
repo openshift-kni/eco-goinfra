@@ -35,6 +35,9 @@ type MCPBuilder struct {
 	errorMsg string
 }
 
+// MCPAdditionalOptions additional options for mcp object.
+type MCPAdditionalOptions func(builder *MCPBuilder) (*MCPBuilder, error)
+
 // NewMCPBuilder method creates new instance of builder.
 func NewMCPBuilder(apiClient *clients.Settings, mcpName string) *MCPBuilder {
 	glog.V(100).Infof(
@@ -287,6 +290,37 @@ func (builder *MCPBuilder) WaitToBeStableFor(stableDuration time.Duration, timeo
 	}
 
 	return err
+}
+
+// WithOptions creates mcp with generic mutation options.
+func (builder *MCPBuilder) WithOptions(options ...MCPAdditionalOptions) *MCPBuilder {
+	glog.V(100).Infof("Setting mcp additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The mcp is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("mcp")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
+
+	return builder
 }
 
 // IsInCondition parses MachineConfigPool conditions.

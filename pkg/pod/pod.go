@@ -24,6 +24,7 @@ import (
 	"github.com/golang/glog"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 )
 
 // Builder provides a struct for pod object from the cluster and a pod definition.
@@ -37,6 +38,9 @@ type Builder struct {
 	// api client to interact with the cluster.
 	apiClient *clients.Settings
 }
+
+// AdditionalOptions additional options for pod object.
+type AdditionalOptions func(builder *Builder) (*Builder, error)
 
 // NewBuilder creates a new instance of Builder.
 func NewBuilder(apiClient *clients.Settings, name, nsname, image string) *Builder {
@@ -619,6 +623,62 @@ func (builder *Builder) WithLabel(labelKey, labelValue string) *Builder {
 	return builder
 }
 
+// WithOptions creates pod with generic mutation options.
+func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
+	glog.V(100).Infof("Setting pod additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The pod is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("pod")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
+
+	return builder
+}
+
+// GetLog connects to a pod and fetches log.
+func (builder *Builder) GetLog(logStartTime time.Duration, containerName string) (string, error) {
+	logStart := int64(logStartTime.Seconds())
+	req := builder.apiClient.Pods(builder.Definition.Namespace).GetLogs(builder.Definition.Name, &v1.PodLogOptions{
+		SinceSeconds: &logStart, Container: containerName})
+	log, err := req.Stream(context.Background())
+
+	if err != nil {
+		return "", err
+	}
+
+	defer func() {
+		_ = log.Close()
+	}()
+
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, log)
+
+	if err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
+}
+
 // GetGVR returns pod's GroupVersionResource which could be used for Clean function.
 func GetGVR() schema.GroupVersionResource {
 	return schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
@@ -674,29 +734,4 @@ func isMountInUse(containerMounts []v1.VolumeMount, newMount v1.VolumeMount) boo
 	}
 
 	return false
-}
-
-// GetLog connects to a pod and fetches log.
-func (builder *Builder) GetLog(logStartTime time.Duration, containerName string) (string, error) {
-	logStart := int64(logStartTime.Seconds())
-	req := builder.apiClient.Pods(builder.Definition.Namespace).GetLogs(builder.Definition.Name, &v1.PodLogOptions{
-		SinceSeconds: &logStart, Container: containerName})
-	log, err := req.Stream(context.Background())
-
-	if err != nil {
-		return "", err
-	}
-
-	defer func() {
-		_ = log.Close()
-	}()
-
-	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, log)
-
-	if err != nil {
-		return "", err
-	}
-
-	return buf.String(), nil
 }

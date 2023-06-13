@@ -25,6 +25,9 @@ type ClusterDeploymentBuilder struct {
 	apiClient  *clients.Settings
 }
 
+// ClusterDeploymentAdditionalOptions additional options for ClusterDeployment object.
+type ClusterDeploymentAdditionalOptions func(builder *ClusterDeploymentBuilder) (*ClusterDeploymentBuilder, error)
+
 // NewABMClusterDeploymentBuilder creates a new instance of
 // ClusterDeploymentBuilder with platform type set to agentBareMetal.
 func NewABMClusterDeploymentBuilder(
@@ -262,6 +265,38 @@ func (builder *ClusterDeploymentBuilder) Create() (*ClusterDeploymentBuilder, er
 	}
 
 	return builder, err
+}
+
+// WithOptions creates ClusterDeployment with generic mutation options.
+func (builder *ClusterDeploymentBuilder) WithOptions(
+	options ...ClusterDeploymentAdditionalOptions) *ClusterDeploymentBuilder {
+	glog.V(100).Infof("Setting ClusterDeployment additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The ClusterDeployment is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("ClusterDeployment")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
+
+	return builder
 }
 
 // Update modifies an existing clusterdeployment on the cluster.

@@ -30,6 +30,9 @@ type PolicyBuilder struct {
 	apiClient *clients.Settings
 }
 
+// PolicyAdditionalOptions additional options for SriovNetworkNodePolicy object.
+type PolicyAdditionalOptions func(builder *PolicyBuilder) (*PolicyBuilder, error)
+
 // NewPolicyBuilder creates a new instance of PolicyBuilder.
 func NewPolicyBuilder(
 	apiClient *clients.Settings,
@@ -158,6 +161,37 @@ func (builder *PolicyBuilder) WithRDMA(rdma bool) *PolicyBuilder {
 	}
 
 	builder.Definition.Spec.IsRdma = rdma
+
+	return builder
+}
+
+// WithOptions creates SriovNetworkNodePolicy with generic mutation options.
+func (builder *PolicyBuilder) WithOptions(options ...PolicyAdditionalOptions) *PolicyBuilder {
+	glog.V(100).Infof("Setting SriovNetworkNodePolicy additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The SriovNetworkNodePolicy is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("SriovNetworkNodePolicy")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
 
 	return builder
 }

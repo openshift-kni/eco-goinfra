@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	"golang.org/x/exp/slices"
 	v1 "k8s.io/api/rbac/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -24,6 +25,9 @@ type ClusterRoleBindingBuilder struct {
 	errorMsg  string
 	apiClient *clients.Settings
 }
+
+// ClusterRoleBindingAdditionalOptions additional options for ClusterRoleBinding object.
+type ClusterRoleBindingAdditionalOptions func(builder *ClusterRoleBindingBuilder) (*ClusterRoleBindingBuilder, error)
 
 // NewClusterRoleBindingBuilder creates a new instance of ClusterRoleBindingBuilder.
 func NewClusterRoleBindingBuilder(
@@ -99,6 +103,38 @@ func (builder *ClusterRoleBindingBuilder) WithSubjects(subjects []v1.Subject) *C
 	}
 
 	builder.Definition.Subjects = append(builder.Definition.Subjects, subjects...)
+
+	return builder
+}
+
+// WithOptions creates ClusterRoleBinding with generic mutation options.
+func (builder *ClusterRoleBindingBuilder) WithOptions(
+	options ...ClusterRoleBindingAdditionalOptions) *ClusterRoleBindingBuilder {
+	glog.V(100).Infof("Setting ClusterRoleBinding additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The ClusterRoleBinding is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("ClusterRoleBinding")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
 
 	return builder
 }

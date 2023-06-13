@@ -24,6 +24,9 @@ type IPAddressPoolBuilder struct {
 	errorMsg   string
 }
 
+// IPAddressPoolAdditionalOptions additional options for IPAddressPool object.
+type IPAddressPoolAdditionalOptions func(builder *IPAddressPoolBuilder) (*IPAddressPoolBuilder, error)
+
 // NewIPAddressPoolBuilder creates a new instance of IPAddressPoolBuilder.
 func NewIPAddressPoolBuilder(
 	apiClient *clients.Settings, name, nsname string, addrPool []string) *IPAddressPoolBuilder {
@@ -249,6 +252,37 @@ func (builder *IPAddressPoolBuilder) WithAvoidBuggyIPs(avoid bool) *IPAddressPoo
 	}
 
 	builder.Definition.Spec.AvoidBuggyIPs = avoid
+
+	return builder
+}
+
+// WithOptions creates IPAddressPool with generic mutation options.
+func (builder *IPAddressPoolBuilder) WithOptions(options ...IPAddressPoolAdditionalOptions) *IPAddressPoolBuilder {
+	glog.V(100).Infof("Setting IPAddressPool additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The IPAddressPool is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("IPAddressPool")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
 
 	return builder
 }

@@ -24,6 +24,9 @@ type Builder struct {
 	errorMsg   string
 }
 
+// AdditionalOptions additional options for metallb object.
+type AdditionalOptions func(builder *Builder) (*Builder, error)
+
 // NewBuilder creates a new instance of Builder.
 func NewBuilder(apiClient *clients.Settings, name, nsname string, label map[string]string) *Builder {
 	glog.V(100).Infof(
@@ -254,6 +257,37 @@ func (builder *Builder) WithSpeakerNodeSelector(label map[string]string) *Builde
 	}
 
 	builder.Definition.Spec.SpeakerNodeSelector = label
+
+	return builder
+}
+
+// WithOptions creates metallb with generic mutation options.
+func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
+	glog.V(100).Infof("Setting metallb additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The metallb is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("metallb")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
 
 	return builder
 }

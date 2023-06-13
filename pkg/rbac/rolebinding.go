@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	"golang.org/x/exp/slices"
 	v1 "k8s.io/api/rbac/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -25,6 +26,9 @@ type RoleBindingBuilder struct {
 	errorMsg  string
 	apiClient *clients.Settings
 }
+
+// RoleBindingAdditionalOptions additional options for RoleBinding object.
+type RoleBindingAdditionalOptions func(builder *RoleBindingBuilder) (*RoleBindingBuilder, error)
 
 // NewRoleBindingBuilder creates new instance of RoleBindingBuilder.
 func NewRoleBindingBuilder(apiClient *clients.Settings,
@@ -105,6 +109,37 @@ func (builder *RoleBindingBuilder) WithSubjects(subjects []v1.Subject) *RoleBind
 		}
 	}
 	builder.Definition.Subjects = append(builder.Definition.Subjects, subjects...)
+
+	return builder
+}
+
+// WithOptions creates RoleBinding with generic mutation options.
+func (builder *RoleBindingBuilder) WithOptions(options ...RoleBindingAdditionalOptions) *RoleBindingBuilder {
+	glog.V(100).Infof("Setting RoleBinding additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The RoleBinding is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("RoleBinding")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
 
 	return builder
 }

@@ -175,7 +175,7 @@ func (builder *Builder) Delete() error {
 	return err
 }
 
-// WithOptions creates agent with generic mutation options.
+// WithOptions creates service with generic mutation options.
 func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
 	glog.V(100).Infof("Setting service additional options")
 

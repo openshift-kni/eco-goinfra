@@ -31,6 +31,9 @@ type NetworkBuilder struct {
 	apiClient *clients.Settings
 }
 
+// NetworkAdditionalOptions additional options for SriovNetwork object.
+type NetworkAdditionalOptions func(builder *NetworkBuilder) (*NetworkBuilder, error)
+
 // NewNetworkBuilder creates new instance of Builder.
 func NewNetworkBuilder(
 	apiClient *clients.Settings, name, nsname, targetNsname, resName string) *NetworkBuilder {
@@ -199,6 +202,37 @@ func (builder *NetworkBuilder) WithIPAddressSupport() *NetworkBuilder {
 // WithMacAddressSupport sets mac capabilities in the SrIovNetwork definition spec.
 func (builder *NetworkBuilder) WithMacAddressSupport() *NetworkBuilder {
 	return builder.withCapabilities("mac")
+}
+
+// WithOptions creates SriovNetwork with generic mutation options.
+func (builder *NetworkBuilder) WithOptions(options ...NetworkAdditionalOptions) *NetworkBuilder {
+	glog.V(100).Infof("Setting SriovNetwork additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The SriovNetwork is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("SriovNetwork")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
+
+	return builder
 }
 
 // PullNetwork pulls existing sriovnetwork from cluster.
