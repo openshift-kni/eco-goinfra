@@ -33,6 +33,9 @@ type AgentServiceConfigBuilder struct {
 	apiClient  *clients.Settings
 }
 
+// AgentServiceConfigAdditionalOptions additional options for AgentServiceConfig object.
+type AgentServiceConfigAdditionalOptions func(builder *AgentServiceConfigBuilder) (*AgentServiceConfigBuilder, error)
+
 // NewAgentServiceConfigBuilder creates a new instance of AgentServiceConfigBuilder.
 func NewAgentServiceConfigBuilder(
 	apiClient *clients.Settings,
@@ -205,6 +208,38 @@ func (builder *AgentServiceConfigBuilder) WithIPXEHTTPRoute(route string) *Agent
 	}
 
 	builder.Definition.Spec.IPXEHTTPRoute = route
+
+	return builder
+}
+
+// WithOptions creates AgentServiceConfig with generic mutation options.
+func (builder *AgentServiceConfigBuilder) WithOptions(
+	options ...AgentServiceConfigAdditionalOptions) *AgentServiceConfigBuilder {
+	glog.V(100).Infof("Setting AgentServiceConfig additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The AgentServiceConfig is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentServiceConfig")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
 
 	return builder
 }
