@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 
 	srIovV1 "github.com/k8snetworkplumbingwg/sriov-network-operator/api/v1"
@@ -159,6 +160,41 @@ func (builder *PolicyBuilder) WithRDMA(rdma bool) *PolicyBuilder {
 	builder.Definition.Spec.IsRdma = rdma
 
 	return builder
+}
+
+// PullPolicy pulls existing sriovnetworknodepolicy from cluster.
+func PullPolicy(apiClient *clients.Settings, name, nsname string) (*PolicyBuilder, error) {
+	glog.V(100).Infof("Pulling existing sriovnetworknodepolicy name %s under namespace %s from cluster", name, nsname)
+
+	builder := PolicyBuilder{
+		apiClient: apiClient,
+		Definition: &srIovV1.SriovNetworkNodePolicy{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The name of the sriovnetworknodepolicy is empty")
+
+		builder.errorMsg = "sriovnetworknodepolicy 'name' cannot be empty"
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The namespace of the sriovnetworknodepolicy is empty")
+
+		builder.errorMsg = "sriovnetworknodepolicy 'namespace' cannot be empty"
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("sriovnetworknodepolicy object %s doesn't exist in namespace %s", name, nsname)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
 }
 
 // Create generates an SriovNetworkNodePolicy in the cluster and stores the created object in struct.

@@ -201,6 +201,41 @@ func (builder *NetworkBuilder) WithMacAddressSupport() *NetworkBuilder {
 	return builder.withCapabilities("mac")
 }
 
+// PullNetwork pulls existing sriovnetwork from cluster.
+func PullNetwork(apiClient *clients.Settings, name, nsname string) (*NetworkBuilder, error) {
+	glog.V(100).Infof("Pulling existing sriovnetwork name %s under namespace %s from cluster", name, nsname)
+
+	builder := NetworkBuilder{
+		apiClient: apiClient,
+		Definition: &srIovV1.SriovNetwork{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The name of the sriovnetwork is empty")
+
+		builder.errorMsg = "sriovnetwork 'name' cannot be empty"
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The namespace of the sriovnetwork is empty")
+
+		builder.errorMsg = "sriovnetwork 'namespace' cannot be empty"
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("sriovnetwork object %s doesn't exist in namespace %s", name, nsname)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
+}
+
 // Create generates SrIovNetwork in a cluster and stores the created object in struct.
 func (builder *NetworkBuilder) Create() (*NetworkBuilder, error) {
 	if builder.errorMsg != "" {
