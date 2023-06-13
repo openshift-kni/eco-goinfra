@@ -271,7 +271,7 @@ func (builder *agentBuilder) WithOptions(options ...AgentAdditionalOptions) *age
 	if builder.Definition == nil {
 		glog.V(100).Infof("The agent is undefined")
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("agent")
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("Agent")
 	}
 
 	if builder.errorMsg != "" {
