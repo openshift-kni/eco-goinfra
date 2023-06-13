@@ -28,6 +28,9 @@ type Builder struct {
 	errorMsg   string
 }
 
+// AdditionalOptions additional options for bmh object.
+type AdditionalOptions func(builder *Builder) (*Builder, error)
+
 // NewBuilder creates a new instance of Builder.
 func NewBuilder(
 	apiClient *clients.Settings,
@@ -347,6 +350,37 @@ func (builder *Builder) WithRootDeviceRotationalDisk(rotational bool) *Builder {
 	}
 
 	builder.Definition.Spec.RootDeviceHints.Rotational = &rotational
+
+	return builder
+}
+
+// WithOptions creates bmh with generic mutation options.
+func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
+	glog.V(100).Infof("Setting bmh additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The bmh is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("bmh")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
 
 	return builder
 }
