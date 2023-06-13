@@ -1,5 +1,12 @@
 # eco-goinfra
 
+## Overview
+The [eco-goinfra](https://github.com/openshift-kni/eco-goinfra) is a subset of generic packages stored under public pkg 
+directory that can be re-used(imported) across multiple test projects. The project is based on golang.
+
+### Project requirements
+* golang v1.19.x
+
 # eco-goinfra - How to contribute
 
 The project uses a development method - forking workflow
