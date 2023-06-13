@@ -99,6 +99,41 @@ func (builder *IPAddressPoolBuilder) Exists() bool {
 	return err == nil || !k8serrors.IsNotFound(err)
 }
 
+// PullAddressPool pulls existing addresspool from cluster.
+func PullAddressPool(apiClient *clients.Settings, name, nsname string) (*IPAddressPoolBuilder, error) {
+	glog.V(100).Infof("Pulling existing addresspool name %s under namespace %s from cluster", name, nsname)
+
+	builder := IPAddressPoolBuilder{
+		apiClient: apiClient,
+		Definition: &metalLbV1Beta1.IPAddressPool{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The name of the addresspool is empty")
+
+		builder.errorMsg = "addresspool 'name' cannot be empty"
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The namespace of the addresspool is empty")
+
+		builder.errorMsg = "addresspool 'namespace' cannot be empty"
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("addresspool object %s doesn't exist in namespace %s", name, nsname)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
+}
+
 // Create makes a IPAddressPool in the cluster and stores the created object in struct.
 func (builder *IPAddressPoolBuilder) Create() (*IPAddressPoolBuilder, error) {
 	glog.V(100).Infof("Creating the IPAddressPool %s in namespace %s",
