@@ -103,6 +103,34 @@ func (builder *ClusterRoleBindingBuilder) WithSubjects(subjects []v1.Subject) *C
 	return builder
 }
 
+// PullClusterRoleBinding pulls existing clusterrolebinding from cluster.
+func PullClusterRoleBinding(apiClient *clients.Settings, name string) (*ClusterRoleBindingBuilder, error) {
+	glog.V(100).Infof("Pulling existing clusterrolebinding name %s from cluster", name)
+
+	builder := ClusterRoleBindingBuilder{
+		apiClient: apiClient,
+		Definition: &v1.ClusterRoleBinding{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name: name,
+			},
+		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The name of the clusterrolebinding is empty")
+
+		builder.errorMsg = "clusterrolebinding 'name' cannot be empty"
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("clusterrolebinding object %s doesn't exist", name)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
+}
+
 // Create generates a clusterrolebinding in the cluster and stores the created object in struct.
 func (builder *ClusterRoleBindingBuilder) Create() (*ClusterRoleBindingBuilder, error) {
 	glog.V(100).Infof("Creating clusterrolebinding %s",

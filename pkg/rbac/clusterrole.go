@@ -112,6 +112,34 @@ func (builder *ClusterRoleBuilder) WithRules(rules []v1.PolicyRule) *ClusterRole
 	return builder
 }
 
+// PullClusterRole pulls existing clusterrole from cluster.
+func PullClusterRole(apiClient *clients.Settings, name string) (*ClusterRoleBuilder, error) {
+	glog.V(100).Infof("Pulling existing clusterrole name %s from cluster", name)
+
+	builder := ClusterRoleBuilder{
+		apiClient: apiClient,
+		Definition: &v1.ClusterRole{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name: name,
+			},
+		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The name of the clusterrole is empty")
+
+		builder.errorMsg = "clusterrole 'name' cannot be empty"
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("clusterrole object %s doesn't exist", name)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
+}
+
 // Create generates a clusterrole in the cluster and stores the created object in struct.
 func (builder *ClusterRoleBuilder) Create() (*ClusterRoleBuilder, error) {
 	glog.V(100).Infof("Creating clusterrole %s",
