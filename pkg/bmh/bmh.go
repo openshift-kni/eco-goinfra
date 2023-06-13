@@ -385,6 +385,41 @@ func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
 	return builder
 }
 
+// Pull pulls existing baremetalhost from cluster.
+func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
+	glog.V(100).Infof("Pulling existing baremetalhost name %s under namespace %s from cluster", name, nsname)
+
+	builder := Builder{
+		apiClient: apiClient,
+		Definition: &bmhv1alpha1.BareMetalHost{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The name of the baremetalhost is empty")
+
+		builder.errorMsg = "baremetalhost 'name' cannot be empty"
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The namespace of the baremetalhost is empty")
+
+		builder.errorMsg = "baremetalhost 'namespace' cannot be empty"
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("baremetalhost object %s doesn't exist in namespace %s", name, nsname)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
+}
+
 // Create makes a bmh in the cluster and stores the created object in struct.
 func (builder *Builder) Create() (*Builder, error) {
 	if builder.errorMsg != "" {
