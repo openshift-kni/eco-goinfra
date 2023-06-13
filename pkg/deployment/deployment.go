@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	v1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -26,6 +27,9 @@ type Builder struct {
 	errorMsg  string
 	apiClient *clients.Settings
 }
+
+// AdditionalOptions additional options for deployment object.
+type AdditionalOptions func(builder *Builder) (*Builder, error)
 
 // NewBuilder creates a new instance of Builder.
 func NewBuilder(
@@ -186,6 +190,37 @@ func (builder *Builder) WithAdditionalContainerSpecs(specs []coreV1.Container) *
 	}
 
 	builder.Definition.Spec.Template.Spec.Containers = append(builder.Definition.Spec.Template.Spec.Containers, specs...)
+
+	return builder
+}
+
+// WithOptions creates deployment with generic mutation options.
+func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
+	glog.V(100).Infof("Setting deployment additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The deployment is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("deployment")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
 
 	return builder
 }

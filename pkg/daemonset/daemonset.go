@@ -174,14 +174,14 @@ func (builder *Builder) WithAdditionalContainerSpecs(specs []coreV1.Container) *
 	return builder
 }
 
-// WithOptions creates configmap with generic mutation options.
+// WithOptions creates daemonset with generic mutation options.
 func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
-	glog.V(100).Infof("Setting configmap additional options")
+	glog.V(100).Infof("Setting daemonset additional options")
 
 	if builder.Definition == nil {
-		glog.V(100).Infof("The configmap is undefined")
+		glog.V(100).Infof("The daemonset is undefined")
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("configmap")
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("daemonset")
 	}
 
 	if builder.errorMsg != "" {
