@@ -58,6 +58,34 @@ func NewMCPBuilder(apiClient *clients.Settings, mcpName string) *MCPBuilder {
 	return builder
 }
 
+// Pull pulls existing machineconfigpool from cluster.
+func Pull(apiClient *clients.Settings, name string) (*MCPBuilder, error) {
+	glog.V(100).Infof("Pulling existing machineconfigpool name %s from cluster", name)
+
+	builder := MCPBuilder{
+		apiClient: apiClient,
+		Definition: &mcov1.MachineConfigPool{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: name,
+			},
+		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The name of the machineconfigpool is empty")
+
+		builder.errorMsg = "machineconfigpool 'name' cannot be empty"
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("machineconfigpool object %s doesn't exist", name)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
+}
+
 // Create makes a MachineConfigPool in cluster and stores the created object in struct.
 func (builder *MCPBuilder) Create() (*MCPBuilder, error) {
 	glog.V(100).Infof("Creating the MachineConfigPool %s",
