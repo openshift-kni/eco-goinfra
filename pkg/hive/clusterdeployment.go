@@ -209,6 +209,41 @@ func ListClusterDeploymentsInAllNamespaces(
 	return clusterDeploymentObjects, nil
 }
 
+// PullClusterDeployment pulls existing clusterdeployment from cluster.
+func PullClusterDeployment(apiClient *clients.Settings, name, nsname string) (*ClusterDeploymentBuilder, error) {
+	glog.V(100).Infof("Pulling existing clusterdeployment name %s under namespace %s from cluster", name, nsname)
+
+	builder := ClusterDeploymentBuilder{
+		apiClient: apiClient,
+		Definition: &hiveV1.ClusterDeployment{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The name of the clusterdeployment is empty")
+
+		builder.errorMsg = "clusterdeployment 'name' cannot be empty"
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The namespace of the clusterdeployment is empty")
+
+		builder.errorMsg = "clusterdeployment 'namespace' cannot be empty"
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("clusterdeployment object %s doesn't exist in namespace %s", name, nsname)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
+}
+
 // Create generates a clusterdeployment on the cluster.
 func (builder *ClusterDeploymentBuilder) Create() (*ClusterDeploymentBuilder, error) {
 	glog.V(100).Infof("Creating the clusterdeployment %s in namespace %s",

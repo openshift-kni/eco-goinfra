@@ -111,6 +111,41 @@ func (builder *RoleBuilder) WithRules(rules []v1.PolicyRule) *RoleBuilder {
 	return builder
 }
 
+// PullRole pulls existing role from cluster.
+func PullRole(apiClient *clients.Settings, name, nsname string) (*RoleBuilder, error) {
+	glog.V(100).Infof("Pulling existing role name %s under namespace %s from cluster", name, nsname)
+
+	builder := RoleBuilder{
+		apiClient: apiClient,
+		Definition: &v1.Role{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The name of the role is empty")
+
+		builder.errorMsg = "role 'name' cannot be empty"
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The namespace of the role is empty")
+
+		builder.errorMsg = "role 'namespace' cannot be empty"
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("role object %s doesn't exist in namespace %s", name, nsname)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
+}
+
 // Create makes a Role in the cluster and stores the created object in struct.
 func (builder *RoleBuilder) Create() (*RoleBuilder, error) {
 	glog.V(100).Infof("Creating role %s under namespace %s",

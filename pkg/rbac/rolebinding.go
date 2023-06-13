@@ -109,6 +109,41 @@ func (builder *RoleBindingBuilder) WithSubjects(subjects []v1.Subject) *RoleBind
 	return builder
 }
 
+// PullRoleBinding pulls existing rolebinding from cluster.
+func PullRoleBinding(apiClient *clients.Settings, name, nsname string) (*RoleBindingBuilder, error) {
+	glog.V(100).Infof("Pulling existing rolebinding name %s under namespace %s from cluster", name, nsname)
+
+	builder := RoleBindingBuilder{
+		apiClient: apiClient,
+		Definition: &v1.RoleBinding{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The name of the rolebinding is empty")
+
+		builder.errorMsg = "rolebinding 'name' cannot be empty"
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The namespace of the rolebinding is empty")
+
+		builder.errorMsg = "rolebinding 'namespace' cannot be empty"
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("rolebinding object %s doesn't exist in namespace %s", name, nsname)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
+}
+
 // Create generates a RoleBinding and stores the created object in struct.
 func (builder *RoleBindingBuilder) Create() (*RoleBindingBuilder, error) {
 	glog.V(100).Infof("Creating rolebinding %s under namespace %s",

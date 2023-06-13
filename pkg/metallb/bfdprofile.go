@@ -91,6 +91,41 @@ func (builder *BFDBuilder) Exists() bool {
 	return err == nil || !k8serrors.IsNotFound(err)
 }
 
+// PullBFDProfile pulls existing bfdprofile from cluster.
+func PullBFDProfile(apiClient *clients.Settings, name, nsname string) (*BFDBuilder, error) {
+	glog.V(100).Infof("Pulling existing bfdprofile name %s under namespace %s from cluster", name, nsname)
+
+	builder := BFDBuilder{
+		apiClient: apiClient,
+		Definition: &metalLbV1Beta1.BFDProfile{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The name of the bfdprofile is empty")
+
+		builder.errorMsg = "bfdprofile 'name' cannot be empty"
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The namespace of the bfdprofile is empty")
+
+		builder.errorMsg = "bfdprofile 'namespace' cannot be empty"
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("bfdprofile object %s doesn't exist in namespace %s", name, nsname)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
+}
+
 // Create makes a BFDProfile in the cluster and stores the created object in struct.
 func (builder *BFDBuilder) Create() (*BFDBuilder, error) {
 	glog.V(100).Infof("Creating the BFDProfile %s in namespace %s",

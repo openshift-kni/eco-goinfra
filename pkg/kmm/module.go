@@ -183,6 +183,41 @@ func (builder *ModuleBuilder) WithDevicePluginContainer(
 	return builder
 }
 
+// Pull pulls existing module from cluster.
+func Pull(apiClient *clients.Settings, name, nsname string) (*ModuleBuilder, error) {
+	glog.V(100).Infof("Pulling existing module name %s under namespace %s from cluster", name, nsname)
+
+	builder := ModuleBuilder{
+		apiClient: apiClient,
+		Definition: &moduleV1Beta1.Module{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The name of the module is empty")
+
+		builder.errorMsg = "module 'name' cannot be empty"
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The namespace of the module is empty")
+
+		builder.errorMsg = "module 'namespace' cannot be empty"
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("module object %s doesn't exist in namespace %s", name, nsname)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
+}
+
 // Create builds module in the cluster and stores object in struct.
 func (builder *ModuleBuilder) Create() (*ModuleBuilder, error) {
 	glog.V(100).Infof("Creating module %s in namespace %s",
