@@ -61,6 +61,41 @@ func NewBuilder(apiClient *clients.Settings, name, nsname string) *Builder {
 	return &builder
 }
 
+// Pull pulls existing networkattachmentdefinition from cluster.
+func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
+	glog.V(100).Infof("Pulling existing networkattachmentdefinition name %s under namespace %s from cluster", name, nsname)
+
+	builder := Builder{
+		apiClient: apiClient,
+		Definition: &nadV1.NetworkAttachmentDefinition{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The name of the networkattachmentdefinition is empty")
+
+		builder.errorMsg = "networkattachmentdefinition 'name' cannot be empty"
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The namespace of the networkattachmentdefinition is empty")
+
+		builder.errorMsg = "networkattachmentdefinition 'namespace' cannot be empty"
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("networkattachmentdefinition object %s doesn't exist in namespace %s", name, nsname)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
+}
+
 // Create builds a NetworkAttachmentDefinition resource with the builder configuration.
 //
 //	if the creation failed, the builder errorMsg will be updated.
