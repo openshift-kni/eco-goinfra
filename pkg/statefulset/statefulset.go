@@ -119,6 +119,37 @@ func (builder *Builder) WithAdditionalContainerSpecs(specs []coreV1.Container) *
 	return builder
 }
 
+// Pull loads an existing statefulset into Builder struct.
+func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
+	glog.V(100).Infof("Pulling existing statefulset name: %s under namespace: %s", name, nsname)
+
+	builder := Builder{
+		apiClient: apiClient,
+		Definition: &v1.StatefulSet{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
+	}
+
+	if name == "" {
+		builder.errorMsg = "statefulset 'name' cannot be empty"
+	}
+
+	if nsname == "" {
+		builder.errorMsg = "statefulset 'namespace' cannot be empty"
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("statefulset object %s doesn't exist in namespace %s", name, nsname)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
+}
+
 // Create generates a statefulset in cluster and stores the created object in struct.
 func (builder *Builder) Create() (*Builder, error) {
 	glog.V(100).Infof("Creating statefulset %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
