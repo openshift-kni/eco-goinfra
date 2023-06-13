@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	hiveV1 "github.com/openshift/hive/apis/hive/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -20,6 +21,9 @@ type ClusterImageSetBuilder struct {
 	errorMsg   string
 	apiClient  *clients.Settings
 }
+
+// ClusterImageSetAdditionalOptions additional options for ClusterImageSet object.
+type ClusterImageSetAdditionalOptions func(builder *ClusterImageSetBuilder) (*ClusterImageSetBuilder, error)
 
 // NewClusterImageSetBuilder creates a new instance of ClusterImageSetBuilder.
 func NewClusterImageSetBuilder(apiClient *clients.Settings, name, releaseImage string) *ClusterImageSetBuilder {
@@ -82,6 +86,37 @@ func (builder *ClusterImageSetBuilder) WithReleaseImage(image string) *ClusterIm
 		builder.Definition.Name, image)
 
 	builder.Definition.Spec.ReleaseImage = image
+
+	return builder
+}
+
+// WithOptions creates ClusterDeployment with generic mutation options.
+func (builder *ClusterImageSetBuilder) WithOptions(options ...ClusterImageSetAdditionalOptions) *ClusterImageSetBuilder {
+	glog.V(100).Infof("Setting ClusterImageSet additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The ClusterImageSet is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("ClusterImageSet")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
 
 	return builder
 }
