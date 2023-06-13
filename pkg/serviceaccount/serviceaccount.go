@@ -53,6 +53,37 @@ func NewBuilder(apiClient *clients.Settings, name, nsname string) *Builder {
 	return &builder
 }
 
+// Pull loads an existing serviceaccount into Builder struct.
+func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
+	glog.V(100).Infof("Pulling existing serviceaccount name: %s under namespace: %s", name, nsname)
+
+	builder := Builder{
+		apiClient: apiClient,
+		Definition: &v1.ServiceAccount{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
+	}
+
+	if name == "" {
+		builder.errorMsg = "serviceaccount 'name' cannot be empty"
+	}
+
+	if nsname == "" {
+		builder.errorMsg = "serviceaccount 'namespace' cannot be empty"
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("serviceaccount object %s doesn't exist in namespace %s", name, nsname)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
+}
+
 // Create makes a serviceaccount in cluster and stores the created object in struct.
 func (builder *Builder) Create() (*Builder, error) {
 	glog.V(100).Infof(
