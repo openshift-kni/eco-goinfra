@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	v1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,6 +24,9 @@ type Builder struct {
 	errorMsg  string
 	apiClient *clients.Settings
 }
+
+// AdditionalOptions additional options for configmap object.
+type AdditionalOptions func(builder *Builder) (*Builder, error)
 
 // Pull retrieves an existing configmap object from the cluster.
 func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
@@ -164,6 +168,37 @@ func (builder *Builder) WithData(data map[string]string) *Builder {
 	}
 
 	builder.Definition.Data = data
+
+	return builder
+}
+
+// WithOptions creates configmap with generic mutation options.
+func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
+	glog.V(100).Infof("Setting configmap additional options")
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The configmap is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("configmap")
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for _, option := range options {
+		if option != nil {
+			builder, err := option(builder)
+
+			if err != nil {
+				glog.V(100).Infof("Error occurred in mutation function")
+
+				builder.errorMsg = err.Error()
+
+				return builder
+			}
+		}
+	}
 
 	return builder
 }
