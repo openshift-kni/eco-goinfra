@@ -116,19 +116,20 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 
 // WithNodeSelector applies nodeSelector to the daemonset definition.
 func (builder *Builder) WithNodeSelector(selector map[string]string) *Builder {
-	glog.V(100).Infof("Applying nodeSelector %s to daemonset %s in namespace %s",
-		selector, builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
-	// Make sure NewBuilder was already called to set builder.Definition.
-	if builder.Definition == nil {
-		glog.V(100).Infof("The daemonset is undefined")
+	glog.V(100).Infof("Applying nodeSelector %s to daemonset %s in namespace %s",
+		selector, builder.Definition.Name, builder.Definition.Namespace)
 
-		builder.errorMsg = "cannot add nodeSelector to undefined daemonset"
+	if len(selector) == 0 {
+		glog.V(100).Infof("The nodeselector is empty")
 
+		builder.errorMsg = "cannot accept empty map as nodeselector"
+	}
+
+	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -139,54 +140,39 @@ func (builder *Builder) WithNodeSelector(selector map[string]string) *Builder {
 
 // WithAdditionalContainerSpecs appends a list of container specs to the daemonset definition.
 func (builder *Builder) WithAdditionalContainerSpecs(specs []coreV1.Container) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Appending a list of container specs %v to daemonset %s in namespace %s",
 		specs, builder.Definition.Name, builder.Definition.Namespace)
+
+	if len(specs) == 0 {
+		glog.V(100).Infof("The container specs are empty")
+
+		builder.errorMsg = "cannot accept empty list as container specs"
+	}
 
 	if builder.errorMsg != "" {
 		return builder
 	}
 
-	// Make sure NewBuilder was already called to set builder.Definition.
-	if builder.Definition == nil {
-		glog.V(100).Infof("The daemonset is undefined")
-
-		builder.errorMsg = "cannot add container specs to undefined daemonset"
-
-		return builder
-	}
-
-	if specs == nil {
-		glog.V(100).Infof("The container specs are empty")
-
-		builder.errorMsg = "cannot accept nil or empty list as container specs"
-
-		return builder
-	}
-
 	if builder.Definition.Spec.Template.Spec.Containers == nil {
 		builder.Definition.Spec.Template.Spec.Containers = specs
-
-		return builder
+	} else {
+		builder.Definition.Spec.Template.Spec.Containers = append(builder.Definition.Spec.Template.Spec.Containers, specs...)
 	}
-
-	builder.Definition.Spec.Template.Spec.Containers = append(builder.Definition.Spec.Template.Spec.Containers, specs...)
 
 	return builder
 }
 
 // WithOptions creates daemonset with generic mutation options.
 func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
-	glog.V(100).Infof("Setting daemonset additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The daemonset is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("daemonset")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting daemonset additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -207,11 +193,11 @@ func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
 
 // Create builds daemonset in the cluster and stores the created object in struct.
 func (builder *Builder) Create() (*Builder, error) {
-	glog.V(100).Infof("Creating daemonset %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
+	if valid, err := builder.validate(); !valid {
+		return builder, err
 	}
+
+	glog.V(100).Infof("Creating daemonset %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
 	if !builder.Exists() {
@@ -224,11 +210,11 @@ func (builder *Builder) Create() (*Builder, error) {
 
 // Update renovates the existing daemonset object with daemonset definition in builder.
 func (builder *Builder) Update() (*Builder, error) {
-	glog.V(100).Infof("Updating daemonset %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
+	if valid, err := builder.validate(); !valid {
+		return builder, err
 	}
+
+	glog.V(100).Infof("Updating daemonset %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
 	builder.Object, err = builder.apiClient.DaemonSets(builder.Definition.Namespace).Update(
@@ -239,6 +225,10 @@ func (builder *Builder) Update() (*Builder, error) {
 
 // Delete removes the daemonset.
 func (builder *Builder) Delete() error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Deleting daemonset %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -260,6 +250,10 @@ func (builder *Builder) Delete() error {
 
 // CreateAndWaitUntilReady creates a daemonset in the cluster and waits until the daemonset is available.
 func (builder *Builder) CreateAndWaitUntilReady(timeout time.Duration) (*Builder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating daemonset %s in namespace %s and waiting for the defined period until it's ready",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -296,6 +290,10 @@ func (builder *Builder) CreateAndWaitUntilReady(timeout time.Duration) (*Builder
 
 // DeleteAndWait deletes a daemonset and waits until it is removed from the cluster.
 func (builder *Builder) DeleteAndWait(timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Deleting daemonset %s in namespace %s and waiting for the defined period until it's removed",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -318,6 +316,10 @@ func (builder *Builder) DeleteAndWait(timeout time.Duration) error {
 
 // Exists checks whether the given daemonset exists.
 func (builder *Builder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Checking if daemonset %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -330,6 +332,10 @@ func (builder *Builder) Exists() bool {
 
 // IsReady waits for the daemonset to reach expected number of pods in Ready state.
 func (builder *Builder) IsReady(timeout time.Duration) bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Running periodic check until daemonset %s in namespace %s is ready or "+
 		"timeout %s exceeded", builder.Definition.Name, builder.Definition.Namespace, timeout.String())
 
@@ -360,4 +366,28 @@ func (builder *Builder) IsReady(timeout time.Duration) bool {
 	})
 
 	return err == nil
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *Builder) validate() (bool, error) {
+	if builder == nil {
+		glog.V(100).Infof("The builder is uninitialized")
+
+		return false, fmt.Errorf("error: received nil builder")
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The daemonset is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("DaemonSet")
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The builder has error message: %s", builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
