@@ -83,13 +83,11 @@ func NewInfraEnvBuilder(apiClient *clients.Settings, name, nsname, psName string
 
 // WithClusterRef sets the cluster reference to be used by the infraenv.
 func (builder *InfraEnvBuilder) WithClusterRef(name, nsname string) *InfraEnvBuilder {
-	glog.V(100).Infof("Adding clusterRef %s in namespace %s to InfraEnv %s", name, nsname, builder.Definition.Name)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The infraenv is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("InfraEnv")
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
+
+	glog.V(100).Infof("Adding clusterRef %s in namespace %s to InfraEnv %s", name, nsname, builder.Definition.Name)
 
 	if name == "" {
 		glog.V(100).Infof("The name of the infraenv clusterRef is empty")
@@ -117,17 +115,11 @@ func (builder *InfraEnvBuilder) WithClusterRef(name, nsname string) *InfraEnvBui
 
 // WithAdditionalNTPSource adds additional servers as NTP sources for the spoke cluster.
 func (builder *InfraEnvBuilder) WithAdditionalNTPSource(ntpSource string) *InfraEnvBuilder {
-	glog.V(100).Infof("Adding ntpSource %s to InfraEnv %s", ntpSource, builder.Definition.Name)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The infraenv is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("InfraEnv")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Adding ntpSource %s to InfraEnv %s", ntpSource, builder.Definition.Name)
 
 	builder.Definition.Spec.AdditionalNTPSources = append(builder.Definition.Spec.AdditionalNTPSources, ntpSource)
 
@@ -136,17 +128,11 @@ func (builder *InfraEnvBuilder) WithAdditionalNTPSource(ntpSource string) *Infra
 
 // WithSSHAuthorizedKey sets the authorized ssh key for accessing the nodes during discovery.
 func (builder *InfraEnvBuilder) WithSSHAuthorizedKey(sshAuthKey string) *InfraEnvBuilder {
-	glog.V(100).Infof("Adding sshAuthorizedKey %s to InfraEnv %s", sshAuthKey, builder.Definition.Name)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The infraenv is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("InfraEnv")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Adding sshAuthorizedKey %s to InfraEnv %s", sshAuthKey, builder.Definition.Name)
 
 	builder.Definition.Spec.SSHAuthorizedKey = sshAuthKey
 
@@ -155,17 +141,11 @@ func (builder *InfraEnvBuilder) WithSSHAuthorizedKey(sshAuthKey string) *InfraEn
 
 // WithAgentLabel adds labels to be applied to agents that boot from the infraenv.
 func (builder *InfraEnvBuilder) WithAgentLabel(key, value string) *InfraEnvBuilder {
-	glog.V(100).Infof("Adding agentLabel %s:%s to InfraEnv %s", key, value, builder.Definition.Name)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The infraenv is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("InfraEnv")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Adding agentLabel %s:%s to InfraEnv %s", key, value, builder.Definition.Name)
 
 	if builder.Definition.Spec.AgentLabels == nil {
 		builder.Definition.Spec.AgentLabels = make(map[string]string)
@@ -178,17 +158,11 @@ func (builder *InfraEnvBuilder) WithAgentLabel(key, value string) *InfraEnvBuild
 
 // WithProxy includes a proxy configuration to be used by the infraenv.
 func (builder *InfraEnvBuilder) WithProxy(proxy agentInstallV1Beta1.Proxy) *InfraEnvBuilder {
-	glog.V(100).Infof("Adding proxy %s to InfraEnv %s", proxy, builder.Definition.Name)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The infraenv is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("InfraEnv")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Adding proxy %s to InfraEnv %s", proxy, builder.Definition.Name)
 
 	builder.Definition.Spec.Proxy = &proxy
 
@@ -198,17 +172,11 @@ func (builder *InfraEnvBuilder) WithProxy(proxy agentInstallV1Beta1.Proxy) *Infr
 // WithNmstateConfigLabelSelector adds a selector for identifying
 // nmstateconfigs that should be applied to this infraenv.
 func (builder *InfraEnvBuilder) WithNmstateConfigLabelSelector(selector metaV1.LabelSelector) *InfraEnvBuilder {
-	glog.V(100).Infof("Adding nmstateconfig selector %s to InfraEnv %s", &selector, builder.Definition.Name)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The infraenv is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("InfraEnv")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Adding nmstateconfig selector %s to InfraEnv %s", &selector, builder.Definition.Name)
 
 	builder.Definition.Spec.NMStateConfigLabelSelector = selector
 
@@ -217,17 +185,11 @@ func (builder *InfraEnvBuilder) WithNmstateConfigLabelSelector(selector metaV1.L
 
 // WithCPUType sets the cpu architecture for the discovery ISO.
 func (builder *InfraEnvBuilder) WithCPUType(arch string) *InfraEnvBuilder {
-	glog.V(100).Infof("Adding cpuArchitecture %s to InfraEnv %s", arch, builder.Definition.Name)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The infraenv is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("InfraEnv")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Adding cpuArchitecture %s to InfraEnv %s", arch, builder.Definition.Name)
 
 	builder.Definition.Spec.CpuArchitecture = arch
 
@@ -236,17 +198,11 @@ func (builder *InfraEnvBuilder) WithCPUType(arch string) *InfraEnvBuilder {
 
 // WithIgnitionConfigOverride includes the specified ignitionconfigoverride for discovery.
 func (builder *InfraEnvBuilder) WithIgnitionConfigOverride(override string) *InfraEnvBuilder {
-	glog.V(100).Infof("Adding ignitionConfigOverride %s to InfraEnv %s", override, builder.Definition.Name)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The infraenv is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("InfraEnv")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Adding ignitionConfigOverride %s to InfraEnv %s", override, builder.Definition.Name)
 
 	builder.Definition.Spec.IgnitionConfigOverride = override
 
@@ -255,17 +211,11 @@ func (builder *InfraEnvBuilder) WithIgnitionConfigOverride(override string) *Inf
 
 // WithIPXEScriptType modifies the IPXE script type generated by the infraenv.
 func (builder *InfraEnvBuilder) WithIPXEScriptType(scriptType agentInstallV1Beta1.IPXEScriptType) *InfraEnvBuilder {
-	glog.V(100).Infof("Adding ipxeScriptType %s to InfraEnv %s", scriptType, builder.Definition.Name)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The infraenv is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("InfraEnv")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Adding ipxeScriptType %s to InfraEnv %s", scriptType, builder.Definition.Name)
 
 	builder.Definition.Spec.IPXEScriptType = scriptType
 
@@ -274,17 +224,11 @@ func (builder *InfraEnvBuilder) WithIPXEScriptType(scriptType agentInstallV1Beta
 
 // WithKernelArgument appends kernel configurations to be configured by the infraenv.
 func (builder *InfraEnvBuilder) WithKernelArgument(kernelArg agentInstallV1Beta1.KernelArgument) *InfraEnvBuilder {
-	glog.V(100).Infof("Adding kernelArgument %s to InfraEnv %s", kernelArg, builder.Definition.Name)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The infraenv is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("InfraEnv")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Adding kernelArgument %s to InfraEnv %s", kernelArg, builder.Definition.Name)
 
 	builder.Definition.Spec.KernelArguments = append(builder.Definition.Spec.KernelArguments, kernelArg)
 
@@ -294,17 +238,11 @@ func (builder *InfraEnvBuilder) WithKernelArgument(kernelArg agentInstallV1Beta1
 // WithOptions creates InfraEnv with generic mutation options.
 func (builder *InfraEnvBuilder) WithOptions(
 	options ...InfraEnvAdditionalOptions) *InfraEnvBuilder {
-	glog.V(100).Infof("Setting InfraEnv additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The InfraEnv is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("InfraEnv")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting InfraEnv additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -325,14 +263,8 @@ func (builder *InfraEnvBuilder) WithOptions(
 
 // WaitForDiscoveryISOCreation waits the defined timeout for the discovery ISO to be generated.
 func (builder *InfraEnvBuilder) WaitForDiscoveryISOCreation(timeout time.Duration) (*InfraEnvBuilder, error) {
-	if builder.Definition == nil {
-		glog.V(100).Infof("The infraenv is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("InfraEnv")
-	}
-
-	if builder.errorMsg != "" {
-		return builder, nil
+	if valid, err := builder.validate(); !valid {
+		return builder, err
 	}
 
 	// Polls every retryInterval to determine if infraenv in desired state.
@@ -357,6 +289,10 @@ func (builder *InfraEnvBuilder) WaitForDiscoveryISOCreation(timeout time.Duratio
 
 // GetAllAgents returns a slice of agentBuilders of all agents belonging to the infraenv.
 func (builder *InfraEnvBuilder) GetAllAgents() ([]*agentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof("Getting all agents from infraenv %s",
 		builder.Definition.Name)
 
@@ -374,6 +310,10 @@ func (builder *InfraEnvBuilder) GetAllAgents() ([]*agentBuilder, error) {
 
 // GetAgentsByRole returns a slice of agentBuilders of agents matching specified role belonging to the infraenv.
 func (builder *InfraEnvBuilder) GetAgentsByRole(role string) ([]*agentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof("Getting agents from infraenv %s matching role %s",
 		builder.Definition.Name, role)
 
@@ -402,6 +342,10 @@ func (builder *InfraEnvBuilder) GetAgentsByRole(role string) ([]*agentBuilder, e
 
 // GetAgentByBMH returns an agentBuilder for the agent matching specified BMH belonging to the infraenv.
 func (builder *InfraEnvBuilder) GetAgentByBMH(bmhName string) (*agentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof("Getting agent from infraenv %s matching bmh %s",
 		builder.Definition.Name, bmhName)
 
@@ -430,6 +374,10 @@ func (builder *InfraEnvBuilder) GetAgentByBMH(bmhName string) (*agentBuilder, er
 
 // GetAgentByName returns an agentBuilder for the agent matching specified name belonging to the infraenv.
 func (builder *InfraEnvBuilder) GetAgentByName(name string) (*agentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof("Getting agent from infraenv %s with name %s",
 		builder.Definition.Name, name)
 
@@ -447,6 +395,10 @@ func (builder *InfraEnvBuilder) GetAgentByName(name string) (*agentBuilder, erro
 
 // GetAgentsByLabel returns a slice of agentBuilders for agents matching specified label.
 func (builder *InfraEnvBuilder) GetAgentsByLabel(key, value string) ([]*agentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof("Getting agent matching label %s:%s",
 		key, value)
 
@@ -469,6 +421,10 @@ func (builder *InfraEnvBuilder) GetAgentsByLabel(key, value string) ([]*agentBui
 // WaitForAgentsToRegister waits the specified time for agents to register
 // matching the provisioninRequirements of the related AgentClusterInstall.
 func (builder *InfraEnvBuilder) WaitForAgentsToRegister(timeout time.Duration) ([]*agentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	if !builder.Exists() {
 		return nil, fmt.Errorf("cannot get agents from non-existent infraenv")
 	}
@@ -502,6 +458,10 @@ func (builder *InfraEnvBuilder) WaitForAgentsToRegister(timeout time.Duration) (
 // WaitForMasterAgents waits the specified time for agents with the role master
 // to register and match the ControlPlaneAgents count in ProvisionRequirements of the related AgentClusterInstall.
 func (builder *InfraEnvBuilder) WaitForMasterAgents(timeout time.Duration) ([]*agentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	agentclusterinstall, err := builder.GetAgentClusterInstallFromInfraEnv()
 
 	if err != nil {
@@ -529,6 +489,10 @@ func (builder *InfraEnvBuilder) WaitForMasterAgents(timeout time.Duration) ([]*a
 // WaitForMasterAgentCount waits the specified time for agents
 // with the role master to register and match the specified count.
 func (builder *InfraEnvBuilder) WaitForMasterAgentCount(count int, timeout time.Duration) ([]*agentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	var agentList []*agentBuilder
 
 	// Polls every retryInterval to determine if agent has registered.
@@ -548,6 +512,10 @@ func (builder *InfraEnvBuilder) WaitForMasterAgentCount(count int, timeout time.
 
 // GetRandomMasterAgent returns an agentBuilder of a random agent that has it's role set to master.
 func (builder *InfraEnvBuilder) GetRandomMasterAgent() (*agentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	rand.Seed(time.Now().UnixNano())
 
 	agentList, err := builder.GetAgentsByRole("master")
@@ -567,6 +535,10 @@ func (builder *InfraEnvBuilder) GetRandomMasterAgent() (*agentBuilder, error) {
 // WaitForWorkerAgents waits the specified time for agents with the role worker to register and match the WorkerAgents
 // count in ProvisionRequirements of the related AgentClusterInstall.
 func (builder *InfraEnvBuilder) WaitForWorkerAgents(timeout time.Duration) ([]*agentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	agentclusterinstall, err := builder.GetAgentClusterInstallFromInfraEnv()
 
 	if err != nil {
@@ -595,6 +567,10 @@ func (builder *InfraEnvBuilder) WaitForWorkerAgents(timeout time.Duration) ([]*a
 // WaitForWorkerAgentCount waits the specified time
 // for agents with the role worker to register and match the specified count.
 func (builder *InfraEnvBuilder) WaitForWorkerAgentCount(count int, timeout time.Duration) ([]*agentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	var agentList []*agentBuilder
 
 	// Polls every retryInterval to determine if agent has registered.
@@ -614,6 +590,10 @@ func (builder *InfraEnvBuilder) WaitForWorkerAgentCount(count int, timeout time.
 
 // GetRandomWorkerAgent returns an agentBuilder of a random agent that has it's role set to worker.
 func (builder *InfraEnvBuilder) GetRandomWorkerAgent() (*agentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	rand.Seed(time.Now().UnixNano())
 
 	agentList, err := builder.GetAgentsByRole("worker")
@@ -632,6 +612,10 @@ func (builder *InfraEnvBuilder) GetRandomWorkerAgent() (*agentBuilder, error) {
 
 // createBuilderListFromAgentList takes an Agent slice and transforms it into an *agentBuilder slice.
 func (builder *InfraEnvBuilder) createBuilderListFromAgentList(agents []agentInstallV1Beta1.Agent) []*agentBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return nil
+	}
+
 	var buliderList []*agentBuilder
 
 	for _, agent := range agents {
@@ -644,6 +628,10 @@ func (builder *InfraEnvBuilder) createBuilderListFromAgentList(agents []agentIns
 
 // GetAgentClusterInstallFromInfraEnv returns the AgentClusterInstall that is referenced by this InfraEnv.
 func (builder *InfraEnvBuilder) GetAgentClusterInstallFromInfraEnv() (*hiveextV1Beta1.AgentClusterInstall, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	if !builder.Exists() {
 		glog.V(100).Infof("Getting infraenv %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
 
@@ -689,6 +677,10 @@ func (builder *InfraEnvBuilder) GetAgentClusterInstallFromInfraEnv() (*hiveextV1
 
 // Get fetches the defined infraenv from the cluster.
 func (builder *InfraEnvBuilder) Get() (*agentInstallV1Beta1.InfraEnv, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof("Getting infraenv %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -743,12 +735,12 @@ func PullInfraEnvInstall(apiClient *clients.Settings, name, nsname string) (*Inf
 
 // Create generates a infraenv on the cluster.
 func (builder *InfraEnvBuilder) Create() (*InfraEnvBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating the infraenv %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	if !builder.Exists() {
@@ -763,6 +755,10 @@ func (builder *InfraEnvBuilder) Create() (*InfraEnvBuilder, error) {
 
 // Update modifies an existing infraenv on the cluster.
 func (builder *InfraEnvBuilder) Update(force bool) (*InfraEnvBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Updating infraenv %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -809,6 +805,10 @@ func (builder *InfraEnvBuilder) Update(force bool) (*InfraEnvBuilder, error) {
 
 // Delete removes an infraenv from the cluster.
 func (builder *InfraEnvBuilder) Delete() (*InfraEnvBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Deleting the infraenv %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -829,6 +829,10 @@ func (builder *InfraEnvBuilder) Delete() (*InfraEnvBuilder, error) {
 
 // Exists checks if the defined infraenv has already been created.
 func (builder *InfraEnvBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Checking if infraenv %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -836,4 +840,28 @@ func (builder *InfraEnvBuilder) Exists() bool {
 	builder.Object, err = builder.Get()
 
 	return err == nil || !k8serrors.IsNotFound(err)
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *InfraEnvBuilder) validate() (bool, error) {
+	if builder == nil {
+		glog.V(100).Infof("The builder is uninitialized")
+
+		return false, fmt.Errorf("error: received nil builder")
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The infraenv is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("InfraEnv")
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The builder has error message: %s", builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
