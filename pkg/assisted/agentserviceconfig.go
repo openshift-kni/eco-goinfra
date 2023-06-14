@@ -111,17 +111,11 @@ func NewDefaultAgentServiceConfigBuilder(apiClient *clients.Settings) *AgentServ
 // WithImageStorage sets the imageStorageSpec used by the agentserviceconfig.
 func (builder *AgentServiceConfigBuilder) WithImageStorage(
 	imageStorageSpec corev1.PersistentVolumeClaimSpec) *AgentServiceConfigBuilder {
-	glog.V(100).Infof("Setting imageStorage %v in agentserviceconfig", imageStorageSpec)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentserviceconfig is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentServiceConfig")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting imageStorage %v in agentserviceconfig", imageStorageSpec)
 
 	builder.Definition.Spec.ImageStorage = &imageStorageSpec
 
@@ -130,13 +124,11 @@ func (builder *AgentServiceConfigBuilder) WithImageStorage(
 
 // WithMirrorRegistryRef adds a configmap ref to the agentserviceconfig containing mirroring information.
 func (builder *AgentServiceConfigBuilder) WithMirrorRegistryRef(configMapName string) *AgentServiceConfigBuilder {
-	glog.V(100).Infof("Adding mirrorRegistryRef %s to agentserviceconfig %s", configMapName, builder.Definition.Name)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentserviceconfig is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentServiceConfig")
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
+
+	glog.V(100).Infof("Adding mirrorRegistryRef %s to agentserviceconfig %s", configMapName, builder.Definition.Name)
 
 	if configMapName == "" {
 		glog.V(100).Infof("The configMapName is empty")
@@ -157,17 +149,11 @@ func (builder *AgentServiceConfigBuilder) WithMirrorRegistryRef(configMapName st
 
 // WithOSImage appends an OSImage to the OSImages list used by the agentserviceconfig.
 func (builder *AgentServiceConfigBuilder) WithOSImage(osImage agentInstallV1Beta1.OSImage) *AgentServiceConfigBuilder {
-	glog.V(100).Infof("Adding OSImage %v to agentserviceconfig %s", osImage, builder.Definition.Name)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentserviceconfig is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentServiceConfig")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Adding OSImage %v to agentserviceconfig %s", osImage, builder.Definition.Name)
 
 	builder.Definition.Spec.OSImages = append(builder.Definition.Spec.OSImages, osImage)
 
@@ -176,17 +162,11 @@ func (builder *AgentServiceConfigBuilder) WithOSImage(osImage agentInstallV1Beta
 
 // WithUnauthenticatedRegistry appends an unauthenticated registry to the agentserviceconfig.
 func (builder *AgentServiceConfigBuilder) WithUnauthenticatedRegistry(registry string) *AgentServiceConfigBuilder {
-	glog.V(100).Infof("Adding unauthenticatedRegistry %s to agentserviceconfig %s", registry, builder.Definition.Name)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentserviceconfig is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentServiceConfig")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Adding unauthenticatedRegistry %s to agentserviceconfig %s", registry, builder.Definition.Name)
 
 	builder.Definition.Spec.UnauthenticatedRegistries = append(builder.Definition.Spec.UnauthenticatedRegistries, registry)
 
@@ -195,17 +175,11 @@ func (builder *AgentServiceConfigBuilder) WithUnauthenticatedRegistry(registry s
 
 // WithIPXEHTTPRoute sets the IPXEHTTPRoute type to be used by the agentserviceconfig.
 func (builder *AgentServiceConfigBuilder) WithIPXEHTTPRoute(route string) *AgentServiceConfigBuilder {
-	glog.V(100).Infof("Adding IPXEHTTPRout %s to agentserviceconfig %s", route, builder.Definition.Name)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentserviceconfig is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentServiceConfig")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Adding IPXEHTTPRout %s to agentserviceconfig %s", route, builder.Definition.Name)
 
 	builder.Definition.Spec.IPXEHTTPRoute = route
 
@@ -215,17 +189,11 @@ func (builder *AgentServiceConfigBuilder) WithIPXEHTTPRoute(route string) *Agent
 // WithOptions creates AgentServiceConfig with generic mutation options.
 func (builder *AgentServiceConfigBuilder) WithOptions(
 	options ...AgentServiceConfigAdditionalOptions) *AgentServiceConfigBuilder {
-	glog.V(100).Infof("Setting AgentServiceConfig additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The AgentServiceConfig is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentServiceConfig")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting AgentServiceConfig additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -246,6 +214,10 @@ func (builder *AgentServiceConfigBuilder) WithOptions(
 
 // WaitUntilDeployed waits the specified timeout for the agentserviceconfig to deploy.
 func (builder *AgentServiceConfigBuilder) WaitUntilDeployed(timeout time.Duration) (*AgentServiceConfigBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Waiting for agetserviceconfig %s to be deployed", builder.Definition.Name)
 
 	if builder.Definition == nil {
@@ -321,6 +293,10 @@ func PullAgentServiceConfig(apiClient *clients.Settings) (*AgentServiceConfigBui
 
 // Get fetches the defined agentserviceconfig from the cluster.
 func (builder *AgentServiceConfigBuilder) Get() (*agentInstallV1Beta1.AgentServiceConfig, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof("Getting agentserviceconfig %s",
 		builder.Definition.Name)
 
@@ -339,12 +315,12 @@ func (builder *AgentServiceConfigBuilder) Get() (*agentInstallV1Beta1.AgentServi
 
 // Create generates an agentserviceconfig on the cluster.
 func (builder *AgentServiceConfigBuilder) Create() (*AgentServiceConfigBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating the agentserviceconfig %s",
 		builder.Definition.Name)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	if !builder.Exists() {
@@ -359,6 +335,10 @@ func (builder *AgentServiceConfigBuilder) Create() (*AgentServiceConfigBuilder, 
 
 // Update modifies an existing agentserviceconfig on the cluster.
 func (builder *AgentServiceConfigBuilder) Update(force bool) (*AgentServiceConfigBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Updating agentserviceconfig %s",
 		builder.Definition.Name)
 
@@ -406,6 +386,10 @@ func (builder *AgentServiceConfigBuilder) Update(force bool) (*AgentServiceConfi
 
 // Delete removes an agentserviceconfig from the cluster.
 func (builder *AgentServiceConfigBuilder) Delete() (*AgentServiceConfigBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Deleting the agentserviceconfig %s",
 		builder.Definition.Name)
 
@@ -427,6 +411,10 @@ func (builder *AgentServiceConfigBuilder) Delete() (*AgentServiceConfigBuilder, 
 
 // DeleteAndWait deletes an agentserviceconfig and waits until it is removed from the cluster.
 func (builder *AgentServiceConfigBuilder) DeleteAndWait(timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof(`Deleting agentserviceconfig %s and 
 	waiting for the defined period until it's removed`,
 		builder.Definition.Name)
@@ -449,6 +437,10 @@ func (builder *AgentServiceConfigBuilder) DeleteAndWait(timeout time.Duration) e
 
 // Exists checks if the defined agentserviceconfig has already been created.
 func (builder *AgentServiceConfigBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Checking if agentserviceconfig %s exists",
 		builder.Definition.Name)
 
@@ -480,4 +472,28 @@ func GetDefaultStorageSpec(defaultStorageSize string) (corev1.PersistentVolumeCl
 	glog.V(100).Infof("Getting default PVC spec: %v", defaultSpec)
 
 	return defaultSpec, nil
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *AgentServiceConfigBuilder) validate() (bool, error) {
+	if builder == nil {
+		glog.V(100).Infof("The builder is uninitialized")
+
+		return false, fmt.Errorf("error: received nil builder")
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The agentserviceconfig is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentServiceConfig")
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The builder has error message: %s", builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }

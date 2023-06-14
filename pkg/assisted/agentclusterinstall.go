@@ -88,10 +88,8 @@ func NewAgentClusterInstallBuilder(
 
 // WithAPIVip sets the apiVIP to use during multi-node installations.
 func (builder *AgentClusterInstallBuilder) WithAPIVip(apiVIP string) *AgentClusterInstallBuilder {
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentclusterinstall is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentClusterInstall")
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
 
 	if net.ParseIP(apiVIP) == nil {
@@ -111,10 +109,8 @@ func (builder *AgentClusterInstallBuilder) WithAPIVip(apiVIP string) *AgentClust
 
 // WithAdditionalAPIVip appends apiVIP to the apiVIPs field for use during dual-stack installations.
 func (builder *AgentClusterInstallBuilder) WithAdditionalAPIVip(apiVIP string) *AgentClusterInstallBuilder {
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentclusterinstall is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentClusterInstall")
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
 
 	if net.ParseIP(apiVIP) == nil {
@@ -134,10 +130,8 @@ func (builder *AgentClusterInstallBuilder) WithAdditionalAPIVip(apiVIP string) *
 
 // WithIngressVip sets the ingressVIP to use during multi-node installations.
 func (builder *AgentClusterInstallBuilder) WithIngressVip(ingressVIP string) *AgentClusterInstallBuilder {
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentclusterinstall is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentClusterInstall")
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
 
 	if net.ParseIP(ingressVIP) == nil {
@@ -157,10 +151,8 @@ func (builder *AgentClusterInstallBuilder) WithIngressVip(ingressVIP string) *Ag
 
 // WithAdditionalIngressVip appends ingressVIP to the ingressVIPs field for use during dual-stack installations.
 func (builder *AgentClusterInstallBuilder) WithAdditionalIngressVip(ingressVIP string) *AgentClusterInstallBuilder {
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentclusterinstall is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentClusterInstall")
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
 
 	if net.ParseIP(ingressVIP) == nil {
@@ -180,13 +172,7 @@ func (builder *AgentClusterInstallBuilder) WithAdditionalIngressVip(ingressVIP s
 
 // WithUserManagedNetworking sets userManagedNetworking field.
 func (builder *AgentClusterInstallBuilder) WithUserManagedNetworking(enabled bool) *AgentClusterInstallBuilder {
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentclusterinstall is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentClusterInstall")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
@@ -198,13 +184,7 @@ func (builder *AgentClusterInstallBuilder) WithUserManagedNetworking(enabled boo
 // WithPlatformType sets platformType field (Supported values: "", None, BareMetal, VSphere).
 func (builder *AgentClusterInstallBuilder) WithPlatformType(
 	platform hiveextV1Beta1.PlatformType) *AgentClusterInstallBuilder {
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentclusterinstall is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentClusterInstall")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
@@ -215,13 +195,7 @@ func (builder *AgentClusterInstallBuilder) WithPlatformType(
 
 // WithControlPlaneAgents sets the number of masters to use for the installation.
 func (builder *AgentClusterInstallBuilder) WithControlPlaneAgents(agentCount int) *AgentClusterInstallBuilder {
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentclusterinstall is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentClusterInstall")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
@@ -232,13 +206,7 @@ func (builder *AgentClusterInstallBuilder) WithControlPlaneAgents(agentCount int
 
 // WithWorkerAgents sets the number of workers to use during the installation.
 func (builder *AgentClusterInstallBuilder) WithWorkerAgents(agentCount int) *AgentClusterInstallBuilder {
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentclusterinstall is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentClusterInstall")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
@@ -249,13 +217,7 @@ func (builder *AgentClusterInstallBuilder) WithWorkerAgents(agentCount int) *Age
 
 // WithImageSet sets the clusterimageset to use for the installation.
 func (builder *AgentClusterInstallBuilder) WithImageSet(imageSet string) *AgentClusterInstallBuilder {
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentclusterinstall is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentClusterInstall")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
@@ -266,13 +228,7 @@ func (builder *AgentClusterInstallBuilder) WithImageSet(imageSet string) *AgentC
 
 // WithSSHPublicKey is the ssh key that is allowed to access the nodes.
 func (builder *AgentClusterInstallBuilder) WithSSHPublicKey(pubkey string) *AgentClusterInstallBuilder {
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentclusterinstall is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentClusterInstall")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
@@ -283,13 +239,7 @@ func (builder *AgentClusterInstallBuilder) WithSSHPublicKey(pubkey string) *Agen
 
 // WithNetworkType sets the cluster networking type (Supported values: OpenShiftSDN, OVNKubernetes).
 func (builder *AgentClusterInstallBuilder) WithNetworkType(netType string) *AgentClusterInstallBuilder {
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentclusterinstall is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentClusterInstall")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
@@ -302,10 +252,8 @@ func (builder *AgentClusterInstallBuilder) WithNetworkType(netType string) *Agen
 func (builder *AgentClusterInstallBuilder) WithAdditionalClusterNetwork(
 	cidr string,
 	prefix int32) *AgentClusterInstallBuilder {
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentclusterinstall is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentClusterInstall")
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
 
 	if _, _, err := net.ParseCIDR(cidr); err != nil {
@@ -327,10 +275,8 @@ func (builder *AgentClusterInstallBuilder) WithAdditionalClusterNetwork(
 
 // WithAdditionalServiceNetwork appends additional service networks to be used by the cluster.
 func (builder *AgentClusterInstallBuilder) WithAdditionalServiceNetwork(cidr string) *AgentClusterInstallBuilder {
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentclusterinstall is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentClusterInstall")
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
 
 	if _, _, err := net.ParseCIDR(cidr); err != nil {
@@ -352,14 +298,8 @@ func (builder *AgentClusterInstallBuilder) WithAdditionalServiceNetwork(cidr str
 func (builder *AgentClusterInstallBuilder) WaitForState(
 	state string,
 	timeout time.Duration) (*AgentClusterInstallBuilder, error) {
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentclusterinstall is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentClusterInstall")
-	}
-
-	if builder.errorMsg != "" {
-		return builder, nil
+	if valid, err := builder.validate(); !valid {
+		return builder, err
 	}
 
 	// Polls every second to determine if agentclusterinstall in desired state.
@@ -386,14 +326,8 @@ func (builder *AgentClusterInstallBuilder) WaitForState(
 func (builder *AgentClusterInstallBuilder) WaitForStateInfo(
 	stateInfo string,
 	timeout time.Duration) (*AgentClusterInstallBuilder, error) {
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agentclusterinstall is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentClusterInstall")
-	}
-
-	if builder.errorMsg != "" {
-		return builder, nil
+	if valid, err := builder.validate(); !valid {
+		return builder, err
 	}
 
 	// Polls every second to determine if agentclusterinstall has the desired stateinfo message.
@@ -419,17 +353,11 @@ func (builder *AgentClusterInstallBuilder) WaitForStateInfo(
 // WithOptions creates AgentClusterInstall with generic mutation options.
 func (builder *AgentClusterInstallBuilder) WithOptions(
 	options ...AgentClusterInstallAdditionalOptions) *AgentClusterInstallBuilder {
-	glog.V(100).Infof("Setting AgentClusterInstall additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The AgentClusterInstall is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentClusterInstall")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting AgentClusterInstall additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -450,6 +378,10 @@ func (builder *AgentClusterInstallBuilder) WithOptions(
 
 // GetCondition creates and returns a new agentClusterInstallCondition based on the condition type provided.
 func (builder *AgentClusterInstallBuilder) GetCondition(conditionType string) (*agentClusterInstallCondition, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof("Getting condition %s from agentclusterinstall %s", conditionType, builder.Definition.Name)
 
 	if !builder.Exists() {
@@ -475,6 +407,10 @@ func (builder *AgentClusterInstallBuilder) GetCondition(conditionType string) (*
 // UpdateCondition updates the agentClusterInstallCondition fields with the current state of the condition.
 func (builder *AgentClusterInstallBuilder) UpdateCondition(
 	condition *agentClusterInstallCondition) (*agentClusterInstallCondition, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	if !builder.Exists() {
 		glog.V(100).Infof("Agentclusterinstall %s does not exist on cluster", builder.Definition.Name)
 
@@ -515,6 +451,10 @@ func (builder *AgentClusterInstallBuilder) WaitForConditionMessage(
 	condition *agentClusterInstallCondition,
 	message string,
 	timeout time.Duration) (*agentClusterInstallCondition, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	if condition == nil {
 		return nil, fmt.Errorf("cannot wait for undefined condition message")
 	}
@@ -544,6 +484,10 @@ func (builder *AgentClusterInstallBuilder) WaitForConditionStatus(
 	condition *agentClusterInstallCondition,
 	status string,
 	timeout time.Duration) (*agentClusterInstallCondition, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	if condition == nil {
 		return nil, fmt.Errorf("cannot wait for undefined condition status")
 	}
@@ -569,6 +513,10 @@ func (builder *AgentClusterInstallBuilder) WaitForConditionReason(
 	condition *agentClusterInstallCondition,
 	reason string,
 	timeout time.Duration) (*agentClusterInstallCondition, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	if condition == nil {
 		return nil, fmt.Errorf("cannot wait for undefined condition reason")
 	}
@@ -591,6 +539,10 @@ func (builder *AgentClusterInstallBuilder) WaitForConditionReason(
 
 // Get fetches the defined agentclusterinstall from the cluster.
 func (builder *AgentClusterInstallBuilder) Get() (*hiveextV1Beta1.AgentClusterInstall, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof("Getting agentclusterinstall %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -645,12 +597,12 @@ func PullAgentClusterInstall(apiClient *clients.Settings, name, nsname string) (
 
 // Create generates a agentclusterinstall on the cluster.
 func (builder *AgentClusterInstallBuilder) Create() (*AgentClusterInstallBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating the agentclusterinstall %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	if !builder.Exists() {
@@ -665,6 +617,10 @@ func (builder *AgentClusterInstallBuilder) Create() (*AgentClusterInstallBuilder
 
 // Update modifies an existing agentclusterinstall on the cluster.
 func (builder *AgentClusterInstallBuilder) Update(force bool) (*AgentClusterInstallBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Updating agentclusterinstall %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -709,6 +665,10 @@ func (builder *AgentClusterInstallBuilder) Update(force bool) (*AgentClusterInst
 
 // Delete removes an agentclusterinstall from the cluster.
 func (builder *AgentClusterInstallBuilder) Delete() (*AgentClusterInstallBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Deleting the agentclusterinstall %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -729,6 +689,10 @@ func (builder *AgentClusterInstallBuilder) Delete() (*AgentClusterInstallBuilder
 
 // DeleteAndWait deletes an agentclusterinstall and waits until it is removed from the cluster.
 func (builder *AgentClusterInstallBuilder) DeleteAndWait(timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof(`Deleting agentclusterinstall %s in namespace %s and 
 	waiting for the defined period until it's removed`,
 		builder.Definition.Name, builder.Definition.Namespace)
@@ -751,6 +715,10 @@ func (builder *AgentClusterInstallBuilder) DeleteAndWait(timeout time.Duration) 
 
 // Exists checks if the defined agentclusterinstall has already been created.
 func (builder *AgentClusterInstallBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Checking if agentclusterinstall %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -789,6 +757,10 @@ func newagentClusterInstallCondition(
 // waitForConditions waits the specified timeout for conditions to be available on the agentclusterinstall.
 func (builder *AgentClusterInstallBuilder) waitForConditions(
 	timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	if !builder.Exists() {
 		return fmt.Errorf("cannot get conditions from undefined agentclusterinstall")
 	}
@@ -805,4 +777,28 @@ func (builder *AgentClusterInstallBuilder) waitForConditions(
 	})
 
 	return err
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *AgentClusterInstallBuilder) validate() (bool, error) {
+	if builder == nil {
+		glog.V(100).Infof("The builder is uninitialized")
+
+		return false, fmt.Errorf("error: received nil builder")
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The agentclusterinstall is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("AgentClusterInstall")
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The builder has error message: %s", builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }

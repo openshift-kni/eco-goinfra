@@ -35,6 +35,10 @@ type AgentAdditionalOptions func(builder *agentBuilder) (*agentBuilder, error)
 // newAgentBuilder creates a new instance of agentBuilder
 // Users cannot create agent resources themselves as they are generated from the operator.
 func newAgentBuilder(apiClient *clients.Settings, definition *agentInstallV1Beta1.Agent) *agentBuilder {
+	if definition == nil {
+		return nil
+	}
+
 	glog.V(100).Infof("Initializing new agent structure for the following agent %s",
 		definition.Name)
 
@@ -84,14 +88,12 @@ func PullAgent(apiClient *clients.Settings, name, nsname string) (*agentBuilder,
 
 // WithHostName sets the hostname of the agent resource.
 func (builder *agentBuilder) WithHostName(hostname string) *agentBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Setting agent %s in namespace %s hostname to %s",
 		builder.Definition.Name, builder.Definition.Namespace, hostname)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agent is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("Agent")
-	}
 
 	if !builder.Exists() {
 		glog.V(100).Infof("agent %s in namespace %s does not exist",
@@ -111,14 +113,12 @@ func (builder *agentBuilder) WithHostName(hostname string) *agentBuilder {
 
 // WithRole sets the role of the agent resource.
 func (builder *agentBuilder) WithRole(role string) *agentBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Setting agent %s in namespace %s to role %s",
 		builder.Definition.Name, builder.Definition.Namespace, role)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agent is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("Agent")
-	}
 
 	if !builder.Exists() {
 		glog.V(100).Infof("agent %s in namespace %s does not exist",
@@ -138,18 +138,12 @@ func (builder *agentBuilder) WithRole(role string) *agentBuilder {
 
 // WithInstallationDisk sets the installationDiskID of the agent.
 func (builder *agentBuilder) WithInstallationDisk(diskID string) *agentBuilder {
-	glog.V(100).Infof("Setting agent %s in namespace %s installation disk id to %s",
-		builder.Definition.Name, builder.Definition.Namespace, diskID)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agent is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("Agent")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting agent %s in namespace %s installation disk id to %s",
+		builder.Definition.Name, builder.Definition.Namespace, diskID)
 
 	builder.Definition.Spec.InstallationDiskID = diskID
 
@@ -158,18 +152,12 @@ func (builder *agentBuilder) WithInstallationDisk(diskID string) *agentBuilder {
 
 // WithIgnitionConfigOverride sets the ignitionConfigOverrides of the agent.
 func (builder *agentBuilder) WithIgnitionConfigOverride(override string) *agentBuilder {
-	glog.V(100).Infof("Setting agent %s in namespace %s ignitionConfigOverride to %s",
-		builder.Definition.Name, builder.Definition.Namespace, override)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agent is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("Agent")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting agent %s in namespace %s ignitionConfigOverride to %s",
+		builder.Definition.Name, builder.Definition.Namespace, override)
 
 	builder.Definition.Spec.IgnitionConfigOverrides = override
 
@@ -178,18 +166,12 @@ func (builder *agentBuilder) WithIgnitionConfigOverride(override string) *agentB
 
 // WithApproval sets the approved field of the agent.
 func (builder *agentBuilder) WithApproval(approved bool) *agentBuilder {
-	glog.V(100).Infof("Setting agent %s in namespace %s approval to %v",
-		builder.Definition.Name, builder.Definition.Namespace, approved)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agent is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("Agent")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting agent %s in namespace %s approval to %v",
+		builder.Definition.Name, builder.Definition.Namespace, approved)
 
 	builder.Definition.Spec.Approved = approved
 
@@ -198,18 +180,12 @@ func (builder *agentBuilder) WithApproval(approved bool) *agentBuilder {
 
 // WaitForState waits the specified timeout for the agent to report the specified state.
 func (builder *agentBuilder) WaitForState(state string, timeout time.Duration) (*agentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Waiting for agent %s in namespace %s to report state %s",
 		builder.Definition.Name, builder.Definition.Namespace, state)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agent is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("Agent")
-	}
-
-	if builder.errorMsg != "" {
-		return builder, nil
-	}
 
 	// Polls every retryInterval to determine if agent is in desired state.
 	var err error
@@ -232,18 +208,12 @@ func (builder *agentBuilder) WaitForState(state string, timeout time.Duration) (
 
 // WaitForStateInfo waits the specified timeout for the agent to report the specified stateInfo.
 func (builder *agentBuilder) WaitForStateInfo(stateInfo string, timeout time.Duration) (*agentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Waiting for agent %s in namespace %s to report stateInfo %s",
 		builder.Definition.Name, builder.Definition.Namespace, stateInfo)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agent is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("Agent")
-	}
-
-	if builder.errorMsg != "" {
-		return builder, nil
-	}
 
 	// Polls every retryInterval to determine if agent is in desired state.
 	var err error
@@ -266,17 +236,11 @@ func (builder *agentBuilder) WaitForStateInfo(stateInfo string, timeout time.Dur
 
 // WithOptions creates agent with generic mutation options.
 func (builder *agentBuilder) WithOptions(options ...AgentAdditionalOptions) *agentBuilder {
-	glog.V(100).Infof("Setting agent additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The agent is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("Agent")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting agent additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -297,6 +261,10 @@ func (builder *agentBuilder) WithOptions(options ...AgentAdditionalOptions) *age
 
 // Get fetches the defined agent from the cluster.
 func (builder *agentBuilder) Get() (*agentInstallV1Beta1.Agent, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof("Getting agent %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -317,6 +285,10 @@ func (builder *agentBuilder) Get() (*agentInstallV1Beta1.Agent, error) {
 // Update modifies the agent resource on the cluster
 // to match what is defined in the local definition of the builder.
 func (builder *agentBuilder) Update() (*agentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Updating agent %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -341,6 +313,10 @@ func (builder *agentBuilder) Update() (*agentBuilder, error) {
 
 // Exists checks if the defined agent has already been created.
 func (builder *agentBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Checking if agent %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -352,6 +328,10 @@ func (builder *agentBuilder) Exists() bool {
 
 // Delete removes an agent from the cluster.
 func (builder *agentBuilder) Delete() (*agentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Deleting the agent %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -368,4 +348,28 @@ func (builder *agentBuilder) Delete() (*agentBuilder, error) {
 	builder.Object = nil
 
 	return builder, nil
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *agentBuilder) validate() (bool, error) {
+	if builder == nil {
+		glog.V(100).Infof("The builder is uninitialized")
+
+		return false, fmt.Errorf("error: received nil builder")
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The agent is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("Agent")
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The builder has error message: %s", builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
