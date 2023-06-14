@@ -14,8 +14,8 @@ import "github.com/openshift-kni/eco-goinfra/pkg/NAME_OF_A_NEEDED_PACKAGE"
 ```
 
 ### Clients package:
-[clients](./pkg/clients) package contains several api clients combined in to the single struct.
-The New function of client package returns ready connection to cluster api.
+The [clients](./pkg/clients) package contains several api clients combined into a single struct.
+The New function of the clients package returns a ready connection to the cluster api.
 If the path to kubeconfig is not specified to the new function then the KUBECONFIG environment variable is used.
 In case of failure client.New("") returns nil.
 ```go
@@ -36,7 +36,7 @@ func main() {
 Every cluster object namespace, configmap, daemonset, deployment and other has its own package under [packages](./pkg) directory.
 The structure of any object has common interface:
 ```go
-func NewBuilder() or New[ObjectName]Builder() // Initiates object struct. This function require minimum set of parameters that allow to create object on a cluster.
+func NewBuilder() or New[ObjectName]Builder() // Initiates object struct. This function require minimum set of parameters that are required to create the object on a cluster.
 func Pull() or Pull[ObjectName]() // Pulls existing object to struct.
 func Create()  // Creates new object on cluster if it doesn't exist.
 func Delete() // Removes object from cluster if it exists.
