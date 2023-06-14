@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	v1 "github.com/openshift/api/config/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -49,6 +50,10 @@ func Pull(apiClient *clients.Settings) (*Builder, error) {
 
 // Exists checks whether the given clusterversion exists.
 func (builder *Builder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof(
 		"Checking if clusterversion %s exists",
 		builder.Definition.Name)
@@ -58,4 +63,22 @@ func (builder *Builder) Exists() bool {
 		context.Background(), builder.Definition.Name, metaV1.GetOptions{})
 
 	return err == nil || !k8serrors.IsNotFound(err)
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *Builder) validate() (bool, error) {
+	if builder == nil {
+		glog.V(100).Infof("The builder is uninitialized")
+
+		return false, fmt.Errorf("error: received nil builder")
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The clusterversion is undefined")
+
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString("ClusterVersion"))
+	}
+
+	return true, nil
 }
