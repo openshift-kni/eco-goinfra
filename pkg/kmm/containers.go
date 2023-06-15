@@ -47,13 +47,13 @@ func NewModLoaderContainerBuilder(modName string) *ModuleLoaderContainerBuilder 
 // WithModprobeSpec adds the specified Modprobe to the ModuleLoaderContainerBuilder.
 func (builder *ModuleLoaderContainerBuilder) WithModprobeSpec(
 	dirName, fwPath string, parameters, args, rawargs []string) *ModuleLoaderContainerBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating new ModuleLoaderContainerBuilder structure with following modprob params. "+
 			"DirName: %s, FirmwarePath: %s, Parameters: %v", dirName, fwPath, parameters)
-
-	if builder.errorMsg != "" {
-		return builder
-	}
 
 	builder.definition.Modprobe.DirName = dirName
 	builder.definition.Modprobe.FirmwarePath = fwPath
@@ -67,6 +67,10 @@ func (builder *ModuleLoaderContainerBuilder) WithModprobeSpec(
 // WithKernelMapping adds the specified KernelMapping to the ModuleLoaderContainerBuilder.
 func (builder *ModuleLoaderContainerBuilder) WithKernelMapping(
 	mapping *moduleV1Beta1.KernelMapping) *ModuleLoaderContainerBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating new ModuleLoaderContainerBuilder structure with following KernelMapping %v", mapping)
 
@@ -85,6 +89,10 @@ func (builder *ModuleLoaderContainerBuilder) WithKernelMapping(
 
 // WithImagePullPolicy adds the specified ImagePullPolicy to the ModuleLoaderContainerBuilder.
 func (builder *ModuleLoaderContainerBuilder) WithImagePullPolicy(policy string) *ModuleLoaderContainerBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating new ModuleLoaderContainerBuilder structure with following policy %v", policy)
 
@@ -102,17 +110,11 @@ func (builder *ModuleLoaderContainerBuilder) WithImagePullPolicy(policy string) 
 // WithOptions creates ModuleLoaderContainer with generic mutation options.
 func (builder *ModuleLoaderContainerBuilder) WithOptions(
 	options ...ModuleLoaderContainerAdditionalOptions) *ModuleLoaderContainerBuilder {
-	glog.V(100).Infof("Setting ModuleLoaderContainer additional options")
-
-	if builder.definition == nil {
-		glog.V(100).Infof("The ModuleLoaderContainer is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("ModuleLoaderContainer")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting ModuleLoaderContainer additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -134,14 +136,38 @@ func (builder *ModuleLoaderContainerBuilder) WithOptions(
 // BuildModuleLoaderContainerCfg returns ModuleLoaderContainerSpec struct.
 func (builder *ModuleLoaderContainerBuilder) BuildModuleLoaderContainerCfg() (
 	*moduleV1Beta1.ModuleLoaderContainerSpec, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof(
 		"Returning the ModuleLoaderContainerBuilder structure %v", builder.definition)
 
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf("error building ModuleLoaderContainerSpec config due to :%s", builder.errorMsg)
+	return builder.definition, nil
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *ModuleLoaderContainerBuilder) validate() (bool, error) {
+	if builder == nil {
+		glog.V(100).Infof("The builder is uninitialized")
+
+		return false, fmt.Errorf("error: received nil builder")
 	}
 
-	return builder.definition, nil
+	if builder.definition == nil {
+		glog.V(100).Infof("The moduleloadercontainer is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("ModuleLoaderContainer")
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The builder has error message: %s", builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
 
 // DevicePluginContainerBuilder provides struct for the module object containing the DevicePluginContainerSpec
@@ -175,6 +201,10 @@ func NewDevicePluginContainerBuilder(image string) *DevicePluginContainerBuilder
 
 // WithEnv adds specific env to DevicePlugin Container.
 func (builder *DevicePluginContainerBuilder) WithEnv(name, value string) *DevicePluginContainerBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating new DevPluginContainerBuilder structure with following Env. Name: %s, Value: %s", name, value)
 
@@ -201,6 +231,10 @@ func (builder *DevicePluginContainerBuilder) WithEnv(name, value string) *Device
 
 // WithVolumeMount adds VolumeMount to DevicePlugin Container.
 func (builder *DevicePluginContainerBuilder) WithVolumeMount(mountPath, name string) *DevicePluginContainerBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating new DevPluginContainerBuilder structure with mountPath Env. Name: %s, MountPath: %s",
 		name, mountPath)
@@ -230,9 +264,33 @@ func (builder *DevicePluginContainerBuilder) WithVolumeMount(mountPath, name str
 // GetDevicePluginContainerConfig returns DevicePluginContainerSpec with needed configuration.
 func (builder *DevicePluginContainerBuilder) GetDevicePluginContainerConfig() (
 	*moduleV1Beta1.DevicePluginContainerSpec, error) {
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf("error building DevicePluginContainerSpec config due to :%s", builder.errorMsg)
+	if valid, err := builder.validate(); !valid {
+		return nil, fmt.Errorf("error building DevicePluginContainerSpec config due to :%w", err)
 	}
 
 	return builder.definition, nil
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *DevicePluginContainerBuilder) validate() (bool, error) {
+	if builder == nil {
+		glog.V(100).Infof("The builder is uninitialized")
+
+		return false, fmt.Errorf("error: received nil builder")
+	}
+
+	if builder.definition == nil {
+		glog.V(100).Infof("The deviceplugincontainer is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("DevicePluginContainer")
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The builder has error message: %s", builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
