@@ -63,18 +63,22 @@ func NewLiteralKernelMappingBuilder(literal string) *KernelMappingBuilder {
 
 // BuildKernelMappingConfig returns kernel mapping config if error is not occur.
 func (builder *KernelMappingBuilder) BuildKernelMappingConfig() (*moduleV1Beta1.KernelMapping, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, fmt.Errorf("error building KernelMappingConfig config due to :%w", err)
+	}
+
 	glog.V(100).Infof(
 		"Returning the KernelMappingBuilder structure %v", builder.definition)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf("error building KernelMappingConfig config due to :%s", builder.errorMsg)
-	}
 
 	return builder.definition, nil
 }
 
 // WithContainerImage adds the specified Container Image config to the KernelMapper.
 func (builder *KernelMappingBuilder) WithContainerImage(image string) *KernelMappingBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating new Module KernelMapping parameter with container image: %s", image)
 
@@ -95,6 +99,10 @@ func (builder *KernelMappingBuilder) WithContainerImage(image string) *KernelMap
 
 // WithBuildArg adds the specified Build Args config to the KernelMapper.
 func (builder *KernelMappingBuilder) WithBuildArg(argName, argValue string) *KernelMappingBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating new Module KernelMapping parameter with buildingArgs name: %s, value: %s", argName, argValue)
 
@@ -124,6 +132,10 @@ func (builder *KernelMappingBuilder) WithBuildArg(argName, argValue string) *Ker
 
 // WithBuildSecret adds the specified Build Secret config to the KernelMapper.
 func (builder *KernelMappingBuilder) WithBuildSecret(secret string) *KernelMappingBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating new Module KernelMapping parameter with BuildSecret %s", secret)
 
@@ -147,13 +159,13 @@ func (builder *KernelMappingBuilder) WithBuildSecret(secret string) *KernelMappi
 
 // WithBuildImageRegistryTLS adds the specified ImageRegistryTLS config to the KernelMapper Build.
 func (builder *KernelMappingBuilder) WithBuildImageRegistryTLS(insecure, skipTLSVerify bool) *KernelMappingBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating new Module KernelMapping parameter with BuildImageRegistryTLS %t, value: %t",
 		insecure, skipTLSVerify)
-
-	if builder.errorMsg != "" {
-		return builder
-	}
 
 	builder.addBuild()
 	builder.definition.Build.BaseImageRegistryTLS.Insecure = insecure
@@ -164,6 +176,10 @@ func (builder *KernelMappingBuilder) WithBuildImageRegistryTLS(insecure, skipTLS
 
 // WithBuildDockerCfgFile adds the specified DockerCfgFil config to the KernelMapper Build.
 func (builder *KernelMappingBuilder) WithBuildDockerCfgFile(name string) *KernelMappingBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Creating new Module KernelMapping parameter with DockerCfgFile %s, ", name)
 
 	if name == "" {
@@ -184,6 +200,10 @@ func (builder *KernelMappingBuilder) WithBuildDockerCfgFile(name string) *Kernel
 
 // WithSign adds the specified Sign config to the KernelMapper.
 func (builder *KernelMappingBuilder) WithSign(certSecret, keySecret string, fileToSign []string) *KernelMappingBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating new Module KernelMapping parameter with Sign. CertSecret: %s, KeySecret: %s, fileToSign: %v",
 		certSecret, keySecret, fileToSign)
@@ -221,13 +241,13 @@ func (builder *KernelMappingBuilder) WithSign(certSecret, keySecret string, file
 
 // RegistryTLS adds the specified RegistryTLS to the KernelMapper.
 func (builder *KernelMappingBuilder) RegistryTLS(insecure, skipTLSVerify bool) *KernelMappingBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating new Module KernelMapping parameter with RegistryTLS. Insecure: %t, InsecureSkipTLSVerify: %t",
 		insecure, skipTLSVerify)
-
-	if builder.errorMsg != "" {
-		return builder
-	}
 
 	builder.definition.RegistryTLS.Insecure = insecure
 	builder.definition.RegistryTLS.InsecureSkipTLSVerify = skipTLSVerify
@@ -237,17 +257,11 @@ func (builder *KernelMappingBuilder) RegistryTLS(insecure, skipTLSVerify bool) *
 
 // WithOptions creates KernelMapping with generic mutation options.
 func (builder *KernelMappingBuilder) WithOptions(options ...KernelMappingAdditionalOptions) *KernelMappingBuilder {
-	glog.V(100).Infof("Setting KernelMapping additional options")
-
-	if builder.definition == nil {
-		glog.V(100).Infof("The KernelMapping is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("KernelMapping")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting KernelMapping additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -270,4 +284,28 @@ func (builder *KernelMappingBuilder) addBuild() {
 	if builder.definition.Build == nil {
 		builder.definition.Build = &moduleV1Beta1.Build{}
 	}
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *KernelMappingBuilder) validate() (bool, error) {
+	if builder == nil {
+		glog.V(100).Infof("The builder is uninitialized")
+
+		return false, fmt.Errorf("error: received nil builder")
+	}
+
+	if builder.definition == nil {
+		glog.V(100).Infof("The kernelmapping is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("KernelMapping")
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The builder has error message: %s", builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }

@@ -63,13 +63,13 @@ func NewModuleBuilder(
 
 // WithNodeSelector adds the specified NodeSelector to the Module.
 func (builder *ModuleBuilder) WithNodeSelector(nodeSelector map[string]string) *ModuleBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating Module %s in namespace %s with this nodeSelector: %s",
 		builder.Definition.Name, builder.Definition.Namespace, nodeSelector)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("Module")
-	}
 
 	if len(nodeSelector) == 0 {
 		glog.V(100).Infof("Can not redefine Module with empty nodeSelector map")
@@ -88,6 +88,10 @@ func (builder *ModuleBuilder) WithNodeSelector(nodeSelector map[string]string) *
 
 // WithLoadServiceAccount adds the specified Load ServiceAccount to the Module.
 func (builder *ModuleBuilder) WithLoadServiceAccount(srvAccountName string) *ModuleBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating Module %s in namespace %s with ModuleLoad ServiceAccount: %s",
 		builder.Definition.Name, builder.Definition.Namespace, srvAccountName)
@@ -97,6 +101,10 @@ func (builder *ModuleBuilder) WithLoadServiceAccount(srvAccountName string) *Mod
 
 // WithDevicePluginServiceAccount adds the specified Device Plugin ServiceAccount to the Module.
 func (builder *ModuleBuilder) WithDevicePluginServiceAccount(srvAccountName string) *ModuleBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating Module %s in namespace %s with DevicePlugin ServiceAccount: %s",
 		builder.Definition.Name, builder.Definition.Namespace, srvAccountName)
@@ -106,6 +114,10 @@ func (builder *ModuleBuilder) WithDevicePluginServiceAccount(srvAccountName stri
 
 // WithImageRepoSecret adds the specific ImageRepoSecret to the Module.
 func (builder *ModuleBuilder) WithImageRepoSecret(imageRepoSecret string) *ModuleBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	if imageRepoSecret == "" {
 		builder.errorMsg = "can not redefine module with empty imageRepoSecret"
 	}
@@ -121,6 +133,10 @@ func (builder *ModuleBuilder) WithImageRepoSecret(imageRepoSecret string) *Modul
 
 // WithDevicePluginVolume adds the specified DevicePlugin volume to the Module.
 func (builder *ModuleBuilder) WithDevicePluginVolume(name string, configMapName string) *ModuleBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	if name == "" {
 		builder.errorMsg = "cannot redefine with empty volume 'name'"
 	}
@@ -149,8 +165,8 @@ func (builder *ModuleBuilder) WithDevicePluginVolume(name string, configMapName 
 // WithModuleLoaderContainer adds the specified ModuleLoader container to the Module.
 func (builder *ModuleBuilder) WithModuleLoaderContainer(
 	container *moduleV1Beta1.ModuleLoaderContainerSpec) *ModuleBuilder {
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("Module")
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
 
 	if container == nil {
@@ -169,8 +185,8 @@ func (builder *ModuleBuilder) WithModuleLoaderContainer(
 // WithDevicePluginContainer adds the specified DevicePlugin container to the Module.
 func (builder *ModuleBuilder) WithDevicePluginContainer(
 	container *moduleV1Beta1.DevicePluginContainerSpec) *ModuleBuilder {
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("Module")
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
 
 	if container == nil {
@@ -188,17 +204,11 @@ func (builder *ModuleBuilder) WithDevicePluginContainer(
 
 // WithOptions creates Module with generic mutation options.
 func (builder *ModuleBuilder) WithOptions(options ...ModuleAdditionalOptions) *ModuleBuilder {
-	glog.V(100).Infof("Setting Module additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The Module is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("Module")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting Module additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -254,13 +264,13 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*ModuleBuilder, err
 
 // Create builds module in the cluster and stores object in struct.
 func (builder *ModuleBuilder) Create() (*ModuleBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating module %s in namespace %s",
 		builder.Definition.Name,
 		builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	if !builder.Exists() {
@@ -272,6 +282,10 @@ func (builder *ModuleBuilder) Create() (*ModuleBuilder, error) {
 
 // Exists checks whether the given module exists.
 func (builder *ModuleBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Checking if module %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -283,6 +297,10 @@ func (builder *ModuleBuilder) Exists() bool {
 
 // Delete removes the module.
 func (builder *ModuleBuilder) Delete() (*ModuleBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Deleting module %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -303,6 +321,10 @@ func (builder *ModuleBuilder) Delete() (*ModuleBuilder, error) {
 
 // Get fetches the defined module from the cluster.
 func (builder *ModuleBuilder) Get() (*moduleV1Beta1.Module, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof("Getting module %s from namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -321,8 +343,8 @@ func (builder *ModuleBuilder) Get() (*moduleV1Beta1.Module, error) {
 }
 
 func (builder *ModuleBuilder) withServiceAccount(srvAccountName string, accountType string) *ModuleBuilder {
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("Module")
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
 
 	if srvAccountName == "" {
@@ -343,4 +365,28 @@ func (builder *ModuleBuilder) withServiceAccount(srvAccountName string, accountT
 	}
 
 	return builder
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *ModuleBuilder) validate() (bool, error) {
+	if builder == nil {
+		glog.V(100).Infof("The builder is uninitialized")
+
+		return false, fmt.Errorf("error: received nil builder")
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The module is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("Module")
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The builder has error message: %s", builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
