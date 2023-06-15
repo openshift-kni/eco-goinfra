@@ -2,6 +2,7 @@ package kmm
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
@@ -149,20 +150,22 @@ func (builder *ModuleLoaderContainerBuilder) BuildModuleLoaderContainerCfg() (
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
 func (builder *ModuleLoaderContainerBuilder) validate() (bool, error) {
-	if builder == nil {
-		glog.V(100).Infof("The builder is uninitialized")
+	resourceCRD := "ModuleLoaderContainer"
 
-		return false, fmt.Errorf("error: received nil builder")
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
 	}
 
 	if builder.definition == nil {
-		glog.V(100).Infof("The moduleloadercontainer is undefined")
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("ModuleLoaderContainer")
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
 	}
 
 	if builder.errorMsg != "" {
-		glog.V(100).Infof("The builder has error message: %s", builder.errorMsg)
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
 
 		return false, fmt.Errorf(builder.errorMsg)
 	}
@@ -274,20 +277,22 @@ func (builder *DevicePluginContainerBuilder) GetDevicePluginContainerConfig() (
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
 func (builder *DevicePluginContainerBuilder) validate() (bool, error) {
-	if builder == nil {
-		glog.V(100).Infof("The builder is uninitialized")
+	resourceCRD := "DevicePluginContainer"
 
-		return false, fmt.Errorf("error: received nil builder")
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", strings.ToLower(resourceCRD))
+
+		return false, fmt.Errorf("error: received nil %s builder", strings.ToLower(resourceCRD))
 	}
 
 	if builder.definition == nil {
-		glog.V(100).Infof("The deviceplugincontainer is undefined")
+		glog.V(100).Infof("The %s is undefined", strings.ToLower(resourceCRD))
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("DevicePluginContainer")
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
 	}
 
 	if builder.errorMsg != "" {
-		glog.V(100).Infof("The builder has error message: %s", builder.errorMsg)
+		glog.V(100).Infof("The %s builder has error message: %s", strings.ToLower(resourceCRD), builder.errorMsg)
 
 		return false, fmt.Errorf(builder.errorMsg)
 	}

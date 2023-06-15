@@ -289,20 +289,22 @@ func (builder *KernelMappingBuilder) addBuild() {
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
 func (builder *KernelMappingBuilder) validate() (bool, error) {
-	if builder == nil {
-		glog.V(100).Infof("The builder is uninitialized")
+	resourceCRD := "KernelMapping"
 
-		return false, fmt.Errorf("error: received nil builder")
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
 	}
 
 	if builder.definition == nil {
-		glog.V(100).Infof("The kernelmapping is undefined")
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("KernelMapping")
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
 	}
 
 	if builder.errorMsg != "" {
-		glog.V(100).Infof("The builder has error message: %s", builder.errorMsg)
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
 
 		return false, fmt.Errorf(builder.errorMsg)
 	}

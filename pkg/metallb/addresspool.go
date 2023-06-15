@@ -305,29 +305,28 @@ func GetIPAddressPoolGVR() schema.GroupVersionResource {
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
 func (builder *IPAddressPoolBuilder) validate() (bool, error) {
-	resourceType := "ipaddresspool"
 	resourceCRD := "IPAddressPool"
 
 	if builder == nil {
-		glog.V(100).Infof("The %s builder is uninitialized", resourceType)
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
 
-		return false, fmt.Errorf("error: received nil %s builder", resourceType)
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
 	}
 
 	if builder.Definition == nil {
-		glog.V(100).Infof("The %s is undefined", resourceType)
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
 		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
 	}
 
 	if builder.apiClient == nil {
-		glog.V(100).Infof("The %s builder apiclient is nil", resourceType)
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceType)
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {
-		glog.V(100).Infof("The %s builder has error message: %s", resourceType, builder.errorMsg)
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
 
 		return false, fmt.Errorf(builder.errorMsg)
 	}
