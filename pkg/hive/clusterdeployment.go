@@ -105,15 +105,13 @@ func NewABMClusterDeploymentBuilder(
 // into the clusterdeployment label selector.
 func (builder *ClusterDeploymentBuilder) WithAdditionalAgentSelectorLabels(
 	agentSelector map[string]string) *ClusterDeploymentBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Adding agentSelectors %s to clusterdeployment %s in namespace %s",
 		agentSelector, builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The clusterdeployment is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("ClusterDeployment")
-	}
 
 	if builder.Definition.Spec.Platform.AgentBareMetal == nil {
 		glog.V(100).Infof("The clusterdeployment platform is not agentBareMetal")
@@ -144,19 +142,13 @@ func (builder *ClusterDeploymentBuilder) WithAdditionalAgentSelectorLabels(
 
 // WithPullSecret adds a pull-secret reference to the clusterdeployment.
 func (builder *ClusterDeploymentBuilder) WithPullSecret(psName string) *ClusterDeploymentBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Adding pull-secret ref %s to clusterdeployment %s in namespace %s",
 		psName, builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The clusterdeployment is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("ClusterDeployment")
-	}
-
-	if builder.errorMsg != "" {
-		return builder
-	}
 
 	builder.Definition.Spec.PullSecretRef = &coreV1.LocalObjectReference{Name: psName}
 
@@ -165,6 +157,10 @@ func (builder *ClusterDeploymentBuilder) WithPullSecret(psName string) *ClusterD
 
 // Get fetches the defined clusterdeployment from the cluster.
 func (builder *ClusterDeploymentBuilder) Get() (*hiveV1.ClusterDeployment, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof("Getting clusterdeployment %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -249,12 +245,12 @@ func PullClusterDeployment(apiClient *clients.Settings, name, nsname string) (*C
 
 // Create generates a clusterdeployment on the cluster.
 func (builder *ClusterDeploymentBuilder) Create() (*ClusterDeploymentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating the clusterdeployment %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	if !builder.Exists() {
@@ -270,17 +266,11 @@ func (builder *ClusterDeploymentBuilder) Create() (*ClusterDeploymentBuilder, er
 // WithOptions creates ClusterDeployment with generic mutation options.
 func (builder *ClusterDeploymentBuilder) WithOptions(
 	options ...ClusterDeploymentAdditionalOptions) *ClusterDeploymentBuilder {
-	glog.V(100).Infof("Setting ClusterDeployment additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The ClusterDeployment is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("ClusterDeployment")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting ClusterDeployment additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -301,12 +291,12 @@ func (builder *ClusterDeploymentBuilder) WithOptions(
 
 // Update modifies an existing clusterdeployment on the cluster.
 func (builder *ClusterDeploymentBuilder) Update(force bool) (*ClusterDeploymentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Updating clusterdeployment %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
 
@@ -339,6 +329,10 @@ func (builder *ClusterDeploymentBuilder) Update(force bool) (*ClusterDeploymentB
 
 // Delete removes a clusterdeployment from the cluster.
 func (builder *ClusterDeploymentBuilder) Delete() (*ClusterDeploymentBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Deleting the clusterdeployment %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -359,6 +353,10 @@ func (builder *ClusterDeploymentBuilder) Delete() (*ClusterDeploymentBuilder, er
 
 // Exists checks if the defined clusterdeployment has already been created.
 func (builder *ClusterDeploymentBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Checking if clusterdeployment %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -366,4 +364,28 @@ func (builder *ClusterDeploymentBuilder) Exists() bool {
 	builder.Object, err = builder.Get()
 
 	return err == nil || !k8serrors.IsNotFound(err)
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *ClusterDeploymentBuilder) validate() (bool, error) {
+	if builder == nil {
+		glog.V(100).Infof("The builder is uninitialized")
+
+		return false, fmt.Errorf("error: received nil builder")
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The clusterdeployment is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("ClusterDeployment")
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The builder has error message: %s", builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }

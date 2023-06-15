@@ -66,11 +66,12 @@ func NewClusterImageSetBuilder(apiClient *clients.Settings, name, releaseImage s
 
 // WithReleaseImage sets the releaseImage for the clusterimageset.
 func (builder *ClusterImageSetBuilder) WithReleaseImage(image string) *ClusterImageSetBuilder {
-	if builder.Definition == nil {
-		glog.V(100).Infof("The clusterimageset is undefined")
-
-		builder.errorMsg = "cannot add releaseImage to undefined clusterimageset"
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
+
+	glog.V(100).Infof("Setting clusterimageset %s releaseImage to %s",
+		builder.Definition.Name, image)
 
 	if image == "" {
 		glog.V(100).Infof("The clusterimageset releaseImage is empty")
@@ -82,9 +83,6 @@ func (builder *ClusterImageSetBuilder) WithReleaseImage(image string) *ClusterIm
 		return builder
 	}
 
-	glog.V(100).Infof("Setting clusterimageset %s releaseImage to %s",
-		builder.Definition.Name, image)
-
 	builder.Definition.Spec.ReleaseImage = image
 
 	return builder
@@ -93,17 +91,11 @@ func (builder *ClusterImageSetBuilder) WithReleaseImage(image string) *ClusterIm
 // WithOptions creates ClusterDeployment with generic mutation options.
 func (builder *ClusterImageSetBuilder) WithOptions(
 	options ...ClusterImageSetAdditionalOptions) *ClusterImageSetBuilder {
-	glog.V(100).Infof("Setting ClusterImageSet additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The ClusterImageSet is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("ClusterImageSet")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting ClusterImageSet additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -150,6 +142,10 @@ func PullClusterImageSet(apiClient *clients.Settings, name string) (*ClusterImag
 
 // Get fetches the defined clusterimageset from the cluster.
 func (builder *ClusterImageSetBuilder) Get() (*hiveV1.ClusterImageSet, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof("Getting clusterimageset %s", builder.Definition.Name)
 
 	clusterimageset := &hiveV1.ClusterImageSet{}
@@ -166,11 +162,11 @@ func (builder *ClusterImageSetBuilder) Get() (*hiveV1.ClusterImageSet, error) {
 
 // Create generates a clusterimageset on the cluster.
 func (builder *ClusterImageSetBuilder) Create() (*ClusterImageSetBuilder, error) {
-	glog.V(100).Infof("Creating the clusterimageset %s", builder.Definition.Name)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
+	if valid, err := builder.validate(); !valid {
+		return builder, err
 	}
+
+	glog.V(100).Infof("Creating the clusterimageset %s", builder.Definition.Name)
 
 	var err error
 	if !builder.Exists() {
@@ -185,11 +181,11 @@ func (builder *ClusterImageSetBuilder) Create() (*ClusterImageSetBuilder, error)
 
 // Update modifies an existing clusterimageset on the cluster.
 func (builder *ClusterImageSetBuilder) Update(force bool) (*ClusterImageSetBuilder, error) {
-	glog.V(100).Infof("Updating clusterimageset %s", builder.Definition.Name)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
+	if valid, err := builder.validate(); !valid {
+		return builder, err
 	}
+
+	glog.V(100).Infof("Updating clusterimageset %s", builder.Definition.Name)
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
 
@@ -221,6 +217,10 @@ func (builder *ClusterImageSetBuilder) Update(force bool) (*ClusterImageSetBuild
 
 // Delete removes a clusterimageset from the cluster.
 func (builder *ClusterImageSetBuilder) Delete() (*ClusterImageSetBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Deleting the clusterimageset %s", builder.Definition.Name)
 
 	if !builder.Exists() {
@@ -240,10 +240,38 @@ func (builder *ClusterImageSetBuilder) Delete() (*ClusterImageSetBuilder, error)
 
 // Exists checks if the defined clusterimageset has already been created.
 func (builder *ClusterImageSetBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Checking if clusterimageset %s exists", builder.Definition.Name)
 
 	var err error
 	builder.Object, err = builder.Get()
 
 	return err == nil || !k8serrors.IsNotFound(err)
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *ClusterImageSetBuilder) validate() (bool, error) {
+	if builder == nil {
+		glog.V(100).Infof("The builder is uninitialized")
+
+		return false, fmt.Errorf("error: received nil builder")
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The clusterimageset is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("ClusterImageSet")
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The builder has error message: %s", builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
