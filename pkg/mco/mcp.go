@@ -91,12 +91,12 @@ func Pull(apiClient *clients.Settings, name string) (*MCPBuilder, error) {
 
 // Create makes a MachineConfigPool in cluster and stores the created object in struct.
 func (builder *MCPBuilder) Create() (*MCPBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating the MachineConfigPool %s",
 		builder.Definition.Name)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	if !builder.Exists() {
@@ -109,6 +109,10 @@ func (builder *MCPBuilder) Create() (*MCPBuilder, error) {
 
 // Delete removes a MachineConfigPool object from a cluster.
 func (builder *MCPBuilder) Delete() error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Deleting the MachineConfigPool object %s",
 		builder.Definition.Name)
 
@@ -128,6 +132,10 @@ func (builder *MCPBuilder) Delete() error {
 
 // Exists checks whether the given MachineConfigPool exists.
 func (builder *MCPBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Checking if the MachineConfigPool object %s exists",
 		builder.Definition.Name)
 
@@ -140,16 +148,15 @@ func (builder *MCPBuilder) Exists() bool {
 
 // WithMcSelector defines the machineConfigSelector in the machine config pool.
 func (builder *MCPBuilder) WithMcSelector(mcSelector map[string]string) *MCPBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("WithMcSelector updates builder object with "+
 		"machineConfigSelector label: %v", mcSelector)
 
 	if len(mcSelector) == 0 {
 		builder.errorMsg = "'machineConfigSelector MatchLabels' field cannot be empty"
-	}
-
-	// Make sure NewMCPBuilder was already called to set builder.Definition.
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(machineConfigPool)
 	}
 
 	if builder.errorMsg != "" {
@@ -168,6 +175,10 @@ func (builder *MCPBuilder) WaitToBeInCondition(
 	conditionStatus corev1.ConditionStatus,
 	timeout time.Duration,
 ) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("WaitToBeInCondition waits up to specified time duration %v until "+
 		"MachineConfigPool condition %v is met", timeout, conditionType)
 
@@ -191,6 +202,10 @@ func (builder *MCPBuilder) WaitToBeInCondition(
 
 // WaitForUpdate waits for a MachineConfigPool to be updating and then updated.
 func (builder *MCPBuilder) WaitForUpdate(timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("WaitForUpdate waits up to specified time %v until updating"+
 		" machineConfigPool object is updated", timeout)
 
@@ -231,6 +246,10 @@ func (builder *MCPBuilder) WaitForUpdate(timeout time.Duration) error {
 
 // WaitToBeStableFor waits on MachineConfigPool to stable for a time duration or until timeout.
 func (builder *MCPBuilder) WaitToBeStableFor(stableDuration time.Duration, timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("WaitToBeStableFor waits up to duration of %v for "+
 		"MachineConfigPool to be stable for %v", timeout, stableDuration)
 
@@ -294,17 +313,11 @@ func (builder *MCPBuilder) WaitToBeStableFor(stableDuration time.Duration, timeo
 
 // WithOptions creates mcp with generic mutation options.
 func (builder *MCPBuilder) WithOptions(options ...MCPAdditionalOptions) *MCPBuilder {
-	glog.V(100).Infof("Setting mcp additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The mcp is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("mcp")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting mcp additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -326,6 +339,10 @@ func (builder *MCPBuilder) WithOptions(options ...MCPAdditionalOptions) *MCPBuil
 // IsInCondition parses MachineConfigPool conditions.
 // Returns true if given MachineConfigPool is in given condition, otherwise false.
 func (builder *MCPBuilder) IsInCondition(mcpConditionType mcov1.MachineConfigPoolConditionType) bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("IsInCondition returns true"+
 		" if MachineConfigPool object is in a given condition %v, otherwise false", mcpConditionType)
 
@@ -338,4 +355,28 @@ func (builder *MCPBuilder) IsInCondition(mcpConditionType mcov1.MachineConfigPoo
 	}
 
 	return false
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *MCPBuilder) validate() (bool, error) {
+	if builder == nil {
+		glog.V(100).Infof("The builder is uninitialized")
+
+		return false, fmt.Errorf("error: received nil builder")
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The machineconfigpool is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("MachineConfigPool")
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The builder has error message: %s", builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
