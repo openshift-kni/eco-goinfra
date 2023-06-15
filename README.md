@@ -12,6 +12,15 @@ In order to re-use code from this project you need to import relevant package/pa
 ```go
 import "github.com/openshift-kni/eco-goinfra/pkg/NAME_OF_A_NEEDED_PACKAGE"
 ```
+In addition, you need to add link to the project github.com/openshift-kni/eco-goinfra to your local go.mod file
+
+```go
+require(
+    github.com/openshift-kni/eco-goinfra latest
+)
+```
+
+
 
 ### Clients package:
 The [clients](./pkg/clients) package contains several api clients combined into a single struct.
