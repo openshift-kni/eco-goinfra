@@ -58,23 +58,16 @@ func NewBuilder(apiClient *clients.Settings, name string) *Builder {
 
 // WithLabel redefines namespace definition with the given label.
 func (builder *Builder) WithLabel(key string, value string) *Builder {
-	glog.V(100).Infof("Labeling the namespace %s with %s=%s", builder.Definition.Name, key, value)
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Labeling the namespace %s with %s=%s", builder.Definition.Name, key, value)
 
 	if key == "" {
 		glog.V(100).Infof("The key can't be empty")
 
 		builder.errorMsg = "'key' cannot be empty"
-
-		return builder
-	}
-
-	// Make sure NewBuilder was already called to set builder.Definition.
-	if builder.Definition == nil {
-		builder.errorMsg = "can not redefine undefined namespace"
 
 		return builder
 	}
@@ -99,17 +92,11 @@ func (builder *Builder) WithMultipleLabels(labels map[string]string) *Builder {
 
 // WithOptions creates namespace with generic mutation options.
 func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
-	glog.V(100).Infof("Setting namespace additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The namespace is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("namespace")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting namespace additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -130,11 +117,11 @@ func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
 
 // Create makes a namespace in the cluster and stores the created object in struct.
 func (builder *Builder) Create() (*Builder, error) {
-	glog.V(100).Infof("Creating namespace %s", builder.Definition.Name)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
+	if valid, err := builder.validate(); !valid {
+		return builder, err
 	}
+
+	glog.V(100).Infof("Creating namespace %s", builder.Definition.Name)
 
 	var err error
 	if !builder.Exists() {
@@ -147,11 +134,11 @@ func (builder *Builder) Create() (*Builder, error) {
 
 // Update renovates the existing namespace object with the namespace definition in builder.
 func (builder *Builder) Update() (*Builder, error) {
-	glog.V(100).Infof("Updating the namespace %s with the namespace definition in the builder", builder.Definition.Name)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
+	if valid, err := builder.validate(); !valid {
+		return builder, err
 	}
+
+	glog.V(100).Infof("Updating the namespace %s with the namespace definition in the builder", builder.Definition.Name)
 
 	var err error
 	builder.Object, err = builder.apiClient.Namespaces().Update(
@@ -162,6 +149,10 @@ func (builder *Builder) Update() (*Builder, error) {
 
 // Delete removes a namespace.
 func (builder *Builder) Delete() error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Deleting namespace %s", builder.Definition.Name)
 
 	if !builder.Exists() {
@@ -181,6 +172,10 @@ func (builder *Builder) Delete() error {
 
 // DeleteAndWait deletes a namespace and waits until it's removed from the cluster.
 func (builder *Builder) DeleteAndWait(timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Deleting namespace %s and waiting for the removal to complete", builder.Definition.Name)
 
 	if err := builder.Delete(); err != nil {
@@ -200,6 +195,10 @@ func (builder *Builder) DeleteAndWait(timeout time.Duration) error {
 
 // Exists checks whether the given namespace exists.
 func (builder *Builder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Checking if namespace %s exists", builder.Definition.Name)
 
 	var err error
@@ -237,6 +236,10 @@ func Pull(apiClient *clients.Settings, nsname string) (*Builder, error) {
 
 // CleanObjects removes given objects from the namespace.
 func (builder *Builder) CleanObjects(cleanTimeout time.Duration, objects ...schema.GroupVersionResource) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Clean namespace: %s", builder.Definition.Name)
 
 	if len(objects) == 0 {
@@ -295,6 +298,10 @@ func (builder *Builder) CleanObjects(cleanTimeout time.Duration, objects ...sche
 
 // hasOnlyDefaultConfigMaps returns true if only default configMaps are present in a namespace.
 func (builder *Builder) hasOnlyDefaultConfigMaps(objList *unstructured.UnstructuredList, err error) (bool, error) {
+	if valid, err := builder.validate(); !valid {
+		return false, err
+	}
+
 	if err != nil {
 		return false, err
 	}
@@ -312,6 +319,38 @@ func (builder *Builder) hasOnlyDefaultConfigMaps(objList *unstructured.Unstructu
 	if !(slices.Contains(existingConfigMaps, "kube-root-ca.crt") &&
 		slices.Contains(existingConfigMaps, "openshift-service-ca.crt")) {
 		return false, err
+	}
+
+	return true, nil
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *Builder) validate() (bool, error) {
+	resourceCRD := "NameSpace"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
 	}
 
 	return true, nil
