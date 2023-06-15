@@ -61,6 +61,10 @@ func NewBFDBuilder(apiClient *clients.Settings, name, nsname string) *BFDBuilder
 
 // Get returns BFDProfile object if found.
 func (builder *BFDBuilder) Get() (*metalLbV1Beta1.BFDProfile, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof(
 		"Collecting BFDProfile object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
@@ -84,6 +88,10 @@ func (builder *BFDBuilder) Get() (*metalLbV1Beta1.BFDProfile, error) {
 
 // Exists checks whether the given BFDProfile exists.
 func (builder *BFDBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof(
 		"Checking if BFDProfile %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
@@ -131,13 +139,13 @@ func PullBFDProfile(apiClient *clients.Settings, name, nsname string) (*BFDBuild
 
 // Create makes a BFDProfile in the cluster and stores the created object in struct.
 func (builder *BFDBuilder) Create() (*BFDBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating the BFDProfile %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	if !builder.Exists() {
@@ -152,6 +160,10 @@ func (builder *BFDBuilder) Create() (*BFDBuilder, error) {
 
 // Delete removes BFDProfile object from a cluster.
 func (builder *BFDBuilder) Delete() (*BFDBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Deleting the BFDProfile object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
@@ -173,13 +185,13 @@ func (builder *BFDBuilder) Delete() (*BFDBuilder, error) {
 
 // Update renovates the existing BFDProfile object with the BFDProfile definition in builder.
 func (builder *BFDBuilder) Update(force bool) (*BFDBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Updating the BFDProfile object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
 
@@ -227,17 +239,13 @@ func (builder *BFDBuilder) WithEchoInterval(ecoInterval uint32) *BFDBuilder {
 
 // WithMultiplier defines the detectMultiplier placed in the BFDProfile.
 func (builder *BFDBuilder) WithMultiplier(multiplier uint32) *BFDBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BFDProfile %s in namespace %s with this detectMultiplier: %d",
 		builder.Definition.Name, builder.Definition.Namespace, multiplier)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BFDProfile")
-	}
-
-	if builder.errorMsg != "" {
-		return builder
-	}
 
 	builder.Definition.Spec.DetectMultiplier = &multiplier
 
@@ -256,17 +264,13 @@ func (builder *BFDBuilder) WithPassiveMode(passiveMode bool) *BFDBuilder {
 
 // WithMinimumTTL defines the minimumTTTL placed in the BFDProfile.
 func (builder *BFDBuilder) WithMinimumTTL(minimumTTL uint32) *BFDBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BFDProfile %s in namespace %s with this minimumTTL: %d",
 		builder.Definition.Name, builder.Definition.Namespace, minimumTTL)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BFDProfile")
-	}
-
-	if builder.errorMsg != "" {
-		return builder
-	}
 
 	builder.Definition.Spec.MinimumTTL = &minimumTTL
 
@@ -275,17 +279,11 @@ func (builder *BFDBuilder) WithMinimumTTL(minimumTTL uint32) *BFDBuilder {
 
 // WithOptions creates BFDProfile with generic mutation options.
 func (builder *BFDBuilder) WithOptions(options ...BFDAdditionalOptions) *BFDBuilder {
-	glog.V(100).Infof("Setting BFDProfile additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The BFDProfile is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BFDProfile")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting BFDProfile additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -305,17 +303,13 @@ func (builder *BFDBuilder) WithOptions(options ...BFDAdditionalOptions) *BFDBuil
 }
 
 func (builder *BFDBuilder) withBoolFlagFor(flagName string, flagValue bool) *BFDBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BFDProfile %s in namespace %s with flag %s: %t",
 		builder.Definition.Name, builder.Definition.Namespace, flagName, flagValue)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BFDProfile")
-	}
-
-	if builder.errorMsg != "" {
-		return builder
-	}
 
 	switch flagName {
 	case "echoMode":
@@ -330,17 +324,13 @@ func (builder *BFDBuilder) withBoolFlagFor(flagName string, flagValue bool) *BFD
 }
 
 func (builder *BFDBuilder) withInterval(intervalName string, interval uint32) *BFDBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BFDProfile %s in namespace %s with interval %s: %d",
 		builder.Definition.Name, builder.Definition.Namespace, intervalName, interval)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BFDProfile")
-	}
-
-	if builder.errorMsg != "" {
-		return builder
-	}
 
 	switch intervalName {
 	case "transmitInterval":
@@ -361,4 +351,37 @@ func GetBFDProfileGVR() schema.GroupVersionResource {
 	return schema.GroupVersionResource{
 		Group: "metallb.io", Version: "v1beta1", Resource: "bfdprofiles",
 	}
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *BFDBuilder) validate() (bool, error) {
+	resourceType := "bfdprofile"
+	resourceCRD := "BFDProfile"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceType)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceType)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceType)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceType)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceType)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceType, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }

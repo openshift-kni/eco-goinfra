@@ -59,6 +59,10 @@ func NewBGPAdvertisementBuilder(apiClient *clients.Settings, name, nsname string
 
 // Exists checks whether the given BGPAdvertisement exists.
 func (builder *BGPAdvertisementBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof(
 		"Checking if BGPAdvertisement %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
@@ -71,6 +75,10 @@ func (builder *BGPAdvertisementBuilder) Exists() bool {
 
 // Get returns BGPAdvertisement object if found.
 func (builder *BGPAdvertisementBuilder) Get() (*metalLbV1Beta.BGPAdvertisement, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof(
 		"Collecting BGPAdvertisement object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
@@ -129,13 +137,13 @@ func PullBGPAdvertisement(apiClient *clients.Settings, name, nsname string) (*BG
 
 // Create makes a BGPAdvertisement in the cluster and stores the created object in struct.
 func (builder *BGPAdvertisementBuilder) Create() (*BGPAdvertisementBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating the BGPAdvertisement %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	if !builder.Exists() {
@@ -150,6 +158,10 @@ func (builder *BGPAdvertisementBuilder) Create() (*BGPAdvertisementBuilder, erro
 
 // Delete removes BGPAdvertisement object from a cluster.
 func (builder *BGPAdvertisementBuilder) Delete() (*BGPAdvertisementBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Deleting the BGPAdvertisement object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
@@ -171,13 +183,13 @@ func (builder *BGPAdvertisementBuilder) Delete() (*BGPAdvertisementBuilder, erro
 
 // Update renovates the existing BGPAdvertisement object with the BGPAdvertisement definition in builder.
 func (builder *BGPAdvertisementBuilder) Update(force bool) (*BGPAdvertisementBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Updating the BGPAdvertisement object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	if !builder.Exists() {
 		glog.V(100).Infof(
@@ -221,13 +233,13 @@ func (builder *BGPAdvertisementBuilder) Update(force bool) (*BGPAdvertisementBui
 
 // WithAggregationLength4 adds the specified AggregationLength to the BGPAdvertisement.
 func (builder *BGPAdvertisementBuilder) WithAggregationLength4(aggregationLength int32) *BGPAdvertisementBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BGPAdvertisement %s in namespace %s with aggregationLength: %d",
 		builder.Definition.Name, builder.Definition.Namespace, aggregationLength)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPAdvertisement")
-	}
 
 	if aggregationLength < 0 || aggregationLength > 32 {
 		builder.errorMsg = fmt.Sprintf("AggregationLength %d is invalid, the value shoud be in range 0...32",
@@ -245,13 +257,13 @@ func (builder *BGPAdvertisementBuilder) WithAggregationLength4(aggregationLength
 
 // WithAggregationLength6 adds the specified AggregationLengthV6 to the BGPAdvertisement.
 func (builder *BGPAdvertisementBuilder) WithAggregationLength6(aggregationLength int32) *BGPAdvertisementBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BGPAdvertisement %s in namespace %s with aggregationLength6: %d",
 		builder.Definition.Name, builder.Definition.Namespace, aggregationLength)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPAdvertisement")
-	}
 
 	if !(aggregationLength < 0 || aggregationLength > 128) {
 		builder.errorMsg = fmt.Sprintf("AggregationLength %d is invalid, the value shoud be in range 0...128",
@@ -269,17 +281,13 @@ func (builder *BGPAdvertisementBuilder) WithAggregationLength6(aggregationLength
 
 // WithLocalPref adds the specified LocalPref to the BGPAdvertisement.
 func (builder *BGPAdvertisementBuilder) WithLocalPref(localPreference uint32) *BGPAdvertisementBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BGPAdvertisement %s in namespace %s with LocalPref: %d",
 		builder.Definition.Name, builder.Definition.Namespace, localPreference)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPAdvertisement")
-	}
-
-	if builder.errorMsg != "" {
-		return builder
-	}
 
 	builder.Definition.Spec.LocalPref = localPreference
 
@@ -288,13 +296,13 @@ func (builder *BGPAdvertisementBuilder) WithLocalPref(localPreference uint32) *B
 
 // WithCommunities adds the specified Communities to the BGPAdvertisement.
 func (builder *BGPAdvertisementBuilder) WithCommunities(communities []string) *BGPAdvertisementBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BGPAdvertisement %s in namespace %s with Communities: %s",
 		builder.Definition.Name, builder.Definition.Namespace, communities)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPAdvertisement")
-	}
 
 	if len(communities) < 1 {
 		builder.errorMsg = "error: community setting is empty list, the list should contain at least one element"
@@ -311,13 +319,13 @@ func (builder *BGPAdvertisementBuilder) WithCommunities(communities []string) *B
 
 // WithIPAddressPools adds the specified IPAddressPools to the BGPAdvertisement.
 func (builder *BGPAdvertisementBuilder) WithIPAddressPools(ipAddressPools []string) *BGPAdvertisementBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BGPAdvertisement %s in namespace %s with IPAddressPools: %s",
 		builder.Definition.Name, builder.Definition.Namespace, ipAddressPools)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPAdvertisement")
-	}
 
 	if len(ipAddressPools) < 1 {
 		builder.errorMsg = "error: IPAddressPools setting is empty list, the list should contain at least one element"
@@ -335,13 +343,13 @@ func (builder *BGPAdvertisementBuilder) WithIPAddressPools(ipAddressPools []stri
 // WithIPAddressPoolsSelectors adds the specified IPAddressPoolSelectors to the BGPAdvertisement.
 func (builder *BGPAdvertisementBuilder) WithIPAddressPoolsSelectors(
 	poolSelector []metaV1.LabelSelector) *BGPAdvertisementBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BGPAdvertisement %s in namespace %s with IPAddressPoolSelectors: %s",
 		builder.Definition.Name, builder.Definition.Namespace, poolSelector)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPAdvertisement")
-	}
 
 	if len(poolSelector) < 1 {
 		builder.errorMsg = "error: IPAddressPoolSelectors setting is empty list, " +
@@ -360,13 +368,13 @@ func (builder *BGPAdvertisementBuilder) WithIPAddressPoolsSelectors(
 // WithNodeSelector adds the specified NodeSelectors to the BGPAdvertisement.
 func (builder *BGPAdvertisementBuilder) WithNodeSelector(
 	nodeSelectors []metaV1.LabelSelector) *BGPAdvertisementBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BGPAdvertisement %s in namespace %s with WithIPAddressPools: %v",
 		builder.Definition.Name, builder.Definition.Namespace, nodeSelectors)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPAdvertisement")
-	}
 
 	if len(nodeSelectors) < 1 {
 		builder.errorMsg = "error: nodeSelectors setting is empty list, the list should contain at least one element"
@@ -383,13 +391,13 @@ func (builder *BGPAdvertisementBuilder) WithNodeSelector(
 
 // WithPeers adds the specified Peers to the BGPAdvertisement.
 func (builder *BGPAdvertisementBuilder) WithPeers(peers []string) *BGPAdvertisementBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BGPAdvertisement %s in namespace %s with Peers: %v",
 		builder.Definition.Name, builder.Definition.Namespace, peers)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPAdvertisement")
-	}
 
 	if len(peers) < 1 {
 		builder.errorMsg = "error: peers setting is empty list, the list should contain at least one element"
@@ -407,17 +415,11 @@ func (builder *BGPAdvertisementBuilder) WithPeers(peers []string) *BGPAdvertisem
 // WithOptions creates BGPAdvertisement with generic mutation options.
 func (builder *BGPAdvertisementBuilder) WithOptions(
 	options ...BGPAdvertisementAdditionalOptions) *BGPAdvertisementBuilder {
-	glog.V(100).Infof("Setting BGPAdvertisement additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The BGPAdvertisement is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPAdvertisement")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting BGPAdvertisement additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -441,4 +443,35 @@ func GetBGPAdvertisementGVR() schema.GroupVersionResource {
 	return schema.GroupVersionResource{
 		Group: "metallb.io", Version: "v1beta1", Resource: "bgpadvertisements",
 	}
+}
+
+func (builder *BGPAdvertisementBuilder) validate() (bool, error) {
+	resourceType := "bgpadvertisement"
+	resourceCRD := "BGPAdvertisement"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceType)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceType)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceType)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceType)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceType)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceType, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }

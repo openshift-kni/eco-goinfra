@@ -69,6 +69,10 @@ func NewIPAddressPoolBuilder(
 
 // Get returns IPAddressPool object if found.
 func (builder *IPAddressPoolBuilder) Get() (*metalLbV1Beta1.IPAddressPool, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof(
 		"Collecting IPAddressPool object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
@@ -92,6 +96,10 @@ func (builder *IPAddressPoolBuilder) Get() (*metalLbV1Beta1.IPAddressPool, error
 
 // Exists checks whether the given IPAddressPool exists.
 func (builder *IPAddressPoolBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof(
 		"Checking if IPAddressPool %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
@@ -139,13 +147,13 @@ func PullAddressPool(apiClient *clients.Settings, name, nsname string) (*IPAddre
 
 // Create makes a IPAddressPool in the cluster and stores the created object in struct.
 func (builder *IPAddressPoolBuilder) Create() (*IPAddressPoolBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating the IPAddressPool %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	if !builder.Exists() {
@@ -160,6 +168,10 @@ func (builder *IPAddressPoolBuilder) Create() (*IPAddressPoolBuilder, error) {
 
 // Delete removes IPAddressPool object from a cluster.
 func (builder *IPAddressPoolBuilder) Delete() (*IPAddressPoolBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Deleting the IPAddressPool object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
@@ -181,13 +193,13 @@ func (builder *IPAddressPoolBuilder) Delete() (*IPAddressPoolBuilder, error) {
 
 // Update renovates the existing IPAddressPool object with the IPAddressPool definition in builder.
 func (builder *IPAddressPoolBuilder) Update(force bool) (*IPAddressPoolBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Updating the IPAddressPool object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
 
@@ -220,17 +232,13 @@ func (builder *IPAddressPoolBuilder) Update(force bool) (*IPAddressPoolBuilder, 
 
 // WithAutoAssign defines the AutoAssign bool flag placed in the IPAddressPool spec.
 func (builder *IPAddressPoolBuilder) WithAutoAssign(auto bool) *IPAddressPoolBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating IPAddressPool %s in namespace %s with this autoAssign flag: %t",
 		builder.Definition.Name, builder.Definition.Namespace, auto)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("IPAddressPool")
-	}
-
-	if builder.errorMsg != "" {
-		return builder
-	}
 
 	builder.Definition.Spec.AutoAssign = &auto
 
@@ -239,17 +247,13 @@ func (builder *IPAddressPoolBuilder) WithAutoAssign(auto bool) *IPAddressPoolBui
 
 // WithAvoidBuggyIPs defines the AvoidBuggyIPs bool flag placed in the IPAddressPool spec.
 func (builder *IPAddressPoolBuilder) WithAvoidBuggyIPs(avoid bool) *IPAddressPoolBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating IPAddressPool %s in namespace %s with this avoidBuggyIPs flag: %t",
 		builder.Definition.Name, builder.Definition.Namespace, avoid)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("IPAddressPool")
-	}
-
-	if builder.errorMsg != "" {
-		return builder
-	}
 
 	builder.Definition.Spec.AvoidBuggyIPs = avoid
 
@@ -258,6 +262,10 @@ func (builder *IPAddressPoolBuilder) WithAvoidBuggyIPs(avoid bool) *IPAddressPoo
 
 // WithOptions creates IPAddressPool with generic mutation options.
 func (builder *IPAddressPoolBuilder) WithOptions(options ...IPAddressPoolAdditionalOptions) *IPAddressPoolBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Setting IPAddressPool additional options")
 
 	if builder.Definition == nil {
@@ -292,4 +300,37 @@ func GetIPAddressPoolGVR() schema.GroupVersionResource {
 	return schema.GroupVersionResource{
 		Group: "metallb.io", Version: "v1beta1", Resource: "ipaddresspools",
 	}
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *IPAddressPoolBuilder) validate() (bool, error) {
+	resourceType := "ipaddresspool"
+	resourceCRD := "IPAddressPool"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceType)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceType)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceType)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceType)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceType)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceType, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }

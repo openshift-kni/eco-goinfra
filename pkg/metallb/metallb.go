@@ -98,6 +98,10 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 
 // Exists checks whether the given MetalLb exists.
 func (builder *Builder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof(
 		"Checking if MetalLb %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
@@ -114,6 +118,10 @@ func (builder *Builder) Exists() bool {
 
 // Get returns MetalLb object if found.
 func (builder *Builder) Get() (*v1beta1.MetalLB, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof(
 		"Collecting metallb object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
@@ -137,13 +145,13 @@ func (builder *Builder) Get() (*v1beta1.MetalLB, error) {
 
 // Create makes a MetalLb in the cluster and stores the created object in struct.
 func (builder *Builder) Create() (*Builder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating the metallb %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	if !builder.Exists() {
@@ -158,6 +166,10 @@ func (builder *Builder) Create() (*Builder, error) {
 
 // Delete removes MetalLb object from a cluster.
 func (builder *Builder) Delete() (*Builder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Deleting the metallb object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
@@ -179,6 +191,10 @@ func (builder *Builder) Delete() (*Builder, error) {
 
 // Update renovates the existing MetalLb object with the MetalLb definition in builder.
 func (builder *Builder) Update(force bool) (*Builder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Updating the metallb object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
@@ -218,11 +234,11 @@ func (builder *Builder) Update(force bool) (*Builder, error) {
 
 // RemoveLabel removes given label from metallb metadata.
 func (builder *Builder) RemoveLabel(key string) *Builder {
-	glog.V(100).Infof("Removing label %s from metalLbIo %s", key, builder.Definition.Name)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("metallb")
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
+
+	glog.V(100).Infof("Removing label %s from metalLbIo %s", key, builder.Definition.Name)
 
 	if key == "" {
 		glog.V(100).Infof("Failed to remove empty label's key from metalLbIo %s", builder.Definition.Name)
@@ -240,16 +256,16 @@ func (builder *Builder) RemoveLabel(key string) *Builder {
 
 // WithSpeakerNodeSelector adds the specified label to the MetalLbIo SpeakerNodeSelector.
 func (builder *Builder) WithSpeakerNodeSelector(label map[string]string) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Adding label selector %v to metallb.io object %s",
 		label, builder.Definition.Name,
 	)
 
 	if len(label) < 1 {
 		builder.errorMsg = "can not accept empty label and redefine metallb NodeSelector"
-	}
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("metallb")
 	}
 
 	if builder.errorMsg != "" {
@@ -263,17 +279,11 @@ func (builder *Builder) WithSpeakerNodeSelector(label map[string]string) *Builde
 
 // WithOptions creates metallb with generic mutation options.
 func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
-	glog.V(100).Infof("Setting metallb additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The metallb is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("metallb")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting metallb additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -297,4 +307,35 @@ func GetMetalLbIoGVR() schema.GroupVersionResource {
 	return schema.GroupVersionResource{
 		Group: "metallb.io", Version: "v1beta1", Resource: "metallbs",
 	}
+}
+
+func (builder *Builder) validate() (bool, error) {
+	resourceType := "metallb"
+	resourceCRD := "MetalLB"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceType)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceType)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceType)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceType)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceType)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceType, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }

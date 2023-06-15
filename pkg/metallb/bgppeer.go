@@ -72,6 +72,10 @@ func NewBPGPeerBuilder(
 
 // Get returns BGPPeer object if found.
 func (builder *BGPPeerBuilder) Get() (*metalLbV1Beta1.BGPPeer, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof(
 		"Collecting BGPPeer object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
@@ -95,6 +99,10 @@ func (builder *BGPPeerBuilder) Get() (*metalLbV1Beta1.BGPPeer, error) {
 
 // Exists checks whether the given BGPPeer exists.
 func (builder *BGPPeerBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof(
 		"Checking if BGPPeer %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
@@ -142,13 +150,13 @@ func PullBGPPeer(apiClient *clients.Settings, name, nsname string) (*BGPPeerBuil
 
 // Create makes a BGPPeer in the cluster and stores the created object in struct.
 func (builder *BGPPeerBuilder) Create() (*BGPPeerBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating the BGPPeer %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	if !builder.Exists() {
@@ -163,6 +171,10 @@ func (builder *BGPPeerBuilder) Create() (*BGPPeerBuilder, error) {
 
 // Delete removes BGPPeer object from a cluster.
 func (builder *BGPPeerBuilder) Delete() (*BGPPeerBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Deleting the BGPPeer object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
@@ -184,13 +196,13 @@ func (builder *BGPPeerBuilder) Delete() (*BGPPeerBuilder, error) {
 
 // Update renovates the existing BGPPeer object with the BGPPeer definition in builder.
 func (builder *BGPPeerBuilder) Update(force bool) (*BGPPeerBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Updating the BGPPeer object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
 
@@ -223,13 +235,13 @@ func (builder *BGPPeerBuilder) Update(force bool) (*BGPPeerBuilder, error) {
 
 // WithRouterID defines the routerID placed in the BGPPeer spec.
 func (builder *BGPPeerBuilder) WithRouterID(routerID string) *BGPPeerBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BGPPeer %s in namespace %s with this routerID: %s",
 		builder.Definition.Name, builder.Definition.Namespace, routerID)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPPeer")
-	}
 
 	if net.ParseIP(routerID) == nil {
 		glog.V(100).Infof("The routerID of the BGPPeer contains invalid ip address %s, "+
@@ -249,13 +261,13 @@ func (builder *BGPPeerBuilder) WithRouterID(routerID string) *BGPPeerBuilder {
 
 // WithBFDProfile defines the bfdProfile placed in the BGPPeer spec.
 func (builder *BGPPeerBuilder) WithBFDProfile(bfdProfile string) *BGPPeerBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BGPPeer %s in namespace %s with this bfdProfile: %s",
 		builder.Definition.Name, builder.Definition.Namespace, bfdProfile)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPPeer")
-	}
 
 	if bfdProfile == "" {
 		glog.V(100).Infof("The bfdProfile of the BGPPeer can not be empty string")
@@ -274,13 +286,13 @@ func (builder *BGPPeerBuilder) WithBFDProfile(bfdProfile string) *BGPPeerBuilder
 
 // WithSRCAddress defines the SRCAddress placed in the BGPPeer spec.
 func (builder *BGPPeerBuilder) WithSRCAddress(srcAddress string) *BGPPeerBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BGPPeer %s in namespace %s with this srcAddress: %s",
 		builder.Definition.Name, builder.Definition.Namespace, srcAddress)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPPeer")
-	}
 
 	if net.ParseIP(srcAddress) == nil {
 		glog.V(100).Infof("The srcAddress of the BGPPeer contains invalid ip address %s, "+
@@ -300,17 +312,13 @@ func (builder *BGPPeerBuilder) WithSRCAddress(srcAddress string) *BGPPeerBuilder
 
 // WithPort defines the port placed in the BGPPeer spec.
 func (builder *BGPPeerBuilder) WithPort(port uint16) *BGPPeerBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BGPPeer %s in namespace %s with this port: %d",
 		builder.Definition.Name, builder.Definition.Namespace, port)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPPeer")
-	}
-
-	if builder.errorMsg != "" {
-		return builder
-	}
 
 	builder.Definition.Spec.Port = port
 
@@ -319,17 +327,13 @@ func (builder *BGPPeerBuilder) WithPort(port uint16) *BGPPeerBuilder {
 
 // WithHoldTime defines the holdTime placed in the BGPPeer spec.
 func (builder *BGPPeerBuilder) WithHoldTime(holdTime metaV1.Duration) *BGPPeerBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BGPPeer %s in namespace %s with this holdTime: %s",
 		builder.Definition.Name, builder.Definition.Namespace, holdTime)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPPeer")
-	}
-
-	if builder.errorMsg != "" {
-		return builder
-	}
 
 	builder.Definition.Spec.HoldTime = holdTime
 
@@ -338,17 +342,13 @@ func (builder *BGPPeerBuilder) WithHoldTime(holdTime metaV1.Duration) *BGPPeerBu
 
 // WithKeepalive defines the keepAliveTime placed in the BGPPeer spec.
 func (builder *BGPPeerBuilder) WithKeepalive(keepalive metaV1.Duration) *BGPPeerBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BGPPeer %s in namespace %s with this keepalive: %s",
 		builder.Definition.Name, builder.Definition.Namespace, keepalive)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPPeer")
-	}
-
-	if builder.errorMsg != "" {
-		return builder
-	}
 
 	builder.Definition.Spec.KeepaliveTime = keepalive
 
@@ -357,13 +357,13 @@ func (builder *BGPPeerBuilder) WithKeepalive(keepalive metaV1.Duration) *BGPPeer
 
 // WithNodeSelector defines the nodeSelector placed in the BGPPeer spec.
 func (builder *BGPPeerBuilder) WithNodeSelector(nodeSelector map[string]string) *BGPPeerBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BGPPeer %s in namespace %s with this nodeSelector: %s",
 		builder.Definition.Name, builder.Definition.Namespace, nodeSelector)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPPeer")
-	}
 
 	if len(nodeSelector) == 0 {
 		glog.V(100).Infof("Can not redefine BGPPeer with empty nodeSelector map")
@@ -383,13 +383,13 @@ func (builder *BGPPeerBuilder) WithNodeSelector(nodeSelector map[string]string) 
 
 // WithPassword defines the password placed in the BGPPeer spec.
 func (builder *BGPPeerBuilder) WithPassword(password string) *BGPPeerBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BGPPeer %s in namespace %s with this password: %s",
 		builder.Definition.Name, builder.Definition.Namespace, password)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPPeer")
-	}
 
 	if password == "" {
 		glog.V(100).Infof("Can not redefine BGPPeer with empty password")
@@ -408,17 +408,13 @@ func (builder *BGPPeerBuilder) WithPassword(password string) *BGPPeerBuilder {
 
 // WithEBGPMultiHop defines the EBGPMultiHop bool flag placed in the BGPPeer spec.
 func (builder *BGPPeerBuilder) WithEBGPMultiHop(eBGPMultiHop bool) *BGPPeerBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(
 		"Creating BGPPeer %s in namespace %s with this eBGPMultiHop flag: %t",
 		builder.Definition.Name, builder.Definition.Namespace, eBGPMultiHop)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPPeer")
-	}
-
-	if builder.errorMsg != "" {
-		return builder
-	}
 
 	builder.Definition.Spec.EBGPMultiHop = eBGPMultiHop
 
@@ -427,17 +423,11 @@ func (builder *BGPPeerBuilder) WithEBGPMultiHop(eBGPMultiHop bool) *BGPPeerBuild
 
 // WithOptions creates BGPPeer with generic mutation options.
 func (builder *BGPPeerBuilder) WithOptions(options ...BGPPeerAdditionalOptions) *BGPPeerBuilder {
-	glog.V(100).Infof("Setting BGPPeer additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The BGPPeer is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("BGPPeer")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting BGPPeer additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -461,4 +451,35 @@ func GetBGPPeerGVR() schema.GroupVersionResource {
 	return schema.GroupVersionResource{
 		Group: "metallb.io", Version: "v1beta2", Resource: "bgppeers",
 	}
+}
+
+func (builder *BGPPeerBuilder) validate() (bool, error) {
+	resourceType := "bgppeer"
+	resourceCRD := "BGPPeer"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceType)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceType)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceType)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceType)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceType)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceType, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
