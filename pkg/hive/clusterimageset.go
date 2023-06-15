@@ -255,20 +255,28 @@ func (builder *ClusterImageSetBuilder) Exists() bool {
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
 func (builder *ClusterImageSetBuilder) validate() (bool, error) {
-	if builder == nil {
-		glog.V(100).Infof("The builder is uninitialized")
+	resourceCRD := "ClusterImageSet"
 
-		return false, fmt.Errorf("error: received nil builder")
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
 	}
 
 	if builder.Definition == nil {
-		glog.V(100).Infof("The clusterimageset is undefined")
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("ClusterImageSet")
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {
-		glog.V(100).Infof("The builder has error message: %s", builder.errorMsg)
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
 
 		return false, fmt.Errorf(builder.errorMsg)
 	}
