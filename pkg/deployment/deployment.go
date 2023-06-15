@@ -73,7 +73,7 @@ func NewBuilder(
 		builder.errorMsg = "deployment 'namespace' cannot be empty"
 	}
 
-	if labels == nil {
+	if len(labels) == 0 {
 		glog.V(100).Infof("There are no labels for the deployment")
 
 		builder.errorMsg = "deployment 'labels' cannot be empty"
@@ -115,21 +115,12 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 
 // WithNodeSelector applies a nodeSelector to the deployment definition.
 func (builder *Builder) WithNodeSelector(selector map[string]string) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Applying nodeSelector %s to deployment %s in namespace %s",
 		selector, builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return builder
-	}
-
-	// Make sure NewBuilder was already called to set builder.Definition.
-	if builder.Definition == nil {
-		glog.V(100).Infof("The deployment is undefined")
-
-		builder.errorMsg = "cannot add nodeSelector to undefined deployment"
-
-		return builder
-	}
 
 	builder.Definition.Spec.Template.Spec.NodeSelector = selector
 
@@ -138,19 +129,12 @@ func (builder *Builder) WithNodeSelector(selector map[string]string) *Builder {
 
 // WithReplicas sets the desired number of replicas in the deployment definition.
 func (builder *Builder) WithReplicas(replicas int32) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Setting %d replicas in deployment %s in namespace %s",
 		replicas, builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return builder
-	}
-
-	// Make sure NewBuilder was already called to set builder.Definition.
-	if builder.Definition == nil {
-		builder.errorMsg = "cannot add replicas to undefined deployment"
-
-		return builder
-	}
 
 	builder.Definition.Spec.Replicas = &replicas
 
@@ -159,54 +143,39 @@ func (builder *Builder) WithReplicas(replicas int32) *Builder {
 
 // WithAdditionalContainerSpecs appends a list of container specs to the deployment definition.
 func (builder *Builder) WithAdditionalContainerSpecs(specs []coreV1.Container) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Appending a list of container specs %v to deployment %s in namespace %s",
 		specs, builder.Definition.Name, builder.Definition.Namespace)
+
+	if len(specs) == 0 {
+		glog.V(100).Infof("The container specs are empty")
+
+		builder.errorMsg = "cannot accept empty list as container specs"
+	}
 
 	if builder.errorMsg != "" {
 		return builder
 	}
 
-	// Make sure NewBuilder was already called to set builder.Definition.
-	if builder.Definition == nil {
-		glog.V(100).Infof("The deployment is undefined")
-
-		builder.errorMsg = "cannot add container specs to undefined deployment"
-
-		return builder
-	}
-
-	if specs == nil {
-		glog.V(100).Infof("The container specs are empty")
-
-		builder.errorMsg = "cannot accept nil or empty list as container specs"
-
-		return builder
-	}
-
 	if builder.Definition.Spec.Template.Spec.Containers == nil {
 		builder.Definition.Spec.Template.Spec.Containers = specs
-
-		return builder
+	} else {
+		builder.Definition.Spec.Template.Spec.Containers = append(builder.Definition.Spec.Template.Spec.Containers, specs...)
 	}
-
-	builder.Definition.Spec.Template.Spec.Containers = append(builder.Definition.Spec.Template.Spec.Containers, specs...)
 
 	return builder
 }
 
 // WithOptions creates deployment with generic mutation options.
 func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
-	glog.V(100).Infof("Setting deployment additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The deployment is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("deployment")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting deployment additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -227,11 +196,11 @@ func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
 
 // Create generates a deployment in cluster and stores the created object in struct.
 func (builder *Builder) Create() (*Builder, error) {
-	glog.V(100).Infof("Creating deployment %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
+	if valid, err := builder.validate(); !valid {
+		return builder, err
 	}
+
+	glog.V(100).Infof("Creating deployment %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
 	if !builder.Exists() {
@@ -244,11 +213,11 @@ func (builder *Builder) Create() (*Builder, error) {
 
 // Update renovates the existing deployment object with the deployment definition in builder.
 func (builder *Builder) Update() (*Builder, error) {
-	glog.V(100).Infof("Updating deployment %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
+	if valid, err := builder.validate(); !valid {
+		return builder, err
 	}
+
+	glog.V(100).Infof("Updating deployment %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
 	builder.Object, err = builder.apiClient.Deployments(builder.Definition.Namespace).Update(
@@ -259,6 +228,10 @@ func (builder *Builder) Update() (*Builder, error) {
 
 // Delete removes a deployment.
 func (builder *Builder) Delete() error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Deleting deployment %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -280,6 +253,10 @@ func (builder *Builder) Delete() error {
 
 // CreateAndWaitUntilReady creates a deployment in the cluster and waits until the deployment is available.
 func (builder *Builder) CreateAndWaitUntilReady(timeout time.Duration) (*Builder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating deployment %s in namespace %s and waiting for the defined period until it's ready",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -298,6 +275,10 @@ func (builder *Builder) CreateAndWaitUntilReady(timeout time.Duration) (*Builder
 
 // IsReady periodically checks if deployment is in ready status.
 func (builder *Builder) IsReady(timeout time.Duration) bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Running periodic check until deployment %s in namespace %s is ready",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -327,6 +308,10 @@ func (builder *Builder) IsReady(timeout time.Duration) bool {
 
 // DeleteAndWait deletes a deployment and waits until it is removed from the cluster.
 func (builder *Builder) DeleteAndWait(timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Deleting deployment %s in namespace %s and waiting for the defined period until it's removed",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -349,6 +334,10 @@ func (builder *Builder) DeleteAndWait(timeout time.Duration) error {
 
 // Exists checks whether the given deployment exists.
 func (builder *Builder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Checking if deployment %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -401,15 +390,15 @@ func List(apiClient *clients.Settings, nsname string, options metaV1.ListOptions
 // WaitUntilCondition waits for the duration of the defined timeout or until the
 // deployment gets to a specific condition.
 func (builder *Builder) WaitUntilCondition(condition v1.DeploymentConditionType, timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Waiting for the defined period until deployment %s in namespace %s has condition %v",
 		builder.Definition.Name, builder.Definition.Namespace, condition)
 
 	if !builder.Exists() {
 		return fmt.Errorf("cannot wait for deployment condition because it does not exist")
-	}
-
-	if builder.errorMsg != "" {
-		return fmt.Errorf(builder.errorMsg)
 	}
 
 	return wait.PollImmediate(time.Second, timeout, func() (bool, error) {
@@ -428,4 +417,28 @@ func (builder *Builder) WaitUntilCondition(condition v1.DeploymentConditionType,
 		return false, nil
 
 	})
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *Builder) validate() (bool, error) {
+	if builder == nil {
+		glog.V(100).Infof("The builder is uninitialized")
+
+		return false, fmt.Errorf("error: received nil builder")
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The deployment is undefined")
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString("Deployment")
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The builder has error message: %s", builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
