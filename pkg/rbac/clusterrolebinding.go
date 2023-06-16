@@ -64,15 +64,12 @@ func NewClusterRoleBindingBuilder(
 
 // WithSubjects appends additional subjects to clusterrolebinding definition.
 func (builder *ClusterRoleBindingBuilder) WithSubjects(subjects []v1.Subject) *ClusterRoleBindingBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Appending to the definition of clusterrolebinding %s these additional subjects %v",
 		builder.Definition.Name, subjects)
-
-	// Make sure NewClusterRoleBindingBuilder was already called to set builder.Definition.
-	if builder.Definition == nil {
-		glog.V(100).Infof("The clusterrolebinding is undefined")
-
-		builder.errorMsg = "can not redefine undefined clusterrolebinding"
-	}
 
 	if len(subjects) == 0 {
 		glog.V(100).Infof("The list of subjects is empty")
@@ -110,17 +107,11 @@ func (builder *ClusterRoleBindingBuilder) WithSubjects(subjects []v1.Subject) *C
 // WithOptions creates ClusterRoleBinding with generic mutation options.
 func (builder *ClusterRoleBindingBuilder) WithOptions(
 	options ...ClusterRoleBindingAdditionalOptions) *ClusterRoleBindingBuilder {
-	glog.V(100).Infof("Setting ClusterRoleBinding additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The ClusterRoleBinding is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("ClusterRoleBinding")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting ClusterRoleBinding additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -169,12 +160,12 @@ func PullClusterRoleBinding(apiClient *clients.Settings, name string) (*ClusterR
 
 // Create generates a clusterrolebinding in the cluster and stores the created object in struct.
 func (builder *ClusterRoleBindingBuilder) Create() (*ClusterRoleBindingBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating clusterrolebinding %s",
 		builder.Definition.Name)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	if !builder.Exists() {
@@ -187,6 +178,10 @@ func (builder *ClusterRoleBindingBuilder) Create() (*ClusterRoleBindingBuilder, 
 
 // Delete removes a clusterrolebinding from the cluster.
 func (builder *ClusterRoleBindingBuilder) Delete() error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Removing clusterrolebinding %s",
 		builder.Definition.Name)
 
@@ -208,12 +203,12 @@ func (builder *ClusterRoleBindingBuilder) Delete() error {
 
 // Update modifies a clusterrolebinding object in the cluster.
 func (builder *ClusterRoleBindingBuilder) Update() (*ClusterRoleBindingBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Updating clusterrolebinding %s",
 		builder.Definition.Name)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	builder.Object, err = builder.apiClient.ClusterRoleBindings().Update(
@@ -224,6 +219,10 @@ func (builder *ClusterRoleBindingBuilder) Update() (*ClusterRoleBindingBuilder, 
 
 // Exists checks if clusterrolebinding exists in the cluster.
 func (builder *ClusterRoleBindingBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Checking if clusterrolebinding %s exists",
 		builder.Definition.Name)
 
@@ -232,4 +231,36 @@ func (builder *ClusterRoleBindingBuilder) Exists() bool {
 		context.Background(), builder.Definition.Name, metaV1.GetOptions{})
 
 	return err == nil || !k8serrors.IsNotFound(err)
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *ClusterRoleBindingBuilder) validate() (bool, error) {
+	resourceCRD := "ClusterRoleBinding"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
