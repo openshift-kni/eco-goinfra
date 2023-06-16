@@ -7,6 +7,7 @@ import (
 	nvidiagpuv1 "github.com/NVIDIA/gpu-operator/api/v1"
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/json"
@@ -61,6 +62,10 @@ func NewBuilderFromObjectString(apiClient *clients.Settings, almExample string) 
 
 // Get returns clusterPolicy object if found.
 func (builder *Builder) Get() (*nvidiagpuv1.ClusterPolicy, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof(
 		"Collecting ClusterPolicy object %s", builder.Definition.Name)
 
@@ -109,6 +114,10 @@ func Pull(apiClient *clients.Settings, name string) (*Builder, error) {
 
 // Exists checks whether the given ClusterPolicy exists.
 func (builder *Builder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof(
 		"Checking if ClusterPolicy %s exists", builder.Definition.Name)
 
@@ -124,6 +133,10 @@ func (builder *Builder) Exists() bool {
 
 // Delete removes a ClusterPolicy.
 func (builder *Builder) Delete() (*Builder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Deleting ClusterPolicy %s", builder.Definition.Name)
 
 	if !builder.Exists() {
@@ -143,11 +156,11 @@ func (builder *Builder) Delete() (*Builder, error) {
 
 // Create makes a ClusterPolicy in the cluster and stores the created object in struct.
 func (builder *Builder) Create() (*Builder, error) {
-	glog.V(100).Infof("Creating the ClusterPolicy %s", builder.Definition.Name)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
+	if valid, err := builder.validate(); !valid {
+		return builder, err
 	}
+
+	glog.V(100).Infof("Creating the ClusterPolicy %s", builder.Definition.Name)
 
 	var err error
 	if !builder.Exists() {
@@ -163,11 +176,11 @@ func (builder *Builder) Create() (*Builder, error) {
 
 // Update renovates the existing ClusterPolicy object with the definition in builder.
 func (builder *Builder) Update(force bool) (*Builder, error) {
-	glog.V(100).Infof("Updating the ClusterPolicy object named:  %s", builder.Definition.Name)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
+	if valid, err := builder.validate(); !valid {
+		return builder, err
 	}
+
+	glog.V(100).Infof("Updating the ClusterPolicy object named:  %s", builder.Definition.Name)
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
 
@@ -212,4 +225,36 @@ func getClusterPolicyFromAlmExample(almExample string) (*nvidiagpuv1.ClusterPoli
 	}
 
 	return &clusterPolicyList.Items[0], nil
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *Builder) validate() (bool, error) {
+	resourceCRD := "ClusterPolicy"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
