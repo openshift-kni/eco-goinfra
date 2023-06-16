@@ -49,11 +49,11 @@ func PullNode(apiClient *clients.Settings, nodeName string) (*NodeBuilder, error
 
 // Update renovates the existing node object with the node definition in builder.
 func (builder *NodeBuilder) Update() (*NodeBuilder, error) {
-	glog.V(100).Infof("Updating configuration of node %s", builder.Definition.Name)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
+	if valid, err := builder.validate(); !valid {
+		return builder, err
 	}
+
+	glog.V(100).Infof("Updating configuration of node %s", builder.Definition.Name)
 
 	if !builder.Exists() {
 		return nil, fmt.Errorf("node object doesn't exist")
@@ -71,6 +71,10 @@ func (builder *NodeBuilder) Update() (*NodeBuilder, error) {
 
 // Exists checks whether the given node exists.
 func (builder *NodeBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Checking if node %s exists", builder.Definition.Name)
 
 	var err error
@@ -82,11 +86,11 @@ func (builder *NodeBuilder) Exists() bool {
 
 // WithNewLabel defines the new label placed in the Node metadata.
 func (builder *NodeBuilder) WithNewLabel(key, value string) *NodeBuilder {
-	glog.V(100).Infof("Adding label %s=%s to node %s ", key, value, builder.Definition.Name)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("Node")
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
+
+	glog.V(100).Infof("Adding label %s=%s to node %s ", key, value, builder.Definition.Name)
 
 	if key == "" {
 		glog.V(100).Infof("Failed to apply label with an empty key to node %s", builder.Definition.Name)
@@ -113,17 +117,11 @@ func (builder *NodeBuilder) WithNewLabel(key, value string) *NodeBuilder {
 
 // WithOptions creates node with generic mutation options.
 func (builder *NodeBuilder) WithOptions(options ...AdditionalOptions) *NodeBuilder {
-	glog.V(100).Infof("Setting node additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The node is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("node")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting node additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -144,11 +142,11 @@ func (builder *NodeBuilder) WithOptions(options ...AdditionalOptions) *NodeBuild
 
 // RemoveLabel removes given label from Node metadata.
 func (builder *NodeBuilder) RemoveLabel(key, value string) *NodeBuilder {
-	glog.V(100).Infof("Removing label %s=%s from node %s", key, value, builder.Definition.Name)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("Node")
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
+
+	glog.V(100).Infof("Removing label %s=%s from node %s", key, value, builder.Definition.Name)
 
 	if key == "" {
 		glog.V(100).Infof("Failed to remove empty label's key from node %s", builder.Definition.Name)
@@ -166,6 +164,10 @@ func (builder *NodeBuilder) RemoveLabel(key, value string) *NodeBuilder {
 
 // ExternalIPv4Network returns nodes external ip address.
 func (builder *NodeBuilder) ExternalIPv4Network() (string, error) {
+	if valid, err := builder.validate(); !valid {
+		return "", err
+	}
+
 	glog.V(100).Infof("Collecting node's external ipv4 addresses")
 
 	if builder.Object == nil {
@@ -185,4 +187,36 @@ func (builder *NodeBuilder) ExternalIPv4Network() (string, error) {
 	}
 
 	return extNetwork.IPv4, nil
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *NodeBuilder) validate() (bool, error) {
+	resourceCRD := "Node"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
