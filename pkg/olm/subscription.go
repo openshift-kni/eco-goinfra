@@ -83,11 +83,11 @@ func NewSubscriptionBuilder(apiClient *clients.Settings, subName, subNamespace, 
 
 // WithChannel adds the specific channel to the Subscription.
 func (builder *SubscriptionBuilder) WithChannel(channel string) *SubscriptionBuilder {
-	glog.V(100).Infof("Defining Subscription builder object with channel: %s", channel)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("Subscription")
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
+
+	glog.V(100).Infof("Defining Subscription builder object with channel: %s", channel)
 
 	if channel == "" {
 		builder.errorMsg = "can not redefine subscription with empty channel"
@@ -104,12 +104,12 @@ func (builder *SubscriptionBuilder) WithChannel(channel string) *SubscriptionBui
 
 // WithStartingCSV adds the specific startingCSV to the Subscription.
 func (builder *SubscriptionBuilder) WithStartingCSV(startingCSV string) *SubscriptionBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Defining Subscription builder object with startingCSV: %s",
 		startingCSV)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("Subscription")
-	}
 
 	if startingCSV == "" {
 		builder.errorMsg = "can not redefine subscription with empty startingCSV"
@@ -127,12 +127,12 @@ func (builder *SubscriptionBuilder) WithStartingCSV(startingCSV string) *Subscri
 // WithInstallPlanApproval adds the specific installPlanApproval to the Subscription.
 func (builder *SubscriptionBuilder) WithInstallPlanApproval(
 	installPlanApproval operatorsV1alpha1.Approval) *SubscriptionBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Defining Subscription builder object with "+
 		"installPlanApproval: %s", installPlanApproval)
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("Subscription")
-	}
 
 	if !(installPlanApproval == "Automatic" || installPlanApproval == "Manual") {
 		glog.V(100).Infof("The InstallPlanApproval of the Subscription must be either \"Automatic\" " +
@@ -152,12 +152,12 @@ func (builder *SubscriptionBuilder) WithInstallPlanApproval(
 
 // Create makes an Subscription in cluster and stores the created object in struct.
 func (builder *SubscriptionBuilder) Create() (*SubscriptionBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating the Subscription %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	if !builder.Exists() {
@@ -170,6 +170,10 @@ func (builder *SubscriptionBuilder) Create() (*SubscriptionBuilder, error) {
 
 // Exists checks whether the given Subscription exists.
 func (builder *SubscriptionBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Checking if Subscription %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -183,6 +187,10 @@ func (builder *SubscriptionBuilder) Exists() bool {
 
 // Delete removes a Subscription.
 func (builder *SubscriptionBuilder) Delete() error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Deleting Subscription %s in namespace %s", builder.Definition.Name,
 		builder.Definition.Namespace)
 
@@ -204,12 +212,12 @@ func (builder *SubscriptionBuilder) Delete() error {
 
 // Update modifies the existing Subscription with the Subscription definition in SubscriptionBuilder.
 func (builder *SubscriptionBuilder) Update() (*SubscriptionBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Updating Subscription %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	if !builder.Exists() {
 		return nil, fmt.Errorf("subscription named %s in namespace %s doesn't exist",
@@ -258,4 +266,36 @@ func PullSubscription(apiClient *clients.Settings, subName, subNamespace string)
 	builder.Definition = builder.Object
 
 	return builder, nil
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *SubscriptionBuilder) validate() (bool, error) {
+	resourceCRD := "Subscription"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
