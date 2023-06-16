@@ -88,19 +88,12 @@ func NewBuilder(
 
 // WithAdditionalContainerSpecs appends a list of container specs to the statefulset definition.
 func (builder *Builder) WithAdditionalContainerSpecs(specs []coreV1.Container) *Builder {
-	glog.V(100).Infof("Appending a list of container specs %v to statefulset %s in namespace %s",
-		specs, builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
-	// Make sure NewBuilder was already called to set builder.Definition.
-	if builder.Definition == nil {
-		glog.V(100).Infof("The statefulset is undefined")
-
-		builder.errorMsg = "cannot add container specs to undefined statefulset"
-	}
+	glog.V(100).Infof("Appending a list of container specs %v to statefulset %s in namespace %s",
+		specs, builder.Definition.Name, builder.Definition.Namespace)
 
 	if specs == nil {
 		glog.V(100).Infof("The container specs are empty")
@@ -125,17 +118,11 @@ func (builder *Builder) WithAdditionalContainerSpecs(specs []coreV1.Container) *
 
 // WithOptions creates StatefulSet with generic mutation options.
 func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
-	glog.V(100).Infof("Setting StatefulSet additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The StatefulSet is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("StatefulSet")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting StatefulSet additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -187,11 +174,11 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 
 // Create generates a statefulset in cluster and stores the created object in struct.
 func (builder *Builder) Create() (*Builder, error) {
-	glog.V(100).Infof("Creating statefulset %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
+	if valid, err := builder.validate(); !valid {
+		return builder, err
 	}
+
+	glog.V(100).Infof("Creating statefulset %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
 	if !builder.Exists() {
@@ -204,6 +191,10 @@ func (builder *Builder) Create() (*Builder, error) {
 
 // Exists checks whether the given statefulset exists.
 func (builder *Builder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Checking if statefulset %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -216,6 +207,10 @@ func (builder *Builder) Exists() bool {
 
 // IsReady periodically checks if statefulset is in ready status.
 func (builder *Builder) IsReady(timeout time.Duration) bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Running periodic check until statefulset %s in namespace %s is ready",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -280,4 +275,36 @@ func List(apiClient *clients.Settings, nsname string, options metaV1.ListOptions
 	}
 
 	return statefulsetObjects, nil
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *Builder) validate() (bool, error) {
+	resourceCRD := "StatefulSet"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
