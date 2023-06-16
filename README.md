@@ -55,6 +55,43 @@ func With***() // Set of mutiation functions that can mutate any part of the obj
 ```
 Please refer to [namespace](./usage/namespace/namespace.go) example for more info.
 
+### Validator Method
+In order to ensure safe access to objects and members, each builder struct should include a `validate` method. This method should be invoked inside packages before accessing potentially uninitialized code to mitigate unintended errors. Example:
+```go
+func (builder *Builder) WithMethod(someString string) *Builder {
+    if valid, _ := builder.validate(); !valid {
+        return builder
+    }
+    
+    glog.V(100).Infof(
+        "Updating builder %s in namespace %s with the string: %s",
+        builder.Definition.Name, builder.Definition.Namespace, someString
+    )
+    
+    builder.Definition.StringHolder = someString
+    
+    return builder
+}
+```
+Typically, validate methods will check that pointers are not nil and that errorMsg has not been set. Here is an example of how the secret package validate method ensures that Builder.apiClient has properly been initalized before being called:
+```go
+func main() {
+	apiClient := clients.New("bad api client")
+
+	_, err := secret.NewBuilder(
+        apiClient, "mysecret", "mynamespace", v1SecretTypeDockerConfigJson).Create()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+```
+Instead of causing a panic, the method will return a proper error message:
+```
+2023/06/16 11:55:58 Loading kube client config from path "bad api client"
+2023/06/16 11:55:58 Secret builder cannot have nil apiClient
+exit status 1
+```
+Please refer to the [secret pkg](./pkg/secret/secret.go)'s use of the validate method for more information.
 
 # eco-goinfra - How to contribute
 
