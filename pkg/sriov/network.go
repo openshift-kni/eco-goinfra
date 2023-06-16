@@ -15,8 +15,6 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const srIovNetworkCrName = "SriovNetwork"
-
 // NetworkBuilder provides struct for srIovNetwork object which contains connection to cluster and
 // srIovNetwork definition.
 type NetworkBuilder struct {
@@ -72,8 +70,8 @@ func NewNetworkBuilder(
 
 // WithVLAN sets vlan id in the SrIovNetwork definition. Allowed vlanId range is between 0-4094.
 func (builder *NetworkBuilder) WithVLAN(vlanID uint16) *NetworkBuilder {
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(srIovNetworkCrName)
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
 
 	if vlanID > 4094 {
@@ -91,9 +89,7 @@ func (builder *NetworkBuilder) WithVLAN(vlanID uint16) *NetworkBuilder {
 
 // WithSpoof sets spoof flag based on the given argument in the SrIovNetwork definition spec.
 func (builder *NetworkBuilder) WithSpoof(enabled bool) *NetworkBuilder {
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(srIovNetworkCrName)
-
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
@@ -108,11 +104,11 @@ func (builder *NetworkBuilder) WithSpoof(enabled bool) *NetworkBuilder {
 
 // WithLinkState sets linkState parameters in the SrIovNetwork definition spec.
 func (builder *NetworkBuilder) WithLinkState(linkState string) *NetworkBuilder {
-	allowedLinkStates := []string{"enable", "disable", "auto"}
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(srIovNetworkCrName)
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
+
+	allowedLinkStates := []string{"enable", "disable", "auto"}
 
 	if !slices.Contains(allowedLinkStates, linkState) {
 		builder.errorMsg = "invalid 'linkState' parameters"
@@ -129,9 +125,7 @@ func (builder *NetworkBuilder) WithLinkState(linkState string) *NetworkBuilder {
 
 // WithMaxTxRate sets maxTxRate parameters in the SrIovNetwork definition spec.
 func (builder *NetworkBuilder) WithMaxTxRate(maxTxRate uint16) *NetworkBuilder {
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(srIovNetworkCrName)
-
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
@@ -144,9 +138,7 @@ func (builder *NetworkBuilder) WithMaxTxRate(maxTxRate uint16) *NetworkBuilder {
 
 // WithMinTxRate sets minTxRate parameters in the SrIovNetwork definition spec.
 func (builder *NetworkBuilder) WithMinTxRate(minTxRate uint16) *NetworkBuilder {
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(srIovNetworkCrName)
-
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
@@ -158,9 +150,7 @@ func (builder *NetworkBuilder) WithMinTxRate(minTxRate uint16) *NetworkBuilder {
 
 // WithTrustFlag sets trust flag based on the given argument in the SrIoVNetwork definition spec.
 func (builder *NetworkBuilder) WithTrustFlag(enabled bool) *NetworkBuilder {
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(srIovNetworkCrName)
-
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
@@ -175,8 +165,8 @@ func (builder *NetworkBuilder) WithTrustFlag(enabled bool) *NetworkBuilder {
 
 // WithVlanQoS sets qoSClass parameters in the SrIovNetwork definition spec.
 func (builder *NetworkBuilder) WithVlanQoS(qoSClass uint16) *NetworkBuilder {
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(srIovNetworkCrName)
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
 
 	if qoSClass > 7 {
@@ -206,17 +196,11 @@ func (builder *NetworkBuilder) WithMacAddressSupport() *NetworkBuilder {
 
 // WithOptions creates SriovNetwork with generic mutation options.
 func (builder *NetworkBuilder) WithOptions(options ...NetworkAdditionalOptions) *NetworkBuilder {
-	glog.V(100).Infof("Setting SriovNetwork additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The SriovNetwork is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("SriovNetwork")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting SriovNetwork additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -272,8 +256,8 @@ func PullNetwork(apiClient *clients.Settings, name, nsname string) (*NetworkBuil
 
 // Create generates SrIovNetwork in a cluster and stores the created object in struct.
 func (builder *NetworkBuilder) Create() (*NetworkBuilder, error) {
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
+	if valid, err := builder.validate(); !valid {
+		return builder, err
 	}
 
 	if !builder.Exists() {
@@ -292,6 +276,10 @@ func (builder *NetworkBuilder) Create() (*NetworkBuilder, error) {
 
 // Delete removes SrIovNetwork object.
 func (builder *NetworkBuilder) Delete() error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	if !builder.Exists() {
 		return nil
 	}
@@ -310,6 +298,10 @@ func (builder *NetworkBuilder) Delete() error {
 
 // Exists checks whether the given SrIovNetwork object exists in a cluster.
 func (builder *NetworkBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	var err error
 	builder.Object, err = builder.apiClient.SriovNetworks(builder.Definition.Namespace).Get(
 		context.Background(), builder.Definition.Name, metaV1.GetOptions{})
@@ -352,11 +344,43 @@ func List(apiClient *clients.Settings, nsname string, options metaV1.ListOptions
 }
 
 func (builder *NetworkBuilder) withCapabilities(capability string) *NetworkBuilder {
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(srIovNetworkCrName)
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
 
 	builder.Definition.Spec.Capabilities = fmt.Sprintf(`{ "%s": true }`, capability)
 
 	return builder
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *NetworkBuilder) validate() (bool, error) {
+	resourceCRD := "SriovNetwork"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }

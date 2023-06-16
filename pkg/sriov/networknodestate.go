@@ -55,8 +55,8 @@ func NewNetworkNodeStateBuilder(apiClient *clients.Settings, nodeName, nsname st
 
 // Discover method gets the SriovNetworkNodeState items and stores them in the NetworkNodeStateBuilder struct.
 func (builder *NetworkNodeStateBuilder) Discover() error {
-	if builder.errorMsg != "" {
-		return fmt.Errorf(builder.errorMsg)
+	if valid, err := builder.validate(); !valid {
+		return err
 	}
 
 	glog.V(100).Infof("Getting the SriovNetworkNodeState object in namespace %s for node %s",
@@ -71,6 +71,10 @@ func (builder *NetworkNodeStateBuilder) Discover() error {
 
 // GetUpNICs returns a list of SrIov interfaces in UP state.
 func (builder *NetworkNodeStateBuilder) GetUpNICs() (srIovV1.InterfaceExts, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof("Collection of sriov interfaces in UP state for node %s", builder.nodeName)
 	sriovNics, err := builder.GetNICs()
 
@@ -97,6 +101,10 @@ func (builder *NetworkNodeStateBuilder) GetUpNICs() (srIovV1.InterfaceExts, erro
 
 // GetNICs returns a list of SrIov interfaces.
 func (builder *NetworkNodeStateBuilder) GetNICs() (srIovV1.InterfaceExts, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	if err := builder.Discover(); err != nil {
 		glog.V(100).Infof("Error to discover sriov interfaces for node %s", builder.nodeName)
 
@@ -107,4 +115,30 @@ func (builder *NetworkNodeStateBuilder) GetNICs() (srIovV1.InterfaceExts, error)
 		builder.Objects.Status.Interfaces, builder.nodeName)
 
 	return builder.Objects.Status.Interfaces, nil
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *NetworkNodeStateBuilder) validate() (bool, error) {
+	resourceCRD := "SriovNetworkNodeState"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
