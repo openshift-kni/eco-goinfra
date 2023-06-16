@@ -129,14 +129,12 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 
 // DefineOnNode adds nodeName to the pod's definition.
 func (builder *Builder) DefineOnNode(nodeName string) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Adding nodeName %s to the definition of pod %s in namespace %s",
 		nodeName, builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The pod is undefined")
-
-		builder.errorMsg = "can not define pod on specific node because basic definition is empty"
-	}
 
 	if builder.Object != nil {
 		glog.V(100).Infof("The pod is already running on node %s", builder.Object.Spec.NodeName)
@@ -160,12 +158,12 @@ func (builder *Builder) DefineOnNode(nodeName string) *Builder {
 
 // Create makes a pod according to the pod definition and stores the created object in the pod builder.
 func (builder *Builder) Create() (*Builder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating pod %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	if !builder.Exists() {
@@ -178,6 +176,10 @@ func (builder *Builder) Create() (*Builder, error) {
 
 // Delete removes the pod object and resets the builder object.
 func (builder *Builder) Delete() (*Builder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Deleting pod %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -199,6 +201,10 @@ func (builder *Builder) Delete() (*Builder, error) {
 
 // DeleteAndWait deletes the pod object and waits until the pod is deleted.
 func (builder *Builder) DeleteAndWait(timeout time.Duration) (*Builder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Deleting pod %s in namespace %s and waiting for the defined period until it's removed",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -218,6 +224,10 @@ func (builder *Builder) DeleteAndWait(timeout time.Duration) (*Builder, error) {
 
 // CreateAndWaitUntilRunning creates the pod object and waits until the pod is running.
 func (builder *Builder) CreateAndWaitUntilRunning(timeout time.Duration) (*Builder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating pod %s in namespace %s and waiting for the defined period until it's ready",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -237,6 +247,10 @@ func (builder *Builder) CreateAndWaitUntilRunning(timeout time.Duration) (*Build
 
 // WaitUntilRunning waits for the duration of the defined timeout or until the pod is running.
 func (builder *Builder) WaitUntilRunning(timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Waiting for the defined period until pod %s in namespace %s is running",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -245,12 +259,12 @@ func (builder *Builder) WaitUntilRunning(timeout time.Duration) error {
 
 // WaitUntilInStatus waits for the duration of the defined timeout or until the pod gets to a specific status.
 func (builder *Builder) WaitUntilInStatus(status v1.PodPhase, timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Waiting for the defined period until pod %s in namespace %s has status %v",
 		builder.Definition.Name, builder.Definition.Namespace, status)
-
-	if builder.errorMsg != "" {
-		return fmt.Errorf(builder.errorMsg)
-	}
 
 	return wait.PollImmediate(time.Second, timeout, func() (bool, error) {
 		updatePod, err := builder.apiClient.Pods(builder.Object.Namespace).Get(
@@ -265,6 +279,10 @@ func (builder *Builder) WaitUntilInStatus(status v1.PodPhase, timeout time.Durat
 
 // WaitUntilDeleted waits for the duration of the defined timeout or until the pod is deleted.
 func (builder *Builder) WaitUntilDeleted(timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Waiting for the defined period until pod %s in namespace %s is deleted",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -291,6 +309,10 @@ func (builder *Builder) WaitUntilDeleted(timeout time.Duration) error {
 
 // WaitUntilReady waits for the duration of the defined timeout or until the pod reaches the Ready condition.
 func (builder *Builder) WaitUntilReady(timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Waiting for the defined period until pod %s in namespace %s is Ready",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -299,12 +321,12 @@ func (builder *Builder) WaitUntilReady(timeout time.Duration) error {
 
 // WaitUntilCondition waits for the duration of the defined timeout or until the pod gets to a specific condition.
 func (builder *Builder) WaitUntilCondition(condition v1.PodConditionType, timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Waiting for the defined period until pod %s in namespace %s has condition %v",
 		builder.Definition.Name, builder.Definition.Namespace, condition)
-
-	if builder.errorMsg != "" {
-		return fmt.Errorf(builder.errorMsg)
-	}
 
 	return wait.PollImmediate(time.Second, timeout, func() (bool, error) {
 		updatePod, err := builder.apiClient.Pods(builder.Object.Namespace).Get(
@@ -326,6 +348,10 @@ func (builder *Builder) WaitUntilCondition(condition v1.PodConditionType, timeou
 
 // ExecCommand runs command in the pod and returns the buffer output.
 func (builder *Builder) ExecCommand(command []string, containerName ...string) (bytes.Buffer, error) {
+	if valid, err := builder.validate(); !valid {
+		return bytes.Buffer{}, err
+	}
+
 	glog.V(100).Infof("Execute command %v in the pod",
 		command)
 
@@ -377,6 +403,10 @@ func (builder *Builder) ExecCommand(command []string, containerName ...string) (
 
 // Exists checks whether the given namespace exists.
 func (builder *Builder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Checking if pod %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -389,6 +419,10 @@ func (builder *Builder) Exists() bool {
 
 // RedefineDefaultCMD redefines default command in pod's definition.
 func (builder *Builder) RedefineDefaultCMD(command []string) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Redefining default pod's container cmd with the new %v", command)
 
 	builder.isMutationAllowed("cmd")
@@ -404,6 +438,10 @@ func (builder *Builder) RedefineDefaultCMD(command []string) *Builder {
 
 // WithRestartPolicy applies restart policy to pod's definition.
 func (builder *Builder) WithRestartPolicy(restartPolicy v1.RestartPolicy) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Redefining pod's RestartPolicy to %v", restartPolicy)
 
 	builder.isMutationAllowed("RestartPolicy")
@@ -427,6 +465,10 @@ func (builder *Builder) WithRestartPolicy(restartPolicy v1.RestartPolicy) *Build
 
 // WithTolerationToMaster sets toleration policy which allows pod to be running on master node.
 func (builder *Builder) WithTolerationToMaster() *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Redefining pod's %s with toleration to master node", builder.Definition.Name)
 
 	builder.isMutationAllowed("toleration to master node")
@@ -447,6 +489,10 @@ func (builder *Builder) WithTolerationToMaster() *Builder {
 
 // WithPrivilegedFlag sets privileged flag on all containers.
 func (builder *Builder) WithPrivilegedFlag() *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Applying privileged flag to all pod's: %s containers", builder.Definition.Name)
 
 	builder.isMutationAllowed("privileged container flag")
@@ -466,6 +512,10 @@ func (builder *Builder) WithPrivilegedFlag() *Builder {
 
 // WithLocalVolume attaches given volume to all pod's containers.
 func (builder *Builder) WithLocalVolume(volumeName, mountPath string) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Configuring volume %s for all pod's: %s containers. MountPath %s",
 		volumeName, builder.Definition.Name, mountPath)
 
@@ -517,6 +567,10 @@ func (builder *Builder) WithLocalVolume(volumeName, mountPath string) *Builder {
 
 // WithAdditionalContainer appends additional container to pod.
 func (builder *Builder) WithAdditionalContainer(container *v1.Container) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Adding new container %v to pod %s", container, builder.Definition.Name)
 	builder.isMutationAllowed("additional container")
 
@@ -535,6 +589,10 @@ func (builder *Builder) WithAdditionalContainer(container *v1.Container) *Builde
 
 // WithSecondaryNetwork applies Multus secondary network on pod definition.
 func (builder *Builder) WithSecondaryNetwork(network []*multus.NetworkSelectionElement) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof("Applying secondary network %v to pod %s", network, builder.Definition.Name)
 
 	builder.isMutationAllowed("secondary network")
@@ -560,6 +618,10 @@ func (builder *Builder) WithSecondaryNetwork(network []*multus.NetworkSelectionE
 
 // PullImage pulls image for given pod's container and removes it.
 func (builder *Builder) PullImage(timeout time.Duration, testCmd []string) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof(
 		"Pulling container image %s to node: %s", builder.Definition.Spec.Containers[0].Image,
 		builder.Definition.Spec.NodeName)
@@ -606,6 +668,10 @@ func (builder *Builder) PullImage(timeout time.Duration, testCmd []string) error
 
 // WithLabel applies label to pod's definition.
 func (builder *Builder) WithLabel(labelKey, labelValue string) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	glog.V(100).Infof(fmt.Sprintf("Defining pod's label to %s:%s", labelKey, labelValue))
 
 	builder.isMutationAllowed("Labels")
@@ -625,17 +691,11 @@ func (builder *Builder) WithLabel(labelKey, labelValue string) *Builder {
 
 // WithOptions creates pod with generic mutation options.
 func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
-	glog.V(100).Infof("Setting pod additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The pod is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("pod")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting pod additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -656,6 +716,10 @@ func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
 
 // GetLog connects to a pod and fetches log.
 func (builder *Builder) GetLog(logStartTime time.Duration, containerName string) (string, error) {
+	if valid, err := builder.validate(); !valid {
+		return "", err
+	}
+
 	logStart := int64(logStartTime.Seconds())
 	req := builder.apiClient.Pods(builder.Definition.Namespace).GetLogs(builder.Definition.Name, &v1.PodLogOptions{
 		SinceSeconds: &logStart, Container: containerName})
@@ -696,14 +760,7 @@ func getDefinition(name, nsName string) *v1.Pod {
 }
 
 func (builder *Builder) isMutationAllowed(configToMutate string) {
-	if builder.Definition == nil {
-		glog.V(100).Infof(
-			"Failed to redefine pod's %s because basic pod %s definition is empty in namespace %s",
-			builder.Definition.Name, configToMutate, builder.Definition.Namespace)
-
-		builder.errorMsg = fmt.Sprintf("can not define pod with %s because basic pod definition is empty",
-			configToMutate)
-	}
+	_, _ = builder.validate()
 
 	if builder.Object != nil {
 		glog.V(100).Infof(
@@ -716,11 +773,13 @@ func (builder *Builder) isMutationAllowed(configToMutate string) {
 }
 
 func (builder *Builder) isMountAlreadyInUseInPod(newMount v1.VolumeMount) {
-	for index := range builder.Definition.Spec.Containers {
-		if builder.Definition.Spec.Containers[index].VolumeMounts != nil {
-			if isMountInUse(builder.Definition.Spec.Containers[index].VolumeMounts, newMount) {
-				builder.errorMsg = fmt.Sprintf("given mount %v already mounted to pod's container %s",
-					newMount.Name, builder.Definition.Spec.Containers[index].Name)
+	if valid, _ := builder.validate(); valid {
+		for index := range builder.Definition.Spec.Containers {
+			if builder.Definition.Spec.Containers[index].VolumeMounts != nil {
+				if isMountInUse(builder.Definition.Spec.Containers[index].VolumeMounts, newMount) {
+					builder.errorMsg = fmt.Sprintf("given mount %v already mounted to pod's container %s",
+						newMount.Name, builder.Definition.Spec.Containers[index].Name)
+				}
 			}
 		}
 	}
@@ -734,4 +793,36 @@ func isMountInUse(containerMounts []v1.VolumeMount, newMount v1.VolumeMount) boo
 	}
 
 	return false
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *Builder) validate() (bool, error) {
+	resourceCRD := "Pod"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
