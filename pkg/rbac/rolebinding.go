@@ -72,10 +72,8 @@ func NewRoleBindingBuilder(apiClient *clients.Settings,
 
 // WithSubjects adds specified Subject to the RoleBinding.
 func (builder *RoleBindingBuilder) WithSubjects(subjects []v1.Subject) *RoleBindingBuilder {
-	if builder.Definition == nil {
-		glog.V(100).Infof("The rolebinding is undefined")
-
-		builder.errorMsg = "cannot redefine undefined rolebinding"
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
 
 	glog.V(100).Infof("Adding to the rolebinding %s these specified subjects: %v",
@@ -115,17 +113,11 @@ func (builder *RoleBindingBuilder) WithSubjects(subjects []v1.Subject) *RoleBind
 
 // WithOptions creates RoleBinding with generic mutation options.
 func (builder *RoleBindingBuilder) WithOptions(options ...RoleBindingAdditionalOptions) *RoleBindingBuilder {
-	glog.V(100).Infof("Setting RoleBinding additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The RoleBinding is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("RoleBinding")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting RoleBinding additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -181,12 +173,12 @@ func PullRoleBinding(apiClient *clients.Settings, name, nsname string) (*RoleBin
 
 // Create generates a RoleBinding and stores the created object in struct.
 func (builder *RoleBindingBuilder) Create() (*RoleBindingBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating rolebinding %s under namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	if !builder.Exists() {
@@ -199,6 +191,10 @@ func (builder *RoleBindingBuilder) Create() (*RoleBindingBuilder, error) {
 
 // Delete removes a RoleBinding.
 func (builder *RoleBindingBuilder) Delete() error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Removing rolebinding %s under namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -216,12 +212,12 @@ func (builder *RoleBindingBuilder) Delete() error {
 
 // Update modifies an existing RoleBinding in the cluster.
 func (builder *RoleBindingBuilder) Update() (*RoleBindingBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Updating rolebinding %s under namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	builder.Object, err = builder.apiClient.RoleBindings(builder.Definition.Namespace).Update(
@@ -232,6 +228,10 @@ func (builder *RoleBindingBuilder) Update() (*RoleBindingBuilder, error) {
 
 // Exists checks whether the given RoleBinding exists.
 func (builder *RoleBindingBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Checking if rolebinding %s exists under namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -240,4 +240,36 @@ func (builder *RoleBindingBuilder) Exists() bool {
 		context.Background(), builder.Definition.Name, metaV1.GetOptions{})
 
 	return err == nil || !k8serrors.IsNotFound(err)
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *RoleBindingBuilder) validate() (bool, error) {
+	resourceCRD := "RoleBinding"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
