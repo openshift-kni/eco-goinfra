@@ -14,8 +14,6 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const srIovNetworkNodePolicyCRName = "SriovNetworkNodePolicy"
-
 // PolicyBuilder provides struct for srIovPolicy object containing connection to the cluster and the srIovPolicy
 // definitions.
 type PolicyBuilder struct {
@@ -86,13 +84,11 @@ func NewPolicyBuilder(
 
 // WithDevType sets device type in the SriovNetworkNodePolicy definition. Allowed devTypes are vfio-pci and netdevice.
 func (builder *PolicyBuilder) WithDevType(devType string) *PolicyBuilder {
-	allowedDevTypes := []string{"vfio-pci", "netdevice"}
-
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(srIovNetworkNodePolicyCRName)
-
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	allowedDevTypes := []string{"vfio-pci", "netdevice"}
 
 	if !slices.Contains(allowedDevTypes, devType) {
 		builder.errorMsg = "invalid device type, allowed devType values are: vfio-pci or netdevice"
@@ -107,8 +103,8 @@ func (builder *PolicyBuilder) WithDevType(devType string) *PolicyBuilder {
 
 // WithVFRange sets specific VF range for each configured PF.
 func (builder *PolicyBuilder) WithVFRange(firstVF, lastVF int) *PolicyBuilder {
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(srIovNetworkNodePolicyCRName)
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
 
 	if firstVF > lastVF {
@@ -135,8 +131,8 @@ func (builder *PolicyBuilder) WithVFRange(firstVF, lastVF int) *PolicyBuilder {
 
 // WithMTU sets required MTU in the given SriovNetworkNodePolicy.
 func (builder *PolicyBuilder) WithMTU(mtu int) *PolicyBuilder {
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(srIovNetworkNodePolicyCRName)
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
 
 	if 1 > mtu || mtu > 9192 {
@@ -154,9 +150,7 @@ func (builder *PolicyBuilder) WithMTU(mtu int) *PolicyBuilder {
 
 // WithRDMA sets RDMA mode in SriovNetworkNodePolicy object.
 func (builder *PolicyBuilder) WithRDMA(rdma bool) *PolicyBuilder {
-	if builder.Definition == nil {
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(srIovNetworkNodePolicyCRName)
-
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
@@ -167,17 +161,11 @@ func (builder *PolicyBuilder) WithRDMA(rdma bool) *PolicyBuilder {
 
 // WithOptions creates SriovNetworkNodePolicy with generic mutation options.
 func (builder *PolicyBuilder) WithOptions(options ...PolicyAdditionalOptions) *PolicyBuilder {
-	glog.V(100).Infof("Setting SriovNetworkNodePolicy additional options")
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The SriovNetworkNodePolicy is undefined")
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString("SriovNetworkNodePolicy")
-	}
-
-	if builder.errorMsg != "" {
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Setting SriovNetworkNodePolicy additional options")
 
 	for _, option := range options {
 		if option != nil {
@@ -233,8 +221,8 @@ func PullPolicy(apiClient *clients.Settings, name, nsname string) (*PolicyBuilde
 
 // Create generates an SriovNetworkNodePolicy in the cluster and stores the created object in struct.
 func (builder *PolicyBuilder) Create() (*PolicyBuilder, error) {
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
+	if valid, err := builder.validate(); !valid {
+		return builder, err
 	}
 
 	if !builder.Exists() {
@@ -253,6 +241,10 @@ func (builder *PolicyBuilder) Create() (*PolicyBuilder, error) {
 
 // Delete removes an SriovNetworkNodePolicy object.
 func (builder *PolicyBuilder) Delete() error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	if !builder.Exists() {
 		return nil
 	}
@@ -271,9 +263,45 @@ func (builder *PolicyBuilder) Delete() error {
 
 // Exists checks whether the given SriovNetworkNodePolicy object exists in the cluster.
 func (builder *PolicyBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	var err error
 	builder.Object, err = builder.apiClient.SriovNetworkNodePolicies(builder.Definition.Namespace).Get(
 		context.Background(), builder.Definition.Name, metaV1.GetOptions{})
 
 	return err == nil || !k8serrors.IsNotFound(err)
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *PolicyBuilder) validate() (bool, error) {
+	resourceCRD := "SriovNetworkNodePolicy"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
