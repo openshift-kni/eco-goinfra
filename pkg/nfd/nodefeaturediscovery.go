@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	nfdv1 "github.com/openshift/cluster-nfd-operator/api/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -61,6 +62,10 @@ func NewBuilderFromObjectString(apiClient *clients.Settings, almExample string) 
 
 // Get returns NodeFeatureDiscovery object if found.
 func (builder *Builder) Get() (*nfdv1.NodeFeatureDiscovery, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof("Collecting NodeFeatureDiscovery object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -117,6 +122,10 @@ func Pull(apiClient *clients.Settings, name, namespace string) (*Builder, error)
 
 // Exists checks whether the given NodeFeatureDiscovery exists.
 func (builder *Builder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof(
 		"Checking if NodeFeatureDiscovery %s exists in namespace %s", builder.Definition.Name,
 		builder.Definition.Namespace)
@@ -133,6 +142,10 @@ func (builder *Builder) Exists() bool {
 
 // Delete removes a NodeFeatureDiscovery.
 func (builder *Builder) Delete() (*Builder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Deleting NodeFeatureDiscovery %s in namespace %s", builder.Definition.Name,
 		builder.Definition.Namespace)
 
@@ -153,12 +166,12 @@ func (builder *Builder) Delete() (*Builder, error) {
 
 // Create makes a NodeFeatureDiscovery in the cluster and stores the created object in struct.
 func (builder *Builder) Create() (*Builder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating the NodeFeatureDiscovery %s in namespace %s", builder.Definition.Name,
 		builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	if !builder.Exists() {
@@ -174,12 +187,12 @@ func (builder *Builder) Create() (*Builder, error) {
 
 // Update renovates the existing NodeFeatureDiscovery object with the definition in builder.
 func (builder *Builder) Update(force bool) (*Builder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Updating the NodeFeatureDiscovery object named: %s in namespace: %s",
 		builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
 
@@ -224,4 +237,30 @@ func getNodeFeatureDiscoveryFromAlmExample(almExample string) (*nfdv1.NodeFeatur
 	}
 
 	return &nodeFeatureDiscoveryList.Items[0], nil
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *Builder) validate() (bool, error) {
+	resourceCRD := "NodeFeatureDiscovery"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
+
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+
+		return false, fmt.Errorf(fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD))
+	}
+
+	return true, nil
 }
