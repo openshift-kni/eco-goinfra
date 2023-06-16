@@ -8,6 +8,7 @@ import (
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	olmv1 "github.com/operator-framework/api/pkg/operators/v1"
@@ -62,12 +63,12 @@ func NewOperatorGroupBuilder(apiClient *clients.Settings, groupName, nsName stri
 
 // Create makes an OperatorGroup in cluster and stores the created object in struct.
 func (builder *OperatorGroupBuilder) Create() (*OperatorGroupBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Creating the OperatorGroup %s",
 		builder.Definition.Name)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	if !builder.Exists() {
@@ -80,6 +81,10 @@ func (builder *OperatorGroupBuilder) Create() (*OperatorGroupBuilder, error) {
 
 // Exists checks whether the given OperatorGroup exists.
 func (builder *OperatorGroupBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
 	glog.V(100).Infof("Checking if OperatorGroup %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
@@ -93,6 +98,10 @@ func (builder *OperatorGroupBuilder) Exists() bool {
 
 // Delete removes an OperatorGroup.
 func (builder *OperatorGroupBuilder) Delete() error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Deleting OperatorGroup %s in namespace %s", builder.Definition.Name,
 		builder.Definition.Namespace)
 
@@ -114,12 +123,12 @@ func (builder *OperatorGroupBuilder) Delete() error {
 
 // Update modifies the existing OperatorGroup with the OperatorGroup definition in OperatorGroupBuilder.
 func (builder *OperatorGroupBuilder) Update() (*OperatorGroupBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
 	glog.V(100).Infof("Updating OperatorGroup %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
 
 	var err error
 	builder.Object, err = builder.apiClient.OperatorGroups(builder.Definition.Namespace).Update(
@@ -163,4 +172,36 @@ func PullOperatorGroup(apiClient *clients.Settings, groupName, nsName string) (*
 	builder.Definition = builder.Object
 
 	return builder, nil
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *OperatorGroupBuilder) validate() (bool, error) {
+	resourceCRD := "OperatorGroup"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
