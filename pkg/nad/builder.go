@@ -250,6 +250,12 @@ func (builder *Builder) WithMasterPlugin(masterPlugin *MasterPlugin) *Builder {
 
 // WithPlugins defines nad with group of plugins.
 func (builder *Builder) WithPlugins(name string, plugins *[]Plugin) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Adding plugins to NAD %s", builder.Definition.Name)
+
 	pluginsConfig := MasterPlugin{
 		CniVersion: "0.4.0",
 		Name:       name,
