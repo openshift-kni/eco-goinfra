@@ -1,0 +1,26 @@
+# Global maintainers 
+* @kononovn @trewest
+
+# Assisted pkg code owners
+pkg/assisted/ @trewest
+
+# Hive pkg code owners
+pkg/hive/ @trewest
+
+# KMM pkg code owners
+pkg/kmm/ @cdvultur
+
+# MetalLB pkg code owners
+pkg/metallb/ @kononovn
+
+# NAD pkg code owners
+pkg/nad/ @kononovn
+
+# NFD pkg code owners
+pkg/nfd/ @wabouhamad
+
+# NvidiaGPU pkg code owners
+pkg/nvidiagpu/ @wabouhamad
+
+# SRIOV pkg code owners
+pkg/sriov/ @kononovn
