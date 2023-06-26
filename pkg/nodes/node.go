@@ -4,10 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
+
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	v1 "k8s.io/api/core/v1"
@@ -78,10 +81,34 @@ func (builder *NodeBuilder) Exists() bool {
 	glog.V(100).Infof("Checking if node %s exists", builder.Definition.Name)
 
 	var err error
-	builder.Object, err = builder.apiClient.CoreV1Interface.Nodes().Get(
-		context.Background(), builder.Definition.Name, metaV1.GetOptions{})
+	builder.Object, err = builder.Get()
+
+	if err != nil {
+		glog.V(100).Infof("Failed to collect node object due to %s", err.Error())
+	}
 
 	return err == nil || !k8serrors.IsNotFound(err)
+}
+
+// Get returns node object if found.
+func (builder *NodeBuilder) Get() (*v1.Node, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
+	glog.V(100).Infof("Collecting node object %s", builder.Definition.Name)
+
+	node, err := builder.apiClient.CoreV1Interface.Nodes().Get(
+		context.Background(), builder.Definition.Name, metaV1.GetOptions{})
+
+	if err != nil {
+		glog.V(100).Infof(
+			"node object %s doesn't exist", builder.Definition.Name, builder.Definition.Namespace)
+
+		return nil, err
+	}
+
+	return node, err
 }
 
 // WithNewLabel defines the new label placed in the Node metadata.
@@ -187,6 +214,38 @@ func (builder *NodeBuilder) ExternalIPv4Network() (string, error) {
 	}
 
 	return extNetwork.IPv4, nil
+}
+
+// WaitUntilSchedulable waits for the duration of the defined timeout or until the
+// node gets to a stable - schedulable.
+func (builder *NodeBuilder) WaitUntilSchedulable(timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
+	glog.V(100).Infof("Waiting for the defined period until node %s is schedulable",
+		builder.Definition.Name)
+
+	// Polls every retryInterval to determine if the node is not schedulable.
+	return wait.PollImmediate(time.Second, timeout, func() (bool, error) {
+		node, err := builder.Get()
+
+		if err != nil {
+			return false, nil
+		}
+
+		if !node.Spec.Unschedulable {
+			// We want to ensure that the node remains schedulable even after 5 seconds.
+			time.Sleep(5 * time.Second)
+			if !node.Spec.Unschedulable {
+				return true, nil
+			}
+
+			return false, nil
+		}
+
+		return false, nil
+	})
 }
 
 // validate will check that the builder and builder definition are properly initialized before
