@@ -180,8 +180,8 @@ func (builder *Builder) WithSecondaryNetwork(network []*multus.NetworkSelectionE
 
 	glog.V(100).Infof("Applying secondary network %v to deployment %s", network, builder.Definition.Name)
 
-	if builder.errorMsg != "" {
-		return builder
+	if len(network) == 0 {
+		builder.errorMsg = "can not apply empty network list"
 	}
 
 	netAnnotation, err := json.Marshal(network)
