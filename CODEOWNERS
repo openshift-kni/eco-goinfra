@@ -29,16 +29,16 @@ pkg/sriov/ @kononovn
 pkg/configmap/ @achuzhoy
 
 # Clients pkg code owners
-pkg/clients/ @nkononov
+pkg/clients/ @kononovn
 
 # Namespace pkg code owners
-pkg/namespace/ @nkononov
+pkg/namespace/ @kononovn
 
 # Network pkg code owners
 pkg/network/ @trewest
 
 # Nodes pkg code owners
-pkg/nodes/ @nkononov
+pkg/nodes/ @kononovn
 
 # OLM pkg code owners
 pkg/olm/ @wabouhamad
@@ -53,7 +53,7 @@ pkg/ptp/ @kononovn
 pkg/rbac/ @achuzhoy
 
 # Reporter pkg code owners
-pkg/reporter/ @nkononov
+pkg/reporter/ @kononovn
 
 # Secret pkg code owners
 pkg/secret/ @achuzhoy
