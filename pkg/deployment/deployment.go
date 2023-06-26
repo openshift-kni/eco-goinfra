@@ -173,21 +173,21 @@ func (builder *Builder) WithAdditionalContainerSpecs(specs []coreV1.Container) *
 }
 
 // WithSecondaryNetwork applies Multus secondary network configuration on deployment definition.
-func (builder *Builder) WithSecondaryNetwork(network []*multus.NetworkSelectionElement) *Builder {
+func (builder *Builder) WithSecondaryNetwork(networks []*multus.NetworkSelectionElement) *Builder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
-	glog.V(100).Infof("Applying secondary network %v to deployment %s", network, builder.Definition.Name)
+	glog.V(100).Infof("Applying secondary networks %v to deployment %s", networks, builder.Definition.Name)
 
-	if len(network) == 0 {
-		builder.errorMsg = "can not apply empty network list"
+	if len(networks) == 0 {
+		builder.errorMsg = "can not apply empty networks list"
 	}
 
-	netAnnotation, err := json.Marshal(network)
+	netAnnotation, err := json.Marshal(networks)
 
 	if err != nil {
-		builder.errorMsg = fmt.Sprintf("error to unmarshal network annotation due to: %s", err.Error())
+		builder.errorMsg = fmt.Sprintf("error to unmarshal networks annotation due to: %s", err.Error())
 	}
 
 	if builder.errorMsg != "" {
