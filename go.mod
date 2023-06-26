@@ -9,6 +9,7 @@ require (
 	github.com/k8snetworkplumbingwg/sriov-network-operator v0.0.0-20201204053545-49045c36efb9
 	github.com/metal3-io/baremetal-operator/apis v0.2.0
 	github.com/metallb/metallb-operator v0.13.9
+	github.com/nmstate/kubernetes-nmstate/api v0.0.0-20230620093014-45a940d6f70d
 	github.com/openshift-kni/k8sreporter v1.0.3
 	github.com/openshift-kni/numaresources-operator v0.4.13-0rc0.0.20230605095854-887a7c1cc783
 	github.com/openshift/api v3.9.0+incompatible
@@ -25,6 +26,7 @@ require (
 	go.universe.tf/metallb v0.13.7
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 	gopkg.in/k8snetworkplumbingwg/multus-cni.v4 v4.0.2
+	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.27.1
 	k8s.io/apiextensions-apiserver v0.26.1
 	k8s.io/apimachinery v0.27.1
@@ -137,7 +139,6 @@ require (
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/component-base v0.26.1 // indirect
 	k8s.io/klog/v2 v2.90.1 // indirect
