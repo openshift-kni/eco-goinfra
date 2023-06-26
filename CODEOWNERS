@@ -24,3 +24,39 @@ pkg/nvidiagpu/ @wabouhamad
 
 # SRIOV pkg code owners
 pkg/sriov/ @kononovn
+
+# ConfigMap pkg code owners
+pkg/configmap/ @achuzhoy
+
+# Clients pkg code owners
+pkg/clients/ @nkononov
+
+# Namespace pkg code owners
+pkg/namespace/ @nkononov
+
+# Network pkg code owners
+pkg/network/ @trewest
+
+# Nodes pkg code owners
+pkg/nodes/ @nkononov
+
+# OLM pkg code owners
+pkg/olm/ @wabouhamad
+
+# Pod pkg code owners
+pkg/pod/ @kononovn
+
+# PTP pkg code owners
+pkg/ptp/ @kononovn
+
+# RBAC pkg code owners
+pkg/rbac/ @achuzhoy
+
+# Reporter pkg code owners
+pkg/reporter/ @nkononov
+
+# Secret pkg code owners
+pkg/secret/ @achuzhoy
+
+# Service pkg code owners
+pkg/service/ @trewest
