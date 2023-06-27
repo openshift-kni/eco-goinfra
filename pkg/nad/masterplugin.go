@@ -206,11 +206,11 @@ func NewMasterVlanPlugin(name string, vlanID uint16) *MasterVlanPlugin {
 	if vlanID > 4094 {
 		glog.V(100).Infof("error vlan id can not be greater than 4094")
 
-		builder.errorMsg = "MasterVlanPlugin vlanId is greater than 4094"
+		builder.errorMsg = "MasterVlanPlugin vlanID is greater than 4094"
 	}
 
 	if builder.masterPlugin.Name == "" {
-		glog.V(100).Infof("error MasterVlanPlugin can not be empty")
+		glog.V(100).Infof("error MasterVlanPlugin name can not be empty")
 
 		builder.errorMsg = "MasterVlanPlugin name is empty"
 	}
@@ -220,7 +220,7 @@ func NewMasterVlanPlugin(name string, vlanID uint16) *MasterVlanPlugin {
 
 // WithIPAM defines IPAM configuration to MasterVlanPlugin. Default is empty.
 func (plugin *MasterVlanPlugin) WithIPAM(ipam *IPAM) *MasterVlanPlugin {
-	glog.V(100).Infof("Adding ipam configuration %v to MasterVlanPlugin", ipam)
+	glog.V(100).Infof("Adding IPAM configuration to MasterVlanPlugin: %v", ipam)
 
 	if plugin.masterPlugin == nil {
 		glog.V(100).Infof(msg.UndefinedCrdObjectErrString("MasterVlanPlugin"))
@@ -239,21 +239,21 @@ func (plugin *MasterVlanPlugin) WithIPAM(ipam *IPAM) *MasterVlanPlugin {
 }
 
 // WithMasterInterface defines master interface to MasterVlanPlugin. Default is cn0.
-func (plugin *MasterVlanPlugin) WithMasterInterface(master string) *MasterVlanPlugin {
-	glog.V(100).Infof("Adding master interface %s to MasterVlanPlugin", master)
+func (plugin *MasterVlanPlugin) WithMasterInterface(masterInterfaceName string) *MasterVlanPlugin {
+	glog.V(100).Infof("Adding masterInterfaceName interface %s to MasterVlanPlugin", masterInterfaceName)
 
 	if plugin.masterPlugin == nil {
 		glog.V(100).Infof(msg.UndefinedCrdObjectErrString("MasterVlanPlugin"))
 		plugin.errorMsg = msg.UndefinedCrdObjectErrString("MasterVlanPlugin")
 	}
 
-	if master == "" {
-		glog.V(100).Infof("error to add master interface, the name of interface can not be empty")
+	if masterInterfaceName == "" {
+		glog.V(100).Infof("error to add masterInterfaceName interface, the name of interface can not be empty")
 
-		plugin.errorMsg = "invalid master parameter"
+		plugin.errorMsg = "invalid masterInterfaceName parameter"
 	}
 
-	plugin.masterPlugin.Master = master
+	plugin.masterPlugin.Master = masterInterfaceName
 
 	return plugin
 }
