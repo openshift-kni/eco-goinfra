@@ -10,7 +10,8 @@ import (
 
 var (
 	// allowedMacVlanMode represents all allowed modes for macvlan plugin type.
-	allowedMacVlanMode = []string{"bridge", "passthru", "private", "vepa"}
+	allowedMacVlanMode      = []string{"bridge", "passthru", "private", "vepa"}
+	invalidIpamParameterMsg = "invalid ipam parameter"
 )
 
 // MasterMacVlanPlugin provides struct for NetworkAttachmentDefinition Master plugin with macvlan configuration.
@@ -93,7 +94,7 @@ func (plugin *MasterMacVlanPlugin) WithIPAM(ipam *IPAM) *MasterMacVlanPlugin {
 	if ipam == nil {
 		glog.V(100).Infof("error to add empty ipam to MasterMacVlanPlugin")
 
-		plugin.errorMsg = "invalid ipam parameter"
+		plugin.errorMsg = invalidIpamParameterMsg
 	}
 
 	plugin.masterPlugin.Ipam = ipam
@@ -174,10 +175,106 @@ func (plugin *MasterBridgePlugin) WithIPAM(ipam *IPAM) *MasterBridgePlugin {
 	if ipam == nil {
 		glog.V(100).Infof("error adding empty ipam to MasterBridgePlugin")
 
-		plugin.errorMsg = "invalid ipam parameter"
+		plugin.errorMsg = invalidIpamParameterMsg
 	}
 
 	plugin.masterPlugin.Ipam = ipam
 
 	return plugin
+}
+
+// MasterVlanPlugin provides struct for MasterPlugin set to vlan in NetworkAttachmentDefinition.
+type MasterVlanPlugin struct {
+	masterPlugin *MasterPlugin
+	errorMsg     string
+}
+
+// NewMasterVlanPlugin creates new instance of MasterVlanPlugin.
+func NewMasterVlanPlugin(name string, vlanID uint16) *MasterVlanPlugin {
+	glog.V(100).Infof(
+		"Initializing new MasterVlanPlugin structure %s, with vlanId %s", vlanID)
+
+	builder := MasterVlanPlugin{
+		masterPlugin: &MasterPlugin{
+			CniVersion: "0.3.1",
+			Name:       name,
+			Type:       "vlan",
+			VlanID:     vlanID,
+		},
+	}
+
+	if vlanID > 4094 {
+		glog.V(100).Infof("error vlan id can not be greater than 4094")
+
+		builder.errorMsg = "MasterVlanPlugin vlanId is greater than 4094"
+	}
+
+	if builder.masterPlugin.Name == "" {
+		glog.V(100).Infof("error MasterVlanPlugin can not be empty")
+
+		builder.errorMsg = "MasterVlanPlugin name is empty"
+	}
+
+	return &builder
+}
+
+// WithIPAM defines IPAM configuration to MasterVlanPlugin. Default is empty.
+func (plugin *MasterVlanPlugin) WithIPAM(ipam *IPAM) *MasterVlanPlugin {
+	glog.V(100).Infof("Adding ipam configuration %v to MasterVlanPlugin", ipam)
+
+	if plugin.masterPlugin == nil {
+		glog.V(100).Infof(msg.UndefinedCrdObjectErrString("MasterVlanPlugin"))
+		plugin.errorMsg = msg.UndefinedCrdObjectErrString("MasterVlanPlugin")
+	}
+
+	if ipam == nil {
+		glog.V(100).Infof("error adding empty ipam to MasterVlanPlugin")
+
+		plugin.errorMsg = invalidIpamParameterMsg
+	}
+
+	plugin.masterPlugin.Ipam = ipam
+
+	return plugin
+}
+
+// WithMasterInterface defines master interface to MasterVlanPlugin. Default is cn0.
+func (plugin *MasterVlanPlugin) WithMasterInterface(master string) *MasterVlanPlugin {
+	glog.V(100).Infof("Adding master interface %s to MasterVlanPlugin", master)
+
+	if plugin.masterPlugin == nil {
+		glog.V(100).Infof(msg.UndefinedCrdObjectErrString("MasterVlanPlugin"))
+		plugin.errorMsg = msg.UndefinedCrdObjectErrString("MasterVlanPlugin")
+	}
+
+	if master == "" {
+		glog.V(100).Infof("error to add master interface, the name of interface can not be empty")
+
+		plugin.errorMsg = "invalid master parameter"
+	}
+
+	plugin.masterPlugin.Master = master
+
+	return plugin
+}
+
+// WithLinkInContainer defines MasterVlanPlugin using linkInContainer feature.
+func (plugin *MasterVlanPlugin) WithLinkInContainer() *MasterVlanPlugin {
+	if plugin.masterPlugin == nil {
+		glog.V(100).Infof(msg.UndefinedCrdObjectErrString("MasterVlanPlugin"))
+		plugin.errorMsg = msg.UndefinedCrdObjectErrString("MasterVlanPlugin")
+	}
+
+	plugin.masterPlugin.LinkInContainer = true
+
+	return plugin
+}
+
+// GetMasterPluginConfig returns master plugin if error does not occur.
+func (plugin *MasterVlanPlugin) GetMasterPluginConfig() (*MasterPlugin, error) {
+	if plugin.errorMsg != "" {
+		return nil, fmt.Errorf("error to build MaterPlugin config due to :%s", plugin.errorMsg)
+	}
+
+	return plugin.masterPlugin, nil
 }
