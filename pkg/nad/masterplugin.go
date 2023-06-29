@@ -233,6 +233,10 @@ func (plugin *MasterVlanPlugin) WithIPAM(ipam *IPAM) *MasterVlanPlugin {
 		plugin.errorMsg = invalidIpamParameterMsg
 	}
 
+	if plugin.errorMsg != "" {
+		return plugin
+	}
+
 	plugin.masterPlugin.Ipam = ipam
 
 	return plugin
@@ -253,6 +257,10 @@ func (plugin *MasterVlanPlugin) WithMasterInterface(masterInterfaceName string) 
 		plugin.errorMsg = "invalid masterInterfaceName parameter"
 	}
 
+	if plugin.errorMsg != "" {
+		return plugin
+	}
+
 	plugin.masterPlugin.Master = masterInterfaceName
 
 	return plugin
@@ -263,6 +271,10 @@ func (plugin *MasterVlanPlugin) WithLinkInContainer() *MasterVlanPlugin {
 	if plugin.masterPlugin == nil {
 		glog.V(100).Infof(msg.UndefinedCrdObjectErrString("MasterVlanPlugin"))
 		plugin.errorMsg = msg.UndefinedCrdObjectErrString("MasterVlanPlugin")
+	}
+
+	if plugin.errorMsg != "" {
+		return plugin
 	}
 
 	plugin.masterPlugin.LinkInContainer = true
