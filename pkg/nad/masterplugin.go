@@ -291,16 +291,16 @@ func (plugin *MasterVlanPlugin) GetMasterPluginConfig() (*MasterPlugin, error) {
 	return plugin.masterPlugin, nil
 }
 
-// MasterIPVlanPlugin provides struct for MasterPlugin set to vlan in NetworkAttachmentDefinition.
+// MasterIPVlanPlugin provides struct for MasterPlugin set to IP vlan in NetworkAttachmentDefinition.
 type MasterIPVlanPlugin struct {
 	masterPlugin *MasterPlugin
 	errorMsg     string
 }
 
-// NewMasterIPVlanPlugin creates new instance of MasterIP	VlanPlugin.
+// NewMasterIPVlanPlugin creates new instance of MasterIP VlanPlugin.
 func NewMasterIPVlanPlugin(name string) *MasterIPVlanPlugin {
 	glog.V(100).Infof(
-		"Initializing new MasterVlanPlugin structure %s", name)
+		"Initializing new MasterIPVlanPlugin structure %s", name)
 
 	builder := MasterIPVlanPlugin{
 		masterPlugin: &MasterPlugin{
