@@ -5,10 +5,8 @@ func IPAMStatic() *IPAM {
 	return &IPAM{Type: "static"}
 }
 
-// IPAMWhereAbout returns WhereAbout ipam type.
-func IPAMWhereAbout(ipRange, gateway string) *IPAM {
-	ipam := &IPAM{Type: "whereabouts", IPRanges: []IPRanges{{Range: ipRange, Gateway: gateway}}}
-
+// IPAMWhereAbouts returns WhereAbout ipam type.
+func IPAMWhereAbouts(ipRange, gateway string) *IPAM {
 	if ipRange == "" {
 		return nil
 	}
@@ -17,13 +15,11 @@ func IPAMWhereAbout(ipRange, gateway string) *IPAM {
 		return nil
 	}
 
-	return ipam
+	return &IPAM{Type: "whereabouts", IPRanges: []IPRanges{{Range: ipRange, Gateway: gateway}}}
 }
 
-// WhereAboutAppendRange returns WhereAbout ipam type with additional address range.
-func WhereAboutAppendRange(ipam *IPAM, ipRange, gateway string) *IPAM {
-	ipam.IPRanges = append(ipam.IPRanges, IPRanges{Range: ipRange, Gateway: gateway})
-
+// WhereAboutsAppendRange returns WhereAbout ipam type with additional address range.
+func WhereAboutsAppendRange(ipam *IPAM, ipRange, gateway string) *IPAM {
 	if ipRange == "" {
 		return nil
 	}
@@ -31,6 +27,8 @@ func WhereAboutAppendRange(ipam *IPAM, ipRange, gateway string) *IPAM {
 	if gateway == "" {
 		return nil
 	}
+
+	ipam.IPRanges = append(ipam.IPRanges, IPRanges{Range: ipRange, Gateway: gateway})
 
 	return ipam
 }

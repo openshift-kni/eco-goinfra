@@ -297,7 +297,7 @@ type MasterIPVlanPlugin struct {
 	errorMsg     string
 }
 
-// NewMasterIPVlanPlugin creates new instance of MasterVlanPlugin.
+// NewMasterIPVlanPlugin creates new instance of MasterIP	VlanPlugin.
 func NewMasterIPVlanPlugin(name string) *MasterIPVlanPlugin {
 	glog.V(100).Infof(
 		"Initializing new MasterVlanPlugin structure %s", name)
