@@ -255,6 +255,12 @@ func (builder *Builder) Create() (*Builder, error) {
 	var err error
 	if !builder.Exists() {
 		err = builder.apiClient.Create(context.TODO(), builder.Definition)
+
+		if err != nil {
+			return nil, err
+		}
+
+		builder.Object, err = builder.Get()
 	}
 
 	return builder, err
