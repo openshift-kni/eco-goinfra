@@ -74,6 +74,8 @@ github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5/go.mod h1:lmUJ/7eu/Q8
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/PuerkitoBio/purell v1.1.1/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
+github.com/SchSeba/sriov-network-operator-1 v0.0.0-20230619135331-46b15e6d1cd2 h1:RDZBNyu5/UjiWtJWgrDybxnX8NIWQBzij+Sto+tU2GM=
+github.com/SchSeba/sriov-network-operator-1 v0.0.0-20230619135331-46b15e6d1cd2/go.mod h1:xe0s+RTyPdIlTaBVrWO3Knnw6wcCxlaRgbS0+r+fjVw=
 github.com/Shopify/logrus-bugsnag v0.0.0-20230117174420-439a4b8ba167 h1:4sc2y3LzYFk3Na8xMtfnJ5T1N5kA+MsU8dTJN6IjJqk=
 github.com/Shopify/logrus-bugsnag v0.0.0-20230117174420-439a4b8ba167/go.mod h1:nBISMsZeFRL0qdZ1pKCSFv0j4veW0nOdVpOa49IMLeI=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=
@@ -814,8 +816,6 @@ github.com/openshift/machine-config-operator v0.0.1-0.20230525143338-5c5a902aeb5
 github.com/openshift/machine-config-operator v0.0.1-0.20230525143338-5c5a902aeb55/go.mod h1:xwAAOZMhwF91Ii8/yfOwp+yH5+GJS7VX90NI39RmSyo=
 github.com/openshift/ptp-operator v0.0.0-20230608145834-0f37b622bc3b h1:R2WYVktXhYHbhS3P7uVxC5vrQqGPl42DmCGXaCaa5qw=
 github.com/openshift/ptp-operator v0.0.0-20230608145834-0f37b622bc3b/go.mod h1:riwmJYhdQ7Wd7rVJw14B3GJRCCL6Yk4wUbKepionXUo=
-github.com/openshift/sriov-network-operator v0.0.0-20230517142142-2b25b439193a h1:ntfKQ/e132I6fCetIBW08rihu6DXuRqeMO56k4BEzp4=
-github.com/openshift/sriov-network-operator v0.0.0-20230517142142-2b25b439193a/go.mod h1:qcsO9FbnUCtdnm8wrsx/EyfWtVhZYWHKFDdjThu6HLs=
 github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
 github.com/openzipkin/zipkin-go v0.1.6/go.mod h1:QgAqvLzwWbR/WpD4A3cGpPtJrZXNIiJc5AZX7/PBEpw=
 github.com/operator-framework/api v0.7.1/go.mod h1:L7IvLd/ckxJEJg/t4oTTlnHKAJIP/p51AvEslW3wYdY=
@@ -1144,7 +1144,6 @@ golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3/go.mod h1:3p9vT2HGsQu2
 golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4/go.mod h1:jJ57K6gSWd91VN4djpZkiMVwK6gcyfeH4XE8wZrZaV4=
 golang.org/x/mod v0.6.0/go.mod h1:4mET923SAdbXp2ki8ey+zGs1SLqsuM2Y0uvdZR/fUNI=
 golang.org/x/mod v0.10.0 h1:lFO9qtOdlre5W1jxS3r/4szv2/6iXxScdzjoBMXNhYk=
-golang.org/x/mod v0.10.0/go.mod h1:iBbtSCu2XBx23ZKBPSOrRkjjQPZFPuis4dIYUhu/chs=
 golang.org/x/net v0.0.0-20180724234803-3673e40ba225/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20180826012351-8a410e7b638d/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20180906233101-161cd47e91fd/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
