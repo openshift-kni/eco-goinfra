@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"os"
+	"strconv"
 	"time"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -482,6 +484,32 @@ func (builder *Builder) WithTolerationToMaster() *Builder {
 			Key:    "node-role.kubernetes.io/master",
 			Effect: "NoSchedule",
 		},
+	}
+
+	return builder
+}
+
+// WithResourceSpec to set CPU and memory settings on pod.
+func (builder *Builder) WithResourceSpec(cpuNum int, memorySize string) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Redefining pod's %s with resource spec for CPU and memory", builder.Definition.Name)
+
+	builder.isMutationAllowed("resource spec")
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for index := range builder.Definition.Spec.Containers {
+		builder.Definition.Spec.Containers[index].Resources = v1.ResourceRequirements{
+			Limits: v1.ResourceList{
+				v1.ResourceCPU:    resource.MustParse(strconv.Itoa(cpuNum)),
+				v1.ResourceMemory: resource.MustParse(memorySize),
+			},
+		}
 	}
 
 	return builder
