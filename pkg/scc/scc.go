@@ -7,7 +7,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
-	v1 "github.com/openshift/api/security/v1"
+	securityV1 "github.com/openshift/api/security/v1"
 	coreV1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -17,10 +17,9 @@ import (
 // to the cluster SecurityContextConstraints definition.
 type Builder struct {
 	// SecurityContextConstraints definition. Used to create SecurityContextConstraints object
-	Definition *v1.SecurityContextConstraints
+	Definition *securityV1.SecurityContextConstraints
 	// Created SecurityContextConstraints object
-	Object *v1.SecurityContextConstraints
-
+	Object *securityV1.SecurityContextConstraints
 	// Used in functions that define or mutate SecurityContextConstraints definition. errorMsg is processed
 	// before the SecurityContextConstraints object is created
 	errorMsg  string
@@ -38,15 +37,15 @@ func NewBuilder(apiClient *clients.Settings, name, runAsUser, selinuxContext str
 
 	builder := Builder{
 		apiClient: apiClient,
-		Definition: &v1.SecurityContextConstraints{
+		Definition: &securityV1.SecurityContextConstraints{
 			ObjectMeta: metaV1.ObjectMeta{
 				Name: name,
 			},
-			RunAsUser: v1.RunAsUserStrategyOptions{
-				Type: v1.RunAsUserStrategyType(runAsUser),
+			RunAsUser: securityV1.RunAsUserStrategyOptions{
+				Type: securityV1.RunAsUserStrategyType(runAsUser),
 			},
-			SELinuxContext: v1.SELinuxContextStrategyOptions{
-				Type: v1.SELinuxContextStrategyType(selinuxContext),
+			SELinuxContext: securityV1.SELinuxContextStrategyOptions{
+				Type: securityV1.SELinuxContextStrategyType(selinuxContext),
 			},
 		},
 	}
@@ -78,7 +77,7 @@ func PullSecurityContextConstraints(apiClient *clients.Settings, name string) (*
 
 	builder := Builder{
 		apiClient: apiClient,
-		Definition: &v1.SecurityContextConstraints{
+		Definition: &securityV1.SecurityContextConstraints{
 			ObjectMeta: metaV1.ObjectMeta{
 				Name: name,
 			},
@@ -185,7 +184,7 @@ func (builder *Builder) WithAllowCapabilities(allowCapabilities []coreV1.Capabil
 	return builder
 }
 
-// WithFSGroup adds list of allow capabilities to SecurityContextConstraints.
+// WithFSGroup adds fsGroup to SecurityContextConstraints.
 func (builder *Builder) WithFSGroup(fsGroup string) *Builder {
 	glog.V(100).Infof("Redefining SecurityContextConstraints %s with"+
 		"fsGroup: %s", builder.Definition.Name, fsGroup)
@@ -202,7 +201,7 @@ func (builder *Builder) WithFSGroup(fsGroup string) *Builder {
 		return builder
 	}
 
-	builder.Definition.FSGroup.Type = v1.FSGroupStrategyType(fsGroup)
+	builder.Definition.FSGroup.Type = securityV1.FSGroupStrategyType(fsGroup)
 
 	return builder
 }
@@ -252,7 +251,7 @@ func (builder *Builder) WithSupplementalGroups(supplementalGroupsType string) *B
 		return builder
 	}
 
-	builder.Definition.SupplementalGroups.Type = v1.SupplementalGroupsStrategyType(supplementalGroupsType)
+	builder.Definition.SupplementalGroups.Type = securityV1.SupplementalGroupsStrategyType(supplementalGroupsType)
 
 	return builder
 }
@@ -308,7 +307,7 @@ func (builder *Builder) Delete() error {
 		return err
 	}
 
-	glog.V(100).Infof("Removing SecurityContextConstraints %ss", builder.Definition.Name)
+	glog.V(100).Infof("Removing SecurityContextConstraints %s", builder.Definition.Name)
 
 	if !builder.Exists() {
 		return nil
