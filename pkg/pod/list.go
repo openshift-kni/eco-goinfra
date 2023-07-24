@@ -3,6 +3,7 @@ package pod
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
@@ -69,4 +70,21 @@ func ListInAllNamespaces(apiClient *clients.Settings, options v1.ListOptions) ([
 	}
 
 	return podObjects, nil
+}
+
+// WaitForAllPodsInNamespaceRunning check that all pods in namespace are in running state.
+func WaitForAllPodsInNamespaceRunning(apiClient *clients.Settings, nsname string, timeout time.Duration) (bool, error) {
+	podList, err := List(apiClient, nsname, v1.ListOptions{})
+	if err != nil {
+		return false, err
+	}
+
+	for _, onePod := range podList {
+		err = onePod.WaitUntilRunning(timeout)
+		if err != nil {
+			return false, err
+		}
+	}
+
+	return true, nil
 }
