@@ -71,8 +71,8 @@ func NewBuilder(apiClient *clients.Settings, name, runAsUser, selinuxContext str
 	return &builder
 }
 
-// PullSecurityContextConstraints pulls existing SecurityContextConstraints from cluster.
-func PullSecurityContextConstraints(apiClient *clients.Settings, name string) (*Builder, error) {
+// Pull pulls existing SecurityContextConstraints from cluster.
+func Pull(apiClient *clients.Settings, name string) (*Builder, error) {
 	glog.V(100).Infof("Pulling existing SecurityContextConstraints object name %s from cluster", name)
 
 	builder := Builder{
@@ -101,12 +101,12 @@ func PullSecurityContextConstraints(apiClient *clients.Settings, name string) (*
 
 // WithPrivilegedContainer adds bool flag to the allowPrivilegedContainer of SecurityContextConstraints.
 func (builder *Builder) WithPrivilegedContainer(allowPrivileged bool) *Builder {
-	glog.V(100).Infof("Redefining SecurityContextConstraints %s with"+
-		" AllowPrivilegedContainer: %t flag", builder.Definition.Name, allowPrivileged)
-
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Redefining SecurityContextConstraints %s with"+
+		" AllowPrivilegedContainer: %t flag", builder.Definition.Name, allowPrivileged)
 
 	builder.Definition.AllowPrivilegedContainer = allowPrivileged
 
@@ -115,26 +115,26 @@ func (builder *Builder) WithPrivilegedContainer(allowPrivileged bool) *Builder {
 
 // WithPrivilegedEscalation adds bool flag to the allowPrivilegeEscalation of SecurityContextConstraints.
 func (builder *Builder) WithPrivilegedEscalation(allowPrivilegedEscalation bool) *Builder {
-	glog.V(100).Infof("Redefining SecurityContextConstraints %s with"+
-		" allowPrivilegedEscalation: %t flag", builder.Definition.Name, allowPrivilegedEscalation)
-
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
-	builder.Definition.AllowPrivilegedContainer = allowPrivilegedEscalation
+	glog.V(100).Infof("Redefining SecurityContextConstraints %s with"+
+		" allowPrivilegedEscalation: %t flag", builder.Definition.Name, allowPrivilegedEscalation)
+
+	builder.Definition.DefaultAllowPrivilegeEscalation = &allowPrivilegedEscalation
 
 	return builder
 }
 
 // WithDropCapabilities adds list of drop capabilities to SecurityContextConstraints.
 func (builder *Builder) WithDropCapabilities(requiredDropCapabilities []coreV1.Capability) *Builder {
-	glog.V(100).Infof("Redefining SecurityContextConstraints %s with"+
-		"requiredDropCapabilities: %v", builder.Definition.Name, requiredDropCapabilities)
-
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Redefining SecurityContextConstraints %s with"+
+		"requiredDropCapabilities: %v", builder.Definition.Name, requiredDropCapabilities)
 
 	if len(requiredDropCapabilities) == 0 {
 		glog.V(100).Infof("SecurityContextConstraints 'requiredDropCapabilities' argument cannot be empty")
@@ -158,12 +158,12 @@ func (builder *Builder) WithDropCapabilities(requiredDropCapabilities []coreV1.C
 
 // WithAllowCapabilities adds list of allow capabilities to SecurityContextConstraints.
 func (builder *Builder) WithAllowCapabilities(allowCapabilities []coreV1.Capability) *Builder {
-	glog.V(100).Infof("Redefining SecurityContextConstraints %s with"+
-		"allowCapabilities: %v", builder.Definition.Name, allowCapabilities)
-
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Redefining SecurityContextConstraints %s with"+
+		"allowCapabilities: %v", builder.Definition.Name, allowCapabilities)
 
 	if len(allowCapabilities) == 0 {
 		glog.V(100).Infof("SecurityContextConstraints 'allowCapabilities' argument cannot be empty")
@@ -186,12 +186,12 @@ func (builder *Builder) WithAllowCapabilities(allowCapabilities []coreV1.Capabil
 
 // WithFSGroup adds fsGroup to SecurityContextConstraints.
 func (builder *Builder) WithFSGroup(fsGroup string) *Builder {
-	glog.V(100).Infof("Redefining SecurityContextConstraints %s with"+
-		"fsGroup: %s", builder.Definition.Name, fsGroup)
-
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Redefining SecurityContextConstraints %s with"+
+		"fsGroup: %s", builder.Definition.Name, fsGroup)
 
 	if fsGroup == "" {
 		glog.V(100).Infof("SecurityContextConstraints 'fsGroup' argument cannot be empty")
@@ -208,12 +208,12 @@ func (builder *Builder) WithFSGroup(fsGroup string) *Builder {
 
 // WithSeccompProfiles adds list of seccompProfiles to SecurityContextConstraints.
 func (builder *Builder) WithSeccompProfiles(seccompProfiles []string) *Builder {
-	glog.V(100).Infof("Redefining SecurityContextConstraints %s with"+
-		"SeccompProfiles: %v", builder.Definition.Name, seccompProfiles)
-
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Redefining SecurityContextConstraints %s with"+
+		"SeccompProfiles: %v", builder.Definition.Name, seccompProfiles)
 
 	if len(seccompProfiles) == 0 {
 		glog.V(100).Infof("SecurityContextConstraints 'seccompProfiles' argument cannot be empty")
@@ -236,12 +236,12 @@ func (builder *Builder) WithSeccompProfiles(seccompProfiles []string) *Builder {
 
 // WithSupplementalGroups adds SupplementalGroups to SecurityContextConstraints.
 func (builder *Builder) WithSupplementalGroups(supplementalGroupsType string) *Builder {
-	glog.V(100).Infof("Redefining SecurityContextConstraints %s with"+
-		"supplementalGroupsType: %s", builder.Definition.Name, supplementalGroupsType)
-
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Redefining SecurityContextConstraints %s with"+
+		"supplementalGroupsType: %s", builder.Definition.Name, supplementalGroupsType)
 
 	if supplementalGroupsType == "" {
 		glog.V(100).Infof("SecurityContextConstraints 'SupplementalGroups' argument cannot be empty")
@@ -258,12 +258,12 @@ func (builder *Builder) WithSupplementalGroups(supplementalGroupsType string) *B
 
 // WithUsers adds users to SecurityContextConstraints.
 func (builder *Builder) WithUsers(users []string) *Builder {
-	glog.V(100).Infof("Redefining SecurityContextConstraints %s with"+
-		"users: %v", builder.Definition.Name, users)
-
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
+
+	glog.V(100).Infof("Redefining SecurityContextConstraints %s with"+
+		"users: %v", builder.Definition.Name, users)
 
 	if len(users) == 0 {
 		glog.V(100).Infof("SecurityContextConstraints 'users' argument cannot be empty")
