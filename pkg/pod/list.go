@@ -72,7 +72,7 @@ func ListInAllNamespaces(apiClient *clients.Settings, options v1.ListOptions) ([
 	return podObjects, nil
 }
 
-// WaitForAllPodsInNamespaceRunning check that all pods in namespace that match options are in running state
+// WaitForAllPodsInNamespaceRunning check that all pods in namespace that match options are in running state.
 func WaitForAllPodsInNamespaceRunning(
 	apiClient *clients.Settings,
 	nsname string,
@@ -88,12 +88,14 @@ func WaitForAllPodsInNamespaceRunning(
 
 	podList, err := List(apiClient, nsname, options)
 	if err != nil {
+
 		return false, err
 	}
 
 	for _, podObj := range podList {
 		err = podObj.WaitUntilRunning(timeout)
 		if err != nil {
+			
 			return false, err
 		}
 	}
