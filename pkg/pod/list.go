@@ -79,6 +79,13 @@ func WaitForAllPodsInNamespaceRunning(
 	options v1.ListOptions,
 	timeout time.Duration,
 ) (bool, error) {
+	glog.V(100).Infof("Witing for all pods in %s namespace with %v options are in running state", nsname, options)
+
+	if nsname == "" {
+		glog.V(100).Infof("'nsname' parameter can not be empty")
+		return false, fmt.Errorf("failed to list pods, 'nsname' parameter is empty")
+	}
+
 	podList, err := List(apiClient, nsname, options)
 	if err != nil {
 		return false, err
