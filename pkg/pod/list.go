@@ -89,6 +89,7 @@ func WaitForAllPodsInNamespaceRunning(
 
 	podList, err := List(apiClient, nsname, options)
 	if err != nil {
+		glog.V(100).Infof("Failed to list all pods due to %s", err.Error())
 
 		return false, err
 	}
@@ -96,6 +97,7 @@ func WaitForAllPodsInNamespaceRunning(
 	for _, podObj := range podList {
 		err = podObj.WaitUntilRunning(timeout)
 		if err != nil {
+			glog.V(100).Infof("Timout was reached while waiting for all pods in running state: %s", err.Error())
 
 			return false, err
 		}
