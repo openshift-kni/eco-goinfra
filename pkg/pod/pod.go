@@ -686,6 +686,10 @@ func (builder *Builder) WithSecurityContext(securityContext *v1.PodSecurityConte
 		builder.errorMsg = "'securityContext' parameter is empty"
 	}
 
+	if builder.errorMsg != "" {
+		return builder
+	}
+
 	builder.isMutationAllowed("SecurityContext")
 
 	builder.Definition.Spec.SecurityContext = securityContext
