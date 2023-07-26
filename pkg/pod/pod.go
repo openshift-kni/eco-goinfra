@@ -677,7 +677,7 @@ func (builder *Builder) WithSecurityContext(securityContext *v1.PodSecurityConte
 		return builder
 	}
 
-	glog.V(100).Infof("Applying SecurityContext configuration on pod % in namespace %s",
+	glog.V(100).Infof("Applying SecurityContext configuration on pod %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if securityContext == nil {
