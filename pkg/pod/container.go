@@ -188,7 +188,7 @@ func (builder *ContainerBuilder) WithResourceRequest(hugePages, memory string, c
 	if cpu <= 0 {
 		glog.V(100).Infof("Container's resource request cpu can not be zero or negative number.")
 
-		builder.errorMsg = "container's resource request 'memory' is empty"
+		builder.errorMsg = "container's resource request 'cpu' is empty"
 	}
 
 	if builder.errorMsg != "" {
@@ -204,7 +204,7 @@ func (builder *ContainerBuilder) WithResourceRequest(hugePages, memory string, c
 	return builder
 }
 
-// WithEnvVar add environment variables to container.
+// WithEnvVar adds environment variables to container.
 func (builder *ContainerBuilder) WithEnvVar(name, value string) *ContainerBuilder {
 	glog.V(100).Infof("Applying custom environment variables to container: name %s, value: %s", name, value)
 

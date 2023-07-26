@@ -638,7 +638,7 @@ func (builder *Builder) WithHugePages() *Builder {
 		return builder
 	}
 
-	glog.V(100).Infof("Applying hugePages configuration to all pod's: %s containers", builder.Definition.Name)
+	glog.V(100).Infof("Applying hugePages configuration to all containers in pod: %s", builder.Definition.Name)
 
 	builder.isMutationAllowed("hugepages")
 
@@ -677,7 +677,7 @@ func (builder *Builder) WithSecurityContext(securityContext *v1.PodSecurityConte
 		return builder
 	}
 
-	glog.V(100).Infof("Applying SecurityContext configuration pod % in namespace %s",
+	glog.V(100).Infof("Applying SecurityContext configuration on pod % in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if securityContext == nil {
