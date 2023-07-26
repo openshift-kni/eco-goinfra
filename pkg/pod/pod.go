@@ -616,6 +616,83 @@ func (builder *Builder) WithSecondaryNetwork(network []*multus.NetworkSelectionE
 	return builder
 }
 
+// RedefineDefaultContainer redefines default container with the new one.
+func (builder *Builder) RedefineDefaultContainer(container v1.Container) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Redefining default pod %s container in namespace %s using new container %v",
+		builder.Definition.Name, builder.Definition.Namespace, container)
+
+	builder.isMutationAllowed("default container")
+
+	builder.Definition.Spec.Containers[0] = container
+
+	return builder
+}
+
+// WithHugePages sets hugePages on all containers inside the pod.
+func (builder *Builder) WithHugePages() *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Applying hugePages configuration to all pod's: %s containers", builder.Definition.Name)
+
+	builder.isMutationAllowed("hugepages")
+
+	if builder.Definition.Spec.Volumes != nil {
+		builder.Definition.Spec.Volumes = append(builder.Definition.Spec.Volumes, v1.Volume{
+			Name: "hugepages", VolumeSource: v1.VolumeSource{
+				EmptyDir: &v1.EmptyDirVolumeSource{Medium: "HugePages"}}})
+	} else {
+		builder.Definition.Spec.Volumes = []v1.Volume{
+			{Name: "hugepages", VolumeSource: v1.VolumeSource{
+				EmptyDir: &v1.EmptyDirVolumeSource{Medium: "HugePages"}},
+			},
+		}
+	}
+
+	for idx := range builder.Definition.Spec.Containers {
+		if builder.Definition.Spec.Containers[idx].VolumeMounts != nil {
+			builder.Definition.Spec.Containers[idx].VolumeMounts = append(
+				builder.Definition.Spec.Containers[idx].VolumeMounts,
+				v1.VolumeMount{Name: "hugepages", MountPath: "/mnt/huge"})
+		} else {
+			builder.Definition.Spec.Containers[idx].VolumeMounts = []v1.VolumeMount{{
+				Name:      "hugepages",
+				MountPath: "/mnt/huge",
+			},
+			}
+		}
+	}
+
+	return builder
+}
+
+// WithSecurityContext sets SecurityContext on pod definition.
+func (builder *Builder) WithSecurityContext(securityContext *v1.PodSecurityContext) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Applying SecurityContext configuration pod % in namespace %s",
+		builder.Definition.Name, builder.Definition.Namespace)
+
+	if securityContext == nil {
+		glog.V(100).Infof("The 'securityContext' of the pod is empty")
+
+		builder.errorMsg = "'securityContext' parameter is empty"
+	}
+
+	builder.isMutationAllowed("SecurityContext")
+
+	builder.Definition.Spec.SecurityContext = securityContext
+
+	return builder
+}
+
 // PullImage pulls image for given pod's container and removes it.
 func (builder *Builder) PullImage(timeout time.Duration, testCmd []string) error {
 	if valid, err := builder.validate(); !valid {
