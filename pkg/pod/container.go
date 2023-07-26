@@ -152,7 +152,7 @@ func (builder *ContainerBuilder) WithResourceLimit(hugePages, memory string, cpu
 	if cpu <= 0 {
 		glog.V(100).Infof("Container's resource limit cpu can not be zero or negative number.")
 
-		builder.errorMsg = "container's resource limit 'memory' is empty"
+		builder.errorMsg = "container's resource limit 'cpu' is invalid"
 	}
 
 	if builder.errorMsg != "" {
@@ -188,7 +188,7 @@ func (builder *ContainerBuilder) WithResourceRequest(hugePages, memory string, c
 	if cpu <= 0 {
 		glog.V(100).Infof("Container's resource request cpu can not be zero or negative number.")
 
-		builder.errorMsg = "container's resource request 'cpu' is empty"
+		builder.errorMsg = "container's resource request 'cpu' is invalid"
 	}
 
 	if builder.errorMsg != "" {
