@@ -160,7 +160,7 @@ func (builder *ContainerBuilder) WithResourceLimit(hugePages, memory string, cpu
 	}
 
 	builder.definition.Resources.Limits = v1.ResourceList{
-		"hugePages-1Gi": resource.MustParse(hugePages),
+		"hugepages-1Gi": resource.MustParse(hugePages),
 		"memory":        resource.MustParse(memory),
 		"cpu":           *resource.NewQuantity(cpu, resource.DecimalSI),
 	}
