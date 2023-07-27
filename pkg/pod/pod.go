@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"time"
 
@@ -16,8 +17,10 @@ import (
 	v1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/httpstream/spdy"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/utils/pointer"
 
@@ -392,6 +395,96 @@ func (builder *Builder) ExecCommand(command []string, containerName ...string) (
 		Stdout: &buffer,
 		Stderr: os.Stderr,
 		Tty:    true,
+	})
+
+	if err != nil {
+		return buffer, err
+	}
+
+	return buffer, nil
+}
+
+// Copy returns the contents of a file or path from a specified container into a buffer.
+// Setting the tar option returns a tar archive of the specified path.
+func (builder *Builder) Copy(path, containerName string, tar bool) (bytes.Buffer, error) {
+	if valid, err := builder.validate(); !valid {
+		return bytes.Buffer{}, err
+	}
+
+	glog.V(100).Infof("Copying %s from %s in the pod",
+		path, containerName)
+
+	var command []string
+	if tar {
+		command = []string{
+			"tar",
+			"cf",
+			"-",
+			path,
+		}
+	} else {
+		command = []string{
+			"cat",
+			path,
+		}
+	}
+
+	var buffer bytes.Buffer
+
+	req := builder.apiClient.CoreV1Interface.RESTClient().
+		Post().
+		Namespace(builder.Object.Namespace).
+		Resource("pods").
+		Name(builder.Object.Name).
+		SubResource("exec").
+		VersionedParams(&v1.PodExecOptions{
+			Container: containerName,
+			Command:   command,
+			Stdin:     true,
+			Stdout:    true,
+			Stderr:    true,
+			TTY:       false,
+		}, scheme.ParameterCodec)
+
+	tlsConfig, err := rest.TLSConfigFor(builder.apiClient.Config)
+	if err != nil {
+		return bytes.Buffer{}, err
+	}
+
+	proxy := http.ProxyFromEnvironment
+	if builder.apiClient.Config.Proxy != nil {
+		proxy = builder.apiClient.Config.Proxy
+	}
+
+	// More verbose setup of remotecommand executor required in order to tweak PingPeriod.
+	// By default many large files are not copied in their entirety without disabling PingPeriod during the copy.
+	// https://github.com/kubernetes/kubernetes/issues/60140#issuecomment-1411477275
+	upgradeRoundTripper := spdy.NewRoundTripperWithConfig(spdy.RoundTripperConfig{
+		TLS:        tlsConfig,
+		Proxier:    proxy,
+		PingPeriod: 0,
+	})
+
+	wrapper, err := rest.HTTPWrappersForConfig(builder.apiClient.Config, upgradeRoundTripper)
+	if err != nil {
+		return bytes.Buffer{}, err
+	}
+
+	if err != nil {
+		return bytes.Buffer{}, err
+	}
+
+	exec, err := remotecommand.NewSPDYExecutorForTransports(wrapper, upgradeRoundTripper, "POST", req.URL())
+
+	if err != nil {
+		return buffer, err
+	}
+
+	err = exec.StreamWithContext(context.TODO(), remotecommand.StreamOptions{
+		Stdin:  os.Stdin,
+		Stdout: &buffer,
+		Stderr: os.Stderr,
+		Tty:    false,
 	})
 
 	if err != nil {
