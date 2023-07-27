@@ -470,10 +470,6 @@ func (builder *Builder) Copy(path, containerName string, tar bool) (bytes.Buffer
 		return bytes.Buffer{}, err
 	}
 
-	if err != nil {
-		return bytes.Buffer{}, err
-	}
-
 	exec, err := remotecommand.NewSPDYExecutorForTransports(wrapper, upgradeRoundTripper, "POST", req.URL())
 
 	if err != nil {
