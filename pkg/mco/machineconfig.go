@@ -71,7 +71,7 @@ func PullMachineConfig(apiClient *clients.Settings, name string) (*MCBuilder, er
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("machineconfig object #{name} doesn't exist")
+		return nil, fmt.Errorf("machineconfig object %s doesn't exist", name)
 	}
 
 	builder.Definition = builder.Object
@@ -112,7 +112,7 @@ func (builder *MCBuilder) Delete() error {
 		context.TODO(), builder.Object.Name, metav1.DeleteOptions{})
 
 	if err != nil {
-		return fmt.Errorf("cannot delete MachineConfig :%w", err)
+		return fmt.Errorf("cannot delete MachineConfig: %w", err)
 	}
 
 	builder.Object = nil
@@ -156,7 +156,7 @@ func (builder *MCBuilder) WithLabel(key string, value string) *MCBuilder {
 		return builder
 	}
 
-	glog.V(100).Infof("Labeling the namespace %s with %s=%s", builder.Definition.Name, key, value)
+	glog.V(100).Infof("Labeling the machineconfig %s with %s=%s", builder.Definition.Name, key, value)
 
 	if key == "" {
 		glog.V(100).Infof("The key can't be empty")
