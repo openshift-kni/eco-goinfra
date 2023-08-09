@@ -262,7 +262,7 @@ func (builder *Builder) WithSecurityContext(securityContext *coreV1.PodSecurityC
 	return builder
 }
 
-// WithLabel applies label to pod's definition.
+// WithLabel applies label to deployment's definition.
 func (builder *Builder) WithLabel(labelKey, labelValue string) *Builder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
@@ -280,7 +280,13 @@ func (builder *Builder) WithLabel(labelKey, labelValue string) *Builder {
 		return builder
 	}
 
-	builder.Definition.Spec.Template.Labels = map[string]string{labelKey: labelValue}
+	if builder.Definition.Spec.Template.Labels == nil {
+		builder.Definition.Spec.Template.Labels = map[string]string{labelKey: labelValue}
+
+		return builder
+	}
+
+	builder.Definition.Spec.Template.Labels[labelKey] = labelValue
 
 	return builder
 }
