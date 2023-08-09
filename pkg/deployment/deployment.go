@@ -271,6 +271,8 @@ func (builder *Builder) WithLabel(labelKey, labelValue string) *Builder {
 	glog.V(100).Infof(fmt.Sprintf("Defining deployment's label to %s:%s", labelKey, labelValue))
 
 	if labelKey == "" {
+		glog.V(100).Infof("The 'labelKey' of the deployment is empty")
+
 		builder.errorMsg = "can not apply empty labelKey"
 	}
 
