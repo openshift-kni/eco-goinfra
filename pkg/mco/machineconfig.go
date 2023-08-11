@@ -79,7 +79,7 @@ func PullMachineConfig(apiClient *clients.Settings, name string) (*MCBuilder, er
 	return &builder, nil
 }
 
-// Create builds machineconfig in the cluster and stores the created object in struct.
+// Create generates a machineconfig in the cluster and stores the created object in struct.
 func (builder *MCBuilder) Create() (*MCBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
@@ -151,7 +151,7 @@ func (builder *MCBuilder) Exists() bool {
 }
 
 // WithLabel redefines machineconfig definition with the given label.
-func (builder *MCBuilder) WithLabel(key string, value string) *MCBuilder {
+func (builder *MCBuilder) WithLabel(key, value string) *MCBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -200,15 +200,78 @@ func (builder *MCBuilder) WithOptions(options ...MCAdditionalOptions) *MCBuilder
 	return builder
 }
 
-// WithSpec adds the specified MachineConfigSpec to the MachineConfig.
-func (builder *MCBuilder) WithSpec(spec mcv1.MachineConfigSpec) *MCBuilder {
+// WithKernelArguments sets the specified KernelArguments to the MachineConfig.
+func (builder *MCBuilder) WithKernelArguments(kernelArgs []string) *MCBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
-	glog.V(100).Infof("Setting MachineConfigSpec: %v", spec)
+	if len(kernelArgs) == 0 {
+		glog.V(100).Infof("The kernelArgs can't be empty")
 
-	builder.Definition.Spec = spec
+		builder.errorMsg = "'kernelArgs' cannot be empty"
+
+		return builder
+	}
+
+	glog.V(100).Infof("Setting KernelArguments: %v", kernelArgs)
+
+	builder.Definition.Spec.KernelArguments = kernelArgs
+
+	return builder
+}
+
+// WithExtensions sets the specified Extensions to the MachineConfig.
+func (builder *MCBuilder) WithExtensions(extensions []string) *MCBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	if len(extensions) == 0 {
+		glog.V(100).Infof("The extensions can't be empty")
+
+		builder.errorMsg = "'extensions' cannot be empty"
+
+		return builder
+	}
+
+	glog.V(100).Infof("Setting Extensions: %v", extensions)
+
+	builder.Definition.Spec.Extensions = extensions
+
+	return builder
+}
+
+// WithFIPS sets the specified FIPS value to the MachineConfig.
+func (builder *MCBuilder) WithFIPS(fips bool) *MCBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Setting FIPS: %v", fips)
+
+	builder.Definition.Spec.FIPS = fips
+
+	return builder
+}
+
+// WithKernelType sets the specified kernelType to the MachineConfig.
+func (builder *MCBuilder) WithKernelType(kernelType string) *MCBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	if kernelType == "" {
+		glog.V(100).Infof("The kernelType can't be empty")
+
+		builder.errorMsg = "'kernelType' cannot be empty"
+
+		return builder
+	}
+
+	glog.V(100).Infof("Setting KernelType: %v", kernelType)
+
+	builder.Definition.Spec.KernelType = kernelType
 
 	return builder
 }
