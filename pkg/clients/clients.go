@@ -8,6 +8,9 @@ import (
 
 	"k8s.io/client-go/dynamic"
 
+	argocdoperatorv1alpha1 "github.com/argoproj-labs/argocd-operator/api/v1alpha1"
+	argocdappv1alpha1 "github.com/argoproj/argo-cd/v2/pkg/client/clientset/versioned/typed/application/v1alpha1"
+
 	"github.com/golang/glog"
 	bmhv1alpha1 "github.com/metal3-io/baremetal-operator/apis/metal3.io/v1alpha1"
 
@@ -62,6 +65,7 @@ import (
 // Settings provides the struct to talk with relevant API.
 type Settings struct {
 	KubeconfigPath string
+	argocdappv1alpha1.ArgoprojV1alpha1Interface
 	coreV1Client.CoreV1Interface
 	clientConfigV1.ConfigV1Interface
 	clientMachineConfigV1.MachineconfigurationV1Interface
@@ -104,6 +108,8 @@ func New(kubeconfig string) *Settings {
 	}
 
 	clientSet := &Settings{}
+	clientSet.ArgoprojV1alpha1Interface = argocdappv1alpha1.NewForConfigOrDie(config)
+
 	clientSet.CoreV1Interface = coreV1Client.NewForConfigOrDie(config)
 	clientSet.ConfigV1Interface = clientConfigV1.NewForConfigOrDie(config)
 	clientSet.MachineconfigurationV1Interface = clientMachineConfigV1.NewForConfigOrDie(config)
@@ -227,6 +233,10 @@ func SetScheme(crScheme *runtime.Scheme) error {
 
 	if err := nmstateV1alpha1.AddToScheme(crScheme); err != nil {
 		return err
+	}
+
+	if err := argocdoperatorv1alpha1.AddToScheme(crScheme); err != nil {
+		panic(err)
 	}
 
 	return nil
