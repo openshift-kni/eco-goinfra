@@ -19,6 +19,9 @@ import (
 	ptpV1 "github.com/openshift/ptp-operator/pkg/client/clientset/versioned/typed/ptp/v1"
 	olm2 "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/scheme"
 
+	argocdv1alpha1 "github.com/argoproj-labs/argocd-operator/api/v1alpha1"
+	argocdAppv1alpha1 "github.com/argoproj/argo-cd/v2/pkg/client/clientset/versioned/typed/application/v1alpha1"
+
 	olmv1 "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1"
 	olm "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1alpha1"
 
@@ -68,6 +71,7 @@ type Settings struct {
 	networkV1Client.NetworkingV1Client
 	appsV1Client.AppsV1Interface
 	rbacV1Client.RbacV1Interface
+	argocdAppv1alpha1.ArgoprojV1alpha1Interface
 	clientSrIovV1.SriovnetworkV1Interface
 	Config *rest.Config
 	runtimeClient.Client
@@ -118,6 +122,7 @@ func New(kubeconfig string) *Settings {
 	clientSet.OperatorsV1Interface = olmv1.NewForConfigOrDie(config)
 	clientSet.PackageManifestInterface = clientPkgManifestV1.NewForConfigOrDie(config)
 	clientSet.SecurityV1Interface = v1security.NewForConfigOrDie(config)
+	clientSet.ArgoprojV1alpha1Interface = argocdAppv1alpha1.NewForConfigOrDie(config)
 
 	clientSet.Config = config
 
@@ -229,6 +234,9 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
+	if err := argocdv1alpha1.AddToScheme(crScheme); err != nil {
+		panic(err)
+	}
 	return nil
 }
 
