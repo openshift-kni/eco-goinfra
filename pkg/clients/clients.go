@@ -8,7 +8,9 @@ import (
 
 	"k8s.io/client-go/dynamic"
 
+	argocdoperatorv1alpha1 "github.com/argoproj-labs/argocd-operator/api/v1alpha1"
 	"github.com/golang/glog"
+
 	bmhv1alpha1 "github.com/metal3-io/baremetal-operator/apis/metal3.io/v1alpha1"
 
 	performanceV2 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/performanceprofile/v2"
@@ -226,6 +228,10 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	}
 
 	if err := nmstateV1alpha1.AddToScheme(crScheme); err != nil {
+		return err
+	}
+
+	if err := argocdoperatorv1alpha1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
