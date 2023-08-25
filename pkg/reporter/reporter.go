@@ -1,39 +1,129 @@
 package reporter
 
 import (
-	"log"
+	"errors"
+	"fmt"
+	"io"
 	"os"
+	"path"
 	"strings"
-	"time"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/golang/glog"
+	"github.com/onsi/ginkgo/v2/types"
 	"github.com/openshift-kni/k8sreporter"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-// Dump runs reports and collect logs under given directory.
-func Dump(client *clients.Settings, crds []k8sreporter.CRData, namespace, reportDirPath, testSuiteName string) {
-	dumpNamespace := func(ns string) bool {
-		return strings.HasPrefix(ns, namespace)
-	}
-	//nolint:staticcheck
-	addToScheme := func(scheme *runtime.Scheme) error {
-		//nolint:ineffassign,staticcheck
-		scheme = client.Client.Scheme()
+var (
+	pathToPodExecLogs = "/tmp/pod_exec_logs.log"
+)
 
+func newReporter(
+	reportPath string,
+	namespacesToDump map[string]string,
+	apiScheme func(scheme *runtime.Scheme) error,
+	cRDs []k8sreporter.CRData) (*k8sreporter.KubernetesReporter, error) {
+	nsToDumpFilter := func(ns string) bool {
+		_, found := namespacesToDump[ns]
+
+		return found
+	}
+
+	if _, err := os.Stat(reportPath); os.IsNotExist(err) {
+		err := os.MkdirAll(reportPath, 0755)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	res, err := k8sreporter.New("", apiScheme, nsToDumpFilter, reportPath, cRDs...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// ReportIfFailed dumps requested cluster CRs if TC is failed to the given directory.
+func ReportIfFailed(
+	report types.SpecReport,
+	dumpDir,
+	reportsDirAbsPath string,
+	nSpaces map[string]string,
+	cRDs []k8sreporter.CRData,
+	apiScheme func(scheme *runtime.Scheme) error) {
+	if !types.SpecStateFailureStates.Is(report.State) {
+		return
+	}
+
+	if dumpDir != "" {
+		reporter, err := newReporter(dumpDir, nSpaces, apiScheme, cRDs)
+
+		if err != nil {
+			glog.Fatalf("Failed to create log reporter due to %s", err)
+		}
+
+		tcReportFolderName := strings.ReplaceAll(report.FullText(), " ", "_")
+		reporter.Dump(report.RunTime, tcReportFolderName)
+
+		_, podExecLogsFName := path.Split(pathToPodExecLogs)
+
+		err = moveFile(
+			pathToPodExecLogs, path.Join(reportsDirAbsPath, tcReportFolderName, podExecLogsFName))
+
+		if err != nil {
+			glog.Fatalf("Failed to move pod exec logs %s to report folder: %s", pathToPodExecLogs, err)
+		}
+	}
+
+	err := removeFile(pathToPodExecLogs)
+	if err != nil {
+		glog.Fatalf(err.Error())
+	}
+}
+
+func moveFile(sourcePath, destPath string) error {
+	_, err := os.Stat(sourcePath)
+	if errors.Is(err, os.ErrNotExist) {
 		return nil
 	}
 
-	reporter, err := k8sreporter.New(
-		client.KubeconfigPath, addToScheme, dumpNamespace, reportDirPath, crds...)
+	inputFile, err := os.Open(sourcePath)
 
 	if err != nil {
-		log.Fatalf("Failed to initialize the reporter %s", err)
+		return fmt.Errorf("couldn't open source file: %w", err)
 	}
 
-	if err := os.MkdirAll(reportDirPath, os.ModePerm); err != nil {
-		log.Fatal(err)
+	defer func() {
+		_ = inputFile.Close()
+	}()
+
+	outputFile, err := os.Create(destPath)
+	if err != nil {
+		return fmt.Errorf("couldn't open dest file: %w", err)
 	}
 
-	reporter.Dump(10*time.Minute, testSuiteName)
+	defer func() {
+		_ = outputFile.Close()
+	}()
+
+	_, err = io.Copy(outputFile, inputFile)
+
+	if err != nil {
+		return fmt.Errorf("writing to output file failed: %w", err)
+	}
+
+	return nil
+}
+
+func removeFile(fPath string) error {
+	if _, err := os.Stat(fPath); err == nil {
+		err := os.Remove(fPath)
+		if err != nil {
+			return fmt.Errorf("failed to remove pod exec logs from %s: %w", fPath, err)
+		}
+	}
+
+	return nil
 }
