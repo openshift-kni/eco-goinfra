@@ -219,11 +219,3 @@ func (builder *Builder) validate() (bool, error) {
 
 	return true, nil
 }
-
-// GetNmStateList returns a NMState list.
-func GetNmStateList(apiClient *clients.Settings) (nmstateV1.NMStateList, error) {
-	nmStateList := &nmstateV1.NMStateList{}
-	err := apiClient.List(context.TODO(), nmStateList, &goclient.ListOptions{})
-
-	return *nmStateList, err
-}

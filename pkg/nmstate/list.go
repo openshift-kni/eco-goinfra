@@ -6,6 +6,7 @@ import (
 	"github.com/golang/glog"
 	nmstateV1 "github.com/nmstate/kubernetes-nmstate/api/v1"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // ListPolicy returns a list of NodeNetworkConfigurationPolicy.
@@ -34,4 +35,12 @@ func ListPolicy(apiClient *clients.Settings) ([]*PolicyBuilder, error) {
 	}
 
 	return networkConfigurationPolicyObjects, nil
+}
+
+// ListNmState returns a NMState list.
+func ListNmState(apiClient *clients.Settings) (nmstateV1.NMStateList, error) {
+	nmStateList := &nmstateV1.NMStateList{}
+	err := apiClient.List(context.TODO(), nmStateList, &client.ListOptions{})
+
+	return *nmStateList, err
 }
