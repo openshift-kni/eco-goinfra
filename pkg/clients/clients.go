@@ -8,9 +8,11 @@ import (
 
 	"k8s.io/client-go/dynamic"
 
+	argocdoperatorv1alpha1 "github.com/argoproj-labs/argocd-operator/api/v1alpha1"
+	argocdScheme "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
+
 	"github.com/golang/glog"
 	bmhv1alpha1 "github.com/metal3-io/baremetal-operator/apis/metal3.io/v1alpha1"
-
 	performanceV2 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/performanceprofile/v2"
 
 	clientConfigV1 "github.com/openshift/client-go/config/clientset/versioned/typed/config/v1"
@@ -18,7 +20,6 @@ import (
 	mcv1 "github.com/openshift/machine-config-operator/pkg/apis/machineconfiguration.openshift.io/v1"
 	ptpV1 "github.com/openshift/ptp-operator/pkg/client/clientset/versioned/typed/ptp/v1"
 	olm2 "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/scheme"
-
 	olmv1 "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1"
 	olm "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1alpha1"
 
@@ -192,7 +193,9 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	if err := bmhv1alpha1.AddToScheme(crScheme); err != nil {
 		return err
 	}
-
+	if err := argocdScheme.AddToScheme(crScheme); err != nil {
+		return err
+	}
 	if err := hiveextV1Beta1.AddToScheme(crScheme); err != nil {
 		return err
 	}
@@ -225,10 +228,16 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
+	if err := argocdoperatorv1alpha1.AddToScheme(crScheme); err != nil {
+		return err
+	}
 	if err := nmstateV1alpha1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
+	if err := argocdScheme.AddToScheme(crScheme); err != nil {
+		return err
+	}
 	return nil
 }
 
