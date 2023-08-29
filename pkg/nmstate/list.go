@@ -6,6 +6,7 @@ import (
 	"github.com/golang/glog"
 	nmstateV1 "github.com/nmstate/kubernetes-nmstate/api/v1"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	assistedv1beta1 "github.com/openshift/assisted-service/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -37,10 +38,29 @@ func ListPolicy(apiClient *clients.Settings) ([]*PolicyBuilder, error) {
 	return networkConfigurationPolicyObjects, nil
 }
 
-// ListNmState returns a NMState list.
-func ListNmState(apiClient *clients.Settings) (nmstateV1.NMStateList, error) {
-	nmStateList := &nmstateV1.NMStateList{}
-	err := apiClient.List(context.TODO(), nmStateList, &client.ListOptions{})
+// ListNmStateConfig returns a NMStateConfig list.
+func ListNmStateConfig(apiClient *clients.Settings) ([]*NmStateConfigBuilder, error) {
+	nmStateConfigList := &assistedv1beta1.NMStateConfigList{}
 
-	return *nmStateList, err
+	err := apiClient.List(context.Background(), nmStateConfigList, &client.ListOptions{})
+	if err != nil {
+		glog.V(100).Infof("Failed to list nmStateConfig due to %s", err.Error())
+
+		return nil, err
+	}
+
+	var nmstateConfigObjects []*NmStateConfigBuilder
+
+	for _, nmStateConfigObj := range nmStateConfigList.Items {
+		nmStateConf := nmStateConfigObj
+		nmStateConfBuilder := &NmStateConfigBuilder{
+			apiClient:  apiClient,
+			Definition: &nmStateConf,
+			Object:     &nmStateConf,
+		}
+
+		nmstateConfigObjects = append(nmstateConfigObjects, nmStateConfBuilder)
+	}
+
+	return nmstateConfigObjects, err
 }
