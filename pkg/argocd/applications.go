@@ -13,14 +13,19 @@ import (
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// ApplicationBuilder provides a struct for an application object from the cluster and a definition.
 type ApplicationBuilder struct {
+	// application Definition, used to create the application object.
 	Definition *argocd.Application
-	Object     *argocd.Application
-	apiClient  *clients.Settings
-	errorMsg   string
+	// created application object.
+	Object *argocd.Application
+	// api client to interact with the cluster.
+	apiClient *clients.Settings
+	// used to store latest error message upon defining or mutating application definition.
+	errorMsg string
 }
 
-// Pull pulls existing ...
+// Pull pulls existing application into ApplicationBuilder struct.
 func PullApplication(apiClient *clients.Settings, name, nsname string) (*ApplicationBuilder, error) {
 	glog.V(100).Infof("Pulling existing Application name %s under namespace %s from cluster", name, nsname)
 
@@ -92,38 +97,6 @@ func (builder *ApplicationBuilder) Get() (*argocd.Application, error) {
 	return argocd, err
 }
 
-// validate will check that the builder and builder definition are properly initialized before
-// accessing any member fields.
-func (builder *ApplicationBuilder) validate() (bool, error) {
-	resourceCRD := "Application"
-
-	if builder == nil {
-		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
-
-		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
-	}
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The %s is undefined", resourceCRD)
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
-	}
-
-	if builder.apiClient == nil {
-		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
-
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
-	}
-
-	if builder.errorMsg != "" {
-		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
-
-		return false, fmt.Errorf(builder.errorMsg)
-	}
-
-	return true, nil
-}
-
 // Update renovates the existing argocd application object with the argocd application definition in builder.
 func (builder *ApplicationBuilder) Update(force bool) (*ApplicationBuilder, error) {
 	if valid, err := builder.validate(); !valid {
@@ -157,7 +130,7 @@ func (builder *ApplicationBuilder) Update(force bool) (*ApplicationBuilder, erro
 	return builder, err
 }
 
-// Delete removes argocd application object from a cluster.
+// Delete removes the argocd application object from a cluster.
 func (builder *ApplicationBuilder) Delete() (*ApplicationBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
@@ -176,7 +149,7 @@ func (builder *ApplicationBuilder) Delete() (*ApplicationBuilder, error) {
 	return builder, nil
 }
 
-// Create makes an argocd application in the cluster and stores the created object in struct.
+// Create makes an argocd application in the cluster and stores the created object in a struct.
 func (builder *ApplicationBuilder) Create() (*ApplicationBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
@@ -193,4 +166,36 @@ func (builder *ApplicationBuilder) Create() (*ApplicationBuilder, error) {
 	}
 
 	return builder, err
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *ApplicationBuilder) validate() (bool, error) {
+	resourceCRD := "Application"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }

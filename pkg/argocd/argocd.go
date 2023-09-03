@@ -16,20 +16,21 @@ import (
 // Builder provides struct for the argocd object containing connection to
 // the cluster and the argocd definitions.
 type Builder struct {
+	// argocd Definition, used to create the argocd object.
 	Definition *argocdoperatorv1alpha1.ArgoCD
-	Object     *argocdoperatorv1alpha1.ArgoCD
-	apiClient  *clients.Settings
-	errorMsg   string
+	// created argocd object.
+	Object *argocdoperatorv1alpha1.ArgoCD
+	// api client to interact with the cluster.
+	apiClient *clients.Settings
+	// used to store latest error message upon defining the argocd definition.
+	errorMsg string
 }
 
 // AdditionalOptions additional options for argocd object.
 type AdditionalOptions func(builder *Builder) (*Builder, error)
 
 // NewBuilder creates a new instance of Builder.
-func NewBuilder(
-	apiClient *clients.Settings,
-	name string,
-	nsname string) *Builder {
+func NewBuilder(apiClient *clients.Settings, name, nsname string) *Builder {
 	builder := Builder{
 		apiClient: apiClient,
 		Definition: &argocdoperatorv1alpha1.ArgoCD{
@@ -128,38 +129,6 @@ func (builder *Builder) Get() (*argocdoperatorv1alpha1.ArgoCD, error) {
 	return argocd, err
 }
 
-// validate will check that the builder and builder definition are properly initialized before
-// accessing any member fields.
-func (builder *Builder) validate() (bool, error) {
-	resourceCRD := "argocds"
-
-	if builder == nil {
-		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
-
-		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
-	}
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The %s is undefined", resourceCRD)
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
-	}
-
-	if builder.apiClient == nil {
-		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
-
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
-	}
-
-	if builder.errorMsg != "" {
-		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
-
-		return false, fmt.Errorf(builder.errorMsg)
-	}
-
-	return true, nil
-}
-
 // Create makes a argocd in the cluster and stores the created object in struct.
 func (builder *Builder) Create() (*Builder, error) {
 	if valid, err := builder.validate(); !valid {
@@ -235,4 +204,36 @@ func (builder *Builder) Update(force bool) (*Builder, error) {
 	}
 
 	return builder, err
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *Builder) validate() (bool, error) {
+	resourceCRD := "argocds"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
