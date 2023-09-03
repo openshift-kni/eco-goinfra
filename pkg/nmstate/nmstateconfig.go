@@ -27,7 +27,7 @@ type NmStateConfigBuilder struct {
 	errorMsg string
 }
 
-// NewBuilder creates a new instance of NMStateConfig Builder.
+// NewNmStateConfigBuilder creates a new instance of NMStateConfig Builder.
 func NewNmStateConfigBuilder(apiClient *clients.Settings, name, namespace string) *NmStateConfigBuilder {
 	glog.V(100).Infof("Initializing new NMStateConfig structure with the name: %s", name)
 
