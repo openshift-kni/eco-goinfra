@@ -14,7 +14,7 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Builder provides struct for the NMStateConfig object containing connection to
+// NmStateConfigBuilder provides struct for the NMStateConfig object containing connection to
 // the cluster and the NMStateConfig definitions.
 type NmStateConfigBuilder struct {
 	// NMStateConfig definition. Used to create NMStateConfig object with minimum set of required elements.
