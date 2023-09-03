@@ -1,4 +1,4 @@
-package nmstate
+package assisted
 
 import (
 	"context"
@@ -29,7 +29,7 @@ type NmStateConfigBuilder struct {
 
 // NewNmStateConfigBuilder creates a new instance of NMStateConfig Builder.
 func NewNmStateConfigBuilder(apiClient *clients.Settings, name, namespace string) *NmStateConfigBuilder {
-	glog.V(100).Infof("Initializing new NMStateConfig structure with the name: %s", name)
+	glog.V(100).Infof("Initializing new NMStateConfig structure with the name: %s in namespace: %s", name, namespace)
 
 	builder := NmStateConfigBuilder{
 		apiClient: apiClient,
@@ -47,6 +47,12 @@ func NewNmStateConfigBuilder(apiClient *clients.Settings, name, namespace string
 		builder.errorMsg = "NMStateConfig 'name' cannot be empty"
 	}
 
+	if namespace == "" {
+		glog.V(100).Infof("The namespace of the NMStateConfig is empty")
+
+		builder.errorMsg = "NMStateConfig namespace's name is empty"
+	}
+
 	return &builder
 }
 
@@ -56,14 +62,11 @@ func (builder *NmStateConfigBuilder) Exists() bool {
 		return false
 	}
 
-	glog.V(100).Infof("Checking if NMStateConfig %s exists", builder.Definition.Name)
+	glog.V(100).Infof("Checking if NMStateConfig %s exists in namespace: %s",
+		builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
 	builder.Object, err = builder.Get()
-
-	if err != nil {
-		glog.V(100).Infof("Failed to collect NMStateConfig object due to %s", err.Error())
-	}
 
 	return err == nil || !k8serrors.IsNotFound(err)
 }
@@ -74,7 +77,8 @@ func (builder *NmStateConfigBuilder) Get() (*assistedv1beta1.NMStateConfig, erro
 		return nil, err
 	}
 
-	glog.V(100).Infof("Collecting NMStateConfig object %s", builder.Definition.Name)
+	glog.V(100).Infof("Collecting NMStateConfig object %s in namespace: %s",
+		builder.Definition.Name, builder.Definition.Namespace)
 
 	nmStateConfig := &assistedv1beta1.NMStateConfig{}
 	err := builder.apiClient.Get(context.TODO(), goclient.ObjectKey{
@@ -97,7 +101,8 @@ func (builder *NmStateConfigBuilder) Create() (*NmStateConfigBuilder, error) {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Creating the NMStateConfig %s", builder.Definition.Name)
+	glog.V(100).Infof("Creating the NMStateConfig %s in namespace: %s",
+		builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
 	if !builder.Exists() {
@@ -116,7 +121,8 @@ func (builder *NmStateConfigBuilder) Delete() (*NmStateConfigBuilder, error) {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Deleting the NMStateConfig object %s", builder.Definition.Name)
+	glog.V(100).Infof("Deleting the NMStateConfig object %s in namespace: %s",
+		builder.Definition.Name, builder.Definition.Namespace)
 
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
 
