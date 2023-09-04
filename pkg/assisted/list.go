@@ -16,7 +16,7 @@ func ListNmStateConfigsInAllNamespaces(apiClient *clients.Settings) ([]*NmStateC
 	err := apiClient.List(context.Background(), nmStateConfigList, &client.ListOptions{})
 
 	if err != nil {
-		glog.V(100).Infof("Failed to list nmStateConfigs due to %s", err.Error())
+		glog.V(100).Infof("Failed to list nmStateConfigs across all namespaces due to %s", err.Error())
 
 		return nil, err
 	}
@@ -44,8 +44,8 @@ func ListNmStateConfigs(apiClient *clients.Settings, namespace string) ([]*NmSta
 	err := apiClient.List(context.Background(), nmStateConfigList, &client.ListOptions{Namespace: namespace})
 
 	if err != nil {
-		glog.V(100).Infof("Failed to list nmStateConfig due to %s in namespace: %s",
-			err.Error(), namespace)
+		glog.V(100).Infof("Failed to list nmStateConfigs in namespace: %s due to %s",
+			namespace, err.Error())
 
 		return nil, err
 	}
