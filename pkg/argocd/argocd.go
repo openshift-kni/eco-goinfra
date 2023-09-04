@@ -26,9 +26,6 @@ type Builder struct {
 	errorMsg string
 }
 
-// AdditionalOptions additional options for argocd object.
-type AdditionalOptions func(builder *Builder) (*Builder, error)
-
 // NewBuilder creates a new instance of Builder.
 func NewBuilder(apiClient *clients.Settings, name, nsname string) *Builder {
 	builder := Builder{
