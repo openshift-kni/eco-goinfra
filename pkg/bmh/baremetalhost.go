@@ -19,9 +19,9 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Builder provides struct for the bmh object containing connection to
+// BmhBuilder provides struct for the bmh object containing connection to
 // the cluster and the bmh definitions.
-type Builder struct {
+type BmhBuilder struct {
 	Definition *bmhv1alpha1.BareMetalHost
 	Object     *bmhv1alpha1.BareMetalHost
 	apiClient  *clients.Settings
@@ -29,9 +29,9 @@ type Builder struct {
 }
 
 // AdditionalOptions additional options for bmh object.
-type AdditionalOptions func(builder *Builder) (*Builder, error)
+type AdditionalOptions func(builder *BmhBuilder) (*BmhBuilder, error)
 
-// NewBuilder creates a new instance of Builder.
+// NewBuilder creates a new instance of BmhBuilder.
 func NewBuilder(
 	apiClient *clients.Settings,
 	name string,
@@ -39,8 +39,8 @@ func NewBuilder(
 	bmcAddress string,
 	bmcSecretName string,
 	bootMacAddress string,
-	bootMode string) *Builder {
-	builder := Builder{
+	bootMode string) *BmhBuilder {
+	builder := BmhBuilder{
 		apiClient: apiClient,
 		Definition: &bmhv1alpha1.BareMetalHost{
 			Spec: bmhv1alpha1.BareMetalHostSpec{
@@ -99,7 +99,7 @@ func NewBuilder(
 }
 
 // WithRootDeviceDeviceName sets rootDeviceHints DeviceName to specified value.
-func (builder *Builder) WithRootDeviceDeviceName(deviceName string) *Builder {
+func (builder *BmhBuilder) WithRootDeviceDeviceName(deviceName string) *BmhBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -124,7 +124,7 @@ func (builder *Builder) WithRootDeviceDeviceName(deviceName string) *Builder {
 }
 
 // WithRootDeviceHTCL sets rootDeviceHints HTCL to specified value.
-func (builder *Builder) WithRootDeviceHTCL(hctl string) *Builder {
+func (builder *BmhBuilder) WithRootDeviceHTCL(hctl string) *BmhBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -149,7 +149,7 @@ func (builder *Builder) WithRootDeviceHTCL(hctl string) *Builder {
 }
 
 // WithRootDeviceModel sets rootDeviceHints Model to specified value.
-func (builder *Builder) WithRootDeviceModel(model string) *Builder {
+func (builder *BmhBuilder) WithRootDeviceModel(model string) *BmhBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -174,7 +174,7 @@ func (builder *Builder) WithRootDeviceModel(model string) *Builder {
 }
 
 // WithRootDeviceVendor sets rootDeviceHints Vendor to specified value.
-func (builder *Builder) WithRootDeviceVendor(vendor string) *Builder {
+func (builder *BmhBuilder) WithRootDeviceVendor(vendor string) *BmhBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -199,7 +199,7 @@ func (builder *Builder) WithRootDeviceVendor(vendor string) *Builder {
 }
 
 // WithRootDeviceSerialNumber sets rootDeviceHints serialNumber to specified value.
-func (builder *Builder) WithRootDeviceSerialNumber(serialNumber string) *Builder {
+func (builder *BmhBuilder) WithRootDeviceSerialNumber(serialNumber string) *BmhBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -224,7 +224,7 @@ func (builder *Builder) WithRootDeviceSerialNumber(serialNumber string) *Builder
 }
 
 // WithRootDeviceMinSizeGigabytes sets rootDeviceHints MinSizeGigabytes to specified value.
-func (builder *Builder) WithRootDeviceMinSizeGigabytes(size int) *Builder {
+func (builder *BmhBuilder) WithRootDeviceMinSizeGigabytes(size int) *BmhBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -249,7 +249,7 @@ func (builder *Builder) WithRootDeviceMinSizeGigabytes(size int) *Builder {
 }
 
 // WithRootDeviceWWN sets rootDeviceHints WWN to specified value.
-func (builder *Builder) WithRootDeviceWWN(wwn string) *Builder {
+func (builder *BmhBuilder) WithRootDeviceWWN(wwn string) *BmhBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -274,7 +274,7 @@ func (builder *Builder) WithRootDeviceWWN(wwn string) *Builder {
 }
 
 // WithRootDeviceWWNWithExtension sets rootDeviceHints WWNWithExtension to specified value.
-func (builder *Builder) WithRootDeviceWWNWithExtension(wwnWithExtension string) *Builder {
+func (builder *BmhBuilder) WithRootDeviceWWNWithExtension(wwnWithExtension string) *BmhBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -299,7 +299,7 @@ func (builder *Builder) WithRootDeviceWWNWithExtension(wwnWithExtension string) 
 }
 
 // WithRootDeviceWWNVendorExtension sets rootDeviceHint WWNVendorExtension to specified value.
-func (builder *Builder) WithRootDeviceWWNVendorExtension(wwnVendorExtension string) *Builder {
+func (builder *BmhBuilder) WithRootDeviceWWNVendorExtension(wwnVendorExtension string) *BmhBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -324,7 +324,7 @@ func (builder *Builder) WithRootDeviceWWNVendorExtension(wwnVendorExtension stri
 }
 
 // WithRootDeviceRotationalDisk sets rootDeviceHint Rotational to specified value.
-func (builder *Builder) WithRootDeviceRotationalDisk(rotational bool) *Builder {
+func (builder *BmhBuilder) WithRootDeviceRotationalDisk(rotational bool) *BmhBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -339,7 +339,7 @@ func (builder *Builder) WithRootDeviceRotationalDisk(rotational bool) *Builder {
 }
 
 // WithOptions creates bmh with generic mutation options.
-func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
+func (builder *BmhBuilder) WithOptions(options ...AdditionalOptions) *BmhBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -364,10 +364,10 @@ func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
 }
 
 // Pull pulls existing baremetalhost from cluster.
-func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
+func Pull(apiClient *clients.Settings, name, nsname string) (*BmhBuilder, error) {
 	glog.V(100).Infof("Pulling existing baremetalhost name %s under namespace %s from cluster", name, nsname)
 
-	builder := Builder{
+	builder := BmhBuilder{
 		apiClient: apiClient,
 		Definition: &bmhv1alpha1.BareMetalHost{
 			ObjectMeta: metaV1.ObjectMeta{
@@ -399,7 +399,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 }
 
 // Create makes a bmh in the cluster and stores the created object in struct.
-func (builder *Builder) Create() (*Builder, error) {
+func (builder *BmhBuilder) Create() (*BmhBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
@@ -419,7 +419,7 @@ func (builder *Builder) Create() (*Builder, error) {
 }
 
 // Delete removes bmh from a cluster.
-func (builder *Builder) Delete() (*Builder, error) {
+func (builder *BmhBuilder) Delete() (*BmhBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
@@ -443,7 +443,7 @@ func (builder *Builder) Delete() (*Builder, error) {
 }
 
 // Exists checks whether the given bmh exists.
-func (builder *Builder) Exists() bool {
+func (builder *BmhBuilder) Exists() bool {
 	if valid, _ := builder.validate(); !valid {
 		return false
 	}
@@ -458,7 +458,7 @@ func (builder *Builder) Exists() bool {
 }
 
 // Get returns bmh object if found.
-func (builder *Builder) Get() (*bmhv1alpha1.BareMetalHost, error) {
+func (builder *BmhBuilder) Get() (*bmhv1alpha1.BareMetalHost, error) {
 	if valid, err := builder.validate(); !valid {
 		return nil, err
 	}
@@ -480,7 +480,7 @@ func (builder *Builder) Get() (*bmhv1alpha1.BareMetalHost, error) {
 }
 
 // CreateAndWaitUntilProvisioned creates bmh object and waits until bmh is provisioned.
-func (builder *Builder) CreateAndWaitUntilProvisioned(timeout time.Duration) (*Builder, error) {
+func (builder *BmhBuilder) CreateAndWaitUntilProvisioned(timeout time.Duration) (*BmhBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
@@ -500,27 +500,27 @@ func (builder *Builder) CreateAndWaitUntilProvisioned(timeout time.Duration) (*B
 }
 
 // WaitUntilProvisioned waits for timeout duration or until bmh is provisioned.
-func (builder *Builder) WaitUntilProvisioned(timeout time.Duration) error {
+func (builder *BmhBuilder) WaitUntilProvisioned(timeout time.Duration) error {
 	return builder.WaitUntilInStatus(bmhv1alpha1.StateProvisioned, timeout)
 }
 
 // WaitUntilProvisioning waits for timeout duration or until bmh is provisioning.
-func (builder *Builder) WaitUntilProvisioning(timeout time.Duration) error {
+func (builder *BmhBuilder) WaitUntilProvisioning(timeout time.Duration) error {
 	return builder.WaitUntilInStatus(bmhv1alpha1.StateProvisioning, timeout)
 }
 
 // WaitUntilReady waits for timeout duration or until bmh is ready.
-func (builder *Builder) WaitUntilReady(timeout time.Duration) error {
+func (builder *BmhBuilder) WaitUntilReady(timeout time.Duration) error {
 	return builder.WaitUntilInStatus(bmhv1alpha1.StateReady, timeout)
 }
 
 // WaitUntilAvailable waits for timeout duration or until bmh is available.
-func (builder *Builder) WaitUntilAvailable(timeout time.Duration) error {
+func (builder *BmhBuilder) WaitUntilAvailable(timeout time.Duration) error {
 	return builder.WaitUntilInStatus(bmhv1alpha1.StateAvailable, timeout)
 }
 
 // WaitUntilInStatus waits for timeout duration or until bmh gets to a specific status.
-func (builder *Builder) WaitUntilInStatus(status bmhv1alpha1.ProvisioningState, timeout time.Duration) error {
+func (builder *BmhBuilder) WaitUntilInStatus(status bmhv1alpha1.ProvisioningState, timeout time.Duration) error {
 	if valid, err := builder.validate(); !valid {
 		return err
 	}
@@ -541,7 +541,7 @@ func (builder *Builder) WaitUntilInStatus(status bmhv1alpha1.ProvisioningState, 
 }
 
 // DeleteAndWaitUntilDeleted delete bmh object and waits until deleted.
-func (builder *Builder) DeleteAndWaitUntilDeleted(timeout time.Duration) (*Builder, error) {
+func (builder *BmhBuilder) DeleteAndWaitUntilDeleted(timeout time.Duration) (*BmhBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
@@ -561,7 +561,7 @@ func (builder *Builder) DeleteAndWaitUntilDeleted(timeout time.Duration) (*Build
 }
 
 // WaitUntilDeleted waits for timeout duration or until bmh is deleted.
-func (builder *Builder) WaitUntilDeleted(timeout time.Duration) error {
+func (builder *BmhBuilder) WaitUntilDeleted(timeout time.Duration) error {
 	if valid, err := builder.validate(); !valid {
 		return err
 	}
@@ -594,7 +594,7 @@ func (builder *Builder) WaitUntilDeleted(timeout time.Duration) error {
 
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
-func (builder *Builder) validate() (bool, error) {
+func (builder *BmhBuilder) validate() (bool, error) {
 	resourceCRD := "BareMetalHost"
 
 	if builder == nil {
