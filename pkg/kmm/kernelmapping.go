@@ -21,24 +21,20 @@ type KernelMappingBuilder struct {
 // KernelMappingAdditionalOptions additional options for KernelMapping object.
 type KernelMappingAdditionalOptions func(builder *KernelMappingBuilder) (*KernelMappingBuilder, error)
 
+func NewKernelMappingBuilder() *KernelMappingBuilder {
+	glog.V(100).Infof("Initializing new empty KernelMapping parameter structure")
+
+	return &KernelMappingBuilder{
+		definition: &moduleV1Beta1.KernelMapping{},
+	}
+}
+
 // NewRegExKernelMappingBuilder creates new kernel mapping element based on regex.
 func NewRegExKernelMappingBuilder(regex string) *KernelMappingBuilder {
 	glog.V(100).Infof(
 		"Initializing new regex KernelMapping parameter structure with the following regex param: %s", regex)
 
-	builder := KernelMappingBuilder{
-		definition: &moduleV1Beta1.KernelMapping{
-			Regexp: regex,
-		},
-	}
-
-	if regex == "" {
-		glog.V(100).Infof("The regex of NewRegExKernelMappingBuilder is empty")
-
-		builder.errorMsg = "'regex' parameter can not be empty"
-	}
-
-	return &builder
+	return NewKernelMappingBuilder().WithRegexp(regex)
 }
 
 // NewLiteralKernelMappingBuilder create new kernel mapping element based on literal.
@@ -46,19 +42,7 @@ func NewLiteralKernelMappingBuilder(literal string) *KernelMappingBuilder {
 	glog.V(100).Infof(
 		"Initializing new literal KernelMapping parameter structure with following literal param: %s", literal)
 
-	builder := KernelMappingBuilder{
-		definition: &moduleV1Beta1.KernelMapping{
-			Literal: literal,
-		},
-	}
-
-	if literal == "" {
-		glog.V(100).Infof("The literal of NewLiteralKernelMappingBuilder is empty")
-
-		builder.errorMsg = "'literal' parameter can not be empty"
-	}
-
-	return &builder
+	return NewKernelMappingBuilder().WithLiteral(literal)
 }
 
 // BuildKernelMappingConfig returns kernel mapping config if error is not occur.
@@ -71,6 +55,38 @@ func (builder *KernelMappingBuilder) BuildKernelMappingConfig() (*moduleV1Beta1.
 		"Returning the KernelMappingBuilder structure %v", builder.definition)
 
 	return builder.definition, nil
+}
+
+func (builder *KernelMappingBuilder) WithRegexp(regexp string) *KernelMappingBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Adding regexp %s to kernel mapping", regexp)
+
+	builder.definition.Regexp = regexp
+
+	if regexp == "" {
+		glog.V(100).Infof("The regex of NewRegExKernelMappingBuilder is empty")
+
+		builder.errorMsg = "'regexp' parameter can not be empty"
+	}
+
+	return builder
+}
+
+func (builder *KernelMappingBuilder) WithLiteral(literal string) *KernelMappingBuilder {
+	glog.V(100).Infof("Adding literal %s to the kernel mapping", literal)
+
+	builder.definition.Literal = literal
+
+	if literal == "" {
+		glog.V(100).Infof("The literal of NewLiteralKernelMappingBuilder is empty")
+
+		builder.errorMsg = "'literal' parameter can not be empty"
+	}
+
+	return builder
 }
 
 // WithContainerImage adds the specified Container Image config to the KernelMapper.
