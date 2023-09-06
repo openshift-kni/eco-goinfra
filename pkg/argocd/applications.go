@@ -103,7 +103,8 @@ func (builder *ApplicationBuilder) Update(force bool) (*ApplicationBuilder, erro
 		return builder, err
 	}
 
-	glog.V(100).Infof("Updating the argocd application object %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
+	glog.V(100).Infof("Updating the argocd application object %s in namespace %s", builder.Definition.Name,
+		builder.Definition.Namespace)
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
 
@@ -136,7 +137,8 @@ func (builder *ApplicationBuilder) Delete() (*ApplicationBuilder, error) {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Deleting the argocd application object %s", builder.Definition.Name)
+	glog.V(100).Infof("Deleting the argocd application object %s from namespace: %s", builder.Definition.Name,
+		builder.Definition.Namespace)
 
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
 
@@ -155,7 +157,8 @@ func (builder *ApplicationBuilder) Create() (*ApplicationBuilder, error) {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Creating argocd application %s", builder.Definition.Name)
+	glog.V(100).Infof("Creating argocd application %s in namespace: %s", builder.Definition.Name,
+		builder.Definition.Namespace)
 
 	var err error
 	if !builder.Exists() {
