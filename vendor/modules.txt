@@ -249,7 +249,7 @@ github.com/dgryski/go-rendezvous
 ## explicit
 github.com/docker/distribution/digestset
 github.com/docker/distribution/reference
-# github.com/emicklei/go-restful/v3 v3.10.1
+# github.com/emicklei/go-restful/v3 v3.10.2
 ## explicit; go 1.13
 github.com/emicklei/go-restful/v3
 github.com/emicklei/go-restful/v3/log
@@ -384,7 +384,7 @@ github.com/go-openapi/spec
 # github.com/go-openapi/strfmt v0.21.3
 ## explicit; go 1.13
 github.com/go-openapi/strfmt
-# github.com/go-openapi/swag v0.22.3
+# github.com/go-openapi/swag v0.22.4
 ## explicit; go 1.18
 github.com/go-openapi/swag
 # github.com/go-openapi/validate v0.22.0
@@ -525,8 +525,8 @@ github.com/kballard/go-shellquote
 # github.com/kevinburke/ssh_config v1.2.0
 ## explicit
 github.com/kevinburke/ssh_config
-# github.com/klauspost/compress v1.15.15
-## explicit; go 1.17
+# github.com/klauspost/compress v1.16.5
+## explicit; go 1.18
 github.com/klauspost/compress/s2
 # github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de
 ## explicit
@@ -782,8 +782,8 @@ github.com/redis/go-redis/v9/internal/pool
 github.com/redis/go-redis/v9/internal/proto
 github.com/redis/go-redis/v9/internal/rand
 github.com/redis/go-redis/v9/internal/util
-# github.com/rh-ecosystem-edge/kernel-module-management v0.0.0-20230307090347-57c1bdf6d12b
-## explicit; go 1.18
+# github.com/rh-ecosystem-edge/kernel-module-management v0.0.0-20230727220418-baf359495376
+## explicit; go 1.19
 github.com/rh-ecosystem-edge/kernel-module-management/api/v1beta1
 # github.com/robfig/cron/v3 v3.0.1
 ## explicit; go 1.12
@@ -1520,7 +1520,7 @@ k8s.io/kube-openapi/pkg/spec3
 k8s.io/kube-openapi/pkg/util/proto
 k8s.io/kube-openapi/pkg/util/proto/validation
 k8s.io/kube-openapi/pkg/validation/spec
-# k8s.io/kubectl v0.25.4 => k8s.io/kubectl v0.26.1
+# k8s.io/kubectl v0.26.4 => k8s.io/kubectl v0.26.1
 ## explicit; go 1.19
 k8s.io/kubectl/pkg/apps
 k8s.io/kubectl/pkg/cmd/apiresources
