@@ -46,15 +46,16 @@ func NewModLoaderContainerBuilder(modName string) *ModuleLoaderContainerBuilder 
 }
 
 // WithModprobeSpec adds the specified Modprobe to the ModuleLoaderContainerBuilder.
-func (builder *ModuleLoaderContainerBuilder) WithModprobeSpec(
-	dirName, fwPath string, parameters, args, rawargs []string) *ModuleLoaderContainerBuilder {
+func (builder *ModuleLoaderContainerBuilder) WithModprobeSpec(dirName, fwPath string,
+	parameters, args, rawargs, moduleLoadingOrder []string) *ModuleLoaderContainerBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
 	glog.V(100).Infof(
 		"Creating new ModuleLoaderContainerBuilder structure with following modprob params. "+
-			"DirName: %s, FirmwarePath: %s, Parameters: %v", dirName, fwPath, parameters)
+			"DirName: %s, FirmwarePath: %s, Parameters: %v, ModuleLoadingOrder: %v",
+		dirName, fwPath, parameters, moduleLoadingOrder)
 
 	builder.definition.Modprobe.DirName = dirName
 	builder.definition.Modprobe.FirmwarePath = fwPath
@@ -71,6 +72,7 @@ func (builder *ModuleLoaderContainerBuilder) WithModprobeSpec(
 	}
 
 	builder.definition.Modprobe.RawArgs.Load = rawargs
+	builder.definition.Modprobe.ModulesLoadingOrder = moduleLoadingOrder
 
 	return builder
 }
