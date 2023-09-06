@@ -103,7 +103,7 @@ func (builder *ApplicationBuilder) Update(force bool) (*ApplicationBuilder, erro
 		return builder, err
 	}
 
-	glog.V(100).Infof("Updating the argocd application object", builder.Definition.Name)
+	glog.V(100).Infof("Updating the argocd application object %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
 
