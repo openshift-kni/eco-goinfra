@@ -167,7 +167,7 @@ func (builder *NmStateConfigBuilder) validate() (bool, error) {
 	return true, nil
 }
 
-// ListNmStateConfigsInAllNamespaces returns a a cluster-wide NMStateConfig list.
+// ListNmStateConfigsInAllNamespaces returns a cluster-wide NMStateConfig list.
 func ListNmStateConfigsInAllNamespaces(apiClient *clients.Settings) ([]*NmStateConfigBuilder, error) {
 	nmStateConfigList := &assistedv1beta1.NMStateConfigList{}
 
