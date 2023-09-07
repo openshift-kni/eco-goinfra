@@ -118,6 +118,25 @@ func (builder *ModuleLoaderContainerBuilder) WithImagePullPolicy(policy string) 
 	return builder
 }
 
+// WithVersion adds the specified version to the ModuleLoaderContainerBuilder.
+func (builder *ModuleLoaderContainerBuilder) WithVersion(version string) *ModuleLoaderContainerBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Setting ModuleLoaderContainer version %v", version)
+
+	if version == "" {
+		builder.errorMsg = "'version' can not be empty"
+
+		return builder
+	}
+
+	builder.definition.Version = version
+
+	return builder
+}
+
 // WithOptions creates ModuleLoaderContainer with generic mutation options.
 func (builder *ModuleLoaderContainerBuilder) WithOptions(
 	options ...ModuleLoaderContainerAdditionalOptions) *ModuleLoaderContainerBuilder {
