@@ -15,7 +15,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.10.0
 	github.com/openshift-kni/k8sreporter v1.0.3
 	github.com/openshift/api v3.9.1-0.20190916204813-cdbe64fb0c91+incompatible
-	github.com/openshift/assisted-service/api v0.0.0-20230125183155-2b97070428e1
+	github.com/openshift/assisted-service/api v0.0.0-20230906121258-6d85fb16f8dd
 	github.com/openshift/assisted-service/models v0.0.0
 	github.com/openshift/client-go v0.0.0-20230120202327-72f107311084
 	github.com/openshift/cluster-nfd-operator v0.0.0-20230116162820-3d08a74f3d2e
@@ -225,7 +225,7 @@ replace (
 	github.com/k8snetworkplumbingwg/sriov-network-operator => github.com/SchSeba/sriov-network-operator-1 v0.0.0-20230619135331-46b15e6d1cd2
 	//github.com/k8snetworkplumbingwg/sriov-network-operator => github.com/openshift/sriov-network-operator v0.0.0-20230517142142-2b25b439193a // release-4.13
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20230414143018-3367bc7e6ac7 // release-4.13
-	github.com/openshift/assisted-service/models => github.com/openshift/assisted-service/models v0.0.0-20230125183155-2b97070428e1
+	github.com/openshift/assisted-service/models => github.com/openshift/assisted-service/models v0.0.0-20230906121258-6d85fb16f8dd
 	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20230120202327-72f107311084 // release-4.13
 	github.com/openshift/cluster-node-tuning-operator => github.com/openshift/cluster-node-tuning-operator v0.0.0-20230704075823-5510dee6aecd // release-4.13
 	k8s.io/api => k8s.io/api v0.26.1
