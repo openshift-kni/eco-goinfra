@@ -126,7 +126,7 @@ func (builder *Builder) Get() (*argocdoperatorv1alpha1.ArgoCD, error) {
 	return argocd, err
 }
 
-// Create makes a argocd in the cluster and stores the created object in struct.
+// Create makes an argocd in the cluster and stores the created object in struct.
 func (builder *Builder) Create() (*Builder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err

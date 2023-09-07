@@ -25,7 +25,7 @@ type ApplicationBuilder struct {
 	errorMsg string
 }
 
-// Pull pulls existing application into ApplicationBuilder struct.
+// PullApplication pulls existing application into ApplicationBuilder struct.
 func PullApplication(apiClient *clients.Settings, name, nsname string) (*ApplicationBuilder, error) {
 	glog.V(100).Infof("Pulling existing Application name %s under namespace %s from cluster", name, nsname)
 
