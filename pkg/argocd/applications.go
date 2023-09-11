@@ -202,3 +202,23 @@ func (builder *ApplicationBuilder) validate() (bool, error) {
 
 	return true, nil
 }
+
+// WithGitDetails applies git details to application definition.
+func (builder *ApplicationBuilder) WithGitDetails(gitRepo, gitBranch, gitPath string) *ApplicationBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Redefining argocd application %s in namespace: %s with git details",
+		builder.Definition.Name, builder.Definition.Namespace)
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	builder.Definition.Spec.Source.RepoURL = gitRepo
+	builder.Definition.Spec.Source.TargetRevision = gitBranch
+	builder.Definition.Spec.Source.Path = gitPath
+
+	return builder
+}
