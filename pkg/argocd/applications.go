@@ -209,6 +209,24 @@ func (builder *ApplicationBuilder) WithGitDetails(gitRepo, gitBranch, gitPath st
 		return builder
 	}
 
+	if gitRepo == "" {
+		glog.V(100).Infof("The 'gitRepo' of the argocd application is empty")
+
+		builder.errorMsg = "'gitRepo' parameter is empty"
+	}
+
+	if gitBranch == "" {
+		glog.V(100).Infof("The 'gitBranch' of the argocd application is empty")
+
+		builder.errorMsg = "'gitBranch' parameter is empty"
+	}
+
+	if gitPath == "" {
+		glog.V(100).Infof("The 'gitPath' of the argocd application is empty")
+
+		builder.errorMsg = "'gitPath' parameter is empty"
+	}
+
 	glog.V(100).Infof("Redefining argocd application %s in namespace: %s with git details",
 		builder.Definition.Name, builder.Definition.Namespace)
 
