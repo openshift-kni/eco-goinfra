@@ -227,8 +227,11 @@ func (builder *ApplicationBuilder) WithGitDetails(gitRepo, gitBranch, gitPath st
 		builder.errorMsg = "'gitPath' parameter is empty"
 	}
 
-	glog.V(100).Infof("Redefining argocd application %s in namespace: %s with git details",
-		builder.Definition.Name, builder.Definition.Namespace)
+	glog.V(100).Infof(
+		"Redefining argocd application: %s in namespace: %s with the following git details "+
+			"RepoURL: %s,TargetRevision: %s, Path: %s", builder.Definition.Name, builder.Definition.Namespace,
+		gitRepo, gitBranch, gitPath,
+	)
 
 	if builder.errorMsg != "" {
 		return builder
