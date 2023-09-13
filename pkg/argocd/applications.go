@@ -202,3 +202,44 @@ func (builder *ApplicationBuilder) validate() (bool, error) {
 
 	return true, nil
 }
+
+// WithGitDetails applies git details to application definition.
+func (builder *ApplicationBuilder) WithGitDetails(gitRepo, gitBranch, gitPath string) *ApplicationBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	if gitRepo == "" {
+		glog.V(100).Infof("The 'gitRepo' of the argocd application is empty")
+
+		builder.errorMsg = "'gitRepo' parameter is empty"
+	}
+
+	if gitBranch == "" {
+		glog.V(100).Infof("The 'gitBranch' of the argocd application is empty")
+
+		builder.errorMsg = "'gitBranch' parameter is empty"
+	}
+
+	if gitPath == "" {
+		glog.V(100).Infof("The 'gitPath' of the argocd application is empty")
+
+		builder.errorMsg = "'gitPath' parameter is empty"
+	}
+
+	glog.V(100).Infof(
+		"Adding the following git details to the argocd application: %s in namespace: %s "+
+			"RepoURL: %s,TargetRevision: %s, Path: %s", builder.Definition.Name, builder.Definition.Namespace,
+		gitRepo, gitBranch, gitPath,
+	)
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	builder.Definition.Spec.Source.RepoURL = gitRepo
+	builder.Definition.Spec.Source.TargetRevision = gitBranch
+	builder.Definition.Spec.Source.Path = gitPath
+
+	return builder
+}
