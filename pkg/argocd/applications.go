@@ -228,7 +228,7 @@ func (builder *ApplicationBuilder) WithGitDetails(gitRepo, gitBranch, gitPath st
 	}
 
 	glog.V(100).Infof(
-		"Redefining argocd application: %s in namespace: %s with the following git details "+
+		"Adding the following git details to the argocd application: %s in namespace: %s "+
 			"RepoURL: %s,TargetRevision: %s, Path: %s", builder.Definition.Name, builder.Definition.Namespace,
 		gitRepo, gitBranch, gitPath,
 	)
