@@ -3,6 +3,7 @@ package mco
 import (
 	"context"
 	"fmt"
+
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/golang/glog"
@@ -14,9 +15,9 @@ import (
 	kubeletconfigv1beta1 "k8s.io/kubelet/config/v1beta1"
 )
 
-// KCBuilder provides struct for KubeletConfig Object which contains connection to cluster
+// KubeletConfigBuilder provides struct for KubeletConfig Object which contains connection to cluster
 // and KubeletConfig definitions.
-type KCBuilder struct {
+type KubeletConfigBuilder struct {
 	// KubeletConfig definition. Used to create KubeletConfig object with minimum set of required elements.
 	Definition *mcv1.KubeletConfig
 	// Created KubeletConfig object on the cluster.
@@ -27,15 +28,15 @@ type KCBuilder struct {
 	errorMsg string
 }
 
-// KCAdditionalOptions for kubeletconfig object.
-type KCAdditionalOptions func(builder *KCBuilder) (*KCBuilder, error)
+// AdditionalOptions for kubeletconfig object.
+type AdditionalOptions func(builder *KubeletConfigBuilder) (*KubeletConfigBuilder, error)
 
-// NewKCBuilder provides struct for KubeletConfig object which contains connection to cluster
+// NewKubeletConfigBuilder provides struct for KubeletConfig object which contains connection to cluster
 // and KubeletConfig definition.
-func NewKCBuilder(apiClient *clients.Settings, name string) *KCBuilder {
-	glog.V(100).Infof("Initializing new KCBuilder structure with following params: %s", name)
+func NewKubeletConfigBuilder(apiClient *clients.Settings, name string) *KubeletConfigBuilder {
+	glog.V(100).Infof("Initializing new KubeletConfigBuilder structure with the name: %s", name)
 
-	builder := KCBuilder{
+	builder := KubeletConfigBuilder{
 		apiClient: apiClient,
 		Definition: &mcv1.KubeletConfig{
 			ObjectMeta: metav1.ObjectMeta{
@@ -54,10 +55,10 @@ func NewKCBuilder(apiClient *clients.Settings, name string) *KCBuilder {
 }
 
 // PullKubeletConfig fetches existing kubeletconfig from cluster.
-func PullKubeletConfig(apiClient *clients.Settings, name string) (*KCBuilder, error) {
+func PullKubeletConfig(apiClient *clients.Settings, name string) (*KubeletConfigBuilder, error) {
 	glog.V(100).Infof("Pulling existing kubeletconfig name %s from cluster", name)
 
-	builder := KCBuilder{
+	builder := KubeletConfigBuilder{
 		apiClient: apiClient,
 		Definition: &mcv1.KubeletConfig{
 			ObjectMeta: metav1.ObjectMeta{
@@ -82,7 +83,7 @@ func PullKubeletConfig(apiClient *clients.Settings, name string) (*KCBuilder, er
 }
 
 // Create generates a kubeletconfig in the cluster and stores the created object in struct.
-func (builder *KCBuilder) Create() (*KCBuilder, error) {
+func (builder *KubeletConfigBuilder) Create() (*KubeletConfigBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
@@ -92,14 +93,14 @@ func (builder *KCBuilder) Create() (*KCBuilder, error) {
 	var err error
 	if !builder.Exists() {
 		builder.Object, err = builder.apiClient.KubeletConfigs().Create(
-			context.TODO(), builder.Definition, metav1.CreateOptions{})
+			context.Background(), builder.Definition, metav1.CreateOptions{})
 	}
 
 	return builder, err
 }
 
 // Delete removes the kubeletconfig.
-func (builder *KCBuilder) Delete() error {
+func (builder *KubeletConfigBuilder) Delete() error {
 	if valid, err := builder.validate(); !valid {
 		return err
 	}
@@ -123,7 +124,7 @@ func (builder *KCBuilder) Delete() error {
 }
 
 // Exists checks whether the given kubeletconfig exists.
-func (builder *KCBuilder) Exists() bool {
+func (builder *KubeletConfigBuilder) Exists() bool {
 	if valid, _ := builder.validate(); !valid {
 		return false
 	}
@@ -138,7 +139,7 @@ func (builder *KCBuilder) Exists() bool {
 }
 
 // WithMCPoolSelector redefines kubeletconfig definition with the given machineConfigPoolSelector field.
-func (builder *KCBuilder) WithMCPoolSelector(key, value string) *KCBuilder {
+func (builder *KubeletConfigBuilder) WithMCPoolSelector(key, value string) *KubeletConfigBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -167,36 +168,32 @@ func (builder *KCBuilder) WithMCPoolSelector(key, value string) *KCBuilder {
 }
 
 // WithSystemReserved redefines kubeletconfig definition with the given systemreserved fields.
-func (builder *KCBuilder) WithSystemReserved(cpu, memory string) *KCBuilder {
+func (builder *KubeletConfigBuilder) WithSystemReserved(cpu, memory string) *KubeletConfigBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
-	glog.V(100).Infof("Setting up %s cpu and %s memory to the %s kubeletconfig",
+	glog.V(100).Infof("Setting cpu=%s and memory=%s in the %s kubeletconfig definition",
 		cpu, memory, builder.Definition.Name)
 
 	if cpu == "" {
 		glog.V(100).Infof("The cpu can't be empty")
 
 		builder.errorMsg = "'cpu' cannot be empty"
-
-		return builder
 	}
 
 	if memory == "" {
 		glog.V(100).Infof("The memory can't be empty")
 
 		builder.errorMsg = "'memory' cannot be empty"
+	}
 
+	if builder.errorMsg != "" {
 		return builder
 	}
 
 	if builder.Definition.Spec.KubeletConfig == nil {
 		builder.Definition.Spec.KubeletConfig = &runtime.RawExtension{}
-	}
-
-	if builder.Definition.Spec.KubeletConfig.Raw == nil {
-		builder.Definition.Spec.KubeletConfig.Raw = []byte{}
 	}
 
 	systemReservedKubeletConfiguration := &kubeletconfigv1beta1.KubeletConfiguration{
@@ -212,7 +209,7 @@ func (builder *KCBuilder) WithSystemReserved(cpu, memory string) *KCBuilder {
 }
 
 // WithOptions creates the kubeletconfig with generic mutation options.
-func (builder *KCBuilder) WithOptions(options ...KCAdditionalOptions) *KCBuilder {
+func (builder *KubeletConfigBuilder) WithOptions(options ...AdditionalOptions) *KubeletConfigBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -236,7 +233,7 @@ func (builder *KCBuilder) WithOptions(options ...KCAdditionalOptions) *KCBuilder
 	return builder
 }
 
-func (builder *KCBuilder) validate() (bool, error) {
+func (builder *KubeletConfigBuilder) validate() (bool, error) {
 	resourceCRD := "KubeletConfig"
 
 	if builder == nil {
