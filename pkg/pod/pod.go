@@ -724,6 +724,25 @@ func (builder *Builder) WithHostNetwork() *Builder {
 	return builder
 }
 
+// WithHostPid allows a pod to have access to the host process ID namespace.
+func (builder *Builder) WithHostPid() *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Applying HostPID flag to pod's %s configuration", builder.Definition.Name)
+
+	builder.isMutationAllowed("HostPID")
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	builder.Definition.Spec.HostPID = true
+
+	return builder
+}
+
 // RedefineDefaultContainer redefines default container with the new one.
 func (builder *Builder) RedefineDefaultContainer(container v1.Container) *Builder {
 	if valid, _ := builder.validate(); !valid {
