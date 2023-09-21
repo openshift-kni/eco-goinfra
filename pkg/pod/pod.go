@@ -724,13 +724,14 @@ func (builder *Builder) WithHostNetwork() *Builder {
 	return builder
 }
 
-// WithHostPid allows a pod to have access to the host process ID namespace.
-func (builder *Builder) WithHostPid() *Builder {
+// WithHostPid configures a pod's access to the host process ID namespace based on a boolean parameter.
+func (builder *Builder) WithHostPid(flag bool) *Builder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
-	glog.V(100).Infof("Applying HostPID flag to pod's %s configuration", builder.Definition.Name)
+	glog.V(100).Infof("Applying HostPID flag to the configuration of pod: %s in namespace: %s:",
+		builder.Definition.Name, builder.Definition.Namespace)
 
 	builder.isMutationAllowed("HostPID")
 
@@ -738,7 +739,7 @@ func (builder *Builder) WithHostPid() *Builder {
 		return builder
 	}
 
-	builder.Definition.Spec.HostPID = true
+	builder.Definition.Spec.HostPID = flag
 
 	return builder
 }
