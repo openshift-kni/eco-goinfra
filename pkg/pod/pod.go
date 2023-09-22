@@ -725,7 +725,7 @@ func (builder *Builder) WithHostNetwork() *Builder {
 }
 
 // WithHostPid configures a pod's access to the host process ID namespace based on a boolean parameter.
-func (builder *Builder) WithHostPid(flag bool) *Builder {
+func (builder *Builder) WithHostPid(hostPid bool) *Builder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -739,7 +739,7 @@ func (builder *Builder) WithHostPid(flag bool) *Builder {
 		return builder
 	}
 
-	builder.Definition.Spec.HostPID = flag
+	builder.Definition.Spec.HostPID = hostPid
 
 	return builder
 }
