@@ -53,13 +53,10 @@ type ClusterLoggingSpec struct {
 	Collection *CollectionSpec `json:"collection,omitempty"`
 
 	// Deprecated. Specification of the Curation component for the cluster
-	// This component was specifically for use with Elasticsearch and was
-	// replaced by index management spec
 	//
 	// +nullable
 	// +optional
 	// +deprecated
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:hidden"}
 	Curation *CurationSpec `json:"curation,omitempty"`
 
 	// Deprecated. Specification for Forwarder component for the cluster
@@ -68,7 +65,6 @@ type ClusterLoggingSpec struct {
 	// +nullable
 	// +optional
 	// +deprecated
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:hidden"}
 	Forwarder *ForwarderSpec `json:"forwarder,omitempty"`
 }
 
@@ -84,15 +80,11 @@ type ClusterLoggingStatus struct {
 	// +optional
 	LogStore LogStoreStatus `json:"logStore"`
 
-	// Deprecated.
 	// +optional
-	// +deprecated
-	// +nullable
-	Collection *CollectionStatus `json:"collection,omitempty"`
+	Collection CollectionStatus `json:"collection"`
 
 	// +optional
-	// +deprecated
-	Curation *CurationStatus `json:"curation,omitempty"`
+	Curation CurationStatus `json:"curation"`
 
 	// +optional
 	Conditions status.Conditions `json:"conditions,omitempty"`
@@ -100,24 +92,11 @@ type ClusterLoggingStatus struct {
 
 // This is the struct that will contain information pertinent to Log visualization (Kibana)
 type VisualizationSpec struct {
-
 	// The type of Visualization to configure
-	//
-	// +kubebuilder:validation:Enum=ocp-console;kibana
 	Type VisualizationType `json:"type"`
 
 	// Specification of the Kibana Visualization component
-	//
-	// +deprecated
-	// +nullable
-	// +optional
-	Kibana *KibanaSpec `json:"kibana,omitempty"`
-
-	// OCPConsole is the specification for the OCP console plugin
-	//
-	// +nullable
-	// +optional
-	OCPConsole *OCPConsoleSpec `json:"ocpConsole,omitempty"`
+	KibanaSpec `json:"kibana,omitempty"`
 }
 
 type KibanaSpec struct {
@@ -136,27 +115,11 @@ type KibanaSpec struct {
 	Tolerations  []v1.Toleration   `json:"tolerations,omitempty"`
 
 	// Number of instances to deploy for a Kibana deployment
-	// +optional
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Kibana Size",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:podCount"}
-	Replicas *int32 `json:"replicas,omitempty"`
+	Replicas *int32 `json:"replicas"`
 
 	// Specification of the Kibana Proxy component
 	ProxySpec `json:"proxy,omitempty"`
-}
-
-type OCPConsoleSpec struct {
-
-	// LogsLimit is the max number of entries returned for a query.
-	//
-	// +optional
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="OCP Console Log Limit",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:ocpConsoleLogLimit"}
-	LogsLimit int `json:"logsLimit,omitempty"`
-
-	// Timeout is the max duration before a query timeout
-	//
-	// +optional
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="OCP Console Query Timeout",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:ocpConsoleTimeout"}
-	Timeout FluentdTimeUnit `json:"timeout,omitempty"`
 }
 
 type ProxySpec struct {
@@ -176,11 +139,9 @@ type LogStoreSpec struct {
 	// managing the LokiStack himself.
 	//
 	// +kubebuilder:validation:Enum=elasticsearch;lokistack
-	// +kubebuilder:default:=lokistack
 	Type LogStoreType `json:"type"`
 
 	// Specification of the Elasticsearch Log Store component
-	// +deprecated
 	Elasticsearch *ElasticsearchSpec `json:"elasticsearch,omitempty"`
 
 	// LokiStack contains information about which LokiStack to use for log storage if Type is set to LogStoreTypeLokiStack.
@@ -188,11 +149,10 @@ type LogStoreSpec struct {
 	// The cluster-logging-operator does not create or manage the referenced LokiStack.
 	LokiStack LokiStackStoreSpec `json:"lokistack,omitempty"`
 
-	// Retention policy defines the maximum age for an Elasticsearch index after which it should be deleted
+	// Retention policy defines the maximum age for an index after which it should be deleted
 	//
 	// +nullable
 	// +optional
-	// +deprecated
 	RetentionPolicy *RetentionPoliciesSpec `json:"retentionPolicy,omitempty"`
 }
 
@@ -268,11 +228,12 @@ type LokiStackStoreSpec struct {
 // This is the struct that will contain information pertinent to Log and event collection
 type CollectionSpec struct {
 
-	// TODO make type required in v2 once Logs is removed. For now assume default which is vector
+	// TODO make type required in v2 once Logs is removed. For now assume default which is fluentd
 
 	// The type of Log Collection to configure
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Collector Implementation",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:fluentd","urn:alm:descriptor:com.tectonic.ui:select:vector"}
-	// +kubebuilder:validation:Optional
+	// +nullable
+	// +optional
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Collector Implementation",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:fluentd","urn:alm:descriptor:com.tectonic.ui:select:vector"}
 	Type LogCollectionType `json:"type"`
 
 	// Deprecated. Specification of Log Collection for the cluster
@@ -280,7 +241,6 @@ type CollectionSpec struct {
 	// +nullable
 	// +optional
 	// +deprecated
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:hidden"}
 	Logs *LogCollectionSpec `json:"logs,omitempty"`
 
 	// CollectorSpec is the common specification that applies to any collector
@@ -294,9 +254,6 @@ type CollectionSpec struct {
 	Fluentd *FluentdForwarderSpec `json:"fluentd,omitempty"`
 }
 
-// Specification of Log Collection for the cluster
-// See spec.collection
-// +deprecated
 type LogCollectionSpec struct {
 	// The type of Log Collection to configure
 	Type LogCollectionType `json:"type"`
@@ -581,6 +538,7 @@ type FluentdCollectorStatus struct {
 	// +optional
 	Nodes map[string]string `json:"nodes,omitempty"`
 	// +optional
+	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Fluentd status",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:podStatuses"}
 	Pods PodStateMap `json:"pods,omitempty"`
 	// +optional
 	Conditions map[string]ClusterConditions `json:"clusterCondition,omitempty"`
@@ -647,8 +605,7 @@ const (
 type VisualizationType string
 
 const (
-	VisualizationTypeKibana     VisualizationType = "kibana"
-	VisualizationTypeOCPConsole VisualizationType = "ocp-console"
+	VisualizationTypeKibana VisualizationType = "kibana"
 )
 
 type CurationType string

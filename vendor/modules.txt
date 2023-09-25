@@ -412,9 +412,6 @@ github.com/gobwas/glob/util/strings
 ## explicit; go 1.15
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
-# github.com/golang-collections/collections v0.0.0-20130729185459-604e922904d3
-## explicit
-github.com/golang-collections/collections/set
 # github.com/golang-jwt/jwt/v4 v4.5.0
 ## explicit; go 1.16
 github.com/golang-jwt/jwt/v4
@@ -674,11 +671,10 @@ github.com/openshift/client-go/security/applyconfigurations/internal
 github.com/openshift/client-go/security/applyconfigurations/security/v1
 github.com/openshift/client-go/security/clientset/versioned/scheme
 github.com/openshift/client-go/security/clientset/versioned/typed/security/v1
-# github.com/openshift/cluster-logging-operator v0.0.0-20230921181116-cd901aaa8af2
-## explicit; go 1.20
+# github.com/openshift/cluster-logging-operator v0.0.0-20230921181116-cd901aaa8af2 => github.com/openshift/cluster-logging-operator v0.0.0-20230721192805-f9d0a6c76c39
+## explicit; go 1.18
 github.com/openshift/cluster-logging-operator/apis/logging/v1
 github.com/openshift/cluster-logging-operator/internal/status
-github.com/openshift/cluster-logging-operator/internal/utils/sets
 # github.com/openshift/cluster-nfd-operator v0.0.0-20230116162820-3d08a74f3d2e
 ## explicit; go 1.18
 github.com/openshift/cluster-nfd-operator/api/v1
@@ -1831,6 +1827,7 @@ sigs.k8s.io/yaml
 # github.com/openshift/api => github.com/openshift/api v0.0.0-20230918105526-6488b1202507
 # github.com/openshift/assisted-service/models => github.com/openshift/assisted-service/models v0.0.0-20230906121258-6d85fb16f8dd
 # github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20230120202327-72f107311084
+# github.com/openshift/cluster-logging-operator => github.com/openshift/cluster-logging-operator v0.0.0-20230721192805-f9d0a6c76c39
 # github.com/openshift/cluster-node-tuning-operator => github.com/openshift/cluster-node-tuning-operator v0.0.0-20230704075823-5510dee6aecd
 # k8s.io/api => k8s.io/api v0.26.1
 # k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.26.1

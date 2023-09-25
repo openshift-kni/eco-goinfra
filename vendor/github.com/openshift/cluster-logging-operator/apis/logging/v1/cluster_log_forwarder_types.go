@@ -15,7 +15,6 @@ limitations under the License.
 package v1
 
 import (
-	openshiftv1 "github.com/openshift/api/config/v1"
 	"github.com/openshift/cluster-logging-operator/internal/status"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -24,7 +23,6 @@ const ClusterLogForwarderKind = "ClusterLogForwarder"
 
 // ClusterLogForwarderSpec defines how logs should be forwarded to remote targets.
 type ClusterLogForwarderSpec struct {
-
 	// Inputs are named filters for log messages to be forwarded.
 	//
 	// There are three built-in inputs named `application`, `infrastructure` and
@@ -50,11 +48,6 @@ type ClusterLogForwarderSpec struct {
 	// +required
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Forwarder Pipelines",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:forwarderPipelines"}
 	Pipelines []PipelineSpec `json:"pipelines,omitempty"`
-
-	// ServiceAccountName is the serviceaccount associated with the clusterlogforwarder
-	//
-	// +optional
-	ServiceAccountName string `json:"serviceAccountName,omitempty"`
 
 	// DEPRECATED OutputDefaults specify forwarder config explicitly for the
 	// default managed log store named 'default'.  If there is a need to spec
@@ -118,9 +111,6 @@ type InputSpec struct {
 	// +optional
 	// +docgen:ignore
 	Audit *Audit `json:"audit,omitempty"`
-
-	// Receiver to receive logs from non-cluster sources.
-	Receiver *ReceiverSpec `json:"receiver,omitempty"`
 }
 
 // NOTE: We currently only support matchLabels so define a LabelSelector type with
@@ -152,20 +142,6 @@ type Application struct {
 	//
 	// +optional
 	Selector *LabelSelector `json:"selector,omitempty"`
-
-	// Group limit applied to the aggregated log
-	// flow to this input. The total log flow from this input
-	// cannot exceed the limit.
-	//
-	// +optional
-	GroupLimit *LimitSpec `json:"groupLimit,omitempty"`
-
-	// Container limit applied to each container selected
-	// by this input. No container selected by this input can
-	// exceed this limit.
-	//
-	// +optional
-	ContainerLimit *LimitSpec `json:"containerLimit,omitempty"`
 }
 
 // Infrastructure enables infrastructure logs. Filtering may be added in future.
@@ -186,7 +162,7 @@ type OutputSpec struct {
 
 	// Type of output plugin.
 	//
-	// +kubebuilder:validation:Enum:=syslog;fluentdForward;elasticsearch;kafka;cloudwatch;loki;googleCloudLogging;splunk;http
+	// +kubebuilder:validation:Enum:=syslog;fluentdForward;elasticsearch;kafka;cloudwatch;loki;googleCloudLogging;splunk
 	// +required
 	Type string `json:"type"`
 
@@ -252,13 +228,6 @@ type OutputSpec struct {
 	//
 	// +optional
 	Secret *OutputSecretSpec `json:"secret,omitempty"`
-
-	// Limit applied to the aggregated log
-	// flow to this output. The total log flow from this output
-	// cannot exceed the limit.
-	//
-	// +optional
-	Limit *LimitSpec `json:"limit,omitempty"`
 }
 
 // OutputTLSSpec contains options for TLS connections that are agnostic to the output type.
@@ -267,9 +236,6 @@ type OutputTLSSpec struct {
 	//
 	// This option is *not* recommended for production configurations.
 	InsecureSkipVerify bool `json:"insecureSkipVerify,omitempty"`
-
-	// TLSSecurityProfile is the security profile to apply to the output connection
-	TLSSecurityProfile *openshiftv1.TLSSecurityProfile `json:"securityProfile,omitempty"`
 }
 
 // OutputSecretSpec is a secret reference containing name only, no namespace.
@@ -377,12 +343,4 @@ type ClusterLogForwarderList struct {
 
 func init() {
 	SchemeBuilder.Register(&ClusterLogForwarder{}, &ClusterLogForwarderList{})
-}
-
-type LimitSpec struct {
-	// MaxRecordsPerSecond is the maximum number of log records
-	// allowed per input/output in a pipeline
-	//
-	// +required
-	MaxRecordsPerSecond int64 `json:"maxRecordsPerSecond,omitempty"`
 }
