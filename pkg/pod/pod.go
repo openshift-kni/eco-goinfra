@@ -730,7 +730,7 @@ func (builder *Builder) WithHostPid(hostPid bool) *Builder {
 		return builder
 	}
 
-	glog.V(100).Infof("Applying HostPID flag to the configuration of pod: %s in namespace: %s:",
+	glog.V(100).Infof("Applying HostPID flag to the configuration of pod: %s in namespace: %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	builder.isMutationAllowed("HostPID")
