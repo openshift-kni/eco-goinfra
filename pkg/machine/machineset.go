@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -16,50 +17,72 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-// MachineSetBuilder provides a struct for MachineSet object from the cluster and a MachineSet definition.
-type MachineSetBuilder struct {
-	// MachineSetBuilder definition. Used to create
+// SetBuilder provides a struct for MachineSet object from the cluster and a MachineSet definition.
+type SetBuilder struct {
+	// SetBuilder definition. Used to create
 	// MachineSet object with minimum set of required elements.
 	Definition *machinev1beta1.MachineSet
-	// Created MachineSetBuilder object on the cluster.
+	// Created SetBuilder object on the cluster.
 	Object *machinev1beta1.MachineSet
 	// api client to interact with the cluster.
 	apiClient *clients.Settings
-	// errorMsg is processed before MachineSetBuilder object is created.
+	// errorMsg is processed before SetBuilder object is created.
 	errorMsg string
+	// string to store the public cloud
+	publicCloud string
 }
 
-// NewMachineSetBuilderFromCopy returns an MachineSetBuilder struct from a copied MachineSet.
-func NewMachineSetBuilderFromCopy(
+const (
+	AwsCloud   = "aws"
+	GcpCloud   = "gcp"
+	AzureCloud = "azure"
+)
+
+// NewSetBuilderFromCopy returns an SetBuilder struct from a copied MachineSet.
+func NewSetBuilderFromCopy(
 	apiClient *clients.Settings,
-	nsName,
-	publicCloud,
+	nsName string,
 	instanceType string,
-	replicas int32) *MachineSetBuilder {
-	glog.V(100).Infof(
-		"Initializing new MachineSetBuilder structure from copied MachineSet with the following params: "+
-			"namespace: %s, publicCloud: %s, instanceType: %s and replicas: %v",
-		nsName, publicCloud, instanceType, replicas)
+	workerLabel string,
+	replicas int32) *SetBuilder {
+	glog.V(100).Infof("Initializing new SetBuilder structure from copied MachineSet with the following"+
+		" params: namespace: %s, instanceType: %s, workerLabel: %s, and replicas: %v", nsName, instanceType,
+		workerLabel, replicas)
 
-	newMachineSet, err := CreateNewWorkerMachineSetFromCopy(apiClient, nsName, publicCloud, instanceType, replicas)
-
-	builder := MachineSetBuilder{
-		apiClient:  apiClient,
-		Definition: newMachineSet,
+	builder := SetBuilder{
+		apiClient: apiClient,
 	}
 
-	if err != nil {
-		glog.V(100).Infof(
-			"Error initializing MachineSet from copy: %s", err.Error())
+	newSetBuilder, err := createNewWorkerMachineSetFromCopy(apiClient, nsName, instanceType, workerLabel, replicas)
 
-		builder.errorMsg = fmt.Sprintf("Error initializing MachineSet from copy: %s",
-			err.Error())
+	if err != nil {
+		glog.V(100).Infof("Error initializing MachineSet from copy: %s", err.Error())
+
+		builder.errorMsg = fmt.Sprintf("Error initializing MachineSet from copy: %s", err.Error())
+
+		return &builder
+	}
+
+	builder.Definition = newSetBuilder.Definition
+
+	err = builder.getPublicCloudKind()
+
+	if err != nil {
+		builder.errorMsg = fmt.Sprintf("error getting the public cloud kind: %v", err.Error())
+	}
+
+	glog.V(100).Infof("Updating copied MachineSet provider instanceType to: %s", instanceType)
+
+	err = builder.ChangeCloudProviderInstanceType(instanceType)
+
+	if err != nil {
+		builder.errorMsg = fmt.Sprintf("error changing the instanceType: %v", err.Error())
 	}
 
 	if nsName == "" {
 		glog.V(100).Infof("The Namespace of the MachineSet is empty")
 
-		builder.errorMsg = "MachineSet 'nseName' cannot be empty"
+		builder.errorMsg = "MachineSet 'nsName' cannot be empty"
 	}
 
 	if instanceType == "" {
@@ -74,6 +97,12 @@ func NewMachineSetBuilderFromCopy(
 		builder.errorMsg = "MachineSet 'replicas' cannot be zero"
 	}
 
+	if workerLabel == "" {
+		glog.V(100).Infof("The workerLabel of the MachineSet is empty")
+
+		builder.errorMsg = "MachineSet 'workerLabel' cannot be empty"
+	}
+
 	if builder.Definition == nil {
 		glog.V(100).Infof("The MachineSet object definition is nil")
 
@@ -83,11 +112,11 @@ func NewMachineSetBuilderFromCopy(
 	return &builder
 }
 
-// PullMachineSet loads an existing MachineSet into Builder struct.
-func PullMachineSet(apiClient *clients.Settings, name, namespace string) (*MachineSetBuilder, error) {
+// PullSet loads an existing MachineSet into Builder struct.
+func PullSet(apiClient *clients.Settings, name, namespace string) (*SetBuilder, error) {
 	glog.V(100).Infof("Pulling existing machineSet name %s in namespace %s", name, namespace)
 
-	builder := MachineSetBuilder{
+	builder := SetBuilder{
 		apiClient: apiClient,
 		Definition: &machinev1beta1.MachineSet{
 			ObjectMeta: metav1.ObjectMeta{
@@ -106,7 +135,7 @@ func PullMachineSet(apiClient *clients.Settings, name, namespace string) (*Machi
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("MachineSet object %s doesn't exist in namespace %s", name, namespace)
+		return nil, fmt.Errorf("machineSet object %s doesn't exist in namespace %s", name, namespace)
 	}
 
 	builder.Definition = builder.Object
@@ -114,89 +143,8 @@ func PullMachineSet(apiClient *clients.Settings, name, namespace string) (*Machi
 	return &builder, nil
 }
 
-// CreateNewWorkerMachineSetFromCopy returns a MachineSet object which was copied from an exiting one on cluster.
-func CreateNewWorkerMachineSetFromCopy(
-	apiClient *clients.Settings,
-	namespace,
-	publicCloud,
-	instanceType string,
-	replicas int32) (*machinev1beta1.MachineSet, error) {
-	// currently only supporting AWS MachineSets
-	if publicCloud != "aws" {
-		return nil, fmt.Errorf("only AWS public cloud is currently supported for copied MachineSet")
-	}
-
-	workerMachineSetList, err := GetWorkerMachineSetList(apiClient, namespace)
-
-	if err != nil {
-		return nil, fmt.Errorf("could not get worker MachineSetList: %w", err)
-	}
-
-	// picking the first worker MachineSet in list
-	baseMs := workerMachineSetList.Items[0]
-
-	glog.V(100).Infof("Creating new MachineSet copy of first existing worker MachineSet: %v",
-		baseMs.Name)
-
-	copiedMachineSet := &machinev1beta1.MachineSet{
-		ObjectMeta: *baseMs.ObjectMeta.DeepCopy(),
-		Spec:       *baseMs.Spec.DeepCopy(),
-	}
-
-	glog.V(100).Infof("Renaming copied MachineSet to: %s", copiedMachineSet.ObjectMeta.Name)
-
-	copiedMachineSet.ObjectMeta.Name = fmt.Sprintf("%v-%v", copiedMachineSet.Name,
-		strings.ReplaceAll(instanceType, ".", "-"))
-
-	glog.V(100).Infof("Updating copied MachineSet name in metadata, selector and template parameter ...")
-
-	copiedMachineSet.ObjectMeta.UID = ""
-	copiedMachineSet.ObjectMeta.ResourceVersion = ""
-
-	// change spec labels
-	copiedMachineSet.Spec.Selector.MatchLabels["machine.openshift.io/cluster-api-machineset"] =
-		copiedMachineSet.ObjectMeta.Name
-	copiedMachineSet.Spec.Template.ObjectMeta.Labels["machine.openshift.io/cluster-api-machineset"] =
-		copiedMachineSet.ObjectMeta.Name
-
-	glog.V(100).Infof("Updating copied MachineSet provider instanceType to: %s", instanceType)
-
-	// currently only AWS public cloud supported when copying MachineSets
-	err = ChangeAWSProviderInstanceType(copiedMachineSet, instanceType)
-	if err != nil {
-		return nil, fmt.Errorf("could not change the provider instanceType in copied MachineSet: %w", err)
-	}
-
-	glog.V(100).Infof("Updating copied MachineSet replicas value to: %v", replicas)
-	copiedMachineSet.Spec.Replicas = &replicas
-
-	return copiedMachineSet, nil
-}
-
-// Get returns MachineSet object if found.
-func (builder *MachineSetBuilder) Get() (*machinev1beta1.MachineSet, error) {
-	if valid, err := builder.validate(); !valid {
-		return nil, err
-	}
-
-	glog.V(100).Infof(
-		"Collecting MachineSet object %s", builder.Definition.Name)
-
-	machineSet, err := builder.apiClient.MachineSets(builder.Definition.Namespace).Get(context.TODO(),
-		builder.Definition.Name, metav1.GetOptions{})
-
-	if err != nil {
-		glog.V(100).Infof(
-			"MachineSet object %s doesn't exist", builder.Definition.Name)
-
-		return nil, err
-	}
-
-	return machineSet, err
-}
-
 // Exists checks whether the given MachineSet exists.
-func (builder *MachineSetBuilder) Exists() bool {
+func (builder *SetBuilder) Exists() bool {
 	if valid, _ := builder.validate(); !valid {
 		return false
 	}
@@ -206,7 +154,8 @@ func (builder *MachineSetBuilder) Exists() bool {
 		builder.Definition.Namespace)
 
 	var err error
-	builder.Object, err = builder.Get()
+	builder.Object, err = builder.apiClient.MachineSets(builder.Definition.Namespace).Get(context.TODO(),
+		builder.Definition.Name, metav1.GetOptions{})
 
 	if err != nil {
 		glog.V(100).Infof("Failed to collect MachineSet object due to %s", err.Error())
@@ -216,7 +165,7 @@ func (builder *MachineSetBuilder) Exists() bool {
 }
 
 // Create makes a MachineSet in cluster and stores the created object in struct.
-func (builder *MachineSetBuilder) Create() (*MachineSetBuilder, error) {
+func (builder *SetBuilder) Create() (*SetBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
@@ -233,7 +182,7 @@ func (builder *MachineSetBuilder) Create() (*MachineSetBuilder, error) {
 }
 
 // Delete removes a MachineSet object from a cluster.
-func (builder *MachineSetBuilder) Delete() error {
+func (builder *SetBuilder) Delete() error {
 	if valid, err := builder.validate(); !valid {
 		return err
 	}
@@ -242,7 +191,7 @@ func (builder *MachineSetBuilder) Delete() error {
 		builder.Definition.Name)
 
 	if !builder.Exists() {
-		return fmt.Errorf("MachineSet cannot be deleted because it does not exist")
+		return fmt.Errorf("machineSet cannot be deleted because it does not exist")
 	}
 
 	err := builder.apiClient.MachineSets(builder.Object.Namespace).Delete(
@@ -255,91 +204,344 @@ func (builder *MachineSetBuilder) Delete() error {
 	return err
 }
 
-// GetWorkerMachineSetList returns the list of worker MachineSets in a namespace on a cluster.
-func GetWorkerMachineSetList(apiClient *clients.Settings, namespace string) (*machinev1beta1.MachineSetList, error) {
-	list := &machinev1beta1.MachineSetList{
-		Items: []machinev1beta1.MachineSet{},
-	}
-
-	resp, err := apiClient.MachineSets(namespace).List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		return nil, err
-	}
-
-	for _, ms := range resp.Items {
-		if val, ok := ms.Spec.Template.ObjectMeta.Labels["machine.openshift.io/cluster-api-machine-role"]; ok &&
-			val == "worker" {
-			list.Items = append(list.Items, ms)
-		}
-	}
-
-	return list, nil
-}
-
 // WaitForMachineSetReady waits until MachineSet first replica is Ready.
-func WaitForMachineSetReady(apiClient *clients.Settings, namespace, machineSetName string, pollInterval,
+func WaitForMachineSetReady(
+	apiClient *clients.Settings,
+	namespace,
+	machineSetName string,
 	timeout time.Duration) error {
-	return wait.PollImmediate(pollInterval, timeout, func() (bool, error) {
-		machineSetPulled, err := PullMachineSet(apiClient, namespace, machineSetName)
+	return wait.PollImmediate(30*time.Second, timeout, func() (bool, error) {
+		machineSetPulled, err := PullSet(apiClient, namespace, machineSetName)
 
 		if err != nil {
-			glog.V(100).Infof("MachineSet pull from cluster error: %s\n", err)
+			glog.V(100).Infof("MachineSet pull from cluster error: %v\n", err)
 
 			return false, err
 		}
 
-		if machineSetPulled.Object.Status.ReadyReplicas == 1 {
-			glog.V(100).Infof("MachineSet %s has now %v replicas in Ready state",
+		if machineSetPulled.Object.Status.ReadyReplicas > 0 &&
+			machineSetPulled.Object.Status.Replicas == machineSetPulled.Object.Status.ReadyReplicas {
+			glog.V(100).Infof("MachineSet %s has %v replicas in Ready state",
 				machineSetPulled.Object.Name, machineSetPulled.Object.Status.ReadyReplicas)
 
 			// this exits out of the wait.PollImmediate()
 			return true, nil
 		}
 
-		glog.V(100).Infof("MachineSet %s has now %v replicas in Ready state",
+		glog.V(100).Infof("MachineSet %s has %v replicas in Ready state",
 			machineSetPulled.Object.Name, machineSetPulled.Object.Status.ReadyReplicas)
 
 		return false, err
 	})
 }
 
-// GetMapFromProviderSpec returns a map representation of the MachineSet ProviderSpec.Value element.
-func GetMapFromProviderSpec(ms machinev1beta1.MachineSet) (map[string]interface{}, error) {
+// ChangeCloudProviderInstanceType calls the cloud-specific function to change the ProviderSpec instance type param.
+func (builder *SetBuilder) ChangeCloudProviderInstanceType(instanceType string) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
+	glog.V(100).Infof("Updating the cloud provider instance type field")
+
+	switch builder.publicCloud {
+	case AwsCloud:
+		glog.V(100).Infof("Updating ProviderSpec InstanceType param for AWS public cloud")
+
+		err := builder.AWSChangeProviderInstanceType(instanceType)
+
+		if err != nil {
+			return fmt.Errorf("error from func AWSChangeProviderInstanceType(instanceType): %w", err)
+		}
+
+	case GcpCloud:
+		glog.V(100).Infof("Updating ProviderSpec MachineType and OnHostTerminate params for " +
+			"GCP public cloud")
+
+		err := builder.GCPChangeProviderMachineType(instanceType)
+
+		if err != nil {
+			return fmt.Errorf("error from func GCPChangeProviderMachineType(instanceType): %w", err)
+		}
+
+	case AzureCloud:
+		glog.V(100).Infof("Updating ProviderSpec VMSize param for Azure public cloud")
+
+		err := builder.AzureChangeProviderVMSize(instanceType)
+
+		if err != nil {
+			return fmt.Errorf("error from func AzureChangeProviderVMSize(instanceType): %w", err)
+		}
+
+	default:
+		glog.V(100).Infof("Public cloud '%s' is not supported, must be 'aws', 'gcp' or azure'")
+
+		return fmt.Errorf("could not find supported public cloud")
+	}
+
+	return nil
+}
+
+// AWSChangeProviderInstanceType changes the ProviderSpec InstanceType param for AWS public cloud.
+func (builder *SetBuilder) AWSChangeProviderInstanceType(instanceType string) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
+	if instanceType == "" {
+		return fmt.Errorf("instanceType parameter cannot be empty")
+	}
+
+	byteArray, err := json.Marshal(builder.Definition.Spec.Template.Spec.ProviderSpec.Value)
+
+	if err != nil {
+		return fmt.Errorf("error marshalling machineSet providerSpec.Value into byte array: %w", err)
+	}
+
+	glog.V(100).Infof("Updating ProviderSpec InstanceType param '%s' for AWS public cloud",
+		instanceType)
+
+	var AWSProviderSpecObject *machinev1beta1.AWSMachineProviderConfig
+	err = json.Unmarshal(byteArray, &AWSProviderSpecObject)
+
+	if err != nil {
+		glog.V(100).Infof("error unmarshalling byte array into AWSMachineProviderConfig object: %v", err)
+
+		return fmt.Errorf("could not update InstanceType param: %w", err)
+	}
+
+	glog.V(100).Infof("Setting AWSMachineProviderConfig.InstanceType param value to: %s", instanceType)
+
+	AWSProviderSpecObject.InstanceType = instanceType
+
+	byteArrayAWS, err := json.Marshal(AWSProviderSpecObject)
+
+	if err != nil {
+		glog.V(100).Infof("error marshalling AWSMachineProviderConfig object into byte array: %v", err)
+
+		return fmt.Errorf("could not update InstanceType param: %w", err)
+	}
+
+	err = json.Unmarshal(byteArrayAWS, builder.Definition.Spec.Template.Spec.ProviderSpec.Value)
+
+	if err != nil {
+		glog.V(100).Infof("error unmarshalling AWSMachineProviderConfig byte array into "+
+			"ProviderSpec.Value object: %v", err)
+
+		return fmt.Errorf("could not update InstanceType param: %w", err)
+	}
+
+	return nil
+}
+
+// GCPChangeProviderMachineType changes the ProviderSpec MachineType param for GCP public cloud.
+func (builder *SetBuilder) GCPChangeProviderMachineType(machineType string) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
+	if machineType == "" {
+		return fmt.Errorf("machineType parameter cannot be empty")
+	}
+
+	byteArray, err := json.Marshal(builder.Definition.Spec.Template.Spec.ProviderSpec.Value)
+
+	if err != nil {
+		return fmt.Errorf("error marshalling machineSet providerSpec.Value into byte array: %w", err)
+	}
+
+	glog.V(100).Infof("Updating ProviderSpec MachineType param '%s' for GCP public cloud", machineType)
+
+	var GCPProviderSpecObject *machinev1beta1.GCPMachineProviderSpec
+	err = json.Unmarshal(byteArray, &GCPProviderSpecObject)
+
+	if err != nil {
+		glog.V(100).Infof("error unmarshalling byte array into GCPMachineProviderSpec object: %v", err)
+
+		return fmt.Errorf("could not update MachineType param: %w", err)
+	}
+
+	glog.V(100).Infof("Setting GCPMachineProviderConfig.MachineType param value to: %s", machineType)
+
+	GCPProviderSpecObject.MachineType = machineType
+
+	byteArrayGCP, err := json.Marshal(GCPProviderSpecObject)
+
+	if err != nil {
+		glog.V(100).Infof("error marshalling GCPMachineProviderSpec object into byte array: %v", err)
+
+		return fmt.Errorf("could not update MachineType param: %w", err)
+	}
+
+	err = json.Unmarshal(byteArrayGCP, builder.Definition.Spec.Template.Spec.ProviderSpec.Value)
+
+	if err != nil {
+		glog.V(100).Infof("error unmarshalling ProviderSpec byte array into ProviderSpec.Value: %v", err)
+
+		return fmt.Errorf("could not update MachineType param: %w", err)
+	}
+
+	return nil
+}
+
+// AzureChangeProviderVMSize changes the ProviderSpec VMSize param for Azure public cloud.
+func (builder *SetBuilder) AzureChangeProviderVMSize(vmSize string) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
+	if vmSize == "" {
+		return fmt.Errorf("vmSize parameter cannot be empty")
+	}
+
+	byteArray, err := json.Marshal(builder.Definition.Spec.Template.Spec.ProviderSpec.Value)
+
+	if err != nil {
+		return fmt.Errorf("error marshalling machineSet providerSpec.Value into byte array: %w", err)
+	}
+
+	glog.V(100).Infof("Updating ProviderSpec Value VMSize param '%s' for Azure public cloud",
+		vmSize)
+
+	var AzureProviderSpecObject *machinev1beta1.AzureMachineProviderSpec
+	err = json.Unmarshal(byteArray, &AzureProviderSpecObject)
+
+	if err != nil {
+		glog.V(100).Infof("error unmarshalling byte array into AzureMachineProviderSpec object: %v", err)
+
+		return fmt.Errorf("could not update VMSize param: %w", err)
+	}
+
+	glog.V(100).Infof("Setting AzureMachineProviderSpec.VMSize param value to: %s", vmSize)
+
+	AzureProviderSpecObject.VMSize = vmSize
+
+	byteArrayAzure, err := json.Marshal(AzureProviderSpecObject)
+
+	if err != nil {
+		glog.V(100).Infof("error marshalling AzureMachineProviderSpec object into byte array: %v", err)
+
+		return fmt.Errorf("could not update VMSize param: %w", err)
+	}
+
+	err = json.Unmarshal(byteArrayAzure, builder.Definition.Spec.Template.Spec.ProviderSpec.Value)
+
+	if err != nil {
+		glog.V(100).Infof("error unmarshalling AzureMachineProviderSpec byte array into "+
+			"ProviderSpec.Value object: %v", err)
+
+		return fmt.Errorf("could not update VMSize param: %w", err)
+	}
+
+	return nil
+}
+
+// createNewWorkerMachineSetFromCopy returns a SetBuilder object which was copied from an exiting one on cluster.
+func createNewWorkerMachineSetFromCopy(
+	apiClient *clients.Settings,
+	namespace string,
+	instanceType string,
+	workerLabel string,
+	replicas int32) (*SetBuilder, error) {
+	workerSetBuilders, err := ListWorkerMachineSets(apiClient, namespace, workerLabel)
+
+	if err != nil {
+		return nil, fmt.Errorf("could not list worker MachineSets: %w", err)
+	}
+
+	if len(workerSetBuilders) == 0 {
+		glog.V(100).Infof("The array of worker MachineSets is empty")
+
+		return nil, fmt.Errorf("no worker MachineSets were found")
+	}
+
+	// picking the first worker SetBuilder in array
+	baseSetBuilder := workerSetBuilders[0]
+
+	glog.V(100).Infof("Creating new SetBuilder copy of first existing worker MachineSet: %s",
+		baseSetBuilder.Definition.Name)
+
+	copiedSetBuilder := &SetBuilder{
+		apiClient: apiClient,
+		Definition: &machinev1beta1.MachineSet{
+			ObjectMeta: *baseSetBuilder.Definition.ObjectMeta.DeepCopy(),
+			Spec:       *baseSetBuilder.Definition.Spec.DeepCopy(),
+		},
+	}
+
+	glog.V(100).Infof("Renaming copied SetBuilder to: %s",
+		copiedSetBuilder.Definition.ObjectMeta.Name)
+
+	// replace dots in name with dashes.  Cannot have dots or underscores in machineSet name, must also be lower case
+	copiedSetBuilder.Definition.ObjectMeta.Name = fmt.Sprintf("%v-%v",
+		copiedSetBuilder.Definition.Name,
+		strings.ToLower(regexp.MustCompile(`[\.|\_]`).ReplaceAllString(instanceType, "-")))
+
+	glog.V(100).Infof("Updating copied MachineSet name in metadata, selector and template parameters")
+
+	copiedSetBuilder.Definition.ObjectMeta.UID = ""
+	copiedSetBuilder.Definition.ObjectMeta.ResourceVersion = ""
+
+	// change spec labels
+	copiedSetBuilder.Definition.Spec.Selector.MatchLabels["machine.openshift.io/cluster-api-machineset"] =
+		copiedSetBuilder.Definition.ObjectMeta.Name
+	copiedSetBuilder.Definition.Spec.Template.ObjectMeta.Labels["machine.openshift.io/cluster-api-machineset"] =
+		copiedSetBuilder.Definition.ObjectMeta.Name
+
+	glog.V(100).Infof("Updating copied MachineSet replicas value to: %v", replicas)
+	copiedSetBuilder.Definition.Spec.Replicas = &replicas
+
+	return copiedSetBuilder, nil
+}
+
+// getPublicCloudKind determines the public cloud kind and stores it in the builder struct.
+func (builder *SetBuilder) getPublicCloudKind() error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
+	glog.V(100).Infof("Determining the public cloud kind")
+
 	providerSpecMap := make(map[string]interface{})
 
 	// Value field is of type *runtime.RawExtension
-	byteArray, err := json.Marshal(ms.Spec.Template.Spec.ProviderSpec.Value)
+	byteArray, err := json.Marshal(builder.Definition.Spec.Template.Spec.ProviderSpec.Value)
 
 	if err != nil {
-		return nil, err
+		builder.errorMsg = fmt.Sprintf("error determining public cloud kind: %v", err)
+
+		return fmt.Errorf("error marshalling the providerSpec Value element into a byte array")
 	}
 
 	err = json.Unmarshal(byteArray, &providerSpecMap)
+
 	if err != nil {
-		return nil, err
+		builder.errorMsg = fmt.Sprintf("error determining public cloud kind: %v", err)
+
+		return fmt.Errorf("error unmarshalling the byte array into a providerSpec map")
 	}
 
-	return providerSpecMap, nil
-}
+	// publicCloudKind is of type: map[string]interface{}
+	publicCloudKind := providerSpecMap["kind"]
 
-// ChangeAWSProviderInstanceType updates the instanceType of an AWS MachineSet.
-func ChangeAWSProviderInstanceType(machineSet *machinev1beta1.MachineSet, instanceType string) error {
-	providerSpecMap, err := GetMapFromProviderSpec(*machineSet)
-	if err != nil {
-		return err
+	publicCloud, ok := publicCloudKind.(string)
+
+	if !ok {
+		return fmt.Errorf("failed to detect public cloud kind")
 	}
 
-	providerSpecMap["instanceType"] = instanceType
-	byteArray, err := json.Marshal(providerSpecMap)
+	glog.V(100).Infof("ProviderSpec kind param is '%s'", publicCloud)
 
-	if err != nil {
-		return err
-	}
+	switch publicCloud {
+	case "AWSMachineProviderConfig":
+		builder.publicCloud = AwsCloud
+	case "GCPMachineProviderSpec":
+		builder.publicCloud = GcpCloud
+	case "AzureMachineProviderSpec":
+		builder.publicCloud = AzureCloud
+	default:
+		builder.errorMsg = "unsupported cloud platform. Supported public cloud are AWS, GCP, and Azure"
 
-	err = json.Unmarshal(byteArray, machineSet.Spec.Template.Spec.ProviderSpec.Value)
-
-	if err != nil {
-		return err
+		return fmt.Errorf("unsupported cloud platform. Supported public cloud are AWS, GCP, and Azure")
 	}
 
 	return nil
@@ -347,7 +549,7 @@ func ChangeAWSProviderInstanceType(machineSet *machinev1beta1.MachineSet, instan
 
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
-func (builder *MachineSetBuilder) validate() (bool, error) {
+func (builder *SetBuilder) validate() (bool, error) {
 	resourceCRD := "MachineSet"
 
 	if builder == nil {
