@@ -131,7 +131,9 @@ func (builder *NetworkPolicyBuilder) WithPolicyType(policyType netv1.PolicyType)
 	}
 
 	if builder.Definition.Spec.PolicyTypes == nil {
-		builder.Definition.Spec.PolicyTypes = make([]netv1.PolicyType, 1)
+		builder.Definition.Spec.PolicyTypes = []netv1.PolicyType{policyType}
+
+		return builder
 	}
 
 	builder.Definition.Spec.PolicyTypes = append(builder.Definition.Spec.PolicyTypes, policyType)
