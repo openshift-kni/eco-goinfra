@@ -783,7 +783,7 @@ func (builder *InfraEnvBuilder) Update(force bool) (*InfraEnvBuilder, error) {
 				builder.Definition.Name, builder.Definition.Namespace,
 			)
 
-			_, err = builder.Delete()
+			err = builder.DeleteAndWait(time.Second * 5)
 			builder.Definition.ResourceVersion = ""
 
 			if err != nil {
@@ -799,6 +799,8 @@ func (builder *InfraEnvBuilder) Update(force bool) (*InfraEnvBuilder, error) {
 			return builder.Create()
 		}
 	}
+
+	builder.Object = builder.Definition
 
 	return builder, err
 }
@@ -825,6 +827,32 @@ func (builder *InfraEnvBuilder) Delete() (*InfraEnvBuilder, error) {
 	builder.Object = nil
 
 	return builder, nil
+}
+
+// DeleteAndWait deletes an InfraEnvBuilder and waits until it is removed from the cluster.
+func (builder *InfraEnvBuilder) DeleteAndWait(timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
+	glog.V(100).Infof(`Deleting InfraEnvBuilder %s and 
+	waiting for the defined period until it's removed`,
+		builder.Definition.Name)
+
+	if _, err := builder.Delete(); err != nil {
+		return err
+	}
+
+	// Polls the InfraEnvBuilder every second until it's removed.
+	return wait.PollImmediate(time.Second, timeout, func() (bool, error) {
+		_, err := builder.Get()
+		if k8serrors.IsNotFound(err) {
+
+			return true, nil
+		}
+
+		return false, nil
+	})
 }
 
 // Exists checks if the defined infraenv has already been created.

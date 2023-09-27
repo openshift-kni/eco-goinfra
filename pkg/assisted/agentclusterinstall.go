@@ -660,6 +660,8 @@ func (builder *AgentClusterInstallBuilder) Update(force bool) (*AgentClusterInst
 		}
 	}
 
+	builder.Object = builder.Definition
+
 	return builder, err
 }
 
