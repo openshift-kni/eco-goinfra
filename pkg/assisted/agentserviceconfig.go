@@ -381,7 +381,9 @@ func (builder *AgentServiceConfigBuilder) Update(force bool) (*AgentServiceConfi
 		}
 	}
 
-	builder.Object = builder.Definition
+	if err == nil {
+		builder.Object = builder.Definition
+	}
 
 	return builder, err
 }

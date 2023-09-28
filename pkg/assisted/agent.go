@@ -308,8 +308,6 @@ func (builder *agentBuilder) Update() (*agentBuilder, error) {
 		builder.Object = builder.Definition
 	}
 
-	builder.Object = builder.Definition
-
 	return builder, err
 }
 
