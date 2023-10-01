@@ -848,7 +848,7 @@ func (builder *InfraEnvBuilder) DeleteAndWait(timeout time.Duration) error {
 	// Polls the InfraEnvBuilder every second until it's removed.
 	return wait.PollImmediate(time.Second, timeout, func() (bool, error) {
 		_, err := builder.Get()
-		if k8serrors.IsNotFound(err) {
+		if err != nil {
 
 			return true, nil
 		}
