@@ -610,9 +610,22 @@ func (builder *AgentClusterInstallBuilder) getCondition(conditionType string) (*
 		return nil, err
 	}
 
-	if !builder.Exists() {
-		return nil, fmt.Errorf("agentclusterinstall object %s doesn't exist in namespace %s",
-			builder.Definition.Name, builder.Definition.Namespace)
+	// wait for agentclusterinstall conditions to be published to the agentclusterinstall status
+	err := wait.PollImmediate(time.Second, time.Second*5, func() (bool, error) {
+		if !builder.Exists() {
+			return false, fmt.Errorf("agentclusterinstall object %s doesn't exist in namespace %s",
+				builder.Definition.Name, builder.Definition.Namespace)
+		}
+
+		if len(builder.Object.Status.Conditions) > 0 {
+			return true, nil
+		}
+
+		return false, nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error while waiting for conditions to be published: %w", err)
 	}
 
 	for _, condition := range builder.Object.Status.Conditions {
