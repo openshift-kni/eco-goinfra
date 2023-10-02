@@ -831,13 +831,13 @@ func (builder *InfraEnvBuilder) Delete() (*InfraEnvBuilder, error) {
 	return builder, nil
 }
 
-// DeleteAndWait deletes an InfraEnvBuilder and waits until it is removed from the cluster.
+// DeleteAndWait deletes an InfraEnv and waits until it is removed from the cluster.
 func (builder *InfraEnvBuilder) DeleteAndWait(timeout time.Duration) error {
 	if valid, err := builder.validate(); !valid {
 		return err
 	}
 
-	glog.V(100).Infof(`Deleting InfraEnvBuilder %s and 
+	glog.V(100).Infof(`Deleting InfraEnv %s and 
 	waiting for the defined period until it's removed`,
 		builder.Definition.Name)
 
@@ -845,7 +845,7 @@ func (builder *InfraEnvBuilder) DeleteAndWait(timeout time.Duration) error {
 		return err
 	}
 
-	// Polls the InfraEnvBuilder every second until it's removed.
+	// Polls the InfraEnv every second until it's removed.
 	return wait.PollImmediate(time.Second, timeout, func() (bool, error) {
 		_, err := builder.Get()
 		if err != nil {
@@ -853,7 +853,7 @@ func (builder *InfraEnvBuilder) DeleteAndWait(timeout time.Duration) error {
 			return true, nil
 		}
 
-		return false, nil
+		return false, err
 	})
 }
 
