@@ -952,6 +952,33 @@ func (builder *Builder) GetLog(logStartTime time.Duration, containerName string)
 	return buf.String(), nil
 }
 
+// GetFullLog connects to a pod and fetches the full log since pod creation.
+func (builder *Builder) GetFullLog(containerName string) (string, error) {
+	if valid, err := builder.validate(); !valid {
+		return "", err
+	}
+
+	req := builder.apiClient.Pods(builder.Definition.Namespace).GetLogs(builder.Definition.Name, &v1.PodLogOptions{})
+	log, err := req.Stream(context.Background())
+
+	if err != nil {
+		return "", err
+	}
+
+	defer func() {
+		_ = log.Close()
+	}()
+
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, log)
+
+	if err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
+}
+
 // GetGVR returns pod's GroupVersionResource which could be used for Clean function.
 func GetGVR() schema.GroupVersionResource {
 	return schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
