@@ -958,25 +958,25 @@ func (builder *Builder) GetFullLog(containerName string) (string, error) {
 		return "", err
 	}
 
-	req := builder.apiClient.Pods(builder.Definition.Namespace).GetLogs(builder.Definition.Name, &v1.PodLogOptions{})
-	log, err := req.Stream(context.Background())
+	logStream, err := builder.apiClient.Pods(builder.Definition.Namespace).GetLogs(builder.Definition.Name,
+		&v1.PodLogOptions{Container: containerName}).Stream(context.Background())
 
 	if err != nil {
 		return "", err
 	}
 
 	defer func() {
-		_ = log.Close()
+		_ = logStream.Close()
 	}()
 
-	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, log)
+	logBuffer := new(bytes.Buffer)
+	_, err = io.Copy(logBuffer, logStream)
 
 	if err != nil {
 		return "", err
 	}
 
-	return buf.String(), nil
+	return logBuffer.String(), nil
 }
 
 // GetGVR returns pod's GroupVersionResource which could be used for Clean function.
