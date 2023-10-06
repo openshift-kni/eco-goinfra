@@ -18,6 +18,7 @@ require (
 	github.com/openshift/assisted-service/api v0.0.0-20230906121258-6d85fb16f8dd
 	github.com/openshift/assisted-service/models v0.0.0
 	github.com/openshift/client-go v0.0.0-20230120202327-72f107311084
+	github.com/openshift/cluster-logging-operator v0.0.0-20230921181116-cd901aaa8af2
 	github.com/openshift/cluster-nfd-operator v0.0.0-20230116162820-3d08a74f3d2e
 	github.com/openshift/cluster-node-tuning-operator v0.0.0-20230704170229-287fdce04769
 	github.com/openshift/hive/apis v0.0.0-20220222213051-def9088fdb5a
@@ -34,6 +35,7 @@ require (
 	k8s.io/apiextensions-apiserver v0.27.1
 	k8s.io/apimachinery v0.27.1
 	k8s.io/client-go v12.0.0+incompatible
+	k8s.io/kubelet v0.26.2
 	k8s.io/utils v0.0.0-20230505201702-9f6742963106
 	sigs.k8s.io/controller-runtime v0.14.6
 )
@@ -158,6 +160,7 @@ require (
 	github.com/onsi/gomega v1.27.8 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/openshift/custom-resource-status v1.1.3-0.20220503160415-f2fdb4999d87 // indirect
+	github.com/openshift/elasticsearch-operator v0.0.0-20220613183908-e1648e67c298 // indirect
 	github.com/operator-framework/operator-registry v1.17.5 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
@@ -203,7 +206,7 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiserver v0.26.1 // indirect
+	k8s.io/apiserver v0.26.2 // indirect
 	k8s.io/cli-runtime v0.26.1 // indirect
 	k8s.io/component-base v0.27.1 // indirect
 	k8s.io/component-helpers v0.26.1 // indirect
@@ -212,7 +215,6 @@ require (
 	k8s.io/kube-aggregator v0.25.3 // indirect
 	k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f // indirect
 	k8s.io/kubectl v0.26.4 // indirect
-	k8s.io/kubelet v0.26.2 // indirect
 	k8s.io/kubernetes v1.25.4 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/kustomize/api v0.12.1 // indirect
@@ -227,6 +229,7 @@ replace (
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20230918105526-6488b1202507 // release-4.14
 	github.com/openshift/assisted-service/models => github.com/openshift/assisted-service/models v0.0.0-20230906121258-6d85fb16f8dd
 	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20230120202327-72f107311084 // release-4.13
+	github.com/openshift/cluster-logging-operator => github.com/openshift/cluster-logging-operator v0.0.0-20230721192805-f9d0a6c76c39
 	github.com/openshift/cluster-node-tuning-operator => github.com/openshift/cluster-node-tuning-operator v0.0.0-20230704075823-5510dee6aecd // release-4.13
 	k8s.io/api => k8s.io/api v0.26.1
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.26.1

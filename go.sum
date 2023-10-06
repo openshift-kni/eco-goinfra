@@ -88,6 +88,7 @@ github.com/Shopify/logrus-bugsnag v0.0.0-20230117174420-439a4b8ba167 h1:4sc2y3Lz
 github.com/Shopify/logrus-bugsnag v0.0.0-20230117174420-439a4b8ba167/go.mod h1:nBISMsZeFRL0qdZ1pKCSFv0j4veW0nOdVpOa49IMLeI=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=
 github.com/Shopify/toxiproxy v2.1.4+incompatible/go.mod h1:OXgGpZ6Cli1/URJOF1DMxUHB2q5Ap20/P/eIdh4G0pI=
+github.com/ViaQ/logerr/v2 v2.1.0 h1:8WwzuNa1x+a6tRUl+6sFel83A/QxlFBUaFW2FyG2zzY=
 github.com/a8m/envsubst v1.4.2 h1:4yWIHXOLEJHQEFd4UjrWDrYeYlV7ncFWJOCBRLOZHQg=
 github.com/acomagu/bufpipe v1.0.4 h1:e3H4WUzM3npvo5uv95QuJM3cQspFNtFBzvJ2oNjKIDQ=
 github.com/acomagu/bufpipe v1.0.4/go.mod h1:mxdxdup/WdsKVreO5GpW4+M/1CE2sMG4jeGJ2sYmHc4=
@@ -905,12 +906,16 @@ github.com/openshift/assisted-service/models v0.0.0-20230906121258-6d85fb16f8dd 
 github.com/openshift/assisted-service/models v0.0.0-20230906121258-6d85fb16f8dd/go.mod h1:ImkG1jQgM72erhLaZtWqEn0g0Y8AYUOxLR/HgvlPi2Y=
 github.com/openshift/client-go v0.0.0-20230120202327-72f107311084 h1:66uaqNwA+qYyQDwsMWUfjjau8ezmg1dzCqub13KZOcE=
 github.com/openshift/client-go v0.0.0-20230120202327-72f107311084/go.mod h1:M3h9m001PWac3eAudGG3isUud6yBjr5XpzLYLLTlHKo=
+github.com/openshift/cluster-logging-operator v0.0.0-20230721192805-f9d0a6c76c39 h1:aoUPlm0/xEbf858PVxOu64tRdNuOJb8ouWhoA5VO7lA=
+github.com/openshift/cluster-logging-operator v0.0.0-20230721192805-f9d0a6c76c39/go.mod h1:k1y8lmZfJ1mXpKwatyxR8mI5qYCycg8aaY5agVZefYE=
 github.com/openshift/cluster-nfd-operator v0.0.0-20230116162820-3d08a74f3d2e h1:ps0FMcqPkPPKbrx7xFLw6AThVvo8RObqq2yAo3lcp0Q=
 github.com/openshift/cluster-nfd-operator v0.0.0-20230116162820-3d08a74f3d2e/go.mod h1:fPwweK/TeeIBp2BQOjhN6TpVDEez3FANQJXL5qUUkGE=
 github.com/openshift/cluster-node-tuning-operator v0.0.0-20230704075823-5510dee6aecd h1:h/BFDPvQ5CriQCPBE7I0D0cWDrPsiSU+hboOv+H0JJ0=
 github.com/openshift/cluster-node-tuning-operator v0.0.0-20230704075823-5510dee6aecd/go.mod h1:oad/ZaadIASiD/8ZnQwZm//Ug2QLBgupZLOoqWwnuNY=
 github.com/openshift/custom-resource-status v1.1.3-0.20220503160415-f2fdb4999d87 h1:cHyxR+Y8rAMT6m1jQCaYGRwikqahI0OjjUDhFNf3ySQ=
 github.com/openshift/custom-resource-status v1.1.3-0.20220503160415-f2fdb4999d87/go.mod h1:DB/Mf2oTeiAmVVX1gN+NEqweonAPY0TKUwADizj8+ZA=
+github.com/openshift/elasticsearch-operator v0.0.0-20220613183908-e1648e67c298 h1:/CbENmI9HuJHd8N/h3eaUkqhHoQjj1BdwIGOF+X3wnM=
+github.com/openshift/elasticsearch-operator v0.0.0-20220613183908-e1648e67c298/go.mod h1:6dxhWPY3Wr/0b0eGrFpV7gcyeS+ne48Mo9OQ9dxrLNI=
 github.com/openshift/hive/apis v0.0.0-20220222213051-def9088fdb5a h1:E+XPJs/aVvYsrlJzo2ED38ZTR2RTNUlFMmOaFAAdMZg=
 github.com/openshift/hive/apis v0.0.0-20220222213051-def9088fdb5a/go.mod h1:E1bgquRiwfugdArdecPbpYIrAdve5kTzMaJb0+8jMXI=
 github.com/openshift/machine-config-operator v0.0.1-0.20230525143338-5c5a902aeb55 h1:Zo1oVeHVXkwpDhLRouPExdRcgDdtc5iRVt9AWW0Xozc=
