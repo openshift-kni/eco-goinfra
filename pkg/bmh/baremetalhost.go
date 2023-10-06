@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
+	goclient "sigs.k8s.io/controller-runtime/pkg/client"
+
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/wait"
-
-	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"fmt"
 
@@ -442,21 +442,6 @@ func (builder *BmhBuilder) Delete() (*BmhBuilder, error) {
 	return builder, nil
 }
 
-// Exists checks whether the given bmh exists.
-func (builder *BmhBuilder) Exists() bool {
-	if valid, _ := builder.validate(); !valid {
-		return false
-	}
-
-	glog.V(100).Infof("Checking if baremetalhost %s exists in namespace %s",
-		builder.Definition.Name, builder.Definition.Namespace)
-
-	var err error
-	builder.Object, err = builder.Get()
-
-	return err == nil || !k8serrors.IsNotFound(err)
-}
-
 // Get returns bmh object if found.
 func (builder *BmhBuilder) Get() (*bmhv1alpha1.BareMetalHost, error) {
 	if valid, err := builder.validate(); !valid {
@@ -477,6 +462,53 @@ func (builder *BmhBuilder) Get() (*bmhv1alpha1.BareMetalHost, error) {
 	}
 
 	return bmh, err
+}
+
+// Exists checks whether the given bmh exists.
+func (builder *BmhBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
+	glog.V(100).Infof("Checking if baremetalhost %s exists in namespace %s",
+		builder.Definition.Name, builder.Definition.Namespace)
+
+	var err error
+	builder.Object, err = builder.Get()
+
+	return err == nil || !k8serrors.IsNotFound(err)
+}
+
+// GetBmhOperationalState returns the current OperationalStatus of the bmh.
+func (builder *BmhBuilder) GetBmhOperationalState() bmhv1alpha1.OperationalStatus {
+	if valid, _ := builder.validate(); !valid {
+		return ""
+	}
+
+	glog.V(100).Infof("Pull OperationalStatus value for %s baremetalhost within %s namespace",
+		builder.Definition.Name, builder.Definition.Namespace)
+
+	if !builder.Exists() {
+		return ""
+	}
+
+	return builder.Object.Status.OperationalStatus
+}
+
+// GetBmhPowerOnStatus checks BareMetalHost PowerOn status.
+func (builder *BmhBuilder) GetBmhPowerOnStatus() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
+	glog.V(100).Infof("Pull PoweredOn value for %s baremetalhost within %s namespace",
+		builder.Definition.Name, builder.Definition.Namespace)
+
+	if !builder.Exists() {
+		return false
+	}
+
+	return builder.Object.Status.PoweredOn
 }
 
 // CreateAndWaitUntilProvisioned creates bmh object and waits until bmh is provisioned.
@@ -528,6 +560,7 @@ func (builder *BmhBuilder) WaitUntilInStatus(status bmhv1alpha1.ProvisioningStat
 	return wait.PollImmediate(time.Second, timeout, func() (bool, error) {
 		var err error
 		builder.Object, err = builder.Get()
+
 		if err != nil {
 			return false, nil
 		}
