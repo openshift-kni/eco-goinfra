@@ -467,6 +467,9 @@ github.com/google/shlex
 # github.com/google/uuid v1.3.0
 ## explicit
 github.com/google/uuid
+# github.com/grafana-operator/grafana-operator/v4 v4.10.1
+## explicit; go 1.18
+github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1
 # github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79
 ## explicit
 github.com/gregjones/httpcache
