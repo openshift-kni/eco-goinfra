@@ -85,7 +85,7 @@ type Settings struct {
 	PackageManifestInterface clientPkgManifestV1.OperatorsV1Interface
 	operatorv1alpha1.OperatorV1alpha1Interface
 	grafanaV4V1Alpha1.Grafana
-	lsoV1alpha1.LocalVolumeSet
+	LocalVolumeInterface lsoV1alpha1.LocalVolumeSet
 }
 
 // New returns a *Settings with the given kubeconfig.

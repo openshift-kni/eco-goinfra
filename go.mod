@@ -23,6 +23,7 @@ require (
 	github.com/openshift/cluster-nfd-operator v0.0.0-20230116162820-3d08a74f3d2e
 	github.com/openshift/cluster-node-tuning-operator v0.0.0-20230704170229-287fdce04769
 	github.com/openshift/hive/apis v0.0.0-20220222213051-def9088fdb5a
+	github.com/openshift/local-storage-operator v0.0.0-00010101000000-000000000000
 	github.com/openshift/machine-config-operator v0.0.1-0.20230525143338-5c5a902aeb55
 	github.com/openshift/ptp-operator v0.0.0-20230608145834-0f37b622bc3b
 	github.com/operator-framework/api v0.17.3
@@ -232,6 +233,7 @@ replace (
 	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20230120202327-72f107311084 // release-4.13
 	github.com/openshift/cluster-logging-operator => github.com/openshift/cluster-logging-operator v0.0.0-20230721192805-f9d0a6c76c39
 	github.com/openshift/cluster-node-tuning-operator => github.com/openshift/cluster-node-tuning-operator v0.0.0-20230704075823-5510dee6aecd // release-4.13
+	github.com/openshift/local-storage-operator => github.com/openshift/local-storage-operator v0.0.0-20230904072424-14e8d821fe80 // release-4.13
 	k8s.io/api => k8s.io/api v0.26.1
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.26.1
 	k8s.io/apimachinery => k8s.io/apimachinery v0.26.1

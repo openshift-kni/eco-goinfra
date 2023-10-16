@@ -920,6 +920,8 @@ github.com/openshift/elasticsearch-operator v0.0.0-20220613183908-e1648e67c298 h
 github.com/openshift/elasticsearch-operator v0.0.0-20220613183908-e1648e67c298/go.mod h1:6dxhWPY3Wr/0b0eGrFpV7gcyeS+ne48Mo9OQ9dxrLNI=
 github.com/openshift/hive/apis v0.0.0-20220222213051-def9088fdb5a h1:E+XPJs/aVvYsrlJzo2ED38ZTR2RTNUlFMmOaFAAdMZg=
 github.com/openshift/hive/apis v0.0.0-20220222213051-def9088fdb5a/go.mod h1:E1bgquRiwfugdArdecPbpYIrAdve5kTzMaJb0+8jMXI=
+github.com/openshift/local-storage-operator v0.0.0-20230904072424-14e8d821fe80 h1:4T4l9vi0/5HvtCQdJO24sio+UyITbeZlPj4QglxWQQQ=
+github.com/openshift/local-storage-operator v0.0.0-20230904072424-14e8d821fe80/go.mod h1:s7wzaOvNKjIjP5SXoTLdd/z8Omc0Diw2/bI/REBo6sE=
 github.com/openshift/machine-config-operator v0.0.1-0.20230525143338-5c5a902aeb55 h1:Zo1oVeHVXkwpDhLRouPExdRcgDdtc5iRVt9AWW0Xozc=
 github.com/openshift/machine-config-operator v0.0.1-0.20230525143338-5c5a902aeb55/go.mod h1:xwAAOZMhwF91Ii8/yfOwp+yH5+GJS7VX90NI39RmSyo=
 github.com/openshift/ptp-operator v0.0.0-20230608145834-0f37b622bc3b h1:R2WYVktXhYHbhS3P7uVxC5vrQqGPl42DmCGXaCaa5qw=
