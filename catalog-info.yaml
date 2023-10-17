@@ -1,0 +1,23 @@
+# Catalog entry for Backstage [backstage.io]
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: eco-goinfra
+  title: eco-goinfra
+  description: Ecosystem QE infrastructure framework
+  links:
+    - title : Golang
+      url: https://go.dev/
+  tags:
+    - golang
+    - test-framework
+    - product-quality
+    - openshift
+  namespace: quality-community
+  annotations:
+    github.com/project-slug: openshift-kni/eco-goinfra
+    backstage.io/techdocs-ref: https://github.com/openshift-kni/eco-goinfra/blob/main/README.md
+spec:
+  type: library
+  owner: group:redhat/openshift-kni
+  lifecycle: production
