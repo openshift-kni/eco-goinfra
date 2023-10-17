@@ -3,6 +3,7 @@ package olm
 import (
 	"context"
 	"fmt"
+
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/golang/glog"
