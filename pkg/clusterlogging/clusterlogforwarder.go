@@ -9,7 +9,7 @@ import (
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	clov1 "github.com/openshift/cluster-logging-operator/apis/logging/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -26,6 +26,93 @@ type ClusterLogForwarderBuilder struct {
 	errorMsg string
 }
 
+// NewClusterLogForwarderBuilder method creates new instance of builder.
+func NewClusterLogForwarderBuilder(
+	apiClient *clients.Settings, name, nsname string) *ClusterLogForwarderBuilder {
+	glog.V(100).Infof("Initializing new clusterlogforwarder structure with the following params: "+
+		"name: %s, namespace: %s", name, nsname)
+
+	builder := &ClusterLogForwarderBuilder{
+		apiClient: apiClient,
+		Definition: &clov1.ClusterLogForwarder{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The name of the clusterlogforwarder is empty")
+
+		builder.errorMsg = "The clusterlogforwarder 'name' cannot be empty"
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The namespace of the clusterlogforwarder is empty")
+
+		builder.errorMsg = "The clusterlogforwarder 'namespace' cannot be empty"
+	}
+
+	return builder
+}
+
+// WithOutput sets the output on the clusterlogforwarder definition.
+func (builder *ClusterLogForwarderBuilder) WithOutput(outputSpec *clov1.OutputSpec) *ClusterLogForwarderBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Setting output %v on clusterlogforwarder %s in namespace %s",
+		outputSpec, builder.Definition.Name, builder.Definition.Namespace)
+
+	if outputSpec == nil {
+		glog.V(100).Infof("The 'outputSpec' of the deployment is empty")
+
+		builder.errorMsg = "'outputSpec' parameter is empty"
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	if builder.Definition.Spec.Outputs == nil {
+		builder.Definition.Spec.Outputs = []clov1.OutputSpec{*outputSpec}
+	} else {
+		builder.Definition.Spec.Outputs = append(builder.Definition.Spec.Outputs, *outputSpec)
+	}
+
+	return builder
+}
+
+// WithPipeline sets the pipeline on the clusterlogforwarder definition.
+func (builder *ClusterLogForwarderBuilder) WithPipeline(pipelineSpec *clov1.PipelineSpec) *ClusterLogForwarderBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Setting pipeline %v on clusterlogforwarder %s in namespace %s",
+		pipelineSpec, builder.Definition.Name, builder.Definition.Namespace)
+
+	if pipelineSpec == nil {
+		glog.V(100).Infof("The 'pipelineSpec' of the deployment is empty")
+
+		builder.errorMsg = "'pipelineSpec' parameter is empty"
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	if builder.Definition.Spec.Pipelines == nil {
+		builder.Definition.Spec.Pipelines = []clov1.PipelineSpec{*pipelineSpec}
+	} else {
+		builder.Definition.Spec.Pipelines = append(builder.Definition.Spec.Pipelines, *pipelineSpec)
+	}
+
+	return builder
+}
+
 // PullClusterLogForwarder retrieves an existing clusterlogforwarder object from the cluster.
 func PullClusterLogForwarder(apiClient *clients.Settings, name, namespace string) (*clov1.ClusterLogForwarder, error) {
 	glog.V(100).Infof("Pulling existing clusterlogforwarder %s in namespace %s", name, namespace)
@@ -33,7 +120,7 @@ func PullClusterLogForwarder(apiClient *clients.Settings, name, namespace string
 	builder := ClusterLogForwarderBuilder{
 		apiClient: apiClient,
 		Definition: &clov1.ClusterLogForwarder{
-			ObjectMeta: metaV1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,
 			},
