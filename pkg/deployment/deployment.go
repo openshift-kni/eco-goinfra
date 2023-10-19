@@ -76,12 +76,6 @@ func NewBuilder(
 		builder.errorMsg = "deployment 'namespace' cannot be empty"
 	}
 
-	if len(labels) == 0 {
-		glog.V(100).Infof("There are no labels for the deployment")
-
-		builder.errorMsg = "deployment 'labels' cannot be empty"
-	}
-
 	return &builder
 }
 
