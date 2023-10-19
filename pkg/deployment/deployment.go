@@ -76,12 +76,6 @@ func NewBuilder(
 		builder.errorMsg = "deployment 'namespace' cannot be empty"
 	}
 
-	if len(labels) == 0 {
-		glog.V(100).Infof("There are no labels for the deployment")
-
-		builder.errorMsg = "deployment 'labels' cannot be empty"
-	}
-
 	return &builder
 }
 
@@ -315,6 +309,54 @@ func (builder *Builder) WithServiceAccountName(serviceAccountName string) *Build
 	return builder
 }
 
+// WithVolume sets the Volume on the deployment definition.
+func (builder *Builder) WithVolume(volume *coreV1.Volume) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Configuring volume %v on deployment %s in namespace %s",
+		volume, builder.Definition.Name, builder.Definition.Namespace)
+
+	if volume == nil {
+		glog.V(100).Infof("The 'volume' of the deployment is empty")
+
+		builder.errorMsg = "'volume' parameter is empty"
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	mountConfig := coreV1.VolumeMount{Name: volume.Name, MountPath: volume.HostPath.Path, ReadOnly: false}
+
+	builder.isMountAlreadyInUseInDeployment(mountConfig)
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	for index := range builder.Definition.Spec.Template.Spec.Containers {
+		builder.Definition.Spec.Template.Spec.Containers[index].VolumeMounts = append(
+			builder.Definition.Spec.Template.Spec.Containers[index].VolumeMounts, mountConfig)
+	}
+
+	if len(builder.Definition.Spec.Template.Spec.InitContainers) > 0 {
+		for index := range builder.Definition.Spec.Template.Spec.InitContainers {
+			builder.Definition.Spec.Template.Spec.InitContainers[index].VolumeMounts = append(
+				builder.Definition.Spec.Template.Spec.InitContainers[index].VolumeMounts, mountConfig)
+		}
+	}
+
+	if builder.Definition.Spec.Template.Spec.Volumes == nil {
+		builder.Definition.Spec.Template.Spec.Volumes = []coreV1.Volume{*volume}
+	} else {
+		builder.Definition.Spec.Template.Spec.Volumes = append(builder.Definition.Spec.Template.Spec.Volumes, *volume)
+	}
+
+	return builder
+}
+
 // WithOptions creates deployment with generic mutation options.
 func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
 	if valid, _ := builder.validate(); !valid {
@@ -529,6 +571,29 @@ func (builder *Builder) WaitUntilCondition(condition v1.DeploymentConditionType,
 // GetGVR returns deployment's GroupVersionResource which could be used for Clean function.
 func GetGVR() schema.GroupVersionResource {
 	return schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+}
+
+func (builder *Builder) isMountAlreadyInUseInDeployment(newMount coreV1.VolumeMount) {
+	if valid, _ := builder.validate(); valid {
+		for index := range builder.Definition.Spec.Template.Spec.Containers {
+			if builder.Definition.Spec.Template.Spec.Containers[index].VolumeMounts != nil {
+				if isMountInUse(builder.Definition.Spec.Template.Spec.Containers[index].VolumeMounts, newMount) {
+					builder.errorMsg = fmt.Sprintf("given mount %v already mounted to pod's container %s",
+						newMount.Name, builder.Definition.Spec.Template.Spec.Containers[index].Name)
+				}
+			}
+		}
+	}
+}
+
+func isMountInUse(containerMounts []coreV1.VolumeMount, newMount coreV1.VolumeMount) bool {
+	for _, containerMount := range containerMounts {
+		if containerMount.Name == newMount.Name && containerMount.MountPath == newMount.MountPath {
+			return true
+		}
+	}
+
+	return false
 }
 
 // validate will check that the builder and builder definition are properly initialized before
