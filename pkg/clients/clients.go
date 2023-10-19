@@ -61,6 +61,8 @@ import (
 	operatorv1alpha1 "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1"
 	nfdv1 "github.com/openshift/cluster-nfd-operator/api/v1"
 	lsoV1alpha1 "github.com/openshift/local-storage-operator/api/v1alpha1"
+
+	machinev1beta1client "github.com/openshift/client-go/machine/clientset/versioned/typed/machine/v1beta1"
 )
 
 // Settings provides the struct to talk with relevant API.
@@ -86,6 +88,7 @@ type Settings struct {
 	operatorv1alpha1.OperatorV1alpha1Interface
 	grafanaV4V1Alpha1.Grafana
 	LocalVolumeInterface lsoV1alpha1.LocalVolumeSet
+	machinev1beta1client.MachineV1beta1Interface
 }
 
 // New returns a *Settings with the given kubeconfig.
@@ -128,6 +131,7 @@ func New(kubeconfig string) *Settings {
 	clientSet.SecurityV1Interface = v1security.NewForConfigOrDie(config)
 	clientSet.ArgoprojV1alpha1Interface = argocdClient.NewForConfigOrDie(config)
 	clientSet.OperatorV1alpha1Interface = operatorv1alpha1.NewForConfigOrDie(config)
+	clientSet.MachineV1beta1Interface = machinev1beta1client.NewForConfigOrDie(config)
 	clientSet.Config = config
 
 	crScheme := runtime.NewScheme()
