@@ -39,6 +39,7 @@ require (
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/kubelet v0.26.2
 	k8s.io/utils v0.0.0-20230505201702-9f6742963106
+	maistra.io/api v0.0.0-20230417135504-0536f6c22b1c
 	sigs.k8s.io/controller-runtime v0.14.6
 )
 
