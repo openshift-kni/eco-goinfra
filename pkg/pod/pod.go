@@ -512,11 +512,13 @@ func (builder *Builder) RedefineDefaultCMD(command []string) *Builder {
 		return builder
 	}
 
-	if !builder.isMutationAllowed("cmd") {
+	glog.V(100).Infof("Redefining default pod's container cmd with the new %v", command)
+
+	builder.isMutationAllowed("cmd")
+
+	if builder.errorMsg != "" {
 		return builder
 	}
-
-	glog.V(100).Infof("Redefining default pod's container cmd with the new %v", command)
 
 	builder.Definition.Spec.Containers[0].Command = command
 
@@ -529,9 +531,9 @@ func (builder *Builder) WithRestartPolicy(restartPolicy v1.RestartPolicy) *Build
 		return builder
 	}
 
-	if !builder.isMutationAllowed("RestartPolicy") {
-		return builder
-	}
+	glog.V(100).Infof("Redefining pod's RestartPolicy to %v", restartPolicy)
+
+	builder.isMutationAllowed("RestartPolicy")
 
 	if restartPolicy == "" {
 		glog.V(100).Infof(
@@ -539,11 +541,11 @@ func (builder *Builder) WithRestartPolicy(restartPolicy v1.RestartPolicy) *Build
 			builder.Definition.Name, builder.Definition.Namespace)
 
 		builder.errorMsg = "can not define pod with empty restart policy"
-
-		return builder
 	}
 
-	glog.V(100).Infof("Redefining pod's RestartPolicy to %v", restartPolicy)
+	if builder.errorMsg != "" {
+		return builder
+	}
 
 	builder.Definition.Spec.RestartPolicy = restartPolicy
 
@@ -556,11 +558,13 @@ func (builder *Builder) WithTolerationToMaster() *Builder {
 		return builder
 	}
 
-	if !builder.isMutationAllowed("toleration to master node") {
+	glog.V(100).Infof("Redefining pod's %s with toleration to master node", builder.Definition.Name)
+
+	builder.isMutationAllowed("toleration to master node")
+
+	if builder.errorMsg != "" {
 		return builder
 	}
-
-	glog.V(100).Infof("Redefining pod's %s with toleration to master node", builder.Definition.Name)
 
 	builder.Definition.Spec.Tolerations = []v1.Toleration{
 		{
@@ -578,11 +582,13 @@ func (builder *Builder) WithPrivilegedFlag() *Builder {
 		return builder
 	}
 
-	if !builder.isMutationAllowed("privileged container flag") {
+	glog.V(100).Infof("Applying privileged flag to all pod's: %s containers", builder.Definition.Name)
+
+	builder.isMutationAllowed("privileged container flag")
+
+	if builder.errorMsg != "" {
 		return builder
 	}
-
-	glog.V(100).Infof("Applying privileged flag to all pod's: %s containers", builder.Definition.Name)
 
 	for idx := range builder.Definition.Spec.Containers {
 		builder.Definition.Spec.Containers[idx].SecurityContext = &v1.SecurityContext{}
@@ -599,34 +605,30 @@ func (builder *Builder) WithLocalVolume(volumeName, mountPath string) *Builder {
 		return builder
 	}
 
-	if !builder.isMutationAllowed("LocalVolume") {
-		return builder
-	}
+	glog.V(100).Infof("Configuring volume %s for all pod's: %s containers. MountPath %s",
+		volumeName, builder.Definition.Name, mountPath)
+
+	builder.isMutationAllowed("LocalVolume")
 
 	if volumeName == "" {
 		glog.V(100).Infof("The 'volumeName' of the pod is empty")
 
 		builder.errorMsg = "'volumeName' parameter is empty"
-
-		return builder
 	}
 
 	if mountPath == "" {
 		glog.V(100).Infof("The 'mountPath' of the pod is empty")
 
 		builder.errorMsg = "'mountPath' parameter is empty"
-
-		return builder
 	}
 
 	mountConfig := v1.VolumeMount{Name: volumeName, MountPath: mountPath, ReadOnly: false}
 
-	if builder.isMountAlreadyInUseInPod(mountConfig) {
+	builder.isMountAlreadyInUseInPod(mountConfig)
+
+	if builder.errorMsg != "" {
 		return builder
 	}
-
-	glog.V(100).Infof("Configuring volume %s for all pod's: %s containers. MountPath %s",
-		volumeName, builder.Definition.Name, mountPath)
 
 	for index := range builder.Definition.Spec.Containers {
 		builder.Definition.Spec.Containers[index].VolumeMounts = append(
@@ -658,17 +660,16 @@ func (builder *Builder) WithAdditionalContainer(container *v1.Container) *Builde
 		return builder
 	}
 
-	if !builder.isMutationAllowed("additional container") {
-		return builder
-	}
+	glog.V(100).Infof("Adding new container %v to pod %s", container, builder.Definition.Name)
+	builder.isMutationAllowed("additional container")
 
 	if container == nil {
 		builder.errorMsg = "'container' parameter cannot be empty"
-
-		return builder
 	}
 
-	glog.V(100).Infof("Adding new container %v to pod %s", container, builder.Definition.Name)
+	if builder.errorMsg != "" {
+		return builder
+	}
 
 	builder.Definition.Spec.Containers = append(builder.Definition.Spec.Containers, *container)
 
@@ -681,18 +682,23 @@ func (builder *Builder) WithSecondaryNetwork(network []*multus.NetworkSelectionE
 		return builder
 	}
 
-	if !builder.isMutationAllowed("secondary network") {
+	glog.V(100).Infof("Applying secondary network %v to pod %s", network, builder.Definition.Name)
+
+	builder.isMutationAllowed("secondary network")
+
+	if builder.errorMsg != "" {
 		return builder
 	}
 
 	netAnnotation, err := json.Marshal(network)
+
 	if err != nil {
 		builder.errorMsg = fmt.Sprintf("error to unmarshal network annotation due to: %s", err.Error())
-
-		return builder
 	}
 
-	glog.V(100).Infof("Applying secondary network %v to pod %s", network, builder.Definition.Name)
+	if builder.errorMsg != "" {
+		return builder
+	}
 
 	builder.Definition.Annotations = map[string]string{"k8s.v1.cni.cncf.io/networks": string(netAnnotation)}
 
@@ -705,11 +711,13 @@ func (builder *Builder) WithHostNetwork() *Builder {
 		return builder
 	}
 
-	if !builder.isMutationAllowed("HostNetwork") {
+	glog.V(100).Infof("Applying HostNetwork flag to pod's %s configuration", builder.Definition.Name)
+
+	builder.isMutationAllowed("HostNetwork")
+
+	if builder.errorMsg != "" {
 		return builder
 	}
-
-	glog.V(100).Infof("Applying HostNetwork flag to pod's %s configuration", builder.Definition.Name)
 
 	builder.Definition.Spec.HostNetwork = true
 
@@ -722,12 +730,14 @@ func (builder *Builder) WithHostPid(hostPid bool) *Builder {
 		return builder
 	}
 
-	if !builder.isMutationAllowed("HostPID") {
-		return builder
-	}
-
 	glog.V(100).Infof("Applying HostPID flag to the configuration of pod: %s in namespace: %s",
 		builder.Definition.Name, builder.Definition.Namespace)
+
+	builder.isMutationAllowed("HostPID")
+
+	if builder.errorMsg != "" {
+		return builder
+	}
 
 	builder.Definition.Spec.HostPID = hostPid
 
@@ -740,12 +750,10 @@ func (builder *Builder) RedefineDefaultContainer(container v1.Container) *Builde
 		return builder
 	}
 
-	if !builder.isMutationAllowed("default container") {
-		return builder
-	}
-
 	glog.V(100).Infof("Redefining default pod %s container in namespace %s using new container %v",
 		builder.Definition.Name, builder.Definition.Namespace, container)
+
+	builder.isMutationAllowed("default container")
 
 	builder.Definition.Spec.Containers[0] = container
 
@@ -758,11 +766,9 @@ func (builder *Builder) WithHugePages() *Builder {
 		return builder
 	}
 
-	if !builder.isMutationAllowed("hugepages") {
-		return builder
-	}
-
 	glog.V(100).Infof("Applying hugePages configuration to all containers in pod: %s", builder.Definition.Name)
+
+	builder.isMutationAllowed("hugepages")
 
 	if builder.Definition.Spec.Volumes != nil {
 		builder.Definition.Spec.Volumes = append(builder.Definition.Spec.Volumes, v1.Volume{
@@ -799,20 +805,20 @@ func (builder *Builder) WithSecurityContext(securityContext *v1.PodSecurityConte
 		return builder
 	}
 
-	if !builder.isMutationAllowed("SecurityContext") {
-		return builder
-	}
+	glog.V(100).Infof("Applying SecurityContext configuration on pod %s in namespace %s",
+		builder.Definition.Name, builder.Definition.Namespace)
 
 	if securityContext == nil {
 		glog.V(100).Infof("The 'securityContext' of the pod is empty")
 
 		builder.errorMsg = "'securityContext' parameter is empty"
+	}
 
+	if builder.errorMsg != "" {
 		return builder
 	}
 
-	glog.V(100).Infof("Applying SecurityContext configuration on pod %s in namespace %s",
-		builder.Definition.Name, builder.Definition.Namespace)
+	builder.isMutationAllowed("SecurityContext")
 
 	builder.Definition.Spec.SecurityContext = securityContext
 
@@ -875,17 +881,17 @@ func (builder *Builder) WithLabel(labelKey, labelValue string) *Builder {
 		return builder
 	}
 
-	if !builder.isMutationAllowed("Labels") {
-		return builder
-	}
+	glog.V(100).Infof(fmt.Sprintf("Defining pod's label to %s:%s", labelKey, labelValue))
+
+	builder.isMutationAllowed("Labels")
 
 	if labelKey == "" {
 		builder.errorMsg = "can not apply empty labelKey"
-
-		return builder
 	}
 
-	glog.V(100).Infof(fmt.Sprintf("Defining pod's label to %s:%s", labelKey, labelValue))
+	if builder.errorMsg != "" {
+		return builder
+	}
 
 	builder.Definition.Labels = map[string]string{labelKey: labelValue}
 
@@ -898,11 +904,13 @@ func (builder *Builder) WithLabels(labels map[string]string) *Builder {
 		return builder
 	}
 
-	if !builder.isMutationAllowed("Labels") {
+	builder.isMutationAllowed("Labels")
+
+	if builder.errorMsg != "" {
 		return builder
 	}
 
-	glog.V(100).Infof("Setting pod labels: %q", labels)
+	glog.V(100).Infof(fmt.Sprintf("Defining pod labels: %q", labels))
 
 	builder.Definition.Labels = labels
 
@@ -1006,40 +1014,30 @@ func getDefinition(name, nsName string) *v1.Pod {
 	}
 }
 
-func (builder *Builder) isMutationAllowed(configToMutate string) bool {
-	if valid, _ := builder.validate(); !valid {
-		return false
-	}
+func (builder *Builder) isMutationAllowed(configToMutate string) {
+	_, _ = builder.validate()
 
 	if builder.Object != nil {
 		glog.V(100).Infof(
 			"Failed to redefine %s for running pod %s in namespace %s",
-			configToMutate, builder.Definition.Name, builder.Definition.Namespace)
+			builder.Definition.Name, configToMutate, builder.Definition.Namespace)
 
 		builder.errorMsg = fmt.Sprintf(
 			"can not redefine running pod. pod already running on node %s", builder.Object.Spec.NodeName)
-
-		return false
 	}
-
-	return true
 }
 
-func (builder *Builder) isMountAlreadyInUseInPod(newMount v1.VolumeMount) bool {
+func (builder *Builder) isMountAlreadyInUseInPod(newMount v1.VolumeMount) {
 	if valid, _ := builder.validate(); valid {
 		for index := range builder.Definition.Spec.Containers {
 			if builder.Definition.Spec.Containers[index].VolumeMounts != nil {
 				if isMountInUse(builder.Definition.Spec.Containers[index].VolumeMounts, newMount) {
 					builder.errorMsg = fmt.Sprintf("given mount %v already mounted to pod's container %s",
 						newMount.Name, builder.Definition.Spec.Containers[index].Name)
-
-					return true
 				}
 			}
 		}
 	}
-
-	return false
 }
 
 func isMountInUse(containerMounts []v1.VolumeMount, newMount v1.VolumeMount) bool {
