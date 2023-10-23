@@ -904,6 +904,11 @@ func (builder *Builder) WithLabels(labels map[string]string) *Builder {
 		return builder
 	}
 
+	if len(labels) == 0 {
+		builder.errorMsg = "can not apply empty set of labels to pod's definition"
+		return builder
+	}
+
 	builder.isMutationAllowed("Labels")
 
 	if builder.errorMsg != "" {
