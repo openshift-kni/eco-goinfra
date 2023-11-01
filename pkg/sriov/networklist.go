@@ -10,8 +10,17 @@ import (
 )
 
 // List returns sriov networks in the given namespace.
-func List(apiClient *clients.Settings, nsname string, options metaV1.ListOptions) ([]*NetworkBuilder, error) {
-	glog.V(100).Infof("Listing sriov networks in the namespace %s with the options %v", nsname, options)
+func List(apiClient *clients.Settings, nsname string, options ...metaV1.ListOptions) ([]*NetworkBuilder, error) {
+	passedOptions := metaV1.ListOptions{}
+
+	if len(options) == 1 {
+		passedOptions = options[0]
+	} else if len(options) > 1 {
+
+		return nil, fmt.Errorf("error: more than one ListOptions was passed")
+	}
+
+	glog.V(100).Infof("Listing sriov networks in the namespace %s with the options %v", nsname, passedOptions)
 
 	if nsname == "" {
 		glog.V(100).Infof("sriov network 'nsname' parameter can not be empty")
@@ -19,7 +28,7 @@ func List(apiClient *clients.Settings, nsname string, options metaV1.ListOptions
 		return nil, fmt.Errorf("failed to list sriov networks, 'nsname' parameter is empty")
 	}
 
-	networkList, err := apiClient.SriovNetworks(nsname).List(context.Background(), options)
+	networkList, err := apiClient.SriovNetworks(nsname).List(context.Background(), passedOptions)
 
 	if err != nil {
 		glog.V(100).Infof("Failed to list sriov networks in the namespace %s due to %s", nsname, err.Error())
@@ -48,7 +57,7 @@ func CleanAllNetworksByTargetNamespace(
 	apiClient *clients.Settings,
 	operatornsname string,
 	targetnsname string,
-	options metaV1.ListOptions) error {
+	options ...metaV1.ListOptions) error {
 	glog.V(100).Infof("Cleaning up sriov networks in the %s namespace with %s NetworkNamespace spec",
 		operatornsname, targetnsname)
 
@@ -64,7 +73,7 @@ func CleanAllNetworksByTargetNamespace(
 		return fmt.Errorf("failed to clean up sriov networks, 'targetnsname' parameter is empty")
 	}
 
-	networks, err := List(apiClient, operatornsname, options)
+	networks, err := List(apiClient, operatornsname, options...)
 
 	if err != nil {
 		glog.V(100).Infof("Failed to list sriov networks in namespace: %s", operatornsname)

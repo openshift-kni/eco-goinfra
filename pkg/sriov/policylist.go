@@ -10,9 +10,18 @@ import (
 )
 
 // ListPolicy returns SriovNetworkNodePolicies inventory in the given namespace.
-func ListPolicy(apiClient *clients.Settings, nsname string, options metaV1.ListOptions) ([]*PolicyBuilder, error) {
+func ListPolicy(apiClient *clients.Settings, nsname string, options ...metaV1.ListOptions) ([]*PolicyBuilder, error) {
+	passedOptions := metaV1.ListOptions{}
+
+	if len(options) == 1 {
+		passedOptions = options[0]
+	} else if len(options) > 1 {
+
+		return nil, fmt.Errorf("error: more than one ListOptions was passed")
+	}
+
 	glog.V(100).Infof("Listing SriovNetworkNodePolicies in the namespace %s with the options %v",
-		nsname, options)
+		nsname, passedOptions)
 
 	if nsname == "" {
 		glog.V(100).Infof("SriovNetworkNodePolicies 'nsname' parameter can not be empty")
@@ -20,7 +29,7 @@ func ListPolicy(apiClient *clients.Settings, nsname string, options metaV1.ListO
 		return nil, fmt.Errorf("failed to list SriovNetworkNodePolicies, 'nsname' parameter is empty")
 	}
 
-	networkNodePoliciesList, err := apiClient.SriovNetworkNodePolicies(nsname).List(context.Background(), options)
+	networkNodePoliciesList, err := apiClient.SriovNetworkNodePolicies(nsname).List(context.Background(), passedOptions)
 
 	if err != nil {
 		glog.V(100).Infof("Failed to list SriovNetworkNodePolicies in the namespace %s due to %s",
@@ -45,7 +54,8 @@ func ListPolicy(apiClient *clients.Settings, nsname string, options metaV1.ListO
 }
 
 // CleanAllNetworkNodePolicies removes all SriovNetworkNodePolicies that are not set as default.
-func CleanAllNetworkNodePolicies(apiClient *clients.Settings, operatornsname string, options metaV1.ListOptions) error {
+func CleanAllNetworkNodePolicies(
+	apiClient *clients.Settings, operatornsname string, options ...metaV1.ListOptions) error {
 	glog.V(100).Infof("Cleaning up SriovNetworkNodePolicies in the %s namespace", operatornsname)
 
 	if operatornsname == "" {
@@ -54,7 +64,7 @@ func CleanAllNetworkNodePolicies(apiClient *clients.Settings, operatornsname str
 		return fmt.Errorf("failed to clean up SriovNetworkNodePolicies, 'operatornsname' parameter is empty")
 	}
 
-	policies, err := ListPolicy(apiClient, operatornsname, options)
+	policies, err := ListPolicy(apiClient, operatornsname, options...)
 
 	if err != nil {
 		glog.V(100).Infof("Failed to list SriovNetworkNodePolicies in namespace: %s", operatornsname)

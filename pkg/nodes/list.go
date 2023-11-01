@@ -17,10 +17,19 @@ const (
 )
 
 // List returns node inventory.
-func List(apiClient *clients.Settings, options v1.ListOptions) ([]*Builder, error) {
-	glog.V(100).Infof("Listing all node resources with the options %v", options)
+func List(apiClient *clients.Settings, options ...v1.ListOptions) ([]*Builder, error) {
+	passedOptions := v1.ListOptions{}
 
-	nodeList, err := apiClient.CoreV1Interface.Nodes().List(context.Background(), options)
+	if len(options) == 1 {
+		passedOptions = options[0]
+	} else if len(options) > 1 {
+
+		return nil, fmt.Errorf("error: more than one ListOptions was passed")
+	}
+
+	glog.V(100).Infof("Listing all node resources with the options %v", passedOptions)
+
+	nodeList, err := apiClient.CoreV1Interface.Nodes().List(context.Background(), passedOptions)
 	if err != nil {
 		glog.V(100).Infof("Failed to list nodes due to %s", err.Error())
 
@@ -44,12 +53,12 @@ func List(apiClient *clients.Settings, options v1.ListOptions) ([]*Builder, erro
 }
 
 // ListExternalIPv4Networks returns a list of node's external ipv4 addresses.
-func ListExternalIPv4Networks(apiClient *clients.Settings, options v1.ListOptions) ([]string, error) {
+func ListExternalIPv4Networks(apiClient *clients.Settings, options ...v1.ListOptions) ([]string, error) {
 	glog.V(100).Infof("Collecting node's external ipv4 addresses")
 
 	var ipV4ExternalAddresses []string
 
-	nodeBuilders, err := List(apiClient, options)
+	nodeBuilders, err := List(apiClient, options...)
 	if err != nil {
 		return nil, err
 	}
@@ -71,11 +80,11 @@ func ListExternalIPv4Networks(apiClient *clients.Settings, options v1.ListOption
 // WaitForAllNodesAreReady waits for all nodes to be Ready for a time duration up to the timeout.
 func WaitForAllNodesAreReady(apiClient *clients.Settings,
 	timeout time.Duration,
-	options v1.ListOptions) (bool, error) {
+	options ...v1.ListOptions) (bool, error) {
 	glog.V(100).Infof("Waiting for all nodes to be in the Ready state for up to a duration of %v",
 		timeout)
 
-	nodesList, err := List(apiClient, options)
+	nodesList, err := List(apiClient, options...)
 	if err != nil {
 		glog.V(100).Infof("Failed to list all nodes due to %s", err.Error())
 
@@ -118,10 +127,10 @@ func WaitForAllNodesAreReady(apiClient *clients.Settings,
 // WaitForAllNodesToReboot waits for all nodes to start and finish reboot up to the timeout.
 func WaitForAllNodesToReboot(apiClient *clients.Settings,
 	globalRebootTimeout time.Duration,
-	options v1.ListOptions) (bool, error) {
+	options ...v1.ListOptions) (bool, error) {
 	glog.V(100).Infof("Waiting for all nodes in the list to reboot and return to the Ready condition")
 
-	nodesList, err := List(apiClient, options)
+	nodesList, err := List(apiClient, options...)
 	if err != nil {
 		glog.V(100).Infof("Failed to list all nodes due to %s", err.Error())
 

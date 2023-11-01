@@ -13,8 +13,17 @@ import (
 func ListPackageManifest(
 	apiClient *clients.Settings,
 	nsname string,
-	options metaV1.ListOptions) ([]*PackageManifestBuilder, error) {
-	glog.V(100).Infof("Listing PackageManifests in the namespace %s with the options %v", nsname, options)
+	options ...metaV1.ListOptions) ([]*PackageManifestBuilder, error) {
+	passedOptions := metaV1.ListOptions{}
+
+	if len(options) == 1 {
+		passedOptions = options[0]
+	} else if len(options) > 1 {
+
+		return nil, fmt.Errorf("error: more than one ListOptions was passed")
+	}
+
+	glog.V(100).Infof("Listing PackageManifests in the namespace %s with the options %v", nsname, passedOptions)
 
 	if nsname == "" {
 		glog.V(100).Infof("packagemanifest 'nsname' parameter can not be empty")
@@ -23,7 +32,7 @@ func ListPackageManifest(
 	}
 
 	pkgManifestList, err := apiClient.PackageManifestInterface.PackageManifests(nsname).List(context.Background(),
-		options)
+		passedOptions)
 
 	if err != nil {
 		glog.V(100).Infof("Failed to list PackageManifests in the namespace %s due to %s",
