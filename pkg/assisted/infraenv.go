@@ -895,6 +895,12 @@ func (builder *InfraEnvBuilder) validate() (bool, error) {
 		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
+	if builder.Object.Status.ISODownloadURL == "" {
+		glog.V(100).Infof("The %s builder ISODownloadURL is empty", resourceCRD)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have empty isodownloadurl", resourceCRD)
+	}
+
 	if builder.errorMsg != "" {
 		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
 
