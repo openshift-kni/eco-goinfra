@@ -27,7 +27,7 @@ func List(apiClient *clients.Settings, nsname string, options ...goclient.ListOp
 	}
 
 	logMessage := fmt.Sprintf("Listing bareMetalHosts in the namespace %s", nsname)
-	passedOptions := goclient.ListOptions{Namespace: nsname}
+	passedOptions := goclient.ListOptions{}
 
 	if len(options) == 1 {
 		passedOptions = options[0]
@@ -37,6 +37,8 @@ func List(apiClient *clients.Settings, nsname string, options ...goclient.ListOp
 
 		return nil, fmt.Errorf("error: more than one ListOptions was passed")
 	}
+
+	passedOptions.Namespace = nsname
 
 	glog.V(100).Infof(logMessage)
 
