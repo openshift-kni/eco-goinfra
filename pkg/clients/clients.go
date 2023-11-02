@@ -55,6 +55,7 @@ import (
 	moduleV1Beta1 "github.com/rh-ecosystem-edge/kernel-module-management/api/v1beta1"
 	"k8s.io/client-go/kubernetes/scheme"
 	coreV1Client "k8s.io/client-go/kubernetes/typed/core/v1"
+	policiesv1 "open-cluster-management.io/governance-policy-propagator/api/v1"
 
 	nvidiagpuv1 "github.com/NVIDIA/gpu-operator/api/v1"
 	grafanaV4V1Alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
@@ -255,6 +256,9 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	}
 
 	if err := argocdScheme.AddToScheme(crScheme); err != nil {
+		return err
+
+	if err := policiesv1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
