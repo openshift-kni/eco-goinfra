@@ -2,6 +2,7 @@ package clusteroperator
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/golang/glog"
@@ -11,10 +12,22 @@ import (
 )
 
 // List returns clusterOperators inventory.
-func List(apiClient *clients.Settings) ([]*Builder, error) {
-	glog.V(100).Info("Listing all clusterOperators")
+func List(apiClient *clients.Settings, options ...metaV1.ListOptions) ([]*Builder, error) {
+	logMessage := "Listing all clusterOperators"
+	passedOptions := metaV1.ListOptions{}
 
-	coList, err := apiClient.ClusterOperators().List(context.Background(), metaV1.ListOptions{})
+	if len(options) == 1 {
+		passedOptions = options[0]
+		logMessage += fmt.Sprintf(" with the options %v", passedOptions)
+	} else if len(options) > 1 {
+		glog.V(100).Infof("'options' parameter must be empty or single-valued")
+
+		return nil, fmt.Errorf("error: more than one ListOptions was passed")
+	}
+
+	glog.V(100).Infof(logMessage)
+
+	coList, err := apiClient.ClusterOperators().List(context.Background(), passedOptions)
 
 	if err != nil {
 		glog.V(100).Infof("Failed to list clusterOperators due to %s", err.Error())
@@ -39,10 +52,11 @@ func List(apiClient *clients.Settings) ([]*Builder, error) {
 }
 
 // WaitForAllClusteroperatorsAvailable waits until all clusterOperators are in available state.
-func WaitForAllClusteroperatorsAvailable(apiClient *clients.Settings, timeout time.Duration) (bool, error) {
+func WaitForAllClusteroperatorsAvailable(
+	apiClient *clients.Settings, timeout time.Duration, options ...metaV1.ListOptions) (bool, error) {
 	glog.V(100).Info("Waiting for all clusterOperators to be in available state")
 
-	coList, err := List(apiClient)
+	coList, err := List(apiClient, options...)
 	if err != nil {
 		glog.V(100).Infof("Failed to list all clusterOperators due to %s", err.Error())
 
@@ -77,10 +91,11 @@ func WaitForAllClusteroperatorsAvailable(apiClient *clients.Settings, timeout ti
 }
 
 // WaitForAllClusteroperatorsStopProgressing waits until all clusterOperators stopped progressing.
-func WaitForAllClusteroperatorsStopProgressing(apiClient *clients.Settings, timeout time.Duration) (bool, error) {
+func WaitForAllClusteroperatorsStopProgressing(
+	apiClient *clients.Settings, timeout time.Duration, options ...metaV1.ListOptions) (bool, error) {
 	glog.V(100).Infof("Waiting for all clusteroperators to stop progressing")
 
-	coList, err := List(apiClient)
+	coList, err := List(apiClient, options...)
 	if err != nil {
 		glog.V(100).Infof("Failed to list all clusterOperators due to %s", err.Error())
 

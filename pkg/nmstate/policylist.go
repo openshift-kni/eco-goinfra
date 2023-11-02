@@ -12,16 +12,19 @@ import (
 
 // ListPolicy returns a list of NodeNetworkConfigurationPolicy.
 func ListPolicy(apiClient *clients.Settings, options ...goclient.ListOptions) ([]*PolicyBuilder, error) {
-	glog.V(100).Infof("Listing NodeNetworkConfigurationPolicy")
-
 	passedOptions := goclient.ListOptions{}
+	logMessage := "Listing NodeNetworkConfigurationPolicy"
 
 	if len(options) == 1 {
 		passedOptions = options[0]
+		logMessage += fmt.Sprintf(" with the options %v", passedOptions)
 	} else if len(options) > 1 {
+		glog.V(100).Infof("'options' parameter must be empty or single-valued")
 
 		return nil, fmt.Errorf("error: more than one ListOptions was passed")
 	}
+
+	glog.V(100).Infof(logMessage)
 
 	policyList := &nmstateV1.NodeNetworkConfigurationPolicyList{}
 	err := apiClient.Client.List(context.Background(), policyList, &passedOptions)

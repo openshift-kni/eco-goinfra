@@ -19,15 +19,18 @@ const (
 // List returns node inventory.
 func List(apiClient *clients.Settings, options ...v1.ListOptions) ([]*Builder, error) {
 	passedOptions := v1.ListOptions{}
+	logMessage := "Listing all node resources"
 
 	if len(options) == 1 {
 		passedOptions = options[0]
+		logMessage += fmt.Sprintf(" with the options %v", passedOptions)
 	} else if len(options) > 1 {
+		glog.V(100).Infof("'options' parameter must be empty or single-valued")
 
 		return nil, fmt.Errorf("error: more than one ListOptions was passed")
 	}
 
-	glog.V(100).Infof("Listing all node resources with the options %v", passedOptions)
+	glog.V(100).Infof(logMessage)
 
 	nodeList, err := apiClient.CoreV1Interface.Nodes().List(context.Background(), passedOptions)
 	if err != nil {

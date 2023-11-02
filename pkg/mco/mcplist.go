@@ -12,17 +12,20 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-func ListMCP(apiClient *clients.Settings, listOptions ...metav1.ListOptions) ([]*MCPBuilder, error) {
+func ListMCP(apiClient *clients.Settings, options ...metav1.ListOptions) ([]*MCPBuilder, error) {
 	passedOptions := metav1.ListOptions{}
+	logMessage := "Listing all MCP resources"
 
-	if len(listOptions) == 1 {
-		passedOptions = listOptions[0]
-	} else if len(listOptions) > 1 {
+	if len(options) == 1 {
+		passedOptions = options[0]
+		logMessage += fmt.Sprintf(" with the options %v", passedOptions)
+	} else if len(options) > 1 {
+		glog.V(100).Infof("'options' parameter must be empty or single-valued")
 
 		return nil, fmt.Errorf("error: more than one ListOptions was passed")
 	}
 
-	glog.V(100).Infof("Listing all MCP resources with the options %v", passedOptions)
+	glog.V(100).Infof(logMessage)
 
 	mcpList, err := apiClient.MachineConfigPools().List(context.Background(), passedOptions)
 

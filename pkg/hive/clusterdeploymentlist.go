@@ -15,15 +15,18 @@ func ListClusterDeploymentsInAllNamespaces(
 	apiClient *clients.Settings,
 	options ...goclient.ListOptions) ([]*ClusterDeploymentBuilder, error) {
 	passedOptions := goclient.ListOptions{}
+	logMessage := "Listing all clusterdeployments"
 
 	if len(options) == 1 {
 		passedOptions = options[0]
+		logMessage += fmt.Sprintf(" with the options %v", passedOptions)
 	} else if len(options) > 1 {
+		glog.V(100).Infof("'options' parameter must be empty or single-valued")
 
 		return nil, fmt.Errorf("error: more than one ListOptions was passed")
 	}
 
-	glog.V(100).Infof("Listing all clusterdeployments with the options %v", passedOptions)
+	glog.V(100).Infof(logMessage)
 
 	clusterDeployments := new(hiveV1.ClusterDeploymentList)
 	err := apiClient.List(context.TODO(), clusterDeployments, &passedOptions)

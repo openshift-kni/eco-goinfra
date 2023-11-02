@@ -19,17 +19,29 @@ const (
 )
 
 // List returns bareMetalHosts inventory in the given namespace.
-func List(apiClient *clients.Settings, nsname string) ([]*BmhBuilder, error) {
-	glog.V(100).Infof("Listing bareMetalHosts in the nsname %s", nsname)
-
+func List(apiClient *clients.Settings, nsname string, options ...goclient.ListOptions) ([]*BmhBuilder, error) {
 	if nsname == "" {
 		glog.V(100).Infof("bareMetalHost 'nsname' parameter can not be empty")
 
 		return nil, fmt.Errorf("failed to list bareMetalHosts, 'nsname' parameter is empty")
 	}
 
+	logMessage := fmt.Sprintf("Listing bareMetalHosts in the namespace %s", nsname)
+	passedOptions := goclient.ListOptions{Namespace: nsname}
+
+	if len(options) == 1 {
+		passedOptions = options[0]
+		logMessage += fmt.Sprintf(" with the options %v", passedOptions)
+	} else if len(options) > 1 {
+		glog.V(100).Infof("'options' parameter must be empty or single-valued")
+
+		return nil, fmt.Errorf("error: more than one ListOptions was passed")
+	}
+
+	glog.V(100).Infof(logMessage)
+
 	var bmhList bmhv1alpha1.BareMetalHostList
-	err := apiClient.List(context.Background(), &bmhList, &goclient.ListOptions{Namespace: nsname})
+	err := apiClient.List(context.Background(), &bmhList, &passedOptions)
 
 	if err != nil {
 		glog.V(100).Infof("Failed to list bareMetalHosts in the nsname %s due to %s", nsname, err.Error())
@@ -57,11 +69,12 @@ func List(apiClient *clients.Settings, nsname string) ([]*BmhBuilder, error) {
 // for a time duration up to the timeout.
 func WaitForAllBareMetalHostsInGoodOperationalState(apiClient *clients.Settings,
 	nsname string,
-	timeout time.Duration) (bool, error) {
+	timeout time.Duration,
+	options ...goclient.ListOptions) (bool, error) {
 	glog.V(100).Infof("Waiting for all bareMetalHosts in %s namespace to have OK operationalStatus",
 		nsname)
 
-	bmhList, err := List(apiClient, nsname)
+	bmhList, err := List(apiClient, nsname, options...)
 	if err != nil {
 		glog.V(100).Infof("Failed to list all bareMetalHosts in the %s namespace due to %s",
 			nsname, err.Error())
