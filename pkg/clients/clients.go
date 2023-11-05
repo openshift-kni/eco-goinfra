@@ -257,6 +257,7 @@ func SetScheme(crScheme *runtime.Scheme) error {
 
 	if err := argocdScheme.AddToScheme(crScheme); err != nil {
 		return err
+	}
 
 	if err := policiesv1.AddToScheme(crScheme); err != nil {
 		return err

@@ -1,4 +1,4 @@
-package acm
+package ocm
 
 import (
 	"context"
@@ -206,34 +206,4 @@ func (builder *PolicyBuilder) validate() (bool, error) {
 	}
 
 	return true, nil
-}
-
-// ListPoliciesInAllNamespaces returns a cluster-wide pod inventory.
-func ListPoliciesInAllNamespaces(apiClient *clients.Settings, options metaV1.ListOptions) ([]*PolicyBuilder, error) {
-	glog.V(100).Info("Listing all policies in all namespaces")
-
-	policyList := &policiesv1.PolicyList{}
-
-	err := apiClient.Client.List(context.Background(), policyList, &runtimeclient.ListOptions{})
-
-	if err != nil {
-		glog.V(100).Infof("Failed to list all policies in all namespaces due to %s", err.Error())
-
-		return nil, err
-	}
-
-	var policyObjects []*PolicyBuilder
-
-	for _, policy := range policyList.Items {
-		copiedPolicy := policy
-		podBuilder := &PolicyBuilder{
-			apiClient:  apiClient,
-			Object:     &copiedPolicy,
-			Definition: &copiedPolicy,
-		}
-
-		policyObjects = append(policyObjects, podBuilder)
-	}
-
-	return policyObjects, nil
 }
