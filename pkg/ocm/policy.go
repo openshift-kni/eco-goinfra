@@ -149,7 +149,8 @@ func (builder *PolicyBuilder) Update(force bool) (*PolicyBuilder, error) {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Updating the policy object", builder.Definition.Name)
+	glog.V(100).Infof("Updating the policy object: %s in namespace: %s",
+		builder.Definition.Name, builder.Definition.Namespace)
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
 
