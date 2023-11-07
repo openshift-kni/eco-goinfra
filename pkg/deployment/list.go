@@ -20,13 +20,15 @@ func List(apiClient *clients.Settings, nsname string, options ...metaV1.ListOpti
 	passedOptions := metaV1.ListOptions{}
 	logMessage := fmt.Sprintf("Listing deployments in the namespace %s", nsname)
 
-	if len(options) == 1 {
-		passedOptions = options[0]
-		logMessage += fmt.Sprintf(" with the options %v", passedOptions)
-	} else if len(options) > 1 {
+	if len(options) > 1 {
 		glog.V(100).Infof("'options' parameter must be empty or single-valued")
 
 		return nil, fmt.Errorf("error: more than one ListOptions was passed")
+	}
+
+	if len(options) == 1 {
+		passedOptions = options[0]
+		logMessage += fmt.Sprintf(" with the options %v", passedOptions)
 	}
 
 	glog.V(100).Infof(logMessage)

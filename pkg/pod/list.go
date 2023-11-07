@@ -61,13 +61,15 @@ func ListInAllNamespaces(apiClient *clients.Settings, options ...v1.ListOptions)
 	logMessage := "Listing all pods in all namespaces"
 	passedOptions := v1.ListOptions{}
 
-	if len(options) == 1 {
-		passedOptions = options[0]
-		logMessage += fmt.Sprintf(" with the options %v", passedOptions)
-	} else if len(options) > 1 {
+	if len(options) > 1 {
 		glog.V(100).Infof("'options' parameter must be empty or single-valued")
 
 		return nil, fmt.Errorf("error: more than one ListOptions was passed")
+	}
+
+	if len(options) == 1 {
+		passedOptions = options[0]
+		logMessage += fmt.Sprintf(" with the options %v", passedOptions)
 	}
 
 	glog.V(100).Infof(logMessage)
@@ -111,13 +113,15 @@ func WaitForAllPodsInNamespaceRunning(
 	logMessage := fmt.Sprintf("Waiting for all pods in %s namespace", nsname)
 	passedOptions := v1.ListOptions{}
 
-	if len(options) == 1 {
-		passedOptions = options[0]
-		logMessage += fmt.Sprintf(" with the options %v", passedOptions)
-	} else if len(options) > 1 {
+	if len(options) > 1 {
 		glog.V(100).Infof("'options' parameter must be empty or single-valued")
 
 		return false, fmt.Errorf("error: more than one ListOptions was passed")
+	}
+
+	if len(options) == 1 {
+		passedOptions = options[0]
+		logMessage += fmt.Sprintf(" with the options %v", passedOptions)
 	}
 
 	glog.V(100).Infof(logMessage + " are in running state")

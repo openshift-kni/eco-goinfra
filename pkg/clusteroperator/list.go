@@ -16,13 +16,15 @@ func List(apiClient *clients.Settings, options ...metaV1.ListOptions) ([]*Builde
 	logMessage := "Listing all clusterOperators"
 	passedOptions := metaV1.ListOptions{}
 
-	if len(options) == 1 {
-		passedOptions = options[0]
-		logMessage += fmt.Sprintf(" with the options %v", passedOptions)
-	} else if len(options) > 1 {
+	if len(options) > 1 {
 		glog.V(100).Infof("'options' parameter must be empty or single-valued")
 
 		return nil, fmt.Errorf("error: more than one ListOptions was passed")
+	}
+
+	if len(options) == 1 {
+		passedOptions = options[0]
+		logMessage += fmt.Sprintf(" with the options %v", passedOptions)
 	}
 
 	glog.V(100).Infof(logMessage)
