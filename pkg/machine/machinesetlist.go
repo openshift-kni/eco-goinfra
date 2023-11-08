@@ -13,7 +13,8 @@ import (
 func ListWorkerMachineSets(
 	apiClient *clients.Settings,
 	namespace string,
-	workerLabel string) ([]*SetBuilder, error) {
+	workerLabel string,
+	options ...metav1.ListOptions) ([]*SetBuilder, error) {
 	if namespace == "" {
 		glog.V(100).Infof("machineSet 'namespace' parameter can not be empty")
 
@@ -26,7 +27,23 @@ func ListWorkerMachineSets(
 		return nil, fmt.Errorf("failed to list MachineSets, 'workerLabel' parameter is empty")
 	}
 
-	machineSetList, err := apiClient.MachineSets(namespace).List(context.TODO(), metav1.ListOptions{})
+	logMessage := fmt.Sprintf("Listing all workerMachinesSets in the namespace %s", namespace)
+	passedOptions := metav1.ListOptions{}
+
+	if len(options) > 1 {
+		glog.V(100).Infof("'options' parameter must be empty or single-valued")
+
+		return nil, fmt.Errorf("error: more than one ListOptions was passed")
+	}
+
+	if len(options) == 1 {
+		passedOptions = options[0]
+		logMessage += fmt.Sprintf(" with the options %v", passedOptions)
+	}
+
+	glog.V(100).Infof(logMessage)
+
+	machineSetList, err := apiClient.MachineSets(namespace).List(context.TODO(), passedOptions)
 
 	if err != nil {
 		glog.V(100).Infof("Failed to list MachineSets in the namespace %s due to %s",
