@@ -173,7 +173,9 @@ func (builder *PolicyBuilder) Update(force bool) (*PolicyBuilder, error) {
 			return builder.Create()
 		}
 	}
-
+	if err == nil {
+		builder.Object = builder.Definition
+	}
 	return builder, err
 }
 
