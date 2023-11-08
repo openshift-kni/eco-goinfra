@@ -172,7 +172,9 @@ func (builder *CguBuilder) Update(force bool) (*CguBuilder, error) {
 			return builder.Create()
 		}
 	}
-
+	if err == nil {
+		builder.Object = builder.Definition
+	}
 	return builder, err
 }
 
