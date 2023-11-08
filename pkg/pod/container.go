@@ -235,6 +235,32 @@ func (builder *ContainerBuilder) WithEnvVar(name, value string) *ContainerBuilde
 	return builder
 }
 
+// WithVolumeMount adds a pod volume mount inside the container.
+func (builder *ContainerBuilder) WithVolumeMount(volMount v1.VolumeMount) *ContainerBuilder {
+	glog.V(100).Infof("Adding VolumeMount to the %s container's definition", builder.definition.Name)
+
+	if volMount.Name == "" {
+		glog.V(100).Infof("Container's VolumeMount name cannot be empty")
+
+		builder.errorMsg = "container's volume mount name is empty"
+	}
+
+	if volMount.MountPath == "" {
+		glog.V(100).Infof("Container's VolumeMount mount path cannot be empty")
+
+		builder.errorMsg = "container's volume mount path is empty"
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	glog.V(100).Infof("VolumeMount %s will be mounted at %s", volMount.Name, volMount.MountPath)
+	builder.definition.VolumeMounts = append(builder.definition.VolumeMounts, volMount)
+
+	return builder
+}
+
 // GetContainerCfg returns Container struct.
 func (builder *ContainerBuilder) GetContainerCfg() (*v1.Container, error) {
 	glog.V(100).Infof("Returning configuration for container %s", builder.definition.Name)
