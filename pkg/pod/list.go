@@ -3,6 +3,7 @@ package pod
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/golang/glog"
@@ -98,7 +99,44 @@ func ListInAllNamespaces(apiClient *clients.Settings, options ...v1.ListOptions)
 	return podObjects, nil
 }
 
-// WaitForAllPodsInNamespaceRunning check that all pods in namespace that match options are in running state.
+// ListByNamePattern returns pod inventory in the given namespace filtered by name pattern.
+func ListByNamePattern(apiClient *clients.Settings, namePattern, nsname string) ([]*Builder, error) {
+	glog.V(100).Infof("Listing pods in the nsname %s filtered by the name pattern %s", nsname, namePattern)
+
+	if nsname == "" {
+		glog.V(100).Infof("pod 'nsname' parameter can not be empty")
+
+		return nil, fmt.Errorf("failed to list pods, 'nsname' parameter is empty")
+	}
+
+	podList, err := apiClient.Pods(nsname).List(context.Background(), v1.ListOptions{})
+
+	if err != nil {
+		glog.V(100).Infof("Failed to list pods filtered by the name pattern %s in the nsname %s due to %s",
+			namePattern, nsname, err.Error())
+
+		return nil, err
+	}
+
+	var podObjects []*Builder
+
+	for _, runningPod := range podList.Items {
+		if strings.Contains(runningPod.Name, namePattern) {
+			copiedPod := runningPod
+			podBuilder := &Builder{
+				apiClient:  apiClient,
+				Object:     &copiedPod,
+				Definition: &copiedPod,
+			}
+
+			podObjects = append(podObjects, podBuilder)
+		}
+	}
+
+	return podObjects, nil
+}
+
+// WaitForAllPodsInNamespaceRunning wait until all pods in namespace that match options are in running state.
 func WaitForAllPodsInNamespaceRunning(
 	apiClient *clients.Settings,
 	nsname string,
