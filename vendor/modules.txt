@@ -1705,6 +1705,7 @@ maistra.io/api/core/v2
 # open-cluster-management.io/governance-policy-propagator v0.11.0
 ## explicit; go 1.20
 open-cluster-management.io/governance-policy-propagator/api/v1
+open-cluster-management.io/governance-policy-propagator/api/v1beta1
 # open-cluster-management.io/multicloud-operators-subscription v0.10.0
 ## explicit; go 1.19
 open-cluster-management.io/multicloud-operators-subscription/pkg/apis/apps/placementrule/v1
