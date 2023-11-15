@@ -9,30 +9,30 @@ import (
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	policiesv1 "open-cluster-management.io/governance-policy-propagator/api/v1"
+	policiesv1beta1 "open-cluster-management.io/governance-policy-propagator/api/v1beta1"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// PolicyBuilder provides struct for the policy object containing connection to
-// the cluster and the policy definitions.
-type PolicyBuilder struct {
-	// policy Definition, used to create the policy object.
-	Definition *policiesv1.Policy
-	// created policy object.
-	Object *policiesv1.Policy
+// PolicySetBuilder provides struct for the policySet object containing connection to
+// the cluster and the policySet definitions.
+type PolicySetBuilder struct {
+	// policySet Definition, used to create the policySet object.
+	Definition *policiesv1beta1.PolicySet
+	// created policySet object.
+	Object *policiesv1beta1.PolicySet
 	// api client to interact with the cluster.
 	apiClient *clients.Settings
-	// used to store latest error message upon defining or mutating application definition.
+	// used to store latest error message upon defining or mutating policySet definition.
 	errorMsg string
 }
 
-// PullPolicy pulls existing policy into Builder struct.
-func PullPolicy(apiClient *clients.Settings, name, nsname string) (*PolicyBuilder, error) {
-	glog.V(100).Infof("Pulling existing policy name %s under namespace %s from cluster", name, nsname)
+// PullPolicySet pulls existing policySet into Builder struct.
+func PullPolicySet(apiClient *clients.Settings, name, nsname string) (*PolicySetBuilder, error) {
+	glog.V(100).Infof("Pulling existing policySet name %s under namespace %s from cluster", name, nsname)
 
-	builder := PolicyBuilder{
+	builder := PolicySetBuilder{
 		apiClient: apiClient,
-		Definition: &policiesv1.Policy{
+		Definition: &policiesv1beta1.PolicySet{
 			ObjectMeta: metaV1.ObjectMeta{
 				Name:      name,
 				Namespace: nsname,
@@ -41,19 +41,19 @@ func PullPolicy(apiClient *clients.Settings, name, nsname string) (*PolicyBuilde
 	}
 
 	if name == "" {
-		glog.V(100).Infof("The name of the policy is empty")
+		glog.V(100).Infof("The name of the policyset is empty")
 
-		builder.errorMsg = "policy's 'name' cannot be empty"
+		builder.errorMsg = "policyset's 'name' cannot be empty"
 	}
 
 	if nsname == "" {
-		glog.V(100).Infof("The namespace of the policy is empty")
+		glog.V(100).Infof("The namespace of the policyset is empty")
 
-		builder.errorMsg = "policy's 'namespace' cannot be empty"
+		builder.errorMsg = "policyset's 'namespace' cannot be empty"
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("policy object %s doesn't exist in namespace %s", name, nsname)
+		return nil, fmt.Errorf("policyset object %s doesn't exist in namespace %s", name, nsname)
 	}
 
 	builder.Definition = builder.Object
@@ -61,13 +61,13 @@ func PullPolicy(apiClient *clients.Settings, name, nsname string) (*PolicyBuilde
 	return &builder, nil
 }
 
-// Exists checks whether the given policy exists.
-func (builder *PolicyBuilder) Exists() bool {
+// Exists checks whether the given policySet exists.
+func (builder *PolicySetBuilder) Exists() bool {
 	if valid, _ := builder.validate(); !valid {
 		return false
 	}
 
-	glog.V(100).Infof("Checking if policy %s exists in namespace %s",
+	glog.V(100).Infof("Checking if policySet %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
@@ -76,36 +76,36 @@ func (builder *PolicyBuilder) Exists() bool {
 	return err == nil || !k8serrors.IsNotFound(err)
 }
 
-// Get returns a policy object if found.
-func (builder *PolicyBuilder) Get() (*policiesv1.Policy, error) {
+// Get returns a policySet object if found.
+func (builder *PolicySetBuilder) Get() (*policiesv1beta1.PolicySet, error) {
 	if valid, err := builder.validate(); !valid {
 		return nil, err
 	}
 
-	glog.V(100).Infof("Getting policy %s in namespace %s",
+	glog.V(100).Infof("Getting policySet %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
-	policy := &policiesv1.Policy{}
+	policySet := &policiesv1beta1.PolicySet{}
 
-	err := builder.apiClient.Get(context.TODO(), runtimeclient.ObjectKey{
+	err := builder.apiClient.Get(context.Background(), runtimeclient.ObjectKey{
 		Name:      builder.Definition.Name,
 		Namespace: builder.Definition.Namespace,
-	}, policy)
+	}, policySet)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return policy, err
+	return policySet, err
 }
 
-// Create makes a policy in the cluster and stores the created object in struct.
-func (builder *PolicyBuilder) Create() (*PolicyBuilder, error) {
+// Create makes a policySet in the cluster and stores the created object in struct.
+func (builder *PolicySetBuilder) Create() (*PolicySetBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Creating the policy %s in namespace %s",
+	glog.V(100).Infof("Creating the policySet %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
@@ -119,23 +119,23 @@ func (builder *PolicyBuilder) Create() (*PolicyBuilder, error) {
 	return builder, err
 }
 
-// Delete removes a policy from a cluster.
-func (builder *PolicyBuilder) Delete() (*PolicyBuilder, error) {
+// Delete removes a policySet from a cluster.
+func (builder *PolicySetBuilder) Delete() (*PolicySetBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Deleting the policy %s in namespace %s",
+	glog.V(100).Infof("Deleting the policySet %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return builder, fmt.Errorf("policy cannot be deleted because it does not exist")
+		return builder, fmt.Errorf("policySet cannot be deleted because it does not exist")
 	}
 
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
 
 	if err != nil {
-		return builder, fmt.Errorf("can not delete policy: %w", err)
+		return builder, fmt.Errorf("can not delete policySet: %w", err)
 	}
 
 	builder.Object = nil
@@ -143,13 +143,13 @@ func (builder *PolicyBuilder) Delete() (*PolicyBuilder, error) {
 	return builder, nil
 }
 
-// Update renovates the existing policy object with the policy definition in builder.
-func (builder *PolicyBuilder) Update(force bool) (*PolicyBuilder, error) {
+// Update renovates the existing policySet object with the policySet's definition in builder.
+func (builder *PolicySetBuilder) Update(force bool) (*PolicySetBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Updating the policy object: %s in namespace: %s",
+	glog.V(100).Infof("Updating the policySet object: %s in namespace: %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
@@ -157,14 +157,14 @@ func (builder *PolicyBuilder) Update(force bool) (*PolicyBuilder, error) {
 	if err != nil {
 		if force {
 			glog.V(100).Infof(
-				"Failed to update the policy object %s. "+
+				"Failed to update the policySet object %s. "+
 					"Note: Force flag set, executed delete/create methods instead", builder.Definition.Name)
 
 			builder, err := builder.Delete()
 
 			if err != nil {
 				glog.V(100).Infof(
-					"Failed to update the policy object %s, "+
+					"Failed to update the policySet object %s, "+
 						"due to error in delete function", builder.Definition.Name)
 
 				return nil, err
@@ -183,8 +183,8 @@ func (builder *PolicyBuilder) Update(force bool) (*PolicyBuilder, error) {
 
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
-func (builder *PolicyBuilder) validate() (bool, error) {
-	resourceCRD := "policy"
+func (builder *PolicySetBuilder) validate() (bool, error) {
+	resourceCRD := "policySet"
 
 	if builder == nil {
 		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
