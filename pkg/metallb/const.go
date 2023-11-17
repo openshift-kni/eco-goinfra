@@ -7,4 +7,6 @@ const (
 	APIVersion = "v1beta1"
 	// BGPPeerListKind represents kind of BGPPeerList object.
 	BGPPeerListKind = "BGPPeerList"
+	// BGPAdvertisementListKind represents kind of BGPAdvertisementList object.
+	BGPAdvertisementListKind = "BGPAdvertisementList"
 )
