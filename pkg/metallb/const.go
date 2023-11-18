@@ -9,4 +9,6 @@ const (
 	BGPPeerListKind = "BGPPeerList"
 	// BGPAdvertisementListKind represents kind of BGPAdvertisementList object.
 	BGPAdvertisementListKind = "BGPAdvertisementList"
+	// BFDProfileList represents kind of BFDProfile object.
+	BFDProfileList = "BFDProfileList"
 )
