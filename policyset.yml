@@ -1,7 +1,0 @@
-apiVersion: policy.open-cluster-management.io/v1beta1
-kind: PolicySet
-metadata:
-  name: demo-policyset
-spec:
-  policies:
-  - policy-demo
