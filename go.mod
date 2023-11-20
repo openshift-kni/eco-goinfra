@@ -30,7 +30,6 @@ require (
 	github.com/operator-framework/api v0.17.6
 	github.com/operator-framework/operator-lifecycle-manager v0.24.0
 	github.com/rh-ecosystem-edge/kernel-module-management v0.0.0-20230727220418-baf359495376
-	go.universe.tf/metallb v0.13.7
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 	gopkg.in/k8snetworkplumbingwg/multus-cni.v4 v4.0.2
 	gopkg.in/yaml.v2 v2.4.0
@@ -115,8 +114,6 @@ require (
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.4.1 // indirect
 	github.com/go-git/go-git/v5 v5.6.1 // indirect
-	github.com/go-kit/log v0.2.1 // indirect
-	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
