@@ -43,7 +43,6 @@ import (
 	metalLbOperatorV1Beta1 "github.com/metallb/metallb-operator/api/v1beta1"
 
 	clientMachineConfigV1 "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/typed/machineconfiguration.openshift.io/v1"
-	metalLbV1Beta1 "go.universe.tf/metallb/api/v1beta1"
 
 	nmstatev1 "github.com/nmstate/kubernetes-nmstate/api/v1"
 	nmstateV1alpha1 "github.com/nmstate/kubernetes-nmstate/api/v1alpha1"
@@ -185,10 +184,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	}
 
 	if err := metalLbOperatorV1Beta1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := metalLbV1Beta1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
