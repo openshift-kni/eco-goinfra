@@ -11,4 +11,6 @@ const (
 	BGPAdvertisementListKind = "BGPAdvertisementList"
 	// BFDProfileList represents kind of BFDProfile object.
 	BFDProfileList = "BFDProfileList"
+	// IPAddressPoolList represents kind of IPAddressPool object.
+	IPAddressPoolList = "IPAddressPoolList"
 )
