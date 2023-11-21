@@ -359,10 +359,7 @@ func (builder *AgentServiceConfigBuilder) Update(force bool) (*AgentServiceConfi
 	if err != nil {
 		if force {
 			glog.V(100).Infof(
-				"Failed to update the agentserviceconfig object %s. "+
-					"Note: Force flag set, executed delete/create methods instead",
-				builder.Definition.Name,
-			)
+				msg.FailToUpdateNotification("agentserviceconfig", builder.Definition.Name))
 
 			err = builder.DeleteAndWait(time.Second * 5)
 			builder.Definition.ResourceVersion = ""
@@ -370,10 +367,7 @@ func (builder *AgentServiceConfigBuilder) Update(force bool) (*AgentServiceConfi
 
 			if err != nil {
 				glog.V(100).Infof(
-					"Failed to update the agentserviceconfig object %s, "+
-						"due to error in delete function",
-					builder.Definition.Name,
-				)
+					msg.FailToUpdateError("agentserviceconfig", builder.Definition.Name))
 
 				return nil, err
 			}

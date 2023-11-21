@@ -5,6 +5,32 @@ run:
 #  modules-download-mode: readonly
 
 linters-settings:
+  depguard:
+    rules:
+      main:
+        allow:
+          - "k8s.io/apimachinery"
+          - "k8s.io/api"
+          - "k8s.io/kubelet"
+          - "k8s.io/utils"
+          - "k8s.io/client-go"
+          - "github.com/onsi/ginkgo"
+          - "github.com/openshift"
+          - "github.com/nmstate/kubernetes-nmstate"
+          - "github.com/k8snetworkplumbingwg"
+          - "github.com/metallb/metallb-operator"
+          - "github.com/metal3-io/baremetal-operator"
+          - "github.com/operator-framework/operator-lifecycle-manager"
+          - "github.com/grafana-operator/grafana-operator"
+          - "github.com/NVIDIA/gpu-operator/"
+          - "github.com/operator-framework/api"
+          - "github.com/argoproj-labs/argocd-operator/api"
+          - "github.com/golang/glog"
+          - "github.com/rh-ecosystem-edge/kernel-module-management/"
+          - "maistra.io/api/"
+          - "open-cluster-management.io/governance-policy-propagator/api"
+          - "sigs.k8s.io/controller-runtime"
+          - $gostd
   revive:
     rules:
       - name: indent-error-flow

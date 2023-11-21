@@ -173,19 +173,13 @@ func (builder *PolicyBuilder) Update(force bool) (*PolicyBuilder, error) {
 	if err != nil {
 		if force {
 			glog.V(100).Infof(
-				"Failed to update the NodeNetworkConfigurationPolicy object %s. "+
-					"Note: Force flag set, executed delete/create methods instead",
-				builder.Definition.Name,
-			)
+				msg.FailToUpdateNotification("NodeNetworkConfigurationPolicy", builder.Definition.Name))
 
 			builder, err := builder.Delete()
 
 			if err != nil {
 				glog.V(100).Infof(
-					"Failed to update the NodeNetworkConfigurationPolicy object %s, "+
-						"due to error in delete function",
-					builder.Definition.Name,
-				)
+					msg.FailToUpdateError("NodeNetworkConfigurationPolicy", builder.Definition.Name))
 
 				return nil, err
 			}

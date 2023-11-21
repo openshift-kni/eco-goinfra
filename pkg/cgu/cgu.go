@@ -156,15 +156,13 @@ func (builder *CguBuilder) Update(force bool) (*CguBuilder, error) {
 	if err != nil {
 		if force {
 			glog.V(100).Infof(
-				"Failed to update the cgu object %s. "+
-					"Note: Force flag set, executed delete/create methods instead", builder.Definition.Name)
+				msg.FailToUpdateNotification("cgu", builder.Definition.Name))
 
 			builder, err := builder.Delete()
 
 			if err != nil {
 				glog.V(100).Infof(
-					"Failed to update the cgu object %s, "+
-						"due to error in delete function", builder.Definition.Name)
+					msg.FailToUpdateError("cgu", builder.Definition.Name))
 
 				return nil, err
 			}
