@@ -240,27 +240,28 @@ func (builder *AgentServiceConfigBuilder) WaitUntilDeployed(timeout time.Duratio
 	conditionIndex := -1
 
 	var err error
-	err = wait.PollImmediate(retryInterval, timeout, func() (bool, error) {
-		builder.Object, err = builder.Get()
+	err = wait.PollUntilContextTimeout(
+		context.TODO(), retryInterval, timeout, true, func(ctx context.Context) (bool, error) {
+			builder.Object, err = builder.Get()
 
-		if err != nil {
-			return false, nil
-		}
+			if err != nil {
+				return false, nil
+			}
 
-		if conditionIndex < 0 {
-			for index, condition := range builder.Object.Status.Conditions {
-				if condition.Type == agentInstallV1Beta1.ConditionDeploymentsHealthy {
-					conditionIndex = index
+			if conditionIndex < 0 {
+				for index, condition := range builder.Object.Status.Conditions {
+					if condition.Type == agentInstallV1Beta1.ConditionDeploymentsHealthy {
+						conditionIndex = index
+					}
 				}
 			}
-		}
 
-		if conditionIndex < 0 {
-			return false, nil
-		}
+			if conditionIndex < 0 {
+				return false, nil
+			}
 
-		return builder.Object.Status.Conditions[conditionIndex].Status == "True", nil
-	})
+			return builder.Object.Status.Conditions[conditionIndex].Status == "True", nil
+		})
 
 	if err == nil {
 		return builder, nil
@@ -428,15 +429,16 @@ func (builder *AgentServiceConfigBuilder) DeleteAndWait(timeout time.Duration) e
 	}
 
 	// Polls the agentserviceconfig every second until it's removed.
-	return wait.PollImmediate(time.Second, timeout, func() (bool, error) {
-		_, err := builder.Get()
-		if k8serrors.IsNotFound(err) {
+	return wait.PollUntilContextTimeout(
+		context.TODO(), time.Second, timeout, true, func(ctx context.Context) (bool, error) {
+			_, err := builder.Get()
+			if k8serrors.IsNotFound(err) {
 
-			return true, nil
-		}
+				return true, nil
+			}
 
-		return false, nil
-	})
+			return false, nil
+		})
 }
 
 // Exists checks if the defined agentserviceconfig has already been created.

@@ -210,29 +210,30 @@ func WaitForMachineSetReady(
 	namespace,
 	machineSetName string,
 	timeout time.Duration) error {
-	return wait.PollImmediate(30*time.Second, timeout, func() (bool, error) {
-		machineSetPulled, err := PullSet(apiClient, namespace, machineSetName)
+	return wait.PollUntilContextTimeout(
+		context.TODO(), 30*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
+			machineSetPulled, err := PullSet(apiClient, namespace, machineSetName)
 
-		if err != nil {
-			glog.V(100).Infof("MachineSet pull from cluster error: %v\n", err)
+			if err != nil {
+				glog.V(100).Infof("MachineSet pull from cluster error: %v\n", err)
 
-			return false, err
-		}
+				return false, err
+			}
 
-		if machineSetPulled.Object.Status.ReadyReplicas > 0 &&
-			machineSetPulled.Object.Status.Replicas == machineSetPulled.Object.Status.ReadyReplicas {
+			if machineSetPulled.Object.Status.ReadyReplicas > 0 &&
+				machineSetPulled.Object.Status.Replicas == machineSetPulled.Object.Status.ReadyReplicas {
+				glog.V(100).Infof("MachineSet %s has %v replicas in Ready state",
+					machineSetPulled.Object.Name, machineSetPulled.Object.Status.ReadyReplicas)
+
+				// this exits out of the wait.PollUntilContextTimeout()
+				return true, nil
+			}
+
 			glog.V(100).Infof("MachineSet %s has %v replicas in Ready state",
 				machineSetPulled.Object.Name, machineSetPulled.Object.Status.ReadyReplicas)
 
-			// this exits out of the wait.PollImmediate()
-			return true, nil
-		}
-
-		glog.V(100).Infof("MachineSet %s has %v replicas in Ready state",
-			machineSetPulled.Object.Name, machineSetPulled.Object.Status.ReadyReplicas)
-
-		return false, err
-	})
+			return false, err
+		})
 }
 
 // ChangeCloudProviderInstanceType calls the cloud-specific function to change the ProviderSpec instance type param.
