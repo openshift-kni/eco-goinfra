@@ -65,7 +65,7 @@ func WaitForAllClusteroperatorsAvailable(
 		return false, err
 	}
 
-	err = wait.PollImmediate(fiveScds, timeout, func() (bool, error) {
+	err = wait.PollUntilContextTimeout(context.TODO(), fiveScds, timeout, true, func(ctx context.Context) (bool, error) {
 		for _, clusteroperator := range coList {
 			if !clusteroperator.IsAvailable() {
 				glog.V(100).Infof("The %s clusterOperator is not available",
@@ -104,7 +104,7 @@ func WaitForAllClusteroperatorsStopProgressing(
 		return false, err
 	}
 
-	err = wait.PollImmediate(fiveScds, timeout, func() (bool, error) {
+	err = wait.PollUntilContextTimeout(context.TODO(), fiveScds, timeout, true, func(ctx context.Context) (bool, error) {
 		for _, clusteroperator := range coList {
 			if clusteroperator.IsProgressing() {
 				glog.V(100).Infof("The %s clusterOperator is still progressing",
