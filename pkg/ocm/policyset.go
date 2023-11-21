@@ -157,15 +157,13 @@ func (builder *PolicySetBuilder) Update(force bool) (*PolicySetBuilder, error) {
 	if err != nil {
 		if force {
 			glog.V(100).Infof(
-				"Failed to update the policySet object %s. "+
-					"Note: Force flag set, executed delete/create methods instead", builder.Definition.Name)
+				msg.FailToUpdateNotification("policySet", builder.Definition.Name))
 
 			builder, err := builder.Delete()
 
 			if err != nil {
 				glog.V(100).Infof(
-					"Failed to update the policySet object %s, "+
-						"due to error in delete function", builder.Definition.Name)
+					msg.FailToUpdateError("policySet", builder.Definition.Name))
 
 				return nil, err
 			}
