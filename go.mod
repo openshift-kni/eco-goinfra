@@ -40,6 +40,7 @@ require (
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b
 	maistra.io/api v0.0.0-20230417135504-0536f6c22b1c
 	open-cluster-management.io/governance-policy-propagator v0.12.0
+	open-cluster-management.io/multicloud-operators-subscription v0.11.0
 	sigs.k8s.io/controller-runtime v0.15.3
 )
 
@@ -159,7 +160,6 @@ require (
 	k8s.io/kube-aggregator v0.27.4 // indirect
 	k8s.io/kube-openapi v0.0.0-20230515203736-54b630e78af5 // indirect
 	k8s.io/kubernetes v1.26.1 // indirect
-	open-cluster-management.io/multicloud-operators-subscription v0.11.0 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/kube-storage-version-migrator v0.0.6-0.20230721195810-5c8923c5ff96 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.3.0 // indirect

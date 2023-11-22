@@ -29,6 +29,8 @@ linters-settings:
           - "github.com/rh-ecosystem-edge/kernel-module-management/"
           - "maistra.io/api/"
           - "open-cluster-management.io/governance-policy-propagator/api"
+          - "open-cluster-management.io/governance-policy-propagator/api/v1beta1"
+          - "open-cluster-management.io/multicloud-operators-subscription/pkg/apis/apps/placementrule/v1"
           - "sigs.k8s.io/controller-runtime"
           - $gostd
   revive:
