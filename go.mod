@@ -168,14 +168,14 @@ require (
 
 replace (
 	github.com/argoproj-labs/argocd-operator => github.com/argoproj-labs/argocd-operator v0.7.0
-	github.com/k8snetworkplumbingwg/sriov-network-operator => github.com/openshift/sriov-network-operator v0.0.0-20231106050543-81b0827a7d2b // relase-4.14
+	github.com/k8snetworkplumbingwg/sriov-network-operator => github.com/openshift/sriov-network-operator v0.0.0-20231106050543-81b0827a7d2b // release-4.14
 	github.com/openshift-kni/cluster-group-upgrades-operator => github.com/openshift-kni/cluster-group-upgrades-operator v0.0.0-20230914194424-8c550044165d
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20231115210901-4c4a0a24f2fc // relase-4.14
-	github.com/openshift/assisted-service/models => github.com/openshift/assisted-service/models v0.0.0-20230906121258-6d85fb16f8dd // relase-4.14
-	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20230807132528-be5346fb33cb // relase-4.14
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20231115210901-4c4a0a24f2fc // release-4.14
+	github.com/openshift/assisted-service/models => github.com/openshift/assisted-service/models v0.0.0-20230906121258-6d85fb16f8dd // release-4.14
+	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20230807132528-be5346fb33cb // release-4.14
 	github.com/openshift/cluster-logging-operator => github.com/openshift/cluster-logging-operator v0.0.0-20230721192805-f9d0a6c76c39
-	github.com/openshift/cluster-node-tuning-operator => github.com/openshift/cluster-node-tuning-operator v0.0.0-20231114114555-1e657ecbea8f // relase-4.14
-	github.com/openshift/local-storage-operator => github.com/openshift/local-storage-operator v0.0.0-20231017181138-c41b6ba67a15 // relase-4.14
+	github.com/openshift/cluster-node-tuning-operator => github.com/openshift/cluster-node-tuning-operator v0.0.0-20231114114555-1e657ecbea8f // release-4.14
+	github.com/openshift/local-storage-operator => github.com/openshift/local-storage-operator v0.0.0-20231017181138-c41b6ba67a15 // release-4.14
 	github.com/openshift/machine-config-operator => github.com/openshift/machine-config-operator v0.0.1-0.20231107004450-f57144e1ffc7 // release-4.14
 	github.com/openshift/ptp-operator => github.com/openshift/ptp-operator v0.0.0-20231012160558-ef5f19567818
 	go.universe.tf/metallb => go.universe.tf/metallb v0.13.10
