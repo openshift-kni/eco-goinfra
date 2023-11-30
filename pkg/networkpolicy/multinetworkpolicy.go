@@ -57,8 +57,7 @@ func NewMultiNetworkPolicyBuilder(apiClient *clients.Settings, name, nsname stri
 }
 
 // WithPodSelector adds podSelector to MultiNetworkPolicy.
-func (builder *MultiNetworkPolicyBuilder) WithPodSelector(
-	podSelector *metav1.LabelSelector) *MultiNetworkPolicyBuilder {
+func (builder *MultiNetworkPolicyBuilder) WithPodSelector(podSelector metav1.LabelSelector) *MultiNetworkPolicyBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -67,47 +66,45 @@ func (builder *MultiNetworkPolicyBuilder) WithPodSelector(
 		"Creating MultiNetworkPolicy %s in %s namespace with the podSelector defined: %v",
 		builder.Definition.Name, builder.Definition.Namespace, podSelector)
 
-	if podSelector == nil {
-		glog.V(100).Infof("The podSelector can not be empty map")
-
-		builder.errorMsg = "The podSelector is an empty map"
-	}
-
 	if builder.errorMsg != "" {
 		return builder
 	}
 
-	builder.Definition.Spec.PodSelector = *podSelector
+	builder.Definition.Spec.PodSelector = podSelector
 
 	return builder
 }
 
-// WithAnnotation adds Annotation to the MultiNetworkPolicy.
-func (builder *MultiNetworkPolicyBuilder) WithAnnotation(annotation string) *MultiNetworkPolicyBuilder {
+// WithNetwork adds network name to the MultiNetworkPolicy.
+func (builder *MultiNetworkPolicyBuilder) WithNetwork(networkName string) *MultiNetworkPolicyBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
 	glog.V(100).Infof(
-		"Creating MultiNetworkPolicy %s in %s namespace with the annotation defined: %v",
-		builder.Definition.Name, builder.Definition.Namespace, annotation)
+		"Creating MultiNetworkPolicy %s in %s namespace with the networkName defined: %v",
+		builder.Definition.Name, builder.Definition.Namespace, networkName)
 
-	if annotation == "" {
-		glog.V(100).Infof("The annotation can not be empty map")
+	if networkName == "" {
+		glog.V(100).Infof("The networkName can not be empty string")
 
-		builder.errorMsg = "The annotation is an empty string"
+		builder.errorMsg = "The networkName is an empty string"
 	}
 
 	if builder.errorMsg != "" {
 		return builder
 	}
 
-	builder.Definition.Annotations = map[string]string{"k8s.v1.cni.cncf.io/policy-for": annotation}
+	if builder.Definition.Annotations == nil {
+		builder.Definition.Annotations = make(map[string]string)
+	}
+
+	builder.Definition.Annotations["k8s.v1.cni.cncf.io/policy-for"] = networkName
 
 	return builder
 }
 
-// WithEmptyIngress adds empty ingress rule to the MultiNetworkPolicy. Empty ingress denys all.
+// WithEmptyIngress adds empty ingress rule to the MultiNetworkPolicy. Empty ingress denies all.
 func (builder *MultiNetworkPolicyBuilder) WithEmptyIngress() *MultiNetworkPolicyBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
@@ -116,10 +113,6 @@ func (builder *MultiNetworkPolicyBuilder) WithEmptyIngress() *MultiNetworkPolicy
 	glog.V(100).Infof(
 		"Creating MultiNetworkPolicy %s in %s namespace with the empty Ingress rule deny all",
 		builder.Definition.Name, builder.Definition.Namespace)
-
-	if builder.errorMsg != "" {
-		return builder
-	}
 
 	builder.Definition.Spec.Ingress = []v1beta1.MultiNetworkPolicyIngressRule{}
 
@@ -137,9 +130,6 @@ func (builder *MultiNetworkPolicyBuilder) WithIngressRule(
 		"Creating multiNetworkPolicy %s in %s namespace with the Ingress rule defined: %v",
 		builder.Definition.Name, builder.Definition.Namespace, ingressRule)
 
-	if builder.errorMsg != "" {
-		return builder
-	}
 	builder.Definition.Spec.Ingress = append(builder.Definition.Spec.Ingress, ingressRule)
 
 	return builder
@@ -157,9 +147,9 @@ func (builder *MultiNetworkPolicyBuilder) WithPolicyType(
 		builder.Definition.Name, builder.Definition.Namespace, policyType)
 
 	if policyType == "" {
-		glog.V(100).Infof("The policy type can not be empty map")
+		glog.V(100).Infof("The policy type can not be an empty string")
 
-		builder.errorMsg = "The policy Type is an empty map"
+		builder.errorMsg = "The policy Type is an empty string"
 	}
 
 	if builder.errorMsg != "" {
@@ -173,7 +163,7 @@ func (builder *MultiNetworkPolicyBuilder) WithPolicyType(
 
 // PullMultiNetworkPolicy loads an existing MultiNetworkPolicy into the Builder struct.
 func PullMultiNetworkPolicy(apiClient *clients.Settings, name, nsname string) (*MultiNetworkPolicyBuilder, error) {
-	glog.V(100).Infof("Pulling existing MultiNetworkPolicy name: %s namespace:%s", name, nsname)
+	glog.V(100).Infof("Pulling existing MultiNetworkPolicy name: %s, namespace: %s", name, nsname)
 
 	builder := MultiNetworkPolicyBuilder{
 		apiClient: apiClient,
@@ -259,7 +249,7 @@ func (builder *MultiNetworkPolicyBuilder) Delete() error {
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return fmt.Errorf("MultiNetworkPolicy cannot be deleted because it does not exist")
+		return fmt.Errorf("multiNetworkPolicy cannot be deleted because it does not exist")
 	}
 
 	err := builder.apiClient.MultiNetworkPolicies(builder.Definition.Namespace).Delete(
