@@ -7,6 +7,7 @@ require (
 	github.com/argoproj-labs/argocd-operator v0.7.0
 	github.com/golang/glog v1.1.2
 	github.com/grafana-operator/grafana-operator/v4 v4.10.1
+	github.com/k8snetworkplumbingwg/multi-networkpolicy v0.0.0-20230301165931-f1873dc329c6
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v1.4.0
 	github.com/k8snetworkplumbingwg/sriov-network-operator v0.0.0-00010101000000-000000000000
 	github.com/metal3-io/baremetal-operator/apis v0.4.0
