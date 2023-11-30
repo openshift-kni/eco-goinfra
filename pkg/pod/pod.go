@@ -707,10 +707,13 @@ func (builder *Builder) WithAdditionalInitContainer(container *v1.Container) *Bu
 		return builder
 	}
 
-	glog.V(100).Infof("Adding new container %v to pod %s", container, builder.Definition.Name)
+	glog.V(100).Infof("Adding new container %v to pod %s in namespace %s",
+		container, builder.Definition.Name, builder.Definition.Namespace)
 	builder.isMutationAllowed("additional container")
 
 	if container == nil {
+		glog.V(100).Infof("The 'container' parameter of the pod is empty")
+
 		builder.errorMsg = "'container' parameter cannot be empty"
 	}
 
