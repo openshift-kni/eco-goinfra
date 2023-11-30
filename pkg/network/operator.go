@@ -140,7 +140,7 @@ func (builder *OperatorBuilder) SetMultiNetworkPolicy(state bool, timeout time.D
 		return builder, err
 	}
 
-	glog.V(100).Infof("Applying MultiNetworkPolicy flag %d to network.operator %s", state, builder.Definition.Name)
+	glog.V(100).Infof("Applying MultiNetworkPolicy flag %t to network.operator %s", state, builder.Definition.Name)
 
 	var err error
 
