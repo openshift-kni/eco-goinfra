@@ -39,9 +39,9 @@ func (builder *EgressRuleBuilder) WithPortAndProtocol(port uint16, protocol v1.P
 	glog.V(100).Infof("Adding port %d and protocol %s to EgressRule", port, protocol)
 
 	if port == 0 {
-		glog.V(100).Infof("Invalid port number can not be 0")
+		glog.V(100).Infof("Port number can not be 0")
 
-		builder.errorMsg = "Invalid port number can not be 0"
+		builder.errorMsg = "port number can not be 0"
 	}
 
 	if builder.errorMsg != "" {
@@ -79,7 +79,7 @@ func (builder *EgressRuleBuilder) WithOptions(options ...EgressAdditionalOptions
 
 // WithPeerPodSelector adds pod selector to Egress rule.
 func (builder *EgressRuleBuilder) WithPeerPodSelector(podSelector metaV1.LabelSelector) *EgressRuleBuilder {
-	glog.V(100).Infof("Adding peer podselector %v to EgressRule", podSelector)
+	glog.V(100).Infof("Adding peer pod selector %v to EgressRule", podSelector)
 
 	if builder.errorMsg != "" {
 		return builder
@@ -90,17 +90,17 @@ func (builder *EgressRuleBuilder) WithPeerPodSelector(podSelector metaV1.LabelSe
 	return builder
 }
 
-// WithPeerPodSelectorAndCIDR adds pod selector and CIRD to Egress rule.
+// WithPeerPodSelectorAndCIDR adds pod selector and CIDR to Egress rule.
 func (builder *EgressRuleBuilder) WithPeerPodSelectorAndCIDR(
 	podSelector metaV1.LabelSelector, cidr string, except ...[]string) *EgressRuleBuilder {
-	glog.V(100).Infof("Adding peer podselector %v to EgressRule", podSelector)
+	glog.V(100).Infof("Adding peer pod selector %v to EgressRule", podSelector)
 
 	_, _, err := net.ParseCIDR(cidr)
 
 	if err != nil {
-		glog.V(100).Infof("Invalid CIRD %s", cidr)
+		glog.V(100).Infof("Invalid CIDR %s", cidr)
 
-		builder.errorMsg = fmt.Sprintf("Invalid CIDR argumetn %s", cidr)
+		builder.errorMsg = fmt.Sprintf("Invalid CIDR argument %s", cidr)
 	}
 
 	if builder.errorMsg != "" {
@@ -109,7 +109,7 @@ func (builder *EgressRuleBuilder) WithPeerPodSelectorAndCIDR(
 
 	builder.WithPeerPodSelector(podSelector)
 
-	// Append IPBlock config to the previosly added rule
+	// Append IPBlock config to the previously added rule
 	builder.definition.To[len(builder.definition.To)-1].IPBlock = &v1beta1.IPBlock{
 		CIDR: cidr,
 	}

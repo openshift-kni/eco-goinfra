@@ -33,14 +33,14 @@ func NewIngressRuleBuilder() *IngressRuleBuilder {
 	return builder
 }
 
-// WithPortAndProtocol adds port and protocol and protocol to Ingress rule.
+// WithPortAndProtocol adds port and protocol to Ingress rule.
 func (builder *IngressRuleBuilder) WithPortAndProtocol(port uint16, protocol v1.Protocol) *IngressRuleBuilder {
 	glog.V(100).Infof("Adding port %d protocol %s to IngressRule", port, protocol)
 
 	if port == 0 {
-		glog.V(100).Infof("Invalid port number can not be 0")
+		glog.V(100).Infof("Port number can not be 0")
 
-		builder.errorMsg = "Invalid port number can not be 0"
+		builder.errorMsg = "port number can not be 0"
 	}
 
 	if builder.errorMsg != "" {
@@ -76,9 +76,9 @@ func (builder *IngressRuleBuilder) WithOptions(options ...IngressAdditionalOptio
 	return builder
 }
 
-// WithPeerPodSelector adds port and protocol to Ingress rule.
+// WithPeerPodSelector adds peer pod selector to Ingress rule.
 func (builder *IngressRuleBuilder) WithPeerPodSelector(podSelector metaV1.LabelSelector) *IngressRuleBuilder {
-	glog.V(100).Infof("Adding peer podselector %v to Ingress Rule", podSelector)
+	glog.V(100).Infof("Adding peer pod selector %v to Ingress Rule", podSelector)
 
 	if builder.errorMsg != "" {
 		return builder
@@ -92,20 +92,20 @@ func (builder *IngressRuleBuilder) WithPeerPodSelector(podSelector metaV1.LabelS
 	return builder
 }
 
-// WithCIDR adds CIRD to Ingress rule.
-func (builder *IngressRuleBuilder) WithCIRD(cidr string, except ...[]string) *IngressRuleBuilder {
+// WithCIDR adds CIDR to Ingress rule.
+func (builder *IngressRuleBuilder) WithCIDR(cidr string, except ...[]string) *IngressRuleBuilder {
 	glog.V(100).Infof("Adding peer CIDR %s to Ingress Rule", cidr)
 
 	_, _, err := net.ParseCIDR(cidr)
 
 	if err != nil {
-		glog.V(100).Infof("Invalid CIRD %s", cidr)
+		glog.V(100).Infof("Invalid CIDR %s", cidr)
 
-		builder.errorMsg = fmt.Sprintf("Invalid CIDR argumetn %s", cidr)
+		builder.errorMsg = fmt.Sprintf("Invalid CIDR argument %s", cidr)
 	}
 
 	if len(except) > 0 {
-		glog.V(100).Infof("Adding CIRD except %s to Ingress Rule", except[0])
+		glog.V(100).Infof("Adding CIDR except %s to Ingress Rule", except[0])
 	}
 
 	if builder.errorMsg != "" {
@@ -116,7 +116,7 @@ func (builder *IngressRuleBuilder) WithCIRD(cidr string, except ...[]string) *In
 		builder.definition.From = append(builder.definition.From, v1beta1.MultiNetworkPolicyPeer{})
 	}
 
-	// Append IPBlock config to the previosly added rule
+	// Append IPBlock config to the previously added rule
 	builder.definition.From[len(builder.definition.From)-1].IPBlock = &v1beta1.IPBlock{
 		CIDR: cidr,
 	}
@@ -131,14 +131,14 @@ func (builder *IngressRuleBuilder) WithCIRD(cidr string, except ...[]string) *In
 // WithPeerPodSelectorAndCIDR adds port and protocol,CIDR to Ingress rule.
 func (builder *IngressRuleBuilder) WithPeerPodSelectorAndCIDR(
 	podSelector metaV1.LabelSelector, cidr string, except ...[]string) *IngressRuleBuilder {
-	glog.V(100).Infof("Adding peer podselector %v and CIDR %s to IngressRule", podSelector, cidr)
+	glog.V(100).Infof("Adding peer pod selector %v and CIDR %s to IngressRule", podSelector, cidr)
 
 	if builder.errorMsg != "" {
 		return builder
 	}
 
 	builder.WithPeerPodSelector(podSelector)
-	builder.WithCIRD(cidr, except...)
+	builder.WithCIDR(cidr, except...)
 
 	return builder
 }
