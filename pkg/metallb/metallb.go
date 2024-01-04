@@ -122,8 +122,6 @@ func (builder *Builder) Exists() bool {
 		glog.V(100).Infof("Failed to collect MetalLb object due to %s", err.Error())
 	}
 
-	builder.Definition = builder.Object
-
 	return err == nil || !k8serrors.IsNotFound(err)
 }
 
@@ -224,6 +222,10 @@ func (builder *Builder) Update(force bool) (*Builder, error) {
 		return builder, err
 	}
 
+	if !builder.Exists() {
+		return nil, fmt.Errorf("failed to update metallb, object doesn't exist on cluster")
+	}
+
 	glog.V(100).Infof("Updating the metallb object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
@@ -231,6 +233,9 @@ func (builder *Builder) Update(force bool) (*Builder, error) {
 	if builder.errorMsg != "" {
 		return nil, fmt.Errorf(builder.errorMsg)
 	}
+
+	builder.Definition.ResourceVersion = builder.Object.ResourceVersion
+	builder.Definition.ObjectMeta.ResourceVersion = builder.Object.ObjectMeta.ResourceVersion
 
 	unstructuredMetalLb, err := runtime.DefaultUnstructuredConverter.ToUnstructured(builder.Definition)
 	if err != nil {
