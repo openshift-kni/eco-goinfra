@@ -1,20 +1,4 @@
-/*
-
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-package v1beta1
+package mlbtypes
 
 import (
 	corev1 "k8s.io/api/core/v1"
@@ -26,17 +10,7 @@ import (
 
 type MetalLBLogLevel string
 
-// These are valid logging level for MetalLB components.
-const (
-	LogLevelAll   MetalLBLogLevel = "all"
-	LogLevelDebug MetalLBLogLevel = "debug"
-	LogLevelInfo  MetalLBLogLevel = "info"
-	LogLevelWarn  MetalLBLogLevel = "warn"
-	LogLevelError MetalLBLogLevel = "error"
-	LogLevelNone  MetalLBLogLevel = "none"
-)
-
-// MetalLBSpec defines the desired state of MetalLB
+// MetalLBSpec defines the desired state of MetalLB.
 type MetalLBSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
@@ -108,7 +82,7 @@ type Config struct {
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
-// MetalLBStatus defines the observed state of MetalLB
+// MetalLBStatus defines the observed state of MetalLB.
 type MetalLBStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
@@ -120,7 +94,7 @@ type MetalLBStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 
-// MetalLB is the Schema for the metallbs API
+// MetalLB is the Schema for the metallbs API.
 type MetalLB struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -131,13 +105,9 @@ type MetalLB struct {
 
 // +kubebuilder:object:root=true
 
-// MetalLBList contains a list of MetalLB
+// MetalLBList contains a list of MetalLB.
 type MetalLBList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []MetalLB `json:"items"`
-}
-
-func init() {
-	SchemeBuilder.Register(&MetalLB{}, &MetalLBList{})
 }

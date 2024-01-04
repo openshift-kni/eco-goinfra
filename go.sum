@@ -426,8 +426,6 @@ github.com/metal3-io/baremetal-operator/apis v0.4.0 h1:1g5S3SKu9FqeD7OIf5jGKS623
 github.com/metal3-io/baremetal-operator/apis v0.4.0/go.mod h1:1GDBiA3XqdP63dLZHJ1JH5fRJrfjn7pshoPEd9jwY7Q=
 github.com/metal3-io/baremetal-operator/pkg/hardwareutils v0.2.0 h1:SWZAojnNaja3+yLO74Etv//xkG60lFSKKEWR/FXqNgE=
 github.com/metal3-io/baremetal-operator/pkg/hardwareutils v0.2.0/go.mod h1:Dck2B6BQX3L+AE2Xe+LzrVPP1A/zQkhCU/aSVbsi7Nw=
-github.com/metallb/metallb-operator v0.0.0-20231019113803-fbc3c30718ef h1:fNi+pLV1et5F+mWYeqcEcBjoE0R5LR+ESXzQJH5TFZE=
-github.com/metallb/metallb-operator v0.0.0-20231019113803-fbc3c30718ef/go.mod h1:/PrQXy5mYRfy9FFN2juQtND0xtM+7L08lWW8oJvynoY=
 github.com/mitchellh/copystructure v1.0.0/go.mod h1:SNtv71yrdKgLRyLFxmLdkAbkKEFWgYaq1OVrnRcwhnw=
 github.com/mitchellh/copystructure v1.2.0 h1:vpKXTN4ewci03Vljg/q9QvCGUDttBOGBIa15WveJJGw=
 github.com/mitchellh/copystructure v1.2.0/go.mod h1:qLl+cE2AmVv+CoeAwDPye/v+N2HKCj9FbZEVFJRxO9s=

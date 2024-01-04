@@ -38,7 +38,6 @@ import (
 	srIovV1 "github.com/k8snetworkplumbingwg/sriov-network-operator/api/v1"
 
 	clientSrIovV1 "github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/client/clientset/versioned/typed/sriovnetwork/v1"
-	metalLbOperatorV1Beta1 "github.com/metallb/metallb-operator/api/v1beta1"
 
 	clientMachineConfigV1 "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/typed/machineconfiguration.openshift.io/v1"
 
@@ -183,10 +182,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	}
 
 	if err := apiExt.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := metalLbOperatorV1Beta1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
