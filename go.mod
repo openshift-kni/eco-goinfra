@@ -11,7 +11,6 @@ require (
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v1.4.0
 	github.com/k8snetworkplumbingwg/sriov-network-operator v0.0.0-00010101000000-000000000000
 	github.com/metal3-io/baremetal-operator/apis v0.4.0
-	github.com/metallb/metallb-operator v0.0.0-20231019113803-fbc3c30718ef
 	github.com/nmstate/kubernetes-nmstate/api v0.0.0-20231116153922-80c6e01df02e
 	github.com/onsi/ginkgo/v2 v2.13.0
 	github.com/openshift-kni/cluster-group-upgrades-operator v0.0.0-00010101000000-000000000000

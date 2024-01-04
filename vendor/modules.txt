@@ -320,9 +320,6 @@ github.com/metal3-io/baremetal-operator/apis/metal3.io/v1alpha1
 # github.com/metal3-io/baremetal-operator/pkg/hardwareutils v0.2.0
 ## explicit; go 1.19
 github.com/metal3-io/baremetal-operator/pkg/hardwareutils/bmc
-# github.com/metallb/metallb-operator v0.0.0-20231019113803-fbc3c30718ef
-## explicit; go 1.20
-github.com/metallb/metallb-operator/api/v1beta1
 # github.com/mitchellh/copystructure v1.2.0
 ## explicit; go 1.15
 github.com/mitchellh/copystructure
