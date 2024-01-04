@@ -15,6 +15,7 @@ limitations under the License.
 package v1
 
 import (
+	openshiftv1 "github.com/openshift/api/config/v1"
 	"github.com/openshift/cluster-logging-operator/internal/status"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -23,6 +24,7 @@ const ClusterLogForwarderKind = "ClusterLogForwarder"
 
 // ClusterLogForwarderSpec defines how logs should be forwarded to remote targets.
 type ClusterLogForwarderSpec struct {
+
 	// Inputs are named filters for log messages to be forwarded.
 	//
 	// There are three built-in inputs named `application`, `infrastructure` and
@@ -43,11 +45,21 @@ type ClusterLogForwarderSpec struct {
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Forwarder Outputs",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:forwarderOutputs"}
 	Outputs []OutputSpec `json:"outputs,omitempty"`
 
+	// Filters are applied to log records passing through a pipeline.
+	// There are different types of filter that can select and modify log records in different ways.
+	// See [FilterTypeSpec] for a list of filter types.
+	Filters []FilterSpec `json:"filters,omitempty"`
+
 	// Pipelines forward the messages selected by a set of inputs to a set of outputs.
 	//
 	// +required
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Forwarder Pipelines",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:forwarderPipelines"}
 	Pipelines []PipelineSpec `json:"pipelines,omitempty"`
+
+	// ServiceAccountName is the serviceaccount associated with the clusterlogforwarder
+	//
+	// +optional
+	ServiceAccountName string `json:"serviceAccountName,omitempty"`
 
 	// DEPRECATED OutputDefaults specify forwarder config explicitly for the
 	// default managed log store named 'default'.  If there is a need to spec
@@ -78,12 +90,17 @@ type ClusterLogForwarderStatus struct {
 	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Output Conditions",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:outputConditions"}
 	Outputs NamedConditions `json:"outputs,omitempty"`
 
+	// Filters maps filter name to condition of the filter.
+	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Filter Conditions",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:filterConditions"}
+	Filters NamedConditions `json:"filters,omitempty"`
+
 	// Pipelines maps pipeline name to condition of the pipeline.
 	//+operator-sdk:csv:customresourcedefinitions:type=status,displayName="Pipeline Conditions",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:pipelineConditions"}
 	Pipelines NamedConditions `json:"pipelines,omitempty"`
 }
 
-// InputSpec defines a selector of log messages.
+// InputSpec defines a selector of log messages for a given log type. The input is rejected
+// if more than one of the following subfields are defined: application, infrastructure, audit, and receiver.
 type InputSpec struct {
 	// Name used to refer to the input of a `pipeline`.
 	//
@@ -103,54 +120,17 @@ type InputSpec struct {
 	// Infrastructure, if present, enables `infrastructure` logs.
 	//
 	// +optional
-	// +docgen:ignore
 	Infrastructure *Infrastructure `json:"infrastructure,omitempty"`
 
 	// Audit, if present, enables `audit` logs.
 	//
 	// +optional
-	// +docgen:ignore
 	Audit *Audit `json:"audit,omitempty"`
-}
 
-// NOTE: We currently only support matchLabels so define a LabelSelector type with
-// only matchLabels. When matchExpressions is implemented (LOG-1126), replace this with:
-// k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector
-
-// A label selector is a label query over a set of resources.
-type LabelSelector struct {
-	// matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-	// map is equivalent to an element of matchExpressions, whose key field is "key", the
-	// operator is "In", and the values array contains only "value". The requirements are ANDed.
+	// Receiver to receive logs from non-cluster sources.
 	// +optional
-	MatchLabels map[string]string `json:"matchLabels,omitempty" protobuf:"bytes,1,rep,name=matchLabels"`
+	Receiver *ReceiverSpec `json:"receiver,omitempty"`
 }
-
-// Application log selector.
-// All conditions in the selector must be satisfied (logical AND) to select logs.
-type Application struct {
-	// Namespaces from which to collect application logs.
-	// Only messages from these namespaces are collected.
-	// If absent or empty, logs are collected from all namespaces.
-	//
-	// +optional
-	Namespaces []string `json:"namespaces,omitempty"`
-
-	// Selector for logs from pods with matching labels.
-	// Only messages from pods with these labels are collected.
-	// If absent or empty, logs are collected regardless of labels.
-	//
-	// +optional
-	Selector *LabelSelector `json:"selector,omitempty"`
-}
-
-// Infrastructure enables infrastructure logs. Filtering may be added in future.
-// +docgen:ignore
-type Infrastructure struct{}
-
-// Audit enables audit logs. Filtering may be added in future.
-// +docgen:ignore
-type Audit struct{}
 
 // Output defines a destination for log messages.
 type OutputSpec struct {
@@ -162,7 +142,7 @@ type OutputSpec struct {
 
 	// Type of output plugin.
 	//
-	// +kubebuilder:validation:Enum:=syslog;fluentdForward;elasticsearch;kafka;cloudwatch;loki;googleCloudLogging;splunk
+	// +kubebuilder:validation:Enum:=syslog;fluentdForward;elasticsearch;kafka;cloudwatch;loki;googleCloudLogging;splunk;http
 	// +required
 	Type string `json:"type"`
 
@@ -228,6 +208,14 @@ type OutputSpec struct {
 	//
 	// +optional
 	Secret *OutputSecretSpec `json:"secret,omitempty"`
+
+	// Limit of the aggregated logs to this output from any given
+	// collector deployment. The total log flow from an individual collector
+	// deployment to this output cannot exceed the limit.  Generally, one
+	// collector is deployed per node
+	//
+	// +optional
+	Limit *LimitSpec `json:"limit,omitempty"`
 }
 
 // OutputTLSSpec contains options for TLS connections that are agnostic to the output type.
@@ -236,6 +224,9 @@ type OutputTLSSpec struct {
 	//
 	// This option is *not* recommended for production configurations.
 	InsecureSkipVerify bool `json:"insecureSkipVerify,omitempty"`
+
+	// TLSSecurityProfile is the security profile to apply to the output connection
+	TLSSecurityProfile *openshiftv1.TLSSecurityProfile `json:"securityProfile,omitempty"`
 }
 
 // OutputSecretSpec is a secret reference containing name only, no namespace.
@@ -244,6 +235,24 @@ type OutputSecretSpec struct {
 	//
 	// +required
 	Name string `json:"name"`
+}
+
+// Filter defines a filter for log messages.
+// See [FilterTypeSpec] for a list of filter types.
+type FilterSpec struct {
+	// Name used to refer to the filter from a `pipeline`.
+	//
+	// +kubebuilder:validation:minLength:=1
+	// +required
+	Name string `json:"name"`
+
+	// Type of filter.
+	//
+	// +kubebuilder:validation:Enum:=kubeAPIAudit
+	// +required
+	Type string `json:"type"`
+
+	FilterTypeSpec `json:",inline"`
 }
 
 // PipelinesSpec link a set of inputs to a set of outputs.
@@ -269,6 +278,13 @@ type PipelineSpec struct {
 	//
 	// +required
 	InputRefs []string `json:"inputRefs"`
+
+	// Filters lists the names of filters to be applied to records going through this pipeline.
+	//
+	// Each filter is applied in order.
+	// If a filter drops a records, subsequent filters are not applied.
+	// +optional
+	FilterRefs []string `json:"filterRefs,omitempty"`
 
 	// Labels applied to log records passing through this pipeline.
 	// These labels appear in the `openshift.labels` map in the log record.
@@ -343,4 +359,12 @@ type ClusterLogForwarderList struct {
 
 func init() {
 	SchemeBuilder.Register(&ClusterLogForwarder{}, &ClusterLogForwarderList{})
+}
+
+type LimitSpec struct {
+	// MaxRecordsPerSecond is the maximum number of log records
+	// allowed per input/output in a pipeline
+	//
+	// +required
+	MaxRecordsPerSecond int64 `json:"maxRecordsPerSecond,omitempty"`
 }
