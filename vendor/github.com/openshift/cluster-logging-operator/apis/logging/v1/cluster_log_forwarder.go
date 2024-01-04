@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"strings"
 
-	sets "k8s.io/apimachinery/pkg/util/sets"
+	"github.com/openshift/cluster-logging-operator/internal/utils/sets"
 )
 
 // Reserved input names.
@@ -30,20 +30,35 @@ const FirstESVersionWithoutType = 8
 // IsReservedOutputName returns true if s is a reserved output name.
 func IsReservedOutputName(s string) bool { return s == OutputNameDefault }
 
-// IsOutputTypeName returns true if s capitalized is a field name in OutputTypeSpec
-func IsOutputTypeName(s string) bool {
-	_, ok := reflect.TypeOf(OutputTypeSpec{}).FieldByName(strings.Title(s)) //nolint:staticcheck
-	return ok
+// typeHasField tests if a struct type has the named JSON field.
+func typeHasField(t reflect.Type, name string) bool {
+	for i := 0; i < t.NumField(); i++ {
+		tag := strings.Split(t.Field(i).Tag.Get("json"), ",")[0]
+		if name == tag {
+			return true
+		}
+	}
+	return false
 }
 
+// IsOutputTypeName returns true if capitalized is a known output type name
+func IsOutputTypeName(s string) bool { return typeHasField(reflect.TypeOf(OutputTypeSpec{}), s) }
+
+// IsFilterTypeName returns true if capitalized is a known filter type name
+func IsFilterTypeName(s string) bool { return typeHasField(reflect.TypeOf(FilterTypeSpec{}), s) }
+
 // Get all subordinate condition messages for condition of type "Ready" and False
+// A 'true' Ready condition with a message means some error with pipeline but it is still valid
 func (status ClusterLogForwarderStatus) GetReadyConditionMessages() []string {
 	var messages = []string{}
-	for _, nc := range []NamedConditions{status.Pipelines, status.Inputs, status.Outputs} {
+	for _, nc := range []NamedConditions{status.Pipelines, status.Inputs, status.Outputs, status.Filters} {
 		for _, conds := range nc {
+			currCond := conds.GetCondition(ConditionReady)
 			if !conds.IsTrueFor(ConditionReady) {
-				currCond := conds.GetCondition(ConditionReady)
 				messages = append(messages, currCond.Message)
+				// If a pipeline is "degraded" then it should have an extra error message
+			} else if len(conds) > 1 {
+				messages = append(messages, conds.GetCondition("Error").Message)
 			}
 		}
 	}
@@ -52,7 +67,7 @@ func (status ClusterLogForwarderStatus) GetReadyConditionMessages() []string {
 
 // IsReady returns true if all of the subordinate conditions are ready.
 func (status ClusterLogForwarderStatus) IsReady() bool {
-	for _, nc := range []NamedConditions{status.Pipelines, status.Inputs, status.Outputs} {
+	for _, nc := range []NamedConditions{status.Pipelines, status.Inputs, status.Outputs, status.Filters} {
 		for _, conds := range nc {
 			if !conds.IsTrueFor(ConditionReady) {
 				return false
@@ -62,20 +77,12 @@ func (status ClusterLogForwarderStatus) IsReady() bool {
 	return true
 }
 
-// IsDegraded returns true if any of the subordinate conditions are degraded.
-func (status ClusterLogForwarderStatus) IsDegraded() bool {
-	for _, nc := range []NamedConditions{status.Pipelines, status.Inputs, status.Outputs} {
-		for _, conds := range nc {
-			if conds.IsTrueFor(ConditionDegraded) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
 // RouteMap maps input names to connected outputs or vice-versa.
-type RouteMap map[string]sets.String
+type RouteMap map[string]*sets.String
+
+func New() RouteMap {
+	return RouteMap{}
+}
 
 func (m RouteMap) Insert(k, v string) {
 	if m[k] == nil {
@@ -99,8 +106,8 @@ type Routes struct {
 
 func NewRoutes(pipelines []PipelineSpec) Routes {
 	r := Routes{
-		ByInput:  map[string]sets.String{},
-		ByOutput: map[string]sets.String{},
+		ByInput:  New(),
+		ByOutput: New(),
 	}
 	for _, p := range pipelines {
 		for _, inRef := range p.InputRefs {
@@ -137,6 +144,15 @@ func (spec *ClusterLogForwarderSpec) InputMap() map[string]*InputSpec {
 	return m
 }
 
+// FilterMap returns a map of filter names to FilterSpec.
+func (spec *ClusterLogForwarderSpec) FilterMap() map[string]*FilterSpec {
+	m := map[string]*FilterSpec{}
+	for i := range spec.Filters {
+		m[spec.Filters[i].Name] = &spec.Filters[i]
+	}
+	return m
+}
+
 // Types returns the set of input types that are used to by the input spec.
 func (input *InputSpec) Types() sets.String {
 	result := sets.NewString()
@@ -149,5 +165,49 @@ func (input *InputSpec) Types() sets.String {
 	if input.Audit != nil {
 		result.Insert(InputNameAudit)
 	}
-	return result
+	return *result
+}
+
+// HasPolicy returns whether the input spec has flow control policies defined in it.
+func (input *InputSpec) HasPolicy() bool {
+	if input.Application != nil &&
+		(input.Application.ContainerLimit != nil ||
+			input.Application.GroupLimit != nil) {
+		return true
+	}
+	return false
+}
+
+func (input *InputSpec) GetMaxRecordsPerSecond() int64 {
+	if input.Application.ContainerLimit != nil {
+		return input.Application.ContainerLimit.MaxRecordsPerSecond
+	} else {
+		return input.Application.GroupLimit.MaxRecordsPerSecond
+	}
+}
+
+// HasPolicy returns whether the output spec has flow control policies defined in it.
+func (output *OutputSpec) HasPolicy() bool {
+	return output.Limit != nil
+}
+
+func (output *OutputSpec) GetMaxRecordsPerSecond() int64 {
+	return output.Limit.MaxRecordsPerSecond
+}
+
+func IsAuditHttpReceiver(input *InputSpec) bool {
+	return input.Receiver != nil &&
+		input.Receiver.HTTP != nil &&
+		input.Receiver.Type == ReceiverTypeHttp &&
+		input.Receiver.HTTP.Format == FormatKubeAPIAudit
+}
+
+func IsHttpReceiver(input *InputSpec) bool {
+	return input.Receiver != nil &&
+		input.Receiver.Type == ReceiverTypeHttp
+}
+
+func IsSyslogReceiver(input *InputSpec) bool {
+	return input.Receiver != nil &&
+		input.Receiver.Type == ReceiverTypeSyslog
 }

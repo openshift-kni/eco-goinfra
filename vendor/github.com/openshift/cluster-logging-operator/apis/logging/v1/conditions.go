@@ -2,6 +2,7 @@ package v1
 
 import (
 	"fmt"
+
 	"github.com/openshift/cluster-logging-operator/internal/status"
 
 	corev1 "k8s.io/api/core/v1"
@@ -44,6 +45,8 @@ const (
 	// Degraded=Unknown means the operator is in transition.
 	//
 	ConditionDegraded status.ConditionType = "Degraded"
+
+	ValidationCondition status.ConditionType = "Validation"
 )
 
 const (
@@ -55,6 +58,8 @@ const (
 	ReasonUnused status.ConditionReason = "Unused"
 	// Connecting object is unready because a connection is in progress.
 	ReasonConnecting status.ConditionReason = "Connecting"
+
+	ValidationFailureReason status.ConditionReason = "ValidationFailure"
 )
 
 // SetCondition returns true if the condition changed or is new.
@@ -84,4 +89,14 @@ func (nc NamedConditions) IsAllReady() bool {
 		}
 	}
 	return true
+}
+
+var CondReady = Condition{Type: ConditionReady, Status: corev1.ConditionTrue}
+
+func CondNotReady(r ConditionReason, format string, args ...interface{}) Condition {
+	return NewCondition(ConditionReady, corev1.ConditionFalse, r, format, args...)
+}
+
+func CondInvalid(format string, args ...interface{}) Condition {
+	return CondNotReady(ReasonInvalid, format, args...)
 }

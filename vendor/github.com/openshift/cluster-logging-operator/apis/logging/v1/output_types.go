@@ -13,6 +13,7 @@ const (
 	OutputTypeLoki               = "loki"
 	OutputTypeGoogleCloudLogging = "googleCloudLogging"
 	OutputTypeSplunk             = "splunk"
+	OutputTypeHttp               = "http"
 )
 
 // OutputTypeSpec is a union of optional additional configuration specific to an
@@ -30,10 +31,12 @@ type OutputTypeSpec struct {
 	Cloudwatch *Cloudwatch `json:"cloudwatch,omitempty"`
 	// +optional
 	Loki *Loki `json:"loki,omitempty"`
-	//+optional
+	// +optional
 	GoogleCloudLogging *GoogleCloudLogging `json:"googleCloudLogging,omitempty"`
 	// +optional
 	Splunk *Splunk `json:"splunk,omitempty"`
+	// +optional
+	Http *Http `json:"http,omitempty"`
 }
 
 // Cloudwatch provides configuration for the output type `cloudwatch`
@@ -41,10 +44,9 @@ type OutputTypeSpec struct {
 // Note: the cloudwatch output recognizes the following keys in the Secret:
 //
 //	`aws_secret_access_key`: AWS secret access key.
-// 	`aws_access_key_id`: AWS secret access key ID.
+//	`aws_access_key_id`: AWS secret access key ID.
 //
 // Or for sts-enabled clusters `credentials` or `role_arn` key specifying a properly formatted role arn
-//
 type Cloudwatch struct {
 	// +required
 	Region string `json:"region,omitempty"`
@@ -169,9 +171,11 @@ type Kafka struct {
 	// +optional
 	Topic string `json:"topic,omitempty"`
 
-	// Brokers specifies the list of brokers
-	// to register in addition to the main output URL
-	// on initial connect to enhance reliability.
+	// Brokers specifies the list of broker endpoints of a Kafka cluster.
+	// The list represents only the initial set used by the collector's Kafka client for the
+	// first connection only. The collector's Kafka client fetches constantly an updated list
+	// from Kafka. These updates are not reconciled back to the collector configuration.
+	// If none provided the target URL from the OutputSpec is used as fallback.
 	//
 	// +optional
 	Brokers []string `json:"brokers,omitempty"`
@@ -180,7 +184,7 @@ type Kafka struct {
 // FluentdForward does not provide additional fields, but note that
 // the fluentforward output allows this additional keys in the Secret:
 //
-//   `shared_key`: (string) Key to enable fluent-forward shared-key authentication.
+//	`shared_key`: (string) Key to enable fluent-forward shared-key authentication.
 type FluentdForward struct{}
 
 type Elasticsearch struct {
@@ -229,35 +233,26 @@ type Loki struct {
 	// +optional
 	TenantKey string `json:"tenantKey,omitempty"`
 
-	// LabelKeys is a list of meta-data field keys to replace the default Loki labels.
-	//
-	// Loki label names must match the regular expression "[a-zA-Z_:][a-zA-Z0-9_:]*".
-	// Illegal characters in meta-data keys are replaced with "_" to form the label name.
-	// For example meta-data key "kubernetes.labels.foo" becomes Loki label "kubernetes_labels_foo".
+	// LabelKeys is a list of log record keys that will be used as Loki labels with the corresponding log record value.
 	//
 	// If LabelKeys is not set, the default keys are `[log_type, kubernetes.namespace_name, kubernetes.pod_name, kubernetes_host]`
-	// These keys are translated to Loki labels by replacing '.' with '_' as: `log_type`, `kubernetes_namespace_name`, `kubernetes_pod_name`, `kubernetes_host`
-	// Note that not all logs will include all of these keys: audit logs and infrastructure journal logs do not have namespace or pod name.
+	//
+	// Note: Loki label names must match the regular expression "[a-zA-Z_:][a-zA-Z0-9_:]*"
+	// Log record keys may contain characters like "." and "/" that are not allowed in Loki labels.
+	// Log record keys are translated to Loki labels by replacing any illegal characters with '_'.
+	// For example the default log record keys translate to these Loki labels: `log_type`, `kubernetes_namespace_name`, `kubernetes_pod_name`, `kubernetes_host`
 	//
 	// Note: the set of labels should be small, Loki imposes limits on the size and number of labels allowed.
 	// See https://grafana.com/docs/loki/latest/configuration/#limits_config for more.
-	// You can still query based on any log record field using query filters.
+	// Loki queries can also query based on any log record field (not just labels) using query filters.
 	//
 	// +optional
 	LabelKeys []string `json:"labelKeys,omitempty"`
 }
 
-// GoogleCloudLogging provides configuration for sending logs to Google Cloud Logging
+// GoogleCloudLogging provides configuration for sending logs to Google Cloud Logging.
+// Exactly one of billingAccountID, organizationID, folderID, or projectID must be set.
 type GoogleCloudLogging struct {
-	// Only one of BillingAccountID, OrganizationID, FolderID, or ProjectID can be used to send logs.
-	// If more than one are configured, the priority is as follows
-	// 1. BillingAccountID
-	// 2. OrganizationID
-	// 3. FolderID
-	// 4. ProjectID
-	//
-	// Reference: https://cloud.google.com/billing/docs/concepts
-
 	// +optional
 	BillingAccountID string `json:"billingAccountId,omitempty"`
 
@@ -281,4 +276,31 @@ type Splunk struct {
 	// Should be a valid JSON object
 	// +optional
 	Fields []string `json:"fields,omitempty"`
+}
+
+// Http provided configuration for sending json encoded logs to a generic http endpoint.
+type Http struct {
+	// Headers specify optional headers to be sent with the request
+	// +optional
+	Headers map[string]string `json:"headers,omitempty"`
+
+	// Timeout specifies the Http request timeout in seconds. If not set, 10secs is used.
+	// +optional
+	Timeout int `json:"timeout,omitempty"`
+
+	// Method specifies the Http method to be used for sending logs. If not set, 'POST' is used.
+	// +kubebuilder:validation:Enum:=GET;HEAD;POST;PUT;DELETE;OPTIONS;TRACE;PATCH
+	// +optional
+	Method string `json:"method,omitempty"`
+
+	// Schema enables configuration of the way log records are normalized.
+	//
+	// Supported models: viaq(default), opentelemetry
+	//
+	// Logs are converted to the Open Telemetry specification according to schema value
+	//
+	// +kubebuilder:validation:Enum:=opentelemetry;viaq
+	// +kubebuilder:default:viaq
+	// +optional
+	Schema string `json:"schema,omitempty"`
 }
