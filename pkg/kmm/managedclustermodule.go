@@ -77,7 +77,7 @@ func (builder *ManagedClusterModuleBuilder) WithSpokeNamespace(
 	}
 
 	if spokeNamespace == "" {
-		builder.errorMsg = "invalid 'module' argument can not be nil"
+		builder.errorMsg = "invalid 'spokeNamespace' argument cannot be nil"
 	}
 
 	if builder.errorMsg != "" {
@@ -89,15 +89,15 @@ func (builder *ManagedClusterModuleBuilder) WithSpokeNamespace(
 	return builder
 }
 
-// WithSelector set the selector for the managedclustermodule object.
+// WithSelector sets the selector for the managedclustermodule object.
 func (builder *ManagedClusterModuleBuilder) WithSelector(
 	selector map[string]string) *ManagedClusterModuleBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
-	if selector == nil {
-		builder.errorMsg = "invalid 'selector' argument can not be nil"
+	if len(selector) == 0 {
+		builder.errorMsg = "invalid 'selector' argument cannot be empty"
 	}
 
 	if builder.errorMsg != "" {
@@ -191,7 +191,7 @@ func (builder *ManagedClusterModuleBuilder) Create() (*ManagedClusterModuleBuild
 	return builder, err
 }
 
-// Update modifies an existing manageclustermodule on the cluster.
+// Update modifies an existing managedclustermodule on the cluster.
 func (builder *ManagedClusterModuleBuilder) Update() (*ManagedClusterModuleBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
