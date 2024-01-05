@@ -203,6 +203,10 @@ func (builder *ManagedClusterModuleBuilder) Update() (*ManagedClusterModuleBuild
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
 
+	if err == nil {
+		builder.Object = builder.Definition
+	}
+
 	return builder, err
 }
 
