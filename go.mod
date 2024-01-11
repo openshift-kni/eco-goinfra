@@ -15,6 +15,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.13.2
 	github.com/openshift-kni/cluster-group-upgrades-operator v0.0.0-20231216054307-28180628cf50
 	github.com/openshift-kni/k8sreporter v1.0.4
+	github.com/openshift-kni/lifecycle-agent v0.0.0-20240109211418-4489c4a1eb46
 	github.com/openshift/api v3.9.1-0.20190916204813-cdbe64fb0c91+incompatible
 	github.com/openshift/assisted-service/api v0.0.0-20240102175930-315899d8f379
 	github.com/openshift/assisted-service/models v0.0.0
@@ -119,7 +120,7 @@ require (
 	github.com/onsi/gomega v1.30.0 // indirect
 	github.com/openshift/custom-resource-status v1.1.3-0.20220503160415-f2fdb4999d87 // indirect
 	github.com/openshift/elasticsearch-operator v0.0.0-20220613183908-e1648e67c298 // indirect
-	github.com/openshift/library-go v0.0.0-20231017173800-126f85ed0cc7 // indirect
+	github.com/openshift/library-go v0.0.0-20231027143522-b8cd45d2d2c8 // indirect
 	github.com/operator-framework/operator-registry v1.30.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.18.0 // indirect
