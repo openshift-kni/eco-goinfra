@@ -25,9 +25,9 @@ const (
 	isComplete = "Completed"
 )
 
-// ImageBasedUpgrade provides struct for the imagebasedupgrade object containing connection to
+// ImageBasedUpgradeBuilder provides struct for the imagebasedupgrade object containing connection to
 // the cluster and the imagebasedupgrade definitions.
-type ImageBasedUpgrade struct {
+type ImageBasedUpgradeBuilder struct {
 	// ImageBasedUpgrade definition. Used to store the imagebasedupgrade object.
 	Definition *lcav1alpha1.ImageBasedUpgrade
 
@@ -40,14 +40,14 @@ type ImageBasedUpgrade struct {
 }
 
 // AdditionalOptions additional options for imagebasedupgrade object.
-type AdditionalOptions func(builder *ImageBasedUpgrade) (*ImageBasedUpgrade, error)
+type AdditionalOptions func(builder *ImageBasedUpgradeBuilder) (*ImageBasedUpgradeBuilder, error)
 
-// NewBuilder creates a new instance of ImageBasedUpgrade.
-func NewBuilder(
+// NewImageBasedUpgradeBuilder creates a new instance of ImageBasedUpgrade.
+func NewImageBasedUpgradeBuilder(
 	apiClient *clients.Settings,
 	name string,
-) *ImageBasedUpgrade {
-	builder := ImageBasedUpgrade{
+) *ImageBasedUpgradeBuilder {
+	builder := ImageBasedUpgradeBuilder{
 		apiClient: apiClient,
 		Definition: &lcav1alpha1.ImageBasedUpgrade{
 			ObjectMeta: metaV1.ObjectMeta{
@@ -66,7 +66,7 @@ func NewBuilder(
 }
 
 // WithOptions creates imagebasedupgrade with generic mutation options.
-func (builder *ImageBasedUpgrade) WithOptions(options ...AdditionalOptions) *ImageBasedUpgrade {
+func (builder *ImageBasedUpgradeBuilder) WithOptions(options ...AdditionalOptions) *ImageBasedUpgradeBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -90,11 +90,11 @@ func (builder *ImageBasedUpgrade) WithOptions(options ...AdditionalOptions) *Ima
 	return builder
 }
 
-// Pull pulls existing imagebasedupgrade from cluster.
-func Pull(apiClient *clients.Settings, name string) (*ImageBasedUpgrade, error) {
+// PullImageBasedUpgrade pulls existing imagebasedupgrade from cluster.
+func PullImageBasedUpgrade(apiClient *clients.Settings, name string) (*ImageBasedUpgradeBuilder, error) {
 	glog.V(100).Infof("Pulling existing imagebasedupgrade name %s from cluster", name)
 
-	builder := ImageBasedUpgrade{
+	builder := ImageBasedUpgradeBuilder{
 		apiClient: apiClient,
 		Definition: &lcav1alpha1.ImageBasedUpgrade{
 			ObjectMeta: metaV1.ObjectMeta{
@@ -120,7 +120,7 @@ func Pull(apiClient *clients.Settings, name string) (*ImageBasedUpgrade, error) 
 
 // Update modifies the imagebasedupgrade resource on the cluster
 // to match what is defined in the local definition of the builder.
-func (builder *ImageBasedUpgrade) Update() (*ImageBasedUpgrade, error) {
+func (builder *ImageBasedUpgradeBuilder) Update() (*ImageBasedUpgradeBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
@@ -150,7 +150,7 @@ func (builder *ImageBasedUpgrade) Update() (*ImageBasedUpgrade, error) {
 // Delete removes the existing imagebasedupgrade from a cluster.
 // Note that a new imagebasedupgrade with the specs from the deleted
 // one is created instantly upon deletion.
-func (builder *ImageBasedUpgrade) Delete() (*ImageBasedUpgrade, error) {
+func (builder *ImageBasedUpgradeBuilder) Delete() (*ImageBasedUpgradeBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
@@ -174,7 +174,7 @@ func (builder *ImageBasedUpgrade) Delete() (*ImageBasedUpgrade, error) {
 }
 
 // Get returns imagebasedupgrade object if found.
-func (builder *ImageBasedUpgrade) Get() (*lcav1alpha1.ImageBasedUpgrade, error) {
+func (builder *ImageBasedUpgradeBuilder) Get() (*lcav1alpha1.ImageBasedUpgrade, error) {
 	if valid, err := builder.validate(); !valid {
 		return nil, err
 	}
@@ -195,7 +195,7 @@ func (builder *ImageBasedUpgrade) Get() (*lcav1alpha1.ImageBasedUpgrade, error) 
 }
 
 // Exists checks whether the given imagebasedupgrade exists.
-func (builder *ImageBasedUpgrade) Exists() bool {
+func (builder *ImageBasedUpgradeBuilder) Exists() bool {
 	if valid, _ := builder.validate(); !valid {
 		return false
 	}
@@ -210,8 +210,8 @@ func (builder *ImageBasedUpgrade) Exists() bool {
 }
 
 // WithSeedImage sets the seed image used by the imagebasedupgrade.
-func (builder *ImageBasedUpgrade) WithSeedImage(
-	seedImage string) *ImageBasedUpgrade {
+func (builder *ImageBasedUpgradeBuilder) WithSeedImage(
+	seedImage string) *ImageBasedUpgradeBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -224,8 +224,8 @@ func (builder *ImageBasedUpgrade) WithSeedImage(
 }
 
 // WithSeedImageVersion sets the seed image version used by the imagebasedupgrade.
-func (builder *ImageBasedUpgrade) WithSeedImageVersion(
-	seedImageVersion string) *ImageBasedUpgrade {
+func (builder *ImageBasedUpgradeBuilder) WithSeedImageVersion(
+	seedImageVersion string) *ImageBasedUpgradeBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -239,7 +239,7 @@ func (builder *ImageBasedUpgrade) WithSeedImageVersion(
 
 // WaitUntilStageComplete waits the specified timeout for the imagebasedupgrade to complete
 // actions for the provided stage .
-func (builder *ImageBasedUpgrade) WaitUntilStageComplete(stage string) (*ImageBasedUpgrade, error) {
+func (builder *ImageBasedUpgradeBuilder) WaitUntilStageComplete(stage string) (*ImageBasedUpgradeBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
@@ -308,8 +308,8 @@ func (builder *ImageBasedUpgrade) WaitUntilStageComplete(stage string) (*ImageBa
 }
 
 // WithStage sets the stage used by the imagebasedupgrade.
-func (builder *ImageBasedUpgrade) WithStage(
-	stage string) *ImageBasedUpgrade {
+func (builder *ImageBasedUpgradeBuilder) WithStage(
+	stage string) *ImageBasedUpgradeBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -322,7 +322,7 @@ func (builder *ImageBasedUpgrade) WithStage(
 
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
-func (builder *ImageBasedUpgrade) validate() (bool, error) {
+func (builder *ImageBasedUpgradeBuilder) validate() (bool, error) {
 	resourceCRD := "ImageBasedUpgrade"
 
 	if builder == nil {
