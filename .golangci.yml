@@ -11,6 +11,7 @@ linters-settings:
         allow:
           - "k8s.io/apimachinery"
           - "k8s.io/api"
+          - "k8s.io/kubectl/pkg/drain"
           - "k8s.io/kubelet"
           - "k8s.io/utils"
           - "k8s.io/client-go"
