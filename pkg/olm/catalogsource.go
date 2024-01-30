@@ -26,6 +26,35 @@ type CatalogSourceBuilder struct {
 	errorMsg string
 }
 
+// NewCatalogSourceBuilder creates new instance of CatalogSourceBuilder.
+func NewCatalogSourceBuilder(apiClient *clients.Settings, name, nsname string) *CatalogSourceBuilder {
+	glog.V(100).Infof("Initializing new %s catalogsource structure", name)
+
+	builder := CatalogSourceBuilder{
+		apiClient: apiClient,
+		Definition: &oplmV1alpha1.CatalogSource{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The name of the catalogsource is empty")
+
+		builder.errorMsg = "catalogsource 'name' cannot be empty"
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The nsname of the catalogsource is empty")
+
+		builder.errorMsg = "catalogsource 'nsname' cannot be empty"
+	}
+
+	return &builder
+}
+
 // PullCatalogSource loads an existing catalogsource into Builder struct.
 func PullCatalogSource(apiClient *clients.Settings, name, nsname string) (*CatalogSourceBuilder,
 	error) {
@@ -56,6 +85,24 @@ func PullCatalogSource(apiClient *clients.Settings, name, nsname string) (*Catal
 	builder.Definition = builder.Object
 
 	return &builder, nil
+}
+
+// Create makes an CatalogSourceBuilder in cluster and stores the created object in struct.
+func (builder *CatalogSourceBuilder) Create() (*CatalogSourceBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
+	glog.V(100).Infof("Creating the catalogsource %s in namespace %s",
+		builder.Definition.Name, builder.Definition.Namespace)
+
+	var err error
+	if !builder.Exists() {
+		builder.Object, err = builder.apiClient.CatalogSources(builder.Definition.Namespace).Create(context.Background(),
+			builder.Definition, metaV1.CreateOptions{})
+	}
+
+	return builder, err
 }
 
 // Exists checks whether the given catalogsource exists.
