@@ -12,16 +12,16 @@ import (
 // ListCatalogSources returns catalogsource inventory in the given namespace.
 func ListCatalogSources(
 	apiClient *clients.Settings,
-	namespace string,
+	nsname string,
 	options ...metaV1.ListOptions) ([]*CatalogSourceBuilder, error) {
-	if namespace == "" {
+	if nsname == "" {
 		glog.V(100).Infof("catalogsource 'namespace' parameter can not be empty")
 
 		return nil, fmt.Errorf("failed to list catalogsource, 'namespace' parameter is empty")
 	}
 
 	passedOptions := metaV1.ListOptions{}
-	logMessage := fmt.Sprintf("Listing catalogsource in the namespace %s", namespace)
+	logMessage := fmt.Sprintf("Listing catalogsource in the namespace %s", nsname)
 
 	if len(options) > 1 {
 		glog.V(100).Infof("'options' parameter must be empty or single-valued")
@@ -36,11 +36,11 @@ func ListCatalogSources(
 
 	glog.V(100).Infof(logMessage)
 
-	catalogSourceList, err := apiClient.OperatorsV1alpha1Interface.CatalogSources(namespace).List(
+	catalogSourceList, err := apiClient.OperatorsV1alpha1Interface.CatalogSources(nsname).List(
 		context.Background(), passedOptions)
 
 	if err != nil {
-		glog.V(100).Infof("Failed to list catalogsources in the namespace %s due to %s", namespace, err.Error())
+		glog.V(100).Infof("Failed to list catalogsources in the namespace %s due to %s", nsname, err.Error())
 
 		return nil, err
 	}

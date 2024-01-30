@@ -15,8 +15,8 @@ import (
 // CatalogSourceBuilder provides a struct for catalogsource object
 // from the cluster and a catalogsource definition.
 type CatalogSourceBuilder struct {
-	// CatalogSourceBuilder definition. Used to create
-	// CatalogSourceBuilder object with minimum set of required elements.
+	// CatalogSource definition. Used to create
+	// CatalogSource object with minimum set of required elements.
 	Definition *oplmV1alpha1.CatalogSource
 	// Created CatalogSource object on the cluster.
 	Object *oplmV1alpha1.CatalogSource
@@ -27,16 +27,16 @@ type CatalogSourceBuilder struct {
 }
 
 // PullCatalogSource loads an existing catalogsource into Builder struct.
-func PullCatalogSource(apiClient *clients.Settings, name, namespace string) (*CatalogSourceBuilder,
+func PullCatalogSource(apiClient *clients.Settings, name, nsname string) (*CatalogSourceBuilder,
 	error) {
-	glog.V(100).Infof("Pulling existing catalogsource name %s in namespace %s", name, namespace)
+	glog.V(100).Infof("Pulling existing catalogsource name %s in namespace %s", name, nsname)
 
 	builder := CatalogSourceBuilder{
 		apiClient: apiClient,
 		Definition: &oplmV1alpha1.CatalogSource{
 			ObjectMeta: metaV1.ObjectMeta{
 				Name:      name,
-				Namespace: namespace,
+				Namespace: nsname,
 			},
 		},
 	}
@@ -45,12 +45,12 @@ func PullCatalogSource(apiClient *clients.Settings, name, namespace string) (*Ca
 		builder.errorMsg = "catalogsource 'name' cannot be empty"
 	}
 
-	if namespace == "" {
+	if nsname == "" {
 		builder.errorMsg = "catalogsource 'namespace' cannot be empty"
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("catalogsource object %s doesn't exist in namespace %s", name, namespace)
+		return nil, fmt.Errorf("catalogsource object %s doesn't exist in namespace %s", name, nsname)
 	}
 
 	builder.Definition = builder.Object
