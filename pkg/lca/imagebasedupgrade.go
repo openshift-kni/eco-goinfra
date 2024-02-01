@@ -223,6 +223,23 @@ func (builder *ImageBasedUpgradeBuilder) WithSeedImage(
 	return builder
 }
 
+// WithOadpContent adds oadpContent to be used by the imagebasedupgrade.
+// This is used for backup/restore during upgrade.
+func (builder *ImageBasedUpgradeBuilder) WithOadpContent(
+	oadpContentConfigMapName, oadpContentConfigMapNamespace string) *ImageBasedUpgradeBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Appending oadpContent's configmap name %s in namespace %s to the imagebasedupgrade",
+		oadpContentConfigMapName, oadpContentConfigMapNamespace)
+
+	builder.Definition.Spec.OADPContent = append(builder.Definition.Spec.OADPContent,
+		lcav1alpha1.ConfigMapRef{Name: oadpContentConfigMapName, Namespace: oadpContentConfigMapNamespace})
+
+	return builder
+}
+
 // WithSeedImageVersion sets the seed image version used by the imagebasedupgrade.
 func (builder *ImageBasedUpgradeBuilder) WithSeedImageVersion(
 	seedImageVersion string) *ImageBasedUpgradeBuilder {
