@@ -4,7 +4,7 @@
 The [eco-goinfra](https://github.com/openshift-kni/eco-goinfra) project contains a collection of generic [packages](./pkg) that can be used across various test projects.
 
 ### Project requirements
-* golang v1.20.x
+* golang v1.21.x
 
 ## Usage
 In order to re-use code from this project you need to import relevant package/packages in to your project code.

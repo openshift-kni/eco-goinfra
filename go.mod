@@ -1,6 +1,6 @@
 module github.com/openshift-kni/eco-goinfra
 
-go 1.20
+go 1.21.6
 
 require (
 	github.com/NVIDIA/gpu-operator v1.11.1
@@ -31,6 +31,7 @@ require (
 	github.com/operator-framework/operator-lifecycle-manager v0.26.0
 	github.com/rh-ecosystem-edge/kernel-module-management v0.0.0-20240103094011-ff7cd443e51c
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
+	golang.org/x/net v0.18.0
 	gopkg.in/k8snetworkplumbingwg/multus-cni.v4 v4.0.2
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.28.4
@@ -155,7 +156,6 @@ require (
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	go4.org v0.0.0-20200104003542-c7e774b10ea0 // indirect
 	golang.org/x/crypto v0.17.0 // indirect
-	golang.org/x/net v0.18.0 // indirect
 	golang.org/x/oauth2 v0.14.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
