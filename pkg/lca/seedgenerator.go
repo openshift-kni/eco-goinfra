@@ -10,7 +10,7 @@ import (
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	lcasgv1alpha1 "github.com/openshift-kni/lifecycle-agent/api/seedgenerator/v1alpha1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -39,7 +39,7 @@ func NewSeedGeneratorBuilder(
 	builder := SeedGeneratorBuilder{
 		apiClient: apiClient,
 		Definition: &lcasgv1alpha1.SeedGenerator{
-			ObjectMeta: metaV1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
 			},
 		},
@@ -106,7 +106,7 @@ func PullSeedGenerator(apiClient *clients.Settings, name string) (*SeedGenerator
 	builder := SeedGeneratorBuilder{
 		apiClient: apiClient,
 		Definition: &lcasgv1alpha1.SeedGenerator{
-			ObjectMeta: metaV1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
 			},
 		},

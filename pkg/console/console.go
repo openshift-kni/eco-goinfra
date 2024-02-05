@@ -10,7 +10,7 @@ import (
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	v1 "github.com/openshift/api/config/v1"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Builder provides a struct for console object from the cluster and a console definition.
@@ -32,7 +32,7 @@ func NewBuilder(apiClient *clients.Settings, name string) *Builder {
 	builder := Builder{
 		apiClient: apiClient,
 		Definition: &v1.Console{
-			ObjectMeta: metaV1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
 			},
 		},
@@ -52,7 +52,7 @@ func Pull(apiClient *clients.Settings, name string) (*Builder, error) {
 	builder := Builder{
 		apiClient: apiClient,
 		Definition: &v1.Console{
-			ObjectMeta: metaV1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
 			},
 		},
@@ -86,7 +86,7 @@ func (builder *Builder) Create() (*Builder, error) {
 	var err error
 	if !builder.Exists() {
 		builder.Object, err = builder.apiClient.Consoles().Create(
-			context.Background(), builder.Definition, metaV1.CreateOptions{})
+			context.Background(), builder.Definition, metav1.CreateOptions{})
 	}
 
 	return builder, err
@@ -102,7 +102,7 @@ func (builder *Builder) Exists() bool {
 
 	var err error
 	builder.Object, err = builder.apiClient.Consoles().Get(
-		context.Background(), builder.Definition.Name, metaV1.GetOptions{})
+		context.Background(), builder.Definition.Name, metav1.GetOptions{})
 
 	return err == nil || !k8serrors.IsNotFound(err)
 }
@@ -119,7 +119,7 @@ func (builder *Builder) Delete() error {
 		return fmt.Errorf("console cannot be deleted because it does not exist")
 	}
 
-	err := builder.apiClient.Consoles().Delete(context.Background(), builder.Definition.Name, metaV1.DeleteOptions{})
+	err := builder.apiClient.Consoles().Delete(context.Background(), builder.Definition.Name, metav1.DeleteOptions{})
 
 	if err != nil {
 		return fmt.Errorf("cannot delete console: %w", err)
@@ -140,7 +140,7 @@ func (builder *Builder) Update() (*Builder, error) {
 
 	var err error
 	builder.Object, err = builder.apiClient.Consoles().Update(context.Background(), builder.Definition,
-		metaV1.UpdateOptions{})
+		metav1.UpdateOptions{})
 
 	return builder, err
 }

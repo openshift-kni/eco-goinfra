@@ -15,7 +15,7 @@ import (
 	lcav1alpha1 "github.com/openshift-kni/lifecycle-agent/api/v1alpha1"
 
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -50,7 +50,7 @@ func NewImageBasedUpgradeBuilder(
 	builder := ImageBasedUpgradeBuilder{
 		apiClient: apiClient,
 		Definition: &lcav1alpha1.ImageBasedUpgrade{
-			ObjectMeta: metaV1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
 			},
 		},
@@ -97,7 +97,7 @@ func PullImageBasedUpgrade(apiClient *clients.Settings, name string) (*ImageBase
 	builder := ImageBasedUpgradeBuilder{
 		apiClient: apiClient,
 		Definition: &lcav1alpha1.ImageBasedUpgrade{
-			ObjectMeta: metaV1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
 			},
 		},
