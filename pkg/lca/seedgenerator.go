@@ -15,7 +15,7 @@ import (
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// SeedGenerator provides struct for the seedgenerator object containing connection to
+// SeedGeneratorBuilder provides struct for the seedgenerator object containing connection to
 // the cluster and the seedgenerator definitions.
 type SeedGeneratorBuilder struct {
 	// SeedGenerator definition. Used to store the seedgenerator object.
@@ -31,7 +31,7 @@ type SeedGeneratorBuilder struct {
 // SeedGeneratorAdditionalOptions additional options for imagebasedupgrade object.
 type SeedGeneratorAdditionalOptions func(builder *SeedGeneratorBuilder) (*SeedGeneratorBuilder, error)
 
-// NewBuilder creates a new instance of SeedGenerator.
+// NewSeedGeneratorBuilder creates a new instance of SeedGenerator.
 func NewSeedGeneratorBuilder(
 	apiClient *clients.Settings,
 	name string,
