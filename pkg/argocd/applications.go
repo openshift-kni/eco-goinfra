@@ -16,7 +16,9 @@ import (
 )
 
 const (
-	APIGroup   = "argoproj.io"
+	// APIGroup const definition.
+	APIGroup = "argoproj.io"
+	// APIVersion const definition.
 	APIVersion = "v1alpha1"
 )
 

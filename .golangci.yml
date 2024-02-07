@@ -115,6 +115,10 @@ linters:
 output:
   format: colored-line-number
 issues:
+  include:
+    - EXC0002 # disable excluding of issues about comments from golint
+    - EXC0012  # EXC0012 revive: Annoying issue about not having a comment. The rare codebase has such comments
+    - EXC0014  # EXC0014 revive: Annoying issue about not having a comment. The rare codebase has such comments
   exclude-rules:
     #- # Exclude some linters from running on tests files.
     - path: 'pkg/polarion'
