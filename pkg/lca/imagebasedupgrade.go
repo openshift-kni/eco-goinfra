@@ -223,6 +223,23 @@ func (builder *ImageBasedUpgradeBuilder) WithSeedImage(
 	return builder
 }
 
+// WithExtraManifests adds extraManifests to be used by the imagebasedupgrade.
+// This is used to create/configure resources during upgrade.
+func (builder *ImageBasedUpgradeBuilder) WithExtraManifests(
+	extraManifestsConfigMapName, extraManifestsConfigMapNamespace string) *ImageBasedUpgradeBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Appending extraManifests's configmap name %s in namespace %s to the imagebasedupgrade",
+		extraManifestsConfigMapName, extraManifestsConfigMapNamespace)
+
+	builder.Definition.Spec.ExtraManifests = append(builder.Definition.Spec.ExtraManifests,
+		lcav1alpha1.ConfigMapRef{Name: extraManifestsConfigMapName, Namespace: extraManifestsConfigMapNamespace})
+
+	return builder
+}
+
 // WithOadpContent adds oadpContent to be used by the imagebasedupgrade.
 // This is used for backup/restore during upgrade.
 func (builder *ImageBasedUpgradeBuilder) WithOadpContent(
