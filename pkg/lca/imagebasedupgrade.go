@@ -287,6 +287,21 @@ func (builder *ImageBasedUpgradeBuilder) WithSeedImageVersion(
 	return builder
 }
 
+// WithSeedImagePullSecretRef sets the imagebasedupgrade with reference to the pull-secret
+// for pulling the seed image.
+func (builder *ImageBasedUpgradeBuilder) WithSeedImagePullSecretRef(
+	pullSecretName string) *ImageBasedUpgradeBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Setting pull-secret %s in imagebasedupgrade for pulling the seed image", pullSecretName)
+
+	builder.Definition.Spec.SeedImageRef.PullSecretRef = &lcav1alpha1.PullSecretRef{Name: pullSecretName}
+
+	return builder
+}
+
 // WaitUntilStageComplete waits the specified timeout for the imagebasedupgrade to complete
 // actions for the provided stage .
 func (builder *ImageBasedUpgradeBuilder) WaitUntilStageComplete(stage string) (*ImageBasedUpgradeBuilder, error) {
