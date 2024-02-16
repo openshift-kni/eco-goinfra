@@ -15,7 +15,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.13.2
 	github.com/openshift-kni/cluster-group-upgrades-operator v0.0.0-20231216054307-28180628cf50
 	github.com/openshift-kni/k8sreporter v1.0.4
-	github.com/openshift-kni/lifecycle-agent v0.0.0-20240109211418-4489c4a1eb46
+        github.com/openshift-kni/lifecycle-agent v0.0.0-20240215213309-6737db7143ec
 	github.com/openshift/api v3.9.1-0.20190916204813-cdbe64fb0c91+incompatible
 	github.com/openshift/assisted-service/api v0.0.0-20240102175930-315899d8f379
 	github.com/openshift/assisted-service/models v0.0.0
