@@ -273,6 +273,21 @@ func (builder *ImageBasedUpgradeBuilder) WithOadpContent(
 	return builder
 }
 
+// AutoRollbackOnFailureDisableForPostReboot allows controlling
+// AutoRollback on failure for post reboot stage. Enabled by default.
+func (builder *ImageBasedUpgradeBuilder) AutoRollbackOnFailureDisableForPostReboot(
+	flag bool) *ImageBasedUpgradeBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Setting Auto Rollback on failure for post reboot to %b in imagebasedupgrade", !flag)
+
+	builder.Definition.Spec.AutoRollbackOnFailure.DisabledForPostRebootConfig = flag
+
+	return builder
+}
+
 // WithSeedImageVersion sets the seed image version used by the imagebasedupgrade.
 func (builder *ImageBasedUpgradeBuilder) WithSeedImageVersion(
 	seedImageVersion string) *ImageBasedUpgradeBuilder {
