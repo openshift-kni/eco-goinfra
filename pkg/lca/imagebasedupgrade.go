@@ -273,6 +273,22 @@ func (builder *ImageBasedUpgradeBuilder) WithOadpContent(
 	return builder
 }
 
+// AutoRollbackOnFailureInitMonitorTimeoutSeconds allows controlling
+// the timeout for the upgrade to complete before the rollback.
+// Set to 1800 seconds by default.
+func (builder *ImageBasedUpgradeBuilder) AutoRollbackOnFailureInitMonitorTimeoutSeconds(
+	seconds uint) *ImageBasedUpgradeBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Setting timeout for InitMonitor to %d seconds in imagebasedupgrade", seconds)
+
+	builder.Definition.Spec.AutoRollbackOnFailure.InitMonitorTimeoutSeconds = int(seconds)
+
+	return builder
+}
+
 // AutoRollbackOnFailureDisableForPostReboot allows controlling
 // AutoRollback on failure for post reboot stage. Enabled by default.
 func (builder *ImageBasedUpgradeBuilder) AutoRollbackOnFailureDisableForPostReboot(
