@@ -288,6 +288,21 @@ func (builder *ImageBasedUpgradeBuilder) AutoRollbackOnFailureDisableForPostRebo
 	return builder
 }
 
+// AutoRollbackOnFailureDisableForUpgradeCompletion allows controlling
+// AutoRollback on failure for upgrade completion stage. Enabled by default.
+func (builder *ImageBasedUpgradeBuilder) AutoRollbackOnFailureDisableForUpgradeCompletion(
+	flag bool) *ImageBasedUpgradeBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Setting Auto Rollback on failure for upgrade completion to %b in imagebasedupgrade", !flag)
+
+	builder.Definition.Spec.AutoRollbackOnFailure.DisabledForUpgradeCompletion = flag
+
+	return builder
+}
+
 // WithSeedImageVersion sets the seed image version used by the imagebasedupgrade.
 func (builder *ImageBasedUpgradeBuilder) WithSeedImageVersion(
 	seedImageVersion string) *ImageBasedUpgradeBuilder {
