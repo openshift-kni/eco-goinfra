@@ -289,6 +289,22 @@ func (builder *ImageBasedUpgradeBuilder) AutoRollbackOnFailureInitMonitorTimeout
 	return builder
 }
 
+// AutoRollbackOnFailureDisabledInitMonitor allows disabling the watchdog
+// triggering a rollback upon upgrade failure within the set timeout.
+// Set to false by default.
+func (builder *ImageBasedUpgradeBuilder) AutoRollbackOnFailureDisabledInitMonitor(
+	flag bool) *ImageBasedUpgradeBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Setting the Init Monitor for Auto Rollback on failure to %b in imagebasedupgrade", !flag)
+
+	builder.Definition.Spec.AutoRollbackOnFailure.DisabledInitMonitor = flag
+
+	return builder
+}
+
 // AutoRollbackOnFailureDisableForPostReboot allows controlling
 // AutoRollback on failure for post reboot stage. Enabled by default.
 func (builder *ImageBasedUpgradeBuilder) AutoRollbackOnFailureDisableForPostReboot(
