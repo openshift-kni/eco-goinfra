@@ -51,7 +51,7 @@ func Create()  // Creates new object on cluster if it doesn't exist.
 func Delete() // Removes object from cluster if it exists.
 func Update() // Updates object based on new object's definition.
 func Exist() // Returns bool if object exist.
-func With***() // Set of mutiation functions that can mutate any part of the object. 
+func With***() // Set of mutation functions that can mutate any part of the object. 
 ```
 Please refer to [namespace](./usage/namespace/namespace.go) example for more info.
 
@@ -73,7 +73,7 @@ func (builder *Builder) WithMethod(someString string) *Builder {
     return builder
 }
 ```
-Typically, validate methods will check that pointers are not nil and that errorMsg has not been set. Here is an example of how the secret package validate method ensures that Builder.apiClient has properly been initalized before being called:
+Typically, validate methods will check that pointers are not nil and that errorMsg has not been set. Here is an example of how the secret package validate method ensures that Builder.apiClient has properly been initialized before being called:
 ```go
 func main() {
 	apiClient := clients.New("bad api client")
