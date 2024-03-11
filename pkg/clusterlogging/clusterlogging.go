@@ -84,7 +84,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("clusterLogging oject %s doesn't exist in namespace %s", name, nsname)
+		return nil, fmt.Errorf("clusterLogging object %s doesn't exist in namespace %s", name, nsname)
 	}
 
 	builder.Definition = builder.Object
