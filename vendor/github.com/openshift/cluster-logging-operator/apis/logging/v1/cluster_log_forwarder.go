@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/openshift/cluster-logging-operator/internal/constants"
 	"github.com/openshift/cluster-logging-operator/internal/utils/sets"
 )
 
@@ -195,19 +196,10 @@ func (output *OutputSpec) GetMaxRecordsPerSecond() int64 {
 	return output.Limit.MaxRecordsPerSecond
 }
 
-func IsAuditHttpReceiver(input *InputSpec) bool {
-	return input.Receiver != nil &&
-		input.Receiver.HTTP != nil &&
-		input.Receiver.Type == ReceiverTypeHttp &&
-		input.Receiver.HTTP.Format == FormatKubeAPIAudit
-}
-
-func IsHttpReceiver(input *InputSpec) bool {
-	return input.Receiver != nil &&
-		input.Receiver.Type == ReceiverTypeHttp
-}
-
-func IsSyslogReceiver(input *InputSpec) bool {
-	return input.Receiver != nil &&
-		input.Receiver.Type == ReceiverTypeSyslog
+func (receiver HTTPReceiver) GetPort() (ret int32) {
+	ret = constants.HTTPReceiverPort
+	if receiver.Port != 0 {
+		ret = receiver.Port
+	}
+	return
 }
