@@ -402,7 +402,6 @@ func (builder *ImageBasedUpgradeBuilder) WaitUntilStageComplete(stage string) (*
 					if condition.Status == isFalse && condition.Type == "PrepInProgress" &&
 						condition.Message == "Prep completed" && condition.Reason == isComplete {
 						return true, nil
-
 					}
 				case "Upgrade":
 					if condition.Status == isFalse && condition.Type == "UpgradeInProgress" &&
@@ -418,13 +417,10 @@ func (builder *ImageBasedUpgradeBuilder) WaitUntilStageComplete(stage string) (*
 
 				default:
 					return false, fmt.Errorf("wrong stage selected for imagebasedupgrade")
-
 				}
-
 			}
 
 			return false, nil
-
 		})
 
 	if err == nil {
