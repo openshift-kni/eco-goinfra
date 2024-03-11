@@ -101,14 +101,20 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 
 	if name == "" {
 		builder.errorMsg = "deployment 'name' cannot be empty"
+
+		return &builder, fmt.Errorf(builder.errorMsg)
 	}
 
 	if nsname == "" {
 		builder.errorMsg = "deployment 'namespace' cannot be empty"
+
+		return &builder, fmt.Errorf(builder.errorMsg)
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("deployment object %s doesn't exist in namespace %s", name, nsname)
+		builder.errorMsg = fmt.Sprintf("deployment object %s doesn't exist in namespace %s", name, nsname)
+
+		return &builder, fmt.Errorf(builder.errorMsg)
 	}
 
 	builder.Definition = builder.Object
