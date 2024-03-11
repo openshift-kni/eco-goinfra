@@ -242,16 +242,13 @@ func (builder *SeedGeneratorBuilder) WaitUntilComplete(timeout time.Duration) (*
 			}
 
 			for _, condition := range builder.Object.Status.Conditions {
-
 				if condition.Status == "True" && condition.Type == "SeedGenCompleted" &&
 					condition.Reason == "Completed" {
 					return true, nil
 				}
-
 			}
 
 			return false, nil
-
 		})
 
 	if err == nil {
