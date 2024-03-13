@@ -30,6 +30,7 @@ require (
 	github.com/operator-framework/operator-lifecycle-manager v0.26.0
 	github.com/rh-ecosystem-edge/kernel-module-management v0.0.0-20231116085833-96c2cd1e77e9
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
+	golang.org/x/net v0.17.0
 	gopkg.in/k8snetworkplumbingwg/multus-cni.v4 v4.0.2
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.27.7
@@ -134,7 +135,6 @@ require (
 	go.mongodb.org/mongo-driver v1.11.1 // indirect
 	go4.org v0.0.0-20200104003542-c7e774b10ea0 // indirect
 	golang.org/x/crypto v0.14.0 // indirect
-	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/oauth2 v0.12.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/term v0.13.0 // indirect
@@ -168,7 +168,7 @@ require (
 
 replace (
 	github.com/argoproj-labs/argocd-operator => github.com/argoproj-labs/argocd-operator v0.7.0
-	github.com/k8snetworkplumbingwg/sriov-network-operator => github.com/openshift/sriov-network-operator v0.0.0-20231106050543-81b0827a7d2b // release-4.14
+	github.com/k8snetworkplumbingwg/sriov-network-operator => github.com/openshift/sriov-network-operator v0.0.0-20240311224155-7a362a543c29 // release-4.14
 	github.com/openshift-kni/cluster-group-upgrades-operator => github.com/openshift-kni/cluster-group-upgrades-operator v0.0.0-20230914194424-8c550044165d
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20231115210901-4c4a0a24f2fc // release-4.14
 	github.com/openshift/assisted-service/models => github.com/openshift/assisted-service/models v0.0.0-20230906121258-6d85fb16f8dd // release-4.14
