@@ -16,3 +16,6 @@ deps-update:
 install: deps-update
 	@echo "Installing needed dependencies"
 
+test:
+	go test ./...
+
