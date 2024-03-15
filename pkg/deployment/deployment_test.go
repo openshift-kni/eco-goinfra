@@ -5,6 +5,7 @@ import (
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
+	multus "gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/types"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -110,6 +111,323 @@ func TestPull(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, testDeployment.Name, builderResult.Object.Name)
 			assert.Equal(t, testDeployment.Namespace, builderResult.Object.Namespace)
+		}
+	}
+}
+
+// buildValidTestBuilder returns a valid Builder for testing purposes.
+func buildValidTestBuilder() *Builder {
+	return NewBuilder(&clients.Settings{
+		Client: nil,
+	}, "test-name", "test-namespace", map[string]string{
+		"test-key": "test-value",
+	}, &corev1.Container{
+		Name: "test-container",
+	})
+}
+
+func TestWithNodeSelector(t *testing.T) {
+	testBuilder := buildValidTestBuilder()
+
+	testBuilder.WithNodeSelector(map[string]string{
+		"test-node-selector-key": "test-node-selector-value",
+	})
+
+	assert.Equal(t, "test-node-selector-value",
+		testBuilder.Definition.Spec.Template.Spec.NodeSelector["test-node-selector-key"])
+}
+
+func TestWithReplicas(t *testing.T) {
+	testBuilder := buildValidTestBuilder()
+
+	testBuilder.WithReplicas(3)
+
+	assert.Equal(t, int32(3), *testBuilder.Definition.Spec.Replicas)
+}
+
+func TestWithAdditionalContainerSpecs(t *testing.T) {
+	testCases := []struct {
+		specsAvailable bool
+		expectedErrMsg string
+	}{
+		{
+			specsAvailable: true,
+			expectedErrMsg: "",
+		},
+		{
+			specsAvailable: false,
+			expectedErrMsg: "cannot accept empty list as container specs",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidTestBuilder()
+
+		if testCase.specsAvailable {
+			testBuilder.WithAdditionalContainerSpecs([]corev1.Container{
+				{
+					Name: "test-additional-container",
+				},
+			})
+		} else {
+			testBuilder.WithAdditionalContainerSpecs([]corev1.Container{})
+		}
+
+		assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
+	}
+}
+
+func TestWithSecondaryNetwork(t *testing.T) {
+	for _, testCase := range []struct {
+		secondaryNetworkAvailable bool
+		expectedErrMsg            string
+	}{
+		{
+			secondaryNetworkAvailable: true,
+			expectedErrMsg:            "",
+		},
+		{
+			secondaryNetworkAvailable: false,
+			expectedErrMsg:            "can not apply empty networks list",
+		},
+	} {
+		testBuilder := buildValidTestBuilder()
+
+		if testCase.secondaryNetworkAvailable {
+			testBuilder.WithSecondaryNetwork([]*multus.NetworkSelectionElement{
+				{
+					Name:      "test-secondary-network",
+					Namespace: "test-secondary-network-namespace",
+				},
+			})
+		} else {
+			testBuilder.WithSecondaryNetwork(
+				[]*multus.NetworkSelectionElement{},
+			)
+		}
+
+		assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
+
+		if testCase.secondaryNetworkAvailable {
+			assert.Equal(t,
+				"[{\"name\":\"test-secondary-network\",\"namespace\":\"test-secondary-network-namespace\",\"cni-args\":null}]",
+				testBuilder.Definition.Spec.Template.Annotations["k8s.v1.cni.cncf.io/networks"])
+		}
+	}
+}
+
+func TestWithHugePages(t *testing.T) {
+	testBuilder := buildValidTestBuilder()
+
+	testBuilder.WithHugePages()
+
+	// Assert the volumes are added to the spec
+	assert.Equal(t, "hugepages", testBuilder.Definition.Spec.Template.Spec.Volumes[0].Name)
+	assert.Equal(t, corev1.StorageMedium("HugePages"),
+		testBuilder.Definition.Spec.Template.Spec.Volumes[0].VolumeSource.EmptyDir.Medium)
+
+	// Assert the container is updated with the volume mount
+	assert.Equal(t, "hugepages", testBuilder.Definition.Spec.Template.Spec.Containers[0].VolumeMounts[0].Name)
+	assert.Equal(t, "/mnt/huge",
+		testBuilder.Definition.Spec.Template.Spec.Containers[0].VolumeMounts[0].MountPath)
+}
+
+func TestWithSecurityContext(t *testing.T) {
+	testCases := []struct {
+		securityContextAvailable bool
+		expectedErrMsg           string
+	}{
+		{
+			securityContextAvailable: true,
+			expectedErrMsg:           "",
+		},
+		{
+			securityContextAvailable: false,
+			expectedErrMsg:           "'securityContext' parameter is empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidTestBuilder()
+
+		if testCase.securityContextAvailable {
+			boolVar := true
+			testBuilder.WithSecurityContext(&corev1.PodSecurityContext{
+				RunAsNonRoot: &boolVar,
+			})
+		} else {
+			testBuilder.WithSecurityContext(nil)
+		}
+
+		assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
+
+		if testCase.securityContextAvailable {
+			assert.Equal(t, true, *testBuilder.Definition.Spec.Template.Spec.SecurityContext.RunAsNonRoot)
+		}
+	}
+}
+
+func TestWithLabel(t *testing.T) {
+	testCases := []struct {
+		labelKey       string
+		labelValue     string
+		expectedErrMsg string
+		emptyLabels    bool
+	}{
+		{
+			labelKey:    "test-label-key",
+			labelValue:  "test-label-value",
+			emptyLabels: false,
+		},
+		{
+			labelKey:       "",
+			expectedErrMsg: "can not apply empty labelKey",
+			emptyLabels:    false,
+		},
+		{
+			labelKey:    "test-label-key",
+			labelValue:  "test-label-value",
+			emptyLabels: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidTestBuilder()
+
+		if testCase.emptyLabels {
+			testBuilder.Definition.Spec.Template.Labels = nil
+		}
+
+		testBuilder.WithLabel(testCase.labelKey, testCase.labelValue)
+
+		assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrMsg == "" {
+			assert.Equal(t, testCase.labelValue, testBuilder.Definition.Spec.Template.Labels[testCase.labelKey])
+		}
+	}
+}
+
+func TestWithServiceAccountName(t *testing.T) {
+	testCases := []struct {
+		serviceAccountName string
+		expectedErrMsg     string
+	}{
+		{
+			serviceAccountName: "test-service-account",
+		},
+		{
+			serviceAccountName: "",
+			expectedErrMsg:     "can not apply empty serviceAccount",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidTestBuilder()
+
+		testBuilder.WithServiceAccountName(testCase.serviceAccountName)
+
+		assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrMsg == "" {
+			assert.Equal(t, testCase.serviceAccountName, testBuilder.Definition.Spec.Template.Spec.ServiceAccountName)
+		}
+	}
+}
+
+func TestWithVolume(t *testing.T) {
+	testCases := []struct {
+		volumeName     string
+		expectedErrMsg string
+	}{
+		{
+			volumeName: "test-volume",
+		},
+		{
+			volumeName:     "",
+			expectedErrMsg: "The volume's name cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidTestBuilder()
+
+		testBuilder.WithVolume(corev1.Volume{
+			Name: testCase.volumeName,
+		})
+
+		assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrMsg == "" {
+			assert.Equal(t, testCase.volumeName, testBuilder.Definition.Spec.Template.Spec.Volumes[0].Name)
+		}
+	}
+}
+
+func TestWithSchedulerName(t *testing.T) {
+	testCases := []struct {
+		schedulerName  string
+		expectedErrMsg string
+	}{
+		{
+			schedulerName: "test-scheduler",
+		},
+		{
+			schedulerName:  "",
+			expectedErrMsg: "Scheduler's name cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidTestBuilder()
+
+		testBuilder.WithSchedulerName(testCase.schedulerName)
+
+		assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrMsg == "" {
+			assert.Equal(t, testCase.schedulerName, testBuilder.Definition.Spec.Template.Spec.SchedulerName)
+		}
+	}
+}
+
+func TestWithOptions(t *testing.T) {
+	testBuilder := buildValidTestBuilder()
+
+	testBuilder.WithOptions(func(builder *Builder) (*Builder, error) {
+		return builder, nil
+	})
+
+	assert.Equal(t, "", testBuilder.errorMsg)
+}
+
+func TestWithToleration(t *testing.T) {
+	testCases := []struct {
+		toleration     corev1.Toleration
+		expectedErrMsg string
+	}{
+		{
+			toleration: corev1.Toleration{
+				Key:      "test-toleration-key",
+				Operator: "test-toleration-operator",
+				Value:    "test-toleration-value",
+			},
+		},
+		{
+			toleration:     corev1.Toleration{},
+			expectedErrMsg: "The toleration cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidTestBuilder()
+
+		testBuilder.WithToleration(testCase.toleration)
+
+		assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrMsg == "" {
+			assert.Equal(t, testCase.toleration, testBuilder.Definition.Spec.Template.Spec.Tolerations[0])
 		}
 	}
 }
