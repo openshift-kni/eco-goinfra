@@ -141,7 +141,29 @@ func (builder *ImageBasedUpgradeBuilder) Update() (*ImageBasedUpgradeBuilder, er
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
 	if err == nil {
-		builder.Object = builder.Definition
+		// Wait for the IBU to reconcile after it is updated.
+		err = wait.PollUntilContextTimeout(
+			context.TODO(), time.Second*2, time.Second*10, true, func(ctx context.Context) (bool, error) {
+				glog.V(100).Infof("Waiting for imagebasedupgrade %s to finish reconciling",
+					builder.Definition.Name)
+
+				ibu, err := PullImageBasedUpgrade(builder.apiClient, builder.Definition.Name)
+				if err != nil {
+					return false, err
+				}
+
+				if ibu.Object.ObjectMeta.Generation == ibu.Object.Status.ObservedGeneration {
+					builder.Object = ibu.Object
+
+					return true, nil
+				}
+
+				return false, nil
+			})
+
+		if err == nil {
+			builder.Definition = builder.Object
+		}
 	}
 
 	return builder, err
