@@ -353,6 +353,228 @@ func TestMetalLbWithSpeakerNodeSelector(t *testing.T) {
 	}
 }
 
+func TestMetalLbWithControllerPriorityClassName(t *testing.T) {
+	testCases := []struct {
+		testMetalLb       *Builder
+		priorityClassName string
+		expectedError     string
+	}{
+		{
+			testMetalLb:       buildValidMetalLbBuilder(buildMetalLbTestClientWithDummyObject()),
+			expectedError:     "",
+			priorityClassName: "test-name",
+		},
+	}
+	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
+		netBuilder := buildValidMetalLbBuilder(testSettings).WithControllerPriorityClassName(testCase.priorityClassName)
+		assert.Equal(t, netBuilder.Definition.Spec.ControllerConfig.PriorityClassName, testCase.priorityClassName)
+	}
+}
+
+func TestMetalLbWithControllerRuntimeClassName(t *testing.T) {
+	testCases := []struct {
+		testMetalLb      *Builder
+		runtimeClassName string
+		expectedError    string
+	}{
+		{
+			testMetalLb:      buildValidMetalLbBuilder(buildMetalLbTestClientWithDummyObject()),
+			expectedError:    "",
+			runtimeClassName: "myclass",
+		},
+	}
+	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
+		netBuilder := buildValidMetalLbBuilder(testSettings).WithControllerRuntimeClassName(testCase.runtimeClassName)
+		assert.Equal(t, netBuilder.Definition.Spec.ControllerConfig.RuntimeClassName, testCase.runtimeClassName)
+	}
+}
+
+func TestMetalLbWithControllerAnnotationMapString(t *testing.T) {
+	testCases := []struct {
+		testMetalLb         *Builder
+		annotationMapString map[string]string
+		expectedError       string
+	}{
+		{
+			testMetalLb:         buildValidMetalLbBuilder(buildMetalLbTestClientWithDummyObject()),
+			expectedError:       "",
+			annotationMapString: map[string]string{"component": "controller-test"},
+		},
+	}
+	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
+		netBuilder := buildValidMetalLbBuilder(testSettings).WithControllerAnnotationMapString(testCase.annotationMapString)
+		assert.Equal(t, netBuilder.Definition.Spec.ControllerConfig.Annotations, testCase.annotationMapString)
+	}
+}
+
+func TestMetalLbWithControllerPodAffinityLabel(t *testing.T) {
+	testCases := []struct {
+		testMetalLb                *Builder
+		controllerPodAffinityLabel string
+		expectedError              string
+	}{
+		{
+			testMetalLb:                buildValidMetalLbBuilder(buildMetalLbTestClientWithDummyObject()),
+			expectedError:              "",
+			controllerPodAffinityLabel: "controller-test",
+		},
+	}
+	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
+		netBuilder := buildValidMetalLbBuilder(testSettings).
+			WithControllerPodAffinityLabel(testCase.controllerPodAffinityLabel)
+		assert.Equal(t, netBuilder.Definition.Spec.ControllerConfig.Affinity.PodAffinity.
+			RequiredDuringSchedulingIgnoredDuringExecution, testCase.controllerPodAffinityLabel)
+	}
+}
+
+func TestMetalLbWithControllerTolerations(t *testing.T) {
+	testCases := []struct {
+		testMetalLb        *Builder
+		tolerationKey      string
+		tolerationOperator string
+		tolerationEffect   string
+		expectedError      string
+	}{
+		{
+			testMetalLb:   buildValidMetalLbBuilder(buildMetalLbTestClientWithDummyObject()),
+			expectedError: "",
+			tolerationKey: "example",
+		},
+		{
+			testMetalLb:        buildValidMetalLbBuilder(buildMetalLbTestClientWithDummyObject()),
+			expectedError:      "",
+			tolerationOperator: "Exists",
+		},
+		{
+			testMetalLb:      buildValidMetalLbBuilder(buildMetalLbTestClientWithDummyObject()),
+			expectedError:    "",
+			tolerationEffect: "NoExecute",
+		},
+	}
+	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
+		netBuilder := buildValidMetalLbBuilder(testSettings).WithControllerTolerations(testCase.tolerationKey,
+			testCase.tolerationOperator, testCase.tolerationEffect)
+		assert.Equal(t, netBuilder.Definition.Spec.ControllerTolerations, testCase.tolerationKey,
+			testCase.tolerationOperator, testCase.tolerationEffect)
+	}
+}
+
+func TestMetalLbWithSpeakerPriorityClassName(t *testing.T) {
+	testCases := []struct {
+		testMetalLb       *Builder
+		priorityClassName string
+		expectedError     string
+	}{
+		{
+			testMetalLb:       buildValidMetalLbBuilder(buildMetalLbTestClientWithDummyObject()),
+			expectedError:     "",
+			priorityClassName: "high-priority",
+		},
+	}
+	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
+		netBuilder := buildValidMetalLbBuilder(testSettings).WithSpeakerPriorityClassName(testCase.priorityClassName)
+		assert.Equal(t, netBuilder.Definition.Spec.SpeakerConfig.PriorityClassName, testCase.priorityClassName)
+	}
+}
+
+func TestMetalLbWithSpeakerRuntimeClassName(t *testing.T) {
+	testCases := []struct {
+		testMetalLb      *Builder
+		runtimeClassName string
+		expectedError    string
+	}{
+		{
+			testMetalLb:      buildValidMetalLbBuilder(buildMetalLbTestClientWithDummyObject()),
+			expectedError:    "",
+			runtimeClassName: "myclass",
+		},
+	}
+	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
+		netBuilder := buildValidMetalLbBuilder(testSettings).WithSpeakerRuntimeClassName(testCase.runtimeClassName)
+		assert.Equal(t, netBuilder.Definition.Spec.SpeakerConfig.RuntimeClassName, testCase.runtimeClassName)
+	}
+}
+
+func TestMetalLbWithSpeakerAnnotationMapString(t *testing.T) {
+	testCases := []struct {
+		testMetalLb         *Builder
+		annotationMapString map[string]string
+		expectedError       string
+	}{
+		{
+			testMetalLb:         buildValidMetalLbBuilder(buildMetalLbTestClientWithDummyObject()),
+			expectedError:       "",
+			annotationMapString: map[string]string{"component": "controller-test"},
+		},
+	}
+	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
+		netBuilder := buildValidMetalLbBuilder(testSettings).WithControllerAnnotationMapString(testCase.annotationMapString)
+		assert.Equal(t, netBuilder.Definition.Spec.ControllerConfig.Annotations, testCase.annotationMapString)
+	}
+}
+
+func TestMetalLbWithSpeakerPodAffinityLabel(t *testing.T) {
+	testCases := []struct {
+		testMetalLb                *Builder
+		controllerPodAffinityLabel string
+		expectedError              string
+	}{
+		{
+			testMetalLb:                buildValidMetalLbBuilder(buildMetalLbTestClientWithDummyObject()),
+			expectedError:              "",
+			controllerPodAffinityLabel: "controller-test",
+		},
+	}
+	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
+		netBuilder := buildValidMetalLbBuilder(testSettings).
+			WithControllerPodAffinityLabel(testCase.controllerPodAffinityLabel)
+		assert.Equal(t, netBuilder.Definition.Spec.ControllerConfig.Affinity.PodAffinity.
+			RequiredDuringSchedulingIgnoredDuringExecution, testCase.controllerPodAffinityLabel)
+	}
+}
+
+func TestMetalLbWithSpeakerTolerations(t *testing.T) {
+	testCases := []struct {
+		testMetalLb        *Builder
+		tolerationKey      string
+		tolerationOperator string
+		tolerationEffect   string
+		expectedError      string
+	}{
+		{
+			testMetalLb:   buildValidMetalLbBuilder(buildMetalLbTestClientWithDummyObject()),
+			expectedError: "",
+			tolerationKey: "example",
+		},
+		{
+			testMetalLb:        buildValidMetalLbBuilder(buildMetalLbTestClientWithDummyObject()),
+			expectedError:      "",
+			tolerationOperator: "Exists",
+		},
+		{
+			testMetalLb:      buildValidMetalLbBuilder(buildMetalLbTestClientWithDummyObject()),
+			expectedError:    "",
+			tolerationEffect: "NoExecute",
+		},
+	}
+	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
+		netBuilder := buildValidMetalLbBuilder(testSettings).WithControllerTolerations(testCase.tolerationKey,
+			testCase.tolerationOperator, testCase.tolerationEffect)
+		assert.Equal(t, netBuilder.Definition.Spec.ControllerTolerations, testCase.tolerationKey,
+			testCase.tolerationOperator, testCase.tolerationEffect)
+	}
+}
+
 func TestMetalLbWithOptions(t *testing.T) {
 	testSettings := buildMetalLbTestClientWithDummyObject()
 	testBuilder := buildValidMetalLbBuilder(testSettings).WithOptions(

@@ -8,6 +8,7 @@ import (
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/metallb/mlbtypes"
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
+	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -322,6 +323,195 @@ func (builder *Builder) WithSpeakerNodeSelector(label map[string]string) *Builde
 	}
 
 	builder.Definition.Spec.SpeakerNodeSelector = label
+
+	return builder
+}
+
+// WithControllerPriorityClassName adds a priority class name tp the metallb controller config.
+func (builder *Builder) WithControllerPriorityClassName(priorityClassName string) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	// if len(priorityClassName) == 0 {
+	//	glog.V(100).Infof(" Controller Config parameter priorityClassName cannot be an empty field")
+	//
+	//	return builder
+	//}
+
+	builder.Definition.Spec.ControllerConfig.PriorityClassName = priorityClassName
+
+	return builder
+}
+
+// WithControllerRuntimeClassName adds a runtime class name tp the metallb controller config.
+func (builder *Builder) WithControllerRuntimeClassName(runtimeClassName string) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	if len(runtimeClassName) == 0 {
+		glog.V(100).Infof("Controller Config parameter runtimeClassName cannot be an empty field")
+
+		return builder
+	}
+
+	builder.Definition.Spec.ControllerConfig.RuntimeClassName = runtimeClassName
+
+	return builder
+}
+
+// WithControllerAnnotationMapString adds a runtime class name tp the metallb controller config.
+func (builder *Builder) WithControllerAnnotationMapString(annotationMapString map[string]string) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	if len(annotationMapString) == 0 {
+		glog.V(100).Infof(" Controller Config parameter annotationMapString cannot be an empty field")
+
+		return builder
+	}
+
+	builder.Definition.Spec.ControllerConfig.Annotations = annotationMapString
+
+	return builder
+}
+
+// WithControllerPodAffinityLabel adds a runtime class name tp the metallb controller config.
+func (builder *Builder) WithControllerPodAffinityLabel(controllerPodAffinityLabel string) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	if len(controllerPodAffinityLabel) == 0 {
+		glog.V(100).Infof("Controller Config parameter runtimeClassName cannot be an empty field")
+
+		return builder
+	}
+
+	builder.Definition.Spec = mlbtypes.MetalLBSpec{
+		ControllerConfig: &mlbtypes.Config{
+			Affinity: &corev1.Affinity{
+				PodAffinity: &corev1.PodAffinity{
+					RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
+						{LabelSelector: &metav1.LabelSelector{
+							MatchLabels: map[string]string{"component": controllerPodAffinityLabel},
+						},
+							TopologyKey: "kubernetes.io/hostname",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	return builder
+}
+
+// WithControllerTolerations adds a toleration configuration inside the speaker on .
+func (builder *Builder) WithControllerTolerations(tolerationKey, tolerationOperator, tolerationEffect string) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	operator := corev1.TolerationOperator(tolerationOperator)
+	effect := corev1.TaintEffect(tolerationEffect)
+	toleration := corev1.Toleration{Key: tolerationKey, Operator: operator, Effect: effect}
+
+	glog.V(100).Infof("Updating pod %s with toleration %v", builder.Definition.Name, toleration)
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	builder.Definition.Spec.ControllerTolerations = append(builder.Definition.Spec.ControllerTolerations, toleration)
+
+	return builder
+}
+
+// WithSpeakerPriorityClassName adds a priority class name tp the metallb controller config.
+func (builder *Builder) WithSpeakerPriorityClassName(priorityClassName string) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	if len(priorityClassName) == 0 {
+		glog.V(100).Infof(" Controller Config parameter priorityClassName cannot be an empty field")
+
+		return builder
+	}
+
+	builder.Definition.Spec.SpeakerConfig.PriorityClassName = priorityClassName
+
+	return builder
+}
+
+// WithSpeakerRuntimeClassName adds a runtime class name tp the metallb controller config.
+func (builder *Builder) WithSpeakerRuntimeClassName(runtimeClassName string) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	if len(runtimeClassName) == 0 {
+		glog.V(100).Infof("Controller Config parameter runtimeClassName cannot be an empty field")
+
+		return builder
+	}
+
+	builder.Definition.Spec.SpeakerConfig.RuntimeClassName = runtimeClassName
+
+	return builder
+}
+
+// WithSpeakerPodAffinityLabel adds a runtime class name tp the metallb controller config.
+func (builder *Builder) WithSpeakerPodAffinityLabel(controllerPodAffinityLabel string) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	if len(controllerPodAffinityLabel) == 0 {
+		glog.V(100).Infof("Speaker Config parameter runtimeClassName cannot be an empty field")
+
+		return builder
+	}
+
+	builder.Definition.Spec = mlbtypes.MetalLBSpec{
+		SpeakerConfig: &mlbtypes.Config{
+			Affinity: &corev1.Affinity{
+				PodAffinity: &corev1.PodAffinity{
+					RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
+						{LabelSelector: &metav1.LabelSelector{
+							MatchLabels: map[string]string{"component": controllerPodAffinityLabel},
+						},
+							TopologyKey: "kubernetes.io/hostname",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	return builder
+}
+
+// WithSpeakerTolerations adds a toleration configuration inside the speaker configuration .
+func (builder *Builder) WithSpeakerTolerations(tolerationKey, tolerationOperator, tolerationEffect string) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	operator := corev1.TolerationOperator(tolerationOperator)
+	effect := corev1.TaintEffect(tolerationEffect)
+	toleration := corev1.Toleration{Key: tolerationKey, Operator: operator, Effect: effect}
+
+	glog.V(100).Infof("Updating pod %s with toleration %v", builder.Definition.Name, toleration)
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	builder.Definition.Spec.SpeakerTolerations = append(builder.Definition.Spec.SpeakerTolerations, toleration)
 
 	return builder
 }
