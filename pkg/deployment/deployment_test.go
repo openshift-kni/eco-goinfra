@@ -109,6 +109,7 @@ func TestPull(t *testing.T) {
 		} else {
 			assert.Nil(t, err)
 			assert.Equal(t, testDeployment.Name, builderResult.Object.Name)
+			assert.Equal(t, testDeployment.Namespace, builderResult.Object.Namespace)
 		}
 	}
 }
