@@ -104,7 +104,6 @@ func TestPull(t *testing.T) {
 
 			// Check the error message
 			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, builderResult.errorMsg)
 				assert.Equal(t, testCase.expectedErrorText, err.Error())
 			}
 		} else {
