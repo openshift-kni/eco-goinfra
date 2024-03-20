@@ -9,7 +9,7 @@ import (
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -32,7 +32,7 @@ func NewBuilder(apiClient *clients.Settings, name, nsname string) *Builder {
 		apiClient: apiClient,
 		Definition: &argocdoperatorv1alpha1.ArgoCD{
 			Spec: argocdoperatorv1alpha1.ArgoCDSpec{},
-			ObjectMeta: metaV1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: nsname,
 			},
@@ -61,7 +61,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	builder := Builder{
 		apiClient: apiClient,
 		Definition: &argocdoperatorv1alpha1.ArgoCD{
-			ObjectMeta: metaV1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: nsname,
 			},
