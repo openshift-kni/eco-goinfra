@@ -413,6 +413,8 @@ func (builder *ImageBasedUpgradeBuilder) WaitUntilStageComplete(stage string) (*
 				return false, nil
 			}
 
+			builder.Definition = builder.Object
+
 			for _, condition := range builder.Object.Status.Conditions {
 				switch stage {
 				case "Idle":
