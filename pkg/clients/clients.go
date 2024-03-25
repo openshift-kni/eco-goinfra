@@ -64,6 +64,7 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	k8sFakeClient "k8s.io/client-go/kubernetes/fake"
+	fakeRuntimeClient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	nvidiagpuv1 "github.com/NVIDIA/gpu-operator/api/v1"
 	grafanaV4V1Alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
@@ -315,6 +316,8 @@ func GetTestClients(k8sMockObjects []runtime.Object) *Settings {
 
 	var k8sClientObjects []runtime.Object
 
+	var genericClientObjects []runtime.Object
+
 	//nolint:varnamelen
 	for _, v := range k8sMockObjects {
 		// Based on what type of object is, populate certain object slices
@@ -363,6 +366,18 @@ func GetTestClients(k8sMockObjects []runtime.Object) *Settings {
 	clientSet.AppsV1Interface = clientSet.K8sClient.AppsV1()
 	clientSet.NetworkingV1Interface = clientSet.K8sClient.NetworkingV1()
 	clientSet.RbacV1Interface = clientSet.K8sClient.RbacV1()
+
+	// Update the generic client with schemes of generic resources
+	fakeClientScheme := runtime.NewScheme()
+
+	err := SetScheme(fakeClientScheme)
+	if err != nil {
+		return nil
+	}
+
+	// Add fake runtime client to clientSet runtime client
+	clientSet.Client = fakeRuntimeClient.NewClientBuilder().WithScheme(fakeClientScheme).
+		WithRuntimeObjects(genericClientObjects...).Build()
 
 	return clientSet
 }
