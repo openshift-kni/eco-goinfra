@@ -164,7 +164,7 @@ func (builder *Builder) WithWildCardPolicy(wildcardPolicy string) *Builder {
 	if !slices.Contains(supportedWildCardPolicies(), wildcardPolicy) {
 		glog.V(100).Infof("Received unsupported route wildcardPolicy, supported policies: %v", supportedWildCardPolicies())
 
-		builder.errorMsg = fmt.Sprintf("received unsupported route wildcardPoliy: supported policies %v",
+		builder.errorMsg = fmt.Sprintf("received unsupported route wildcardPolicy: supported policies %v",
 			supportedWildCardPolicies())
 	}
 

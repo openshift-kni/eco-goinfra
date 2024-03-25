@@ -362,6 +362,9 @@ func GetTestClients(k8sMockObjects []runtime.Object) *Settings {
 			k8sClientObjects = append(k8sClientObjects, v)
 		case *storagev1.StorageClass:
 			k8sClientObjects = append(k8sClientObjects, v)
+		// Generic Client Objects
+		case *routev1.Route:
+			genericClientObjects = append(genericClientObjects, v)
 		}
 	}
 
