@@ -1,4 +1,4 @@
-name: Makefile CI
+name: Test Incoming Changes
 
 on:
   workflow_dispatch:
