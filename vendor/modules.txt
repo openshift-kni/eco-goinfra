@@ -741,6 +741,18 @@ github.com/thoas/go-funk
 # github.com/vincent-petithory/dataurl v1.0.0
 ## explicit
 github.com/vincent-petithory/dataurl
+# github.com/vmware-tanzu/velero v1.12.1 => github.com/openshift/velero v0.10.2-0.20240320163538-8c404681b283
+## explicit; go 1.20
+github.com/vmware-tanzu/velero/pkg/apis/velero/shared
+github.com/vmware-tanzu/velero/pkg/apis/velero/v1
+github.com/vmware-tanzu/velero/pkg/apis/velero/v2alpha1
+github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned
+github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned/fake
+github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned/scheme
+github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned/typed/velero/v1
+github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned/typed/velero/v1/fake
+github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned/typed/velero/v2alpha1
+github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned/typed/velero/v2alpha1/fake
 # github.com/xlab/treeprint v1.2.0
 ## explicit; go 1.13
 github.com/xlab/treeprint
@@ -894,14 +906,15 @@ google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
-# google.golang.org/protobuf v1.31.0
-## explicit; go 1.11
+# google.golang.org/protobuf v1.33.0
+## explicit; go 1.17
 google.golang.org/protobuf/encoding/protojson
 google.golang.org/protobuf/encoding/prototext
 google.golang.org/protobuf/encoding/protowire
 google.golang.org/protobuf/internal/descfmt
 google.golang.org/protobuf/internal/descopts
 google.golang.org/protobuf/internal/detrand
+google.golang.org/protobuf/internal/editiondefaults
 google.golang.org/protobuf/internal/encoding/defval
 google.golang.org/protobuf/internal/encoding/json
 google.golang.org/protobuf/internal/encoding/messageset
@@ -926,6 +939,7 @@ google.golang.org/protobuf/runtime/protoiface
 google.golang.org/protobuf/runtime/protoimpl
 google.golang.org/protobuf/types/descriptorpb
 google.golang.org/protobuf/types/dynamicpb
+google.golang.org/protobuf/types/gofeaturespb
 google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/emptypb
@@ -1663,6 +1677,7 @@ sigs.k8s.io/yaml/goyaml.v2
 # github.com/openshift/assisted-service/api => github.com/openshift/assisted-service/api v0.0.0-20240222220008-d60e80f8658c
 # github.com/openshift/assisted-service/models => github.com/openshift/assisted-service/models v0.0.0-20240222220008-d60e80f8658c
 # github.com/openshift/client-go => github.com/openshift/client-go v0.0.1
+# github.com/vmware-tanzu/velero => github.com/openshift/velero v0.10.2-0.20240320163538-8c404681b283
 # k8s.io/api => k8s.io/api v0.28.7
 # k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.28.7
 # k8s.io/apimachinery => k8s.io/apimachinery v0.28.7

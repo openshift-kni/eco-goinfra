@@ -497,6 +497,8 @@ github.com/openshift/ptp-operator v0.0.0-20231220185604-29113b41981b h1:cLxjnAH6
 github.com/openshift/ptp-operator v0.0.0-20231220185604-29113b41981b/go.mod h1:JGaq44/mJ1zdu/MQXsdK9pKiNYHjuf0sK9MNOO/Mi+Y=
 github.com/openshift/sriov-network-operator v0.0.0-20240228013256-b13485442721 h1:spumDS0UNcS0WuVohCrUnt3AeKTU9Z4+4s79HfIqGyU=
 github.com/openshift/sriov-network-operator v0.0.0-20240228013256-b13485442721/go.mod h1:xptXDhHKkyKybUAfZlGwkjTBWCd/XUAlWMUARO8KQ48=
+github.com/openshift/velero v0.10.2-0.20240320163538-8c404681b283 h1:5uzkYcNDT3MHrwRjM95KKqs8595vaofgT9onuadw6BQ=
+github.com/openshift/velero v0.10.2-0.20240320163538-8c404681b283/go.mod h1:vCUH2JUZplVra0y2sBH456Q1Qq+bWT8jdcjgLX3Pg70=
 github.com/operator-framework/api v0.22.0 h1:UZSn+iaQih4rCReezOnWTTJkMyawwV5iLnIItaOzytY=
 github.com/operator-framework/api v0.22.0/go.mod h1:p/7YDbr+n4fmESfZ47yLAV1SvkfE6NU2aX8KhcfI0GA=
 github.com/operator-framework/operator-lifecycle-manager v0.27.1-0.20240301195430-1d12f8f4de16 h1:XMoc0FpwjVNoKIKNRDyqsOiWClAI5QUuHAJ5BI7pSy0=
@@ -864,8 +866,9 @@ google.golang.org/protobuf v1.26.0-rc.1/go.mod h1:jlhhOSvTdKEhbULTjvd4ARK9grFBp0
 google.golang.org/protobuf v1.26.0/go.mod h1:9q0QmTI4eRPtz6boOQmLYwt+qCgq0jsYwAQnmE0givc=
 google.golang.org/protobuf v1.27.1/go.mod h1:9q0QmTI4eRPtz6boOQmLYwt+qCgq0jsYwAQnmE0givc=
 google.golang.org/protobuf v1.28.0/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
-google.golang.org/protobuf v1.31.0 h1:g0LDEJHgrBl9N9r17Ru3sqWhkIx2NB67okBHPwC7hs8=
 google.golang.org/protobuf v1.31.0/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
+google.golang.org/protobuf v1.33.0 h1:uNO2rsAINq/JlFpSdYEKIZ0uKD/R9cpdv0T+yoGwGmI=
+google.golang.org/protobuf v1.33.0/go.mod h1:c6P6GXX6sHbq/GpV6MGZEdwhWPcYBgnhAHhKbcUYpos=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
