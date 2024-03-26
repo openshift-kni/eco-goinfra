@@ -48,6 +48,7 @@ import (
 	lcasgv1alpha1 "github.com/openshift-kni/lifecycle-agent/api/seedgenerator/v1alpha1"
 	lcav1alpha1 "github.com/openshift-kni/lifecycle-agent/api/v1alpha1"
 	operatorV1 "github.com/openshift/api/operator/v1"
+	routev1 "github.com/openshift/api/route/v1"
 	hiveextV1Beta1 "github.com/openshift/assisted-service/api/hiveextension/v1beta1"
 	agentInstallV1Beta1 "github.com/openshift/assisted-service/api/v1beta1"
 	hiveV1 "github.com/openshift/hive/apis/hive/v1"
@@ -294,6 +295,10 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
+	if err := routev1.AddToScheme(crScheme); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -357,6 +362,9 @@ func GetTestClients(k8sMockObjects []runtime.Object) *Settings {
 			k8sClientObjects = append(k8sClientObjects, v)
 		case *storagev1.StorageClass:
 			k8sClientObjects = append(k8sClientObjects, v)
+		// Generic Client Objects
+		case *routev1.Route:
+			genericClientObjects = append(genericClientObjects, v)
 		}
 	}
 
