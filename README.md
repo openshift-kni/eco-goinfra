@@ -1,6 +1,7 @@
 # eco-goinfra
 [![Test Incoming Changes](https://github.com/openshift-kni/eco-goinfra/actions/workflows/makefile.yml/badge.svg)](https://github.com/openshift-kni/eco-goinfra/actions/workflows/makefile.yml)
 [![Unit Test Coverage](https://raw.githubusercontent.com/openshift-kni/eco-goinfra/badges/.badges/main/coverage.svg)](https://github.com/openshift-kni/eco-goinfra/actions/workflows/makefile.yml)
+[![license](https://img.shields.io/github/license/openshift-kni/eco-goinfra?color=blue&labelColor=gray&logo=apache&logoColor=lightgray&style=flat)](https://github.com/openshift-kni/eco-goinfra/blob/master/LICENSE)
 
 ## Overview
 The [eco-goinfra](https://github.com/openshift-kni/eco-goinfra) project contains a collection of generic [packages](./pkg) that can be used across various test projects.
