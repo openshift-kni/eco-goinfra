@@ -76,6 +76,10 @@ import (
 	nfdv1 "github.com/openshift/cluster-nfd-operator/api/v1"
 	lsoV1alpha1 "github.com/openshift/local-storage-operator/api/v1alpha1"
 	mcmV1Beta1 "github.com/rh-ecosystem-edge/kernel-module-management/api-hub/v1beta1"
+	velerov1 "github.com/vmware-tanzu/velero/pkg/apis/velero/v1"
+	veleroClient "github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned"
+	veleroFakeClient "github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned/fake"
+	veleroV1Client "github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned/typed/velero/v1"
 	policiesv1beta1 "open-cluster-management.io/governance-policy-propagator/api/v1beta1"
 	placementrulev1 "open-cluster-management.io/multicloud-operators-subscription/pkg/apis/apps/placementrule/v1"
 )
@@ -106,9 +110,13 @@ type Settings struct {
 	LocalVolumeInterface lsoV1alpha1.LocalVolumeSet
 	machinev1beta1client.MachineV1beta1Interface
 	storageV1Client.StorageV1Interface
+	VeleroClient veleroClient.Interface
+	veleroV1Client.VeleroV1Interface
 }
 
 // New returns a *Settings with the given kubeconfig.
+//
+//nolint:funlen
 func New(kubeconfig string) *Settings {
 	var (
 		config *rest.Config
@@ -153,6 +161,8 @@ func New(kubeconfig string) *Settings {
 	clientSet.K8sCniCncfIoV1beta1Interface = multinetpolicyclientv1.NewForConfigOrDie(config)
 	clientSet.StorageV1Interface = storageV1Client.NewForConfigOrDie(config)
 	clientSet.K8sClient = kubernetes.NewForConfigOrDie(config)
+	clientSet.VeleroClient = veleroClient.NewForConfigOrDie(config)
+	clientSet.VeleroV1Interface = veleroV1Client.NewForConfigOrDie(config)
 	clientSet.Config = config
 
 	crScheme := runtime.NewScheme()
@@ -323,6 +333,8 @@ func GetTestClients(k8sMockObjects []runtime.Object) *Settings {
 
 	var genericClientObjects []runtime.Object
 
+	var veleroClientObjects []runtime.Object
+
 	//nolint:varnamelen
 	for _, v := range k8sMockObjects {
 		// Based on what type of object is, populate certain object slices
@@ -365,6 +377,9 @@ func GetTestClients(k8sMockObjects []runtime.Object) *Settings {
 		// Generic Client Objects
 		case *routev1.Route:
 			genericClientObjects = append(genericClientObjects, v)
+		// Velero Client Objects
+		case *velerov1.Backup:
+			veleroClientObjects = append(veleroClientObjects, v)
 		}
 	}
 
@@ -374,6 +389,10 @@ func GetTestClients(k8sMockObjects []runtime.Object) *Settings {
 	clientSet.AppsV1Interface = clientSet.K8sClient.AppsV1()
 	clientSet.NetworkingV1Interface = clientSet.K8sClient.NetworkingV1()
 	clientSet.RbacV1Interface = clientSet.K8sClient.RbacV1()
+
+	// Assign the fake velero clientset to the clientSet
+	clientSet.VeleroClient = veleroFakeClient.NewSimpleClientset(veleroClientObjects...)
+	clientSet.VeleroV1Interface = clientSet.VeleroClient.VeleroV1()
 
 	// Update the generic client with schemes of generic resources
 	fakeClientScheme := runtime.NewScheme()
