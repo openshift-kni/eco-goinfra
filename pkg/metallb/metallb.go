@@ -8,6 +8,7 @@ import (
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/metallb/mlbtypes"
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
+	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -310,6 +311,152 @@ func (builder *Builder) WithSpeakerNodeSelector(label map[string]string) *Builde
 	}
 
 	builder.Definition.Spec.SpeakerNodeSelector = label
+
+	return builder
+}
+
+// WithMetallbControllerConfig defines the controller config with a helm chart table. The variables are optional and
+// can include an empty "" string.
+func (builder *Builder) WithMetallbControllerConfig(priorityClassName, runtimeClassName,
+	controllerTolerationsKey string, annotationMapString map[string]string) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	if len(priorityClassName) == 0 {
+		glog.V(100).Infof(" Controller Config parameter priorityClassName cannot be an empty field")
+
+		return builder
+	}
+
+	if len(runtimeClassName) == 0 {
+		glog.V(100).Infof(" Controller Config parameter runtimeClassName cannot be an empty field")
+
+		return builder
+	}
+
+	if len(controllerTolerationsKey) == 0 {
+		glog.V(100).Infof(" Controller Config parameter controllerTolerationsKey cannot be an empty field")
+
+		return builder
+	}
+
+	if len(annotationMapString) == 0 {
+		glog.V(100).Infof(" Controller Config parameter annotationMapString cannot be an empty field")
+
+		return builder
+	}
+
+	glog.V(100).Infof("Defining the metallb object with Helm Chart in namespace %s",
+		builder.Definition.Namespace,
+	)
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("Error occurred building metallb Controller Config")
+
+		return builder
+	}
+
+	builder.Definition.Spec = mlbtypes.MetalLBSpec{
+		ControllerConfig: &mlbtypes.Config{
+			PriorityClassName: priorityClassName,
+			RuntimeClassName:  runtimeClassName,
+			Annotations:       annotationMapString,
+			Affinity: &corev1.Affinity{
+				PodAffinity: &corev1.PodAffinity{
+					RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
+						{LabelSelector: &metav1.LabelSelector{
+							MatchLabels: map[string]string{"component": controllerTolerationsKey},
+						},
+							TopologyKey: "kubernetes.io/hostname",
+						},
+					},
+				},
+			},
+		},
+		ControllerTolerations: []corev1.Toleration{
+			{
+				Key:      controllerTolerationsKey,
+				Operator: "exist",
+				Effect:   "NoExecute"},
+		},
+	}
+
+	return builder
+}
+
+// WithMetallbSpeakerConfig defines the speaker config with a helm chart table. The variables are optional and can
+// include an empty "" string.
+func (builder *Builder) WithMetallbSpeakerConfig(speakerPriorityClassName, runtimeClassName, speakerLabelSelector,
+	speakerTolerationsKey string, annotationMapString map[string]string) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Defining the metallb object with Helm Chart in namespace %s",
+		builder.Definition.Namespace,
+	)
+
+	if len(speakerPriorityClassName) == 0 {
+		glog.V(100).Infof(" Controller Config parameter priorityClassName cannot be an empty field")
+
+		return builder
+	}
+
+	if len(runtimeClassName) == 0 {
+		glog.V(100).Infof(" Controller Config parameter runtimeClassName cannot be an empty field")
+
+		return builder
+	}
+
+	if len(speakerLabelSelector) == 0 {
+		glog.V(100).Infof(" Controller Config parameter priorityClassName cannot be an empty field")
+
+		return builder
+	}
+
+	if len(speakerTolerationsKey) == 0 {
+		glog.V(100).Infof(" Controller Config parameter runtimeClassName cannot be an empty field")
+
+		return builder
+	}
+
+	if len(annotationMapString) == 0 {
+		glog.V(100).Infof(" Controller Config parameter runtimeClassName cannot be an empty field")
+
+		return builder
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("Error occurred building metallb Controller Config")
+
+		return builder
+	}
+
+	builder.Definition.Spec = mlbtypes.MetalLBSpec{
+		SpeakerConfig: &mlbtypes.Config{PriorityClassName: speakerPriorityClassName, RuntimeClassName: runtimeClassName,
+			Annotations: annotationMapString,
+			Affinity: &corev1.Affinity{PodAffinity: &corev1.PodAffinity{
+				RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
+					{LabelSelector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{
+							"component": speakerLabelSelector,
+						},
+					},
+						TopologyKey: "kubernetes.io/hostname",
+					},
+				},
+			},
+			},
+		},
+		SpeakerTolerations: []corev1.Toleration{
+			{
+				Key:      speakerTolerationsKey,
+				Operator: "Exists",
+				Effect:   "NoExecute",
+			},
+		},
+	}
 
 	return builder
 }
