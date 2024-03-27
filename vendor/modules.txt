@@ -342,8 +342,11 @@ github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/utils
 # github.com/k8snetworkplumbingwg/sriov-network-operator v1.2.0 => github.com/openshift/sriov-network-operator v0.0.0-20240228013256-b13485442721
 ## explicit; go 1.20
 github.com/k8snetworkplumbingwg/sriov-network-operator/api/v1
+github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/client/clientset/versioned
+github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/client/clientset/versioned/fake
 github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/client/clientset/versioned/scheme
 github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/client/clientset/versioned/typed/sriovnetwork/v1
+github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/client/clientset/versioned/typed/sriovnetwork/v1/fake
 github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/render
 # github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de
 ## explicit
