@@ -380,6 +380,8 @@ func GetTestClients(k8sMockObjects []runtime.Object) *Settings {
 		// Velero Client Objects
 		case *velerov1.Backup:
 			veleroClientObjects = append(veleroClientObjects, v)
+		case *velerov1.Restore:
+			veleroClientObjects = append(veleroClientObjects, v)
 		// SrIov Client Objects
 		case *srIovV1.SriovNetwork:
 			srIovObjects = append(srIovObjects, v)
