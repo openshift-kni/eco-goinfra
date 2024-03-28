@@ -93,8 +93,6 @@ func TestPullNetwork(t *testing.T) {
 			runtimeObjects = append(runtimeObjects, testNetwork)
 		}
 
-		testSettings = nil
-
 		if testCase.client {
 			testSettings = clients.GetTestClients(runtimeObjects)
 		}
@@ -120,8 +118,6 @@ func TestPullNetwork(t *testing.T) {
 
 func TestNewNetworkBuilder(t *testing.T) {
 	generateNetworkBuilder := NewNetworkBuilder
-
-	var testSettings *clients.Settings
 
 	testCases := []struct {
 		networkName       string
@@ -172,7 +168,7 @@ func TestNewNetworkBuilder(t *testing.T) {
 		},
 	}
 	for _, testCase := range testCases {
-		testSettings = clients.GetTestClients([]runtime.Object{})
+		testSettings := clients.GetTestClients([]runtime.Object{})
 		testNetworkStructure := generateNetworkBuilder(
 			testSettings, testCase.networkName, testCase.networkNamespace, testCase.targetNs, testCase.resName)
 		assert.NotNil(t, testNetworkStructure)
@@ -184,7 +180,6 @@ func TestNewNetworkBuilder(t *testing.T) {
 }
 
 func TestWithVlan(t *testing.T) {
-	testSettings := buildTestClientWithDummyObject()
 	testCases := []struct {
 		vlanID            uint16
 		expectedErrorText string
@@ -200,6 +195,7 @@ func TestWithVlan(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
 		netBuilder := buildValidSriovNetworkTestBuilder(testSettings).WithVLAN(testCase.vlanID)
 		assert.Equal(t, netBuilder.errorMsg, testCase.expectedErrorText)
 
@@ -210,8 +206,6 @@ func TestWithVlan(t *testing.T) {
 }
 
 func TestWithSpoof(t *testing.T) {
-	testSettings := buildTestClientWithDummyObject()
-
 	testCases := []struct {
 		spoof             bool
 		expectedSpoofFlag string
@@ -227,14 +221,13 @@ func TestWithSpoof(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
 		netBuilder := buildValidSriovNetworkTestBuilder(testSettings).WithSpoof(testCase.spoof)
 		assert.Equal(t, netBuilder.Definition.Spec.SpoofChk, testCase.expectedSpoofFlag)
 	}
 }
 
 func TestWithMetaPluginAllMultiFlag(t *testing.T) {
-	testSettings := buildTestClientWithDummyObject()
-
 	testCases := []struct {
 		allMulti             bool
 		expectedSpoofSetting string
@@ -250,14 +243,13 @@ func TestWithMetaPluginAllMultiFlag(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
 		netBuilder := buildValidSriovNetworkTestBuilder(testSettings).WithMetaPluginAllMultiFlag(testCase.allMulti)
 		assert.Equal(t, netBuilder.Definition.Spec.MetaPluginsConfig, testCase.expectedSpoofSetting)
 	}
 }
 
 func TestWithLinkState(t *testing.T) {
-	testSettings := buildTestClientWithDummyObject()
-
 	testCases := []struct {
 		linkState           string
 		expectedErrorOutput string
@@ -281,6 +273,7 @@ func TestWithLinkState(t *testing.T) {
 		},
 	}
 	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
 		netBuilder := buildValidSriovNetworkTestBuilder(testSettings).WithLinkState(testCase.linkState)
 		assert.Equal(t, netBuilder.errorMsg, testCase.expectedErrorOutput)
 
@@ -291,8 +284,6 @@ func TestWithLinkState(t *testing.T) {
 }
 
 func TestWithMaxTxRate(t *testing.T) {
-	testSettings := buildTestClientWithDummyObject()
-
 	testCases := []struct {
 		maxTxRage uint16
 	}{
@@ -307,14 +298,13 @@ func TestWithMaxTxRate(t *testing.T) {
 		},
 	}
 	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
 		netBuilder := buildValidSriovNetworkTestBuilder(testSettings).WithMaxTxRate(testCase.maxTxRage)
 		assert.Equal(t, uint16(*netBuilder.Definition.Spec.MaxTxRate), testCase.maxTxRage)
 	}
 }
 
 func TestWithMinTxRate(t *testing.T) {
-	testSettings := buildTestClientWithDummyObject()
-
 	testCases := []struct {
 		minTxRage uint16
 	}{
@@ -329,14 +319,13 @@ func TestWithMinTxRate(t *testing.T) {
 		},
 	}
 	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
 		netBuilder := buildValidSriovNetworkTestBuilder(testSettings).WithMinTxRate(testCase.minTxRage)
 		assert.Equal(t, uint16(*netBuilder.Definition.Spec.MaxTxRate), testCase.minTxRage)
 	}
 }
 
 func TestWithTrustFlag(t *testing.T) {
-	testSettings := buildTestClientWithDummyObject()
-
 	testCases := []struct {
 		trustFlag         bool
 		expectedTrustFlag string
@@ -352,14 +341,13 @@ func TestWithTrustFlag(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
 		netBuilder := buildValidSriovNetworkTestBuilder(testSettings).WithSpoof(testCase.trustFlag)
 		assert.Equal(t, netBuilder.Definition.Spec.SpoofChk, testCase.expectedTrustFlag)
 	}
 }
 
 func TestWithVlanQoS(t *testing.T) {
-	testSettings := buildTestClientWithDummyObject()
-
 	testCases := []struct {
 		vlanQoS          uint16
 		expectedErrorMsg string
@@ -375,6 +363,7 @@ func TestWithVlanQoS(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
 		netBuilder := buildValidSriovNetworkTestBuilder(testSettings).WithVlanQoS(testCase.vlanQoS)
 
 		assert.Equal(t, netBuilder.errorMsg, testCase.expectedErrorMsg)
@@ -419,17 +408,16 @@ func TestWithOptions(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	testSettings := buildTestClientWithDummyObject()
 	testCases := []struct {
 		testNetwork   *NetworkBuilder
 		expectedError error
 	}{
 		{
-			testNetwork:   buildValidSriovNetworkTestBuilder(testSettings),
+			testNetwork:   buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject()),
 			expectedError: nil,
 		},
 		{
-			testNetwork:   buildInvalidSrIovNetworkTestBuilder(testSettings),
+			testNetwork:   buildInvalidSrIovNetworkTestBuilder(buildTestClientWithDummyObject()),
 			expectedError: fmt.Errorf("SrIovNetwork 'resName' cannot be empty"),
 		},
 	}
@@ -445,17 +433,16 @@ func TestCreate(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	testSettings := buildTestClientWithDummyObject()
 	testCases := []struct {
 		testNetwork   *NetworkBuilder
 		expectedError error
 	}{
 		{
-			testNetwork:   buildValidSriovNetworkTestBuilder(testSettings),
+			testNetwork:   buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject()),
 			expectedError: nil,
 		},
 		{
-			testNetwork:   buildInvalidSrIovNetworkTestBuilder(testSettings),
+			testNetwork:   buildInvalidSrIovNetworkTestBuilder(buildTestClientWithDummyObject()),
 			expectedError: fmt.Errorf("SrIovNetwork 'resName' cannot be empty"),
 		},
 	}
@@ -471,17 +458,16 @@ func TestDelete(t *testing.T) {
 }
 
 func TestExist(t *testing.T) {
-	testSettings := buildTestClientWithDummyObject()
 	testCases := []struct {
 		testNetwork    *NetworkBuilder
 		expectedStatus bool
 	}{
 		{
-			testNetwork:    buildValidSriovNetworkTestBuilder(testSettings),
+			testNetwork:    buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject()),
 			expectedStatus: true,
 		},
 		{
-			testNetwork:    buildInvalidSrIovNetworkTestBuilder(testSettings),
+			testNetwork:    buildInvalidSrIovNetworkTestBuilder(buildTestClientWithDummyObject()),
 			expectedStatus: false,
 		},
 	}
@@ -500,14 +486,12 @@ func TestGetSriovNetworksGVR(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	testSettings := buildTestClientWithDummyObject()
-
 	testCases := []struct {
 		testNetwork   *NetworkBuilder
 		expectedError error
 	}{
 		{
-			testNetwork:   buildValidSriovNetworkTestBuilder(testSettings),
+			testNetwork:   buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject()),
 			expectedError: nil,
 		},
 	}
@@ -535,9 +519,7 @@ func buildInvalidSrIovNetworkTestBuilder(apiClient *clients.Settings) *NetworkBu
 }
 
 func buildTestClientWithDummyObject() *clients.Settings {
-	runtimeObjects := buildDummySrIovNetworkObject()
-
-	return clients.GetTestClients(runtimeObjects)
+	return clients.GetTestClients(buildDummySrIovNetworkObject())
 }
 
 func buildDummySrIovNetworkObject() []runtime.Object {
