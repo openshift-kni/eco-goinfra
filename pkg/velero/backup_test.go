@@ -37,7 +37,7 @@ func TestNewBackupBuilder(t *testing.T) {
 	}
 
 	for _, test := range testcases {
-		testBuilder := NewBackupBuilder(nil, test.name, test.namespace)
+		testBuilder := NewBackupBuilder(&clients.Settings{VeleroClient: &veleroClient.Clientset{}}, test.name, test.namespace)
 		assert.Equal(t, testBuilder.errorMsg, test.expectedErrMsg)
 	}
 }
@@ -121,9 +121,10 @@ func TestPullBackup(t *testing.T) {
 	}
 }
 
-// buildValidTestBuilder returns a valid Builder for testing purposes.
-func buildValidTestBuilder() *BackupBuilder {
-	return NewBackupBuilder(&veleroClient.Clientset{}, "backup-test-name", "backup-test-namespace")
+// buildValidBackupTestBuilder returns a valid Builder for testing purposes.
+func buildValidBackupTestBuilder() *BackupBuilder {
+	return NewBackupBuilder(&clients.Settings{VeleroClient: &veleroClient.Clientset{}},
+		"backup-test-name", "backup-test-namespace")
 }
 
 func TestWithStorageLocation(t *testing.T) {
@@ -142,7 +143,7 @@ func TestWithStorageLocation(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		testBuilder := buildValidTestBuilder()
+		testBuilder := buildValidBackupTestBuilder()
 
 		testBuilder.WithStorageLocation(test.location)
 
@@ -166,7 +167,7 @@ func TestWithIncludedNamespace(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		testBuilder := buildValidTestBuilder()
+		testBuilder := buildValidBackupTestBuilder()
 
 		for _, namespace := range test.namespaces {
 			testBuilder.WithIncludedNamespace(namespace)
@@ -196,7 +197,7 @@ func TestWithIncludedClusterScopedResource(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		testBuilder := buildValidTestBuilder()
+		testBuilder := buildValidBackupTestBuilder()
 
 		for _, clusterScopedResources := range test.clusterScopedResources {
 			testBuilder.WithIncludedClusterScopedResource(clusterScopedResources)
@@ -226,7 +227,7 @@ func TestWithIncludedNamespaceScopedResource(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		testBuilder := buildValidTestBuilder()
+		testBuilder := buildValidBackupTestBuilder()
 
 		for _, namespace := range test.namespaceResources {
 			testBuilder.WithIncludedNamespaceScopedResource(namespace)
@@ -256,7 +257,7 @@ func TestWithExcludedClusterScopedResources(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		testBuilder := buildValidTestBuilder()
+		testBuilder := buildValidBackupTestBuilder()
 
 		for _, clusterScopedResources := range test.clusterScopedResources {
 			testBuilder.WithExcludedClusterScopedResource(clusterScopedResources)
@@ -286,7 +287,7 @@ func TestWithExcludedNamespaceScopedResources(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		testBuilder := buildValidTestBuilder()
+		testBuilder := buildValidBackupTestBuilder()
 
 		for _, namespaceResources := range test.namespaceResources {
 			testBuilder.WithExcludedNamespaceScopedResources(namespaceResources)

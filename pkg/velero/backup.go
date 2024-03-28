@@ -27,13 +27,13 @@ type BackupBuilder struct {
 }
 
 // NewBackupBuilder creates a new instance of BackupBuilder.
-func NewBackupBuilder(apiClient veleroClient.Interface, name, nsname string) *BackupBuilder {
+func NewBackupBuilder(apiClient *clients.Settings, name, nsname string) *BackupBuilder {
 	glog.V(100).Infof(
 		"Initializing new backup structure with the following params: "+
 			"name: %s, namespace: %s", name, nsname)
 
 	builder := &BackupBuilder{
-		apiClient: apiClient,
+		apiClient: apiClient.VeleroClient,
 		Definition: &velerov1.Backup{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
