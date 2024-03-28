@@ -362,3 +362,65 @@ func TestCleanAllNetworkNodePolicies(t *testing.T) {
 		}
 	}
 }
+
+func TestListPoolConfigs(t *testing.T) {
+	testCases := []struct {
+		poolConfigs   []*PoolConfigBuilder
+		nsName        string
+		expectedError error
+	}{
+		{
+			poolConfigs:   []*PoolConfigBuilder{buildValidPoolConfigTestBuilder(buildTestPoolConfigClientWithDummyObject())},
+			nsName:        defaultPoolConfigNsName,
+			expectedError: nil,
+		},
+		{
+			poolConfigs:   []*PoolConfigBuilder{buildValidPoolConfigTestBuilder(buildTestPoolConfigClientWithDummyObject())},
+			nsName:        "",
+			expectedError: fmt.Errorf("failed to list sriovNetworkPoolConfigs, 'namespace' parameter is empty"),
+		},
+	}
+	for _, testCase := range testCases {
+		for _, poolConfig := range testCase.poolConfigs {
+			_, _ = poolConfig.Create()
+		}
+
+		poolConfigBuilders, err := ListPoolConfigs(testCase.poolConfigs[0].apiClient, testCase.nsName)
+		assert.Equal(t, err, testCase.expectedError)
+
+		if testCase.expectedError == nil {
+			assert.Equal(t, len(poolConfigBuilders), len(testCase.poolConfigs))
+		}
+	}
+}
+
+func TestCleanAllNonDefaultPoolConfigs(t *testing.T) {
+	testCases := []struct {
+		poolConfigs       []*PoolConfigBuilder
+		operatorNamespace string
+		expectedError     error
+	}{
+		{
+			poolConfigs:       []*PoolConfigBuilder{buildValidPoolConfigTestBuilder(buildTestPoolConfigClientWithDummyObject())},
+			operatorNamespace: defaultNetNsName,
+		},
+		{
+			poolConfigs:   []*PoolConfigBuilder{buildValidPoolConfigTestBuilder(buildTestPoolConfigClientWithDummyObject())},
+			expectedError: fmt.Errorf("failed to clean up SriovNetworkPoolConfigs, 'operatornsname' parameter is empty"),
+		},
+	}
+	for _, testCase := range testCases {
+		for _, poolConfig := range testCase.poolConfigs {
+			_, _ = poolConfig.Create()
+		}
+
+		err := CleanAllNonDefaultPoolConfigs(testCase.poolConfigs[0].apiClient, testCase.operatorNamespace)
+		assert.Equal(t, err, testCase.expectedError)
+
+		if testCase.expectedError == nil {
+			poolConfigBuilders, err := ListPoolConfigs(testCase.poolConfigs[0].apiClient, testCase.operatorNamespace)
+			assert.Nil(t, err)
+			assert.Zero(t, len(poolConfigBuilders))
+		}
+	}
+}

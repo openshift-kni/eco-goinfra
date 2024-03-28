@@ -419,6 +419,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			srIovObjects = append(srIovObjects, v)
 		case *cguapiv1alpha1.ClusterGroupUpgrade:
 			cguObjects = append(cguObjects, v)
+		case *srIovV1.SriovNetworkPoolConfig:
+			srIovObjects = append(srIovObjects, v)
 		}
 	}
 

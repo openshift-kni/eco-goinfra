@@ -191,7 +191,7 @@ func TestOperatorConfigWithInjector(t *testing.T) {
 		operatorConfigBuilder := NewOperatorConfigBuilder(testSettings, "testnamespace").
 			WithInjector(testCase.enableInjector)
 		assert.Equal(t, operatorConfigBuilder.errorMsg, "")
-		assert.Equal(t, &testCase.enableInjector, operatorConfigBuilder.Definition.Spec.EnableInjector)
+		assert.Equal(t, testCase.enableInjector, operatorConfigBuilder.Definition.Spec.EnableInjector)
 	}
 }
 
@@ -212,7 +212,7 @@ func TestOperatorConfigWithOperatorWebhook(t *testing.T) {
 		operatorConfigBuilder := NewOperatorConfigBuilder(testSettings, "testnamespace").
 			WithOperatorWebhook(testCase.webhook)
 		assert.Equal(t, operatorConfigBuilder.errorMsg, "")
-		assert.Equal(t, &testCase.webhook, operatorConfigBuilder.Definition.Spec.EnableOperatorWebhook)
+		assert.Equal(t, testCase.webhook, operatorConfigBuilder.Definition.Spec.EnableOperatorWebhook)
 	}
 }
 
@@ -236,7 +236,7 @@ func TestOperatorConfigUpdate(t *testing.T) {
 	for _, testCase := range testCases {
 		operatorConfigBuilder, err := testCase.testOperatorConfig.WithOperatorWebhook(testCase.webhook).Create()
 		assert.Nil(t, err)
-		assert.Equal(t, &testCase.webhook, operatorConfigBuilder.Definition.Spec.EnableOperatorWebhook)
+		assert.Equal(t, testCase.webhook, operatorConfigBuilder.Definition.Spec.EnableOperatorWebhook)
 
 		if testCase.webhook {
 			testCase.webhook = false
@@ -246,7 +246,7 @@ func TestOperatorConfigUpdate(t *testing.T) {
 
 		operatorConfigBuilder, err = operatorConfigBuilder.WithOperatorWebhook(testCase.webhook).Update()
 		assert.Equal(t, nil, err)
-		assert.Equal(t, &testCase.webhook, testCase.testOperatorConfig.Object.Spec.EnableOperatorWebhook)
+		assert.Equal(t, testCase.webhook, testCase.testOperatorConfig.Object.Spec.EnableOperatorWebhook)
 		assert.Equal(t, operatorConfigBuilder.Definition, operatorConfigBuilder.Object)
 	}
 }
