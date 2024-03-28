@@ -497,8 +497,8 @@ github.com/openshift/machine-config-operator v0.0.1-0.20230807154212-886c5c3fc7a
 github.com/openshift/machine-config-operator v0.0.1-0.20230807154212-886c5c3fc7a9/go.mod h1:kP51fbL8QBSY/mAkFicoF73x0QSraPrX4BjWIdzFPio=
 github.com/openshift/ptp-operator v0.0.0-20231220185604-29113b41981b h1:cLxjnAH6dC1e5iQpGkjpxjI/pProiBHMUwNv8Ewm/Ng=
 github.com/openshift/ptp-operator v0.0.0-20231220185604-29113b41981b/go.mod h1:JGaq44/mJ1zdu/MQXsdK9pKiNYHjuf0sK9MNOO/Mi+Y=
-github.com/openshift/sriov-network-operator v0.0.0-20240228013256-b13485442721 h1:spumDS0UNcS0WuVohCrUnt3AeKTU9Z4+4s79HfIqGyU=
-github.com/openshift/sriov-network-operator v0.0.0-20240228013256-b13485442721/go.mod h1:xptXDhHKkyKybUAfZlGwkjTBWCd/XUAlWMUARO8KQ48=
+github.com/openshift/sriov-network-operator v0.0.0-20240326091723-e9e3a8f7b2e0 h1:1SPDMEmotWYnil7gq8jmTX+hU+kdg7KUUDIZZNVXPQg=
+github.com/openshift/sriov-network-operator v0.0.0-20240326091723-e9e3a8f7b2e0/go.mod h1:Ip7O10Ama7l5dPHJrPDARNxs5x8z9nqPx6pA003jc2A=
 github.com/openshift/velero v0.10.2-0.20240320163538-8c404681b283 h1:5uzkYcNDT3MHrwRjM95KKqs8595vaofgT9onuadw6BQ=
 github.com/openshift/velero v0.10.2-0.20240320163538-8c404681b283/go.mod h1:vCUH2JUZplVra0y2sBH456Q1Qq+bWT8jdcjgLX3Pg70=
 github.com/operator-framework/api v0.22.0 h1:UZSn+iaQih4rCReezOnWTTJkMyawwV5iLnIItaOzytY=
