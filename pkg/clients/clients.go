@@ -45,6 +45,10 @@ import (
 	clientSrIovFake "github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/client/clientset/versioned/fake"
 	clientSrIovV1 "github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/client/clientset/versioned/typed/sriovnetwork/v1"
 
+	clientCgu "github.com/openshift-kni/cluster-group-upgrades-operator/pkg/generated/clientset/versioned"
+	clientCguFake "github.com/openshift-kni/cluster-group-upgrades-operator/pkg/generated/clientset/versioned/fake"
+	clientCguV1 "github.com/openshift-kni/cluster-group-upgrades-operator/pkg/generated/clientset/versioned/typed/clustergroupupgrades/v1alpha1"
+
 	clientMachineConfigV1 "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/typed/machineconfiguration.openshift.io/v1"
 
 	nmstatev1 "github.com/nmstate/kubernetes-nmstate/api/v1"
@@ -119,6 +123,8 @@ type Settings struct {
 	storageV1Client.StorageV1Interface
 	VeleroClient veleroClient.Interface
 	veleroV1Client.VeleroV1Interface
+	ClientCgu clientCgu.Interface
+	clientCguV1.RanV1alpha1Interface
 }
 
 // New returns a *Settings with the given kubeconfig.
@@ -171,6 +177,8 @@ func New(kubeconfig string) *Settings {
 	clientSet.K8sClient = kubernetes.NewForConfigOrDie(config)
 	clientSet.VeleroClient = veleroClient.NewForConfigOrDie(config)
 	clientSet.VeleroV1Interface = veleroV1Client.NewForConfigOrDie(config)
+	clientSet.ClientCgu = clientCgu.NewForConfigOrDie(config)
+	clientSet.RanV1alpha1Interface = clientCguV1.NewForConfigOrDie(config)
 	clientSet.Config = config
 
 	crScheme := runtime.NewScheme()
@@ -333,11 +341,11 @@ func (settings *Settings) GetAPIClient() (*Settings, error) {
 
 // GetTestClients returns a fake clientset for testing.
 //
-//nolint:funlen
+//nolint:funlen,gocyclo
 func GetTestClients(k8sMockObjects []runtime.Object, gvk ...schema.GroupVersionKind) *Settings {
 	clientSet := &Settings{}
 
-	var k8sClientObjects, genericClientObjects, srIovObjects, veleroClientObjects []runtime.Object
+	var k8sClientObjects, genericClientObjects, srIovObjects, veleroClientObjects, cguObjects []runtime.Object
 
 	//nolint:varnamelen
 	for _, v := range k8sMockObjects {
@@ -399,6 +407,8 @@ func GetTestClients(k8sMockObjects []runtime.Object, gvk ...schema.GroupVersionK
 			srIovObjects = append(srIovObjects, v)
 		case *srIovV1.SriovNetworkNodeState:
 			srIovObjects = append(srIovObjects, v)
+		case *cguapiv1alpha1.ClusterGroupUpgrade:
+			cguObjects = append(cguObjects, v)
 		}
 	}
 
@@ -413,6 +423,8 @@ func GetTestClients(k8sMockObjects []runtime.Object, gvk ...schema.GroupVersionK
 	// Assign the fake velero clientset to the clientSet
 	clientSet.VeleroClient = veleroFakeClient.NewSimpleClientset(veleroClientObjects...)
 	clientSet.VeleroV1Interface = clientSet.VeleroClient.VeleroV1()
+
+	clientSet.ClientCgu = clientCguFake.NewSimpleClientset(cguObjects...)
 
 	// Update the generic client with schemes of generic resources
 	fakeClientScheme := runtime.NewScheme()
