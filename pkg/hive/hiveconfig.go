@@ -10,7 +10,7 @@ import (
 	hiveV1 "github.com/openshift/hive/apis/hive/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	goclient "sigs.k8s.io/controller-runtime/pkg/client"
+	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // HiveConfigBuilder provides struct for the HiveConfig object containing connection to
@@ -19,7 +19,7 @@ type HiveConfigBuilder struct {
 	Definition *hiveV1.HiveConfig
 	Object     *hiveV1.HiveConfig
 	errorMsg   string
-	apiClient  *clients.Settings
+	apiClient  runtimeClient.Client
 }
 
 // HiveConfigAdditionalOptions additional options for HiveConfig object.
@@ -28,23 +28,16 @@ type HiveConfigAdditionalOptions func(builder *HiveConfigBuilder) (*HiveConfigBu
 // NewHiveConfigBuilder creates a new instance of HiveConfigBuilder.
 func NewHiveConfigBuilder(apiClient *clients.Settings, name string) *HiveConfigBuilder {
 	glog.V(100).Infof(
-		`Initializing new HiveConfig structure with the following params: name: %s, releaseImage: %s`,
-		name)
+		`Initializing new HiveConfig structure with the following params: name: %s`, name)
 
 	builder := HiveConfigBuilder{
-		apiClient: apiClient,
+		apiClient: apiClient.Client,
 		Definition: &hiveV1.HiveConfig{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
 			},
 			Spec: hiveV1.HiveConfigSpec{},
 		},
-	}
-
-	if apiClient == nil {
-		glog.V(100).Infof("The apiClient is nil")
-
-		builder.errorMsg = "hiveconfig cannot have nil apiClient"
 	}
 
 	if name == "" {
@@ -87,7 +80,7 @@ func PullHiveConfig(apiClient *clients.Settings, name string) (*HiveConfigBuilde
 	glog.V(100).Infof("Pulling existing HiveConfig name: %s", name)
 
 	builder := HiveConfigBuilder{
-		apiClient: apiClient,
+		apiClient: apiClient.Client,
 		Definition: &hiveV1.HiveConfig{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
@@ -117,7 +110,7 @@ func (builder *HiveConfigBuilder) Get() (*hiveV1.HiveConfig, error) {
 	glog.V(100).Infof("Getting HiveConfig %s", builder.Definition.Name)
 
 	HiveConfig := &hiveV1.HiveConfig{}
-	err := builder.apiClient.Get(context.TODO(), goclient.ObjectKey{
+	err := builder.apiClient.Get(context.TODO(), runtimeClient.ObjectKey{
 		Name: builder.Definition.Name,
 	}, HiveConfig)
 
@@ -128,27 +121,8 @@ func (builder *HiveConfigBuilder) Get() (*hiveV1.HiveConfig, error) {
 	return HiveConfig, err
 }
 
-// Create generates a HiveConfig on the cluster.
-func (builder *HiveConfigBuilder) Create() (*HiveConfigBuilder, error) {
-	if valid, err := builder.validate(); !valid {
-		return builder, err
-	}
-
-	glog.V(100).Infof("Creating the HiveConfig %s", builder.Definition.Name)
-
-	var err error
-	if !builder.Exists() {
-		err = builder.apiClient.Create(context.TODO(), builder.Definition)
-		if err == nil {
-			builder.Object = builder.Definition
-		}
-	}
-
-	return builder, err
-}
-
 // Update modifies an existing HiveConfig on the cluster.
-func (builder *HiveConfigBuilder) Update(force bool) (*HiveConfigBuilder, error) {
+func (builder *HiveConfigBuilder) Update() (*HiveConfigBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
@@ -156,28 +130,7 @@ func (builder *HiveConfigBuilder) Update(force bool) (*HiveConfigBuilder, error)
 	glog.V(100).Infof("Updating HiveConfig %s", builder.Definition.Name)
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
-
-	if err != nil {
-		if force {
-			glog.V(100).Infof(
-				msg.FailToUpdateNotification("hiveconfig", builder.Definition.Name, builder.Definition.Namespace))
-
-			err := builder.Delete()
-
-			if err != nil {
-				glog.V(100).Infof(
-					msg.FailToUpdateError("hiveconfig", builder.Definition.Name, builder.Definition.Namespace))
-
-				return nil, err
-			}
-
-			return builder.Create()
-		}
-	}
-
-	if err == nil {
-		builder.Object = builder.Definition
-	}
+	builder.Object = builder.Definition
 
 	return builder, err
 }
