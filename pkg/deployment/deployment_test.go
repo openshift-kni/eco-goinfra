@@ -2,6 +2,7 @@ package deployment
 
 import (
 	"testing"
+	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
@@ -10,6 +11,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	k8sfake "k8s.io/client-go/kubernetes/fake"
 )
 
 //nolint:funlen
@@ -93,8 +95,9 @@ func TestPull(t *testing.T) {
 
 		if testCase.addToRuntimeObjects {
 			runtimeObjects = append(runtimeObjects, testDeployment)
-			testSettings = clients.GetTestClients(runtimeObjects)
 		}
+
+		testSettings = clients.GetTestClients(runtimeObjects)
 
 		// Test the Pull method
 		builderResult, err := Pull(testSettings, testDeployment.Name, testDeployment.Namespace)
@@ -118,7 +121,22 @@ func TestPull(t *testing.T) {
 // buildValidTestBuilder returns a valid Builder for testing purposes.
 func buildValidTestBuilder() *Builder {
 	return NewBuilder(&clients.Settings{
-		Client: nil,
+		Client:          nil,
+		AppsV1Interface: k8sfake.NewSimpleClientset().AppsV1(),
+	}, "test-name", "test-namespace", map[string]string{
+		"test-key": "test-value",
+	}, &corev1.Container{
+		Name: "test-container",
+	})
+}
+
+func buildTestBuilderWithFakeObjects(objects []runtime.Object) *Builder {
+	fakeClient := k8sfake.NewSimpleClientset(objects...)
+
+	return NewBuilder(&clients.Settings{
+		K8sClient:       fakeClient,
+		CoreV1Interface: fakeClient.CoreV1(),
+		AppsV1Interface: fakeClient.AppsV1(),
 	}, "test-name", "test-namespace", map[string]string{
 		"test-key": "test-value",
 	}, &corev1.Container{
@@ -132,6 +150,8 @@ func TestWithNodeSelector(t *testing.T) {
 	testBuilder.WithNodeSelector(map[string]string{
 		"test-node-selector-key": "test-node-selector-value",
 	})
+
+	assert.Empty(t, testBuilder.errorMsg)
 
 	assert.Equal(t, "test-node-selector-value",
 		testBuilder.Definition.Spec.Template.Spec.NodeSelector["test-node-selector-key"])
@@ -428,6 +448,252 @@ func TestWithToleration(t *testing.T) {
 
 		if testCase.expectedErrMsg == "" {
 			assert.Equal(t, testCase.toleration, testBuilder.Definition.Spec.Template.Spec.Tolerations[0])
+		}
+	}
+}
+
+func TestCreate(t *testing.T) {
+	generateTestDeployment := func() *appsv1.Deployment {
+		return &appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-name",
+				Namespace: "test-namespace",
+			},
+		}
+	}
+
+	testCases := []struct {
+		deploymentExistsAlready bool
+	}{
+		{
+			deploymentExistsAlready: false,
+		},
+		{
+			deploymentExistsAlready: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		var runtimeObjects []runtime.Object
+
+		if testCase.deploymentExistsAlready {
+			runtimeObjects = append(runtimeObjects, generateTestDeployment())
+		}
+
+		testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects)
+		result, err := testBuilder.Create()
+		assert.Nil(t, err)
+		assert.Equal(t, testBuilder.Definition.Name, result.Definition.Name)
+	}
+}
+
+func TestUpdate(t *testing.T) {
+	generateTestDeployment := func() *appsv1.Deployment {
+		return &appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-name",
+				Namespace: "test-namespace",
+			},
+		}
+	}
+
+	testCases := []struct {
+		deploymentExistsAlready bool
+	}{
+		{
+			deploymentExistsAlready: false,
+		},
+		{
+			deploymentExistsAlready: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		var runtimeObjects []runtime.Object
+
+		if testCase.deploymentExistsAlready {
+			runtimeObjects = append(runtimeObjects, generateTestDeployment())
+		}
+
+		testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects)
+		result, err := testBuilder.Update()
+
+		if !testCase.deploymentExistsAlready {
+			assert.NotNil(t, err)
+		} else {
+			assert.Nil(t, err)
+			assert.Equal(t, testBuilder.Definition.Name, result.Definition.Name)
+		}
+	}
+}
+
+func TestDelete(t *testing.T) {
+	generateTestDeployment := func() *appsv1.Deployment {
+		return &appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-name",
+				Namespace: "test-namespace",
+			},
+		}
+	}
+
+	testCases := []struct {
+		deploymentExistsAlready bool
+	}{
+		{
+			deploymentExistsAlready: false,
+		},
+		{
+			deploymentExistsAlready: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		var runtimeObjects []runtime.Object
+
+		if testCase.deploymentExistsAlready {
+			runtimeObjects = append(runtimeObjects, generateTestDeployment())
+		}
+
+		testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects)
+		err := testBuilder.Delete()
+
+		assert.Nil(t, err)
+		assert.Nil(t, testBuilder.Object)
+	}
+}
+
+func TestCreateAndWaitUntilReady(t *testing.T) {
+	generateTestDeployment := func() *appsv1.Deployment {
+		return &appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-name",
+				Namespace: "test-namespace",
+			},
+			Status: appsv1.DeploymentStatus{
+				Replicas:      1,
+				ReadyReplicas: 1,
+			},
+		}
+	}
+
+	var runtimeObjects []runtime.Object
+
+	runtimeObjects = append(runtimeObjects, generateTestDeployment())
+
+	testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects)
+
+	_, err := testBuilder.CreateAndWaitUntilReady(time.Second * 5)
+	assert.Nil(t, err)
+}
+
+func TestDeleteAndWait(t *testing.T) {
+	generateTestDeployment := func() *appsv1.Deployment {
+		return &appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-name",
+				Namespace: "test-namespace",
+			},
+		}
+	}
+
+	var runtimeObjects []runtime.Object
+
+	runtimeObjects = append(runtimeObjects, generateTestDeployment())
+
+	testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects)
+
+	err := testBuilder.DeleteAndWait(time.Second * 5)
+	assert.Nil(t, err)
+}
+
+func TestWaitUntilCondition(t *testing.T) {
+	generateTestDeployment := func() *appsv1.Deployment {
+		return &appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-name",
+				Namespace: "test-namespace",
+			},
+			Status: appsv1.DeploymentStatus{
+				Replicas:      1,
+				ReadyReplicas: 1,
+				Conditions: []appsv1.DeploymentCondition{
+					{
+						Type:   appsv1.DeploymentAvailable,
+						Status: corev1.ConditionTrue,
+					},
+				},
+			},
+		}
+	}
+
+	var runtimeObjects []runtime.Object
+
+	runtimeObjects = append(runtimeObjects, generateTestDeployment())
+
+	testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects)
+
+	err := testBuilder.WaitUntilCondition(appsv1.DeploymentAvailable, time.Second*5)
+
+	assert.Nil(t, err)
+}
+
+func TestValidate(t *testing.T) {
+	testCases := []struct {
+		builderNil    bool
+		definitionNil bool
+		apiClientNil  bool
+		expectedError string
+	}{
+		{
+			builderNil:    true,
+			definitionNil: false,
+			apiClientNil:  false,
+			expectedError: "error: received nil ClusterDeployment builder",
+		},
+		{
+			builderNil:    false,
+			definitionNil: true,
+			apiClientNil:  false,
+			expectedError: "can not redefine the undefined ClusterDeployment",
+		},
+		{
+			builderNil:    false,
+			definitionNil: false,
+			apiClientNil:  true,
+			expectedError: "ClusterDeployment builder cannot have nil apiClient",
+		},
+		{
+			builderNil:    false,
+			definitionNil: false,
+			apiClientNil:  false,
+			expectedError: "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidTestBuilder()
+
+		if testCase.builderNil {
+			testBuilder = nil
+		}
+
+		if testCase.definitionNil {
+			testBuilder.Definition = nil
+		}
+
+		if testCase.apiClientNil {
+			testBuilder.apiClient = nil
+		}
+
+		result, err := testBuilder.validate()
+		if testCase.expectedError != "" {
+			assert.NotNil(t, err)
+			assert.Equal(t, testCase.expectedError, err.Error())
+			assert.False(t, result)
+		} else {
+			assert.Nil(t, err)
+			assert.True(t, result)
 		}
 	}
 }
