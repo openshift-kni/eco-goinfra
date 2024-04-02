@@ -95,11 +95,12 @@ func PullOperatorConfig(apiClient *clients.Settings, nsname string) (*OperatorCo
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the SriovOperatorConfig is empty")
 
-		builder.errorMsg = "SriovOperatorConfig 'nsname' cannot be empty"
+		return nil, fmt.Errorf("SriovOperatorConfig 'nsname' cannot be empty")
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("SriovOperatorConfig object %s doesn't exist", sriovOperatorConfigName)
+		return nil, fmt.Errorf("SriovOperatorConfig object %s doesn't exist in namespace %s",
+			sriovOperatorConfigName, nsname)
 	}
 
 	builder.Definition = builder.Object
@@ -216,6 +217,12 @@ func (builder *OperatorConfigBuilder) validate() (bool, error) {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
 		return false, fmt.Errorf(fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD))
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
 	}
 
 	return true, nil
