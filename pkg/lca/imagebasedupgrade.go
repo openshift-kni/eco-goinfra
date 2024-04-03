@@ -36,7 +36,7 @@ type ImageBasedUpgradeBuilder struct {
 	// Used in functions that define or mutate the imagebasedupgrade definition.
 	// errorMsg is processed before the imagebasedupgrade object is created
 	errorMsg  string
-	apiClient *clients.Settings
+	apiClient goclient.Client
 }
 
 // AdditionalOptions additional options for imagebasedupgrade object.
@@ -47,8 +47,14 @@ func NewImageBasedUpgradeBuilder(
 	apiClient *clients.Settings,
 	name string,
 ) *ImageBasedUpgradeBuilder {
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient cannot be nil")
+
+		return nil
+	}
+
 	builder := ImageBasedUpgradeBuilder{
-		apiClient: apiClient,
+		apiClient: apiClient.Client,
 		Definition: &lcav1alpha1.ImageBasedUpgrade{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
@@ -94,8 +100,14 @@ func (builder *ImageBasedUpgradeBuilder) WithOptions(options ...AdditionalOption
 func PullImageBasedUpgrade(apiClient *clients.Settings, name string) (*ImageBasedUpgradeBuilder, error) {
 	glog.V(100).Infof("Pulling existing imagebasedupgrade name %s from cluster", name)
 
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient cannot be nil")
+
+		return nil, fmt.Errorf("the apiClient is nil")
+	}
+
 	builder := ImageBasedUpgradeBuilder{
-		apiClient: apiClient,
+		apiClient: apiClient.Client,
 		Definition: &lcav1alpha1.ImageBasedUpgrade{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
@@ -147,13 +159,13 @@ func (builder *ImageBasedUpgradeBuilder) Update() (*ImageBasedUpgradeBuilder, er
 				glog.V(100).Infof("Waiting for imagebasedupgrade %s to finish reconciling",
 					builder.Definition.Name)
 
-				ibu, err := PullImageBasedUpgrade(builder.apiClient, builder.Definition.Name)
+				ibu, err := builder.Get()
 				if err != nil {
 					return false, err
 				}
 
-				if ibu.Object.ObjectMeta.Generation == ibu.Object.Status.ObservedGeneration {
-					builder.Object = ibu.Object
+				if ibu.ObjectMeta.Generation == ibu.Status.ObservedGeneration {
+					builder.Object = ibu
 
 					return true, nil
 				}
