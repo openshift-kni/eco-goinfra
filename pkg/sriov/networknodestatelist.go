@@ -12,6 +12,12 @@ import (
 // ListNetworkNodeState returns SriovNetworkNodeStates inventory in the given namespace.
 func ListNetworkNodeState(
 	apiClient *clients.Settings, nsname string, options ...metav1.ListOptions) ([]*NetworkNodeStateBuilder, error) {
+	if apiClient == nil {
+		glog.V(100).Infof("SriovNetworkNodeStates 'apiClient' parameter can not be empty")
+
+		return nil, fmt.Errorf("failed to list SriovNetworkNodeStates, 'apiClient' parameter is empty")
+	}
+
 	if nsname == "" {
 		glog.V(100).Infof("SriovNetworkNodeStates 'nsname' parameter can not be empty")
 
