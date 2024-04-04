@@ -7,7 +7,7 @@ import (
 	srIovV1 "github.com/k8snetworkplumbingwg/sriov-network-operator/api/v1"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -15,13 +15,13 @@ func TestNetworkList(t *testing.T) {
 	testCases := []struct {
 		testNetwork   []*NetworkBuilder
 		nsName        string
-		listOptions   []v1.ListOptions
+		listOptions   []metav1.ListOptions
 		expectedError error
 		client        bool
 	}{
 		{
 			testNetwork:   []*NetworkBuilder{buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject())},
-			nsName:        defaultNetNsName,
+			nsName:        "testnamespace",
 			expectedError: nil,
 			client:        true,
 		},
@@ -33,20 +33,20 @@ func TestNetworkList(t *testing.T) {
 		},
 		{
 			testNetwork: []*NetworkBuilder{buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject())},
-			nsName:      defaultNetNsName,
-			listOptions: []v1.ListOptions{{LabelSelector: "test"}},
+			nsName:      "testnamespace",
+			listOptions: []metav1.ListOptions{{LabelSelector: "test"}},
 			client:      true,
 		},
 		{
 			testNetwork:   []*NetworkBuilder{buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject())},
-			nsName:        defaultNetNsName,
-			listOptions:   []v1.ListOptions{{LabelSelector: "test"}, {Continue: "true"}},
+			nsName:        "testnamespace",
+			listOptions:   []metav1.ListOptions{{LabelSelector: "test"}, {Continue: "true"}},
 			expectedError: fmt.Errorf("error: more than one ListOptions was passed"),
 			client:        true,
 		},
 		{
 			testNetwork:   []*NetworkBuilder{buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject())},
-			nsName:        defaultNetNsName,
+			nsName:        "testnamespace",
 			expectedError: fmt.Errorf("failed to list sriov networks, 'apiClient' parameter is empty"),
 			client:        false,
 		},
@@ -72,47 +72,49 @@ func TestNetworkCleanAllNetworksByTargetNamespace(t *testing.T) {
 		testNetwork    []*NetworkBuilder
 		operatorNsName string
 		targetNsName   string
-		listOptions    []v1.ListOptions
+		listOptions    []metav1.ListOptions
 		client         bool
 		expectedError  error
 	}{
 		{
 			testNetwork:    []*NetworkBuilder{buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject())},
-			operatorNsName: defaultNetNsName,
-			targetNsName:   defaultNetTargetNsName,
+			operatorNsName: "testnamespace",
+			targetNsName:   "targetns",
 			client:         true,
 		},
 		{
-			testNetwork:   []*NetworkBuilder{buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject())},
-			targetNsName:  defaultNetTargetNsName,
-			expectedError: fmt.Errorf("failed to clean up sriov networks, 'operatornsname' parameter is empty"),
-			client:        true,
+			testNetwork:    []*NetworkBuilder{buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject())},
+			targetNsName:   "testnamespace",
+			expectedError:  fmt.Errorf("failed to clean up sriov networks, 'operatornsname' parameter is empty"),
+			client:         true,
+			operatorNsName: "",
 		},
 		{
 			testNetwork:    []*NetworkBuilder{buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject())},
-			operatorNsName: defaultNetNsName,
+			operatorNsName: "targetns",
 			expectedError:  fmt.Errorf("failed to clean up sriov networks, 'targetnsname' parameter is empty"),
 			client:         true,
+			targetNsName:   "",
 		},
 		{
 			testNetwork:    []*NetworkBuilder{buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject())},
-			operatorNsName: defaultNetNsName,
-			targetNsName:   defaultNetTargetNsName,
-			listOptions:    []v1.ListOptions{{AllowWatchBookmarks: false}},
+			operatorNsName: "testnamespace",
+			targetNsName:   "targetns",
+			listOptions:    []metav1.ListOptions{{AllowWatchBookmarks: false}},
 			client:         true,
 		},
 		{
 			testNetwork:    []*NetworkBuilder{buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject())},
-			operatorNsName: defaultNetNsName,
-			targetNsName:   defaultNetTargetNsName,
-			listOptions:    []v1.ListOptions{{LabelSelector: "test"}, {Continue: "true"}},
+			operatorNsName: "testnamespace",
+			targetNsName:   "targetns",
+			listOptions:    []metav1.ListOptions{{LabelSelector: "test"}, {Continue: "true"}},
 			expectedError:  fmt.Errorf("error: more than one ListOptions was passed"),
 			client:         true,
 		},
 		{
 			testNetwork:    []*NetworkBuilder{buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject())},
-			operatorNsName: defaultNetNsName,
-			targetNsName:   defaultNetTargetNsName,
+			operatorNsName: "testnamespace",
+			targetNsName:   "targetns",
 			expectedError:  fmt.Errorf("failed to list sriov networks, 'apiClient' parameter is empty"),
 			client:         false,
 		},
@@ -139,42 +141,43 @@ func TestNetworkCleanAllNetworksByTargetNamespace(t *testing.T) {
 func TestListNetworkNodeState(t *testing.T) {
 	testCases := []struct {
 		testNetworkNodeStates []*srIovV1.SriovNetworkNodeState
-		listOptions           []v1.ListOptions
+		listOptions           []metav1.ListOptions
 		nsName                string
 		client                bool
 		expectedError         error
 	}{
 		{
-			testNetworkNodeStates: []*srIovV1.SriovNetworkNodeState{buildNodeNetworkState("test", defaultNodeNsName),
-				buildNodeNetworkState("test2", defaultNodeNsName)},
-			nsName: defaultNodeNsName,
+			testNetworkNodeStates: []*srIovV1.SriovNetworkNodeState{buildNodeNetworkState("test", "testnamespace"),
+				buildNodeNetworkState("test2", "testnamespace")},
+			nsName: "testnamespace",
 			client: true,
 		},
 		{
-			testNetworkNodeStates: []*srIovV1.SriovNetworkNodeState{buildNodeNetworkState("test", defaultNodeNsName),
-				buildNodeNetworkState("test2", defaultNodeNsName)},
+			testNetworkNodeStates: []*srIovV1.SriovNetworkNodeState{buildNodeNetworkState("test", "testnamespace"),
+				buildNodeNetworkState("test2", "testnamespace")},
 			expectedError: fmt.Errorf("failed to list SriovNetworkNodeStates, 'nsname' parameter is empty"),
 			client:        true,
+			nsName:        "",
 		},
 		{
-			testNetworkNodeStates: []*srIovV1.SriovNetworkNodeState{buildNodeNetworkState("test", defaultNodeNsName),
-				buildNodeNetworkState("test2", defaultNodeNsName)},
-			nsName:      defaultNodeNsName,
-			listOptions: []v1.ListOptions{{AllowWatchBookmarks: false}},
+			testNetworkNodeStates: []*srIovV1.SriovNetworkNodeState{buildNodeNetworkState("test", "testnamespace"),
+				buildNodeNetworkState("test2", "testnamespace")},
+			nsName:      "testnamespace",
+			listOptions: []metav1.ListOptions{{AllowWatchBookmarks: false}},
 			client:      true,
 		},
 		{
-			testNetworkNodeStates: []*srIovV1.SriovNetworkNodeState{buildNodeNetworkState("test", defaultNodeNsName),
-				buildNodeNetworkState("test2", defaultNodeNsName)},
-			nsName:        defaultNodeNsName,
-			listOptions:   []v1.ListOptions{{LabelSelector: "test"}, {Continue: "true"}},
+			testNetworkNodeStates: []*srIovV1.SriovNetworkNodeState{buildNodeNetworkState("test", "testnamespace"),
+				buildNodeNetworkState("test2", "testnamespace")},
+			nsName:        "testnamespace",
+			listOptions:   []metav1.ListOptions{{LabelSelector: "test"}, {Continue: "true"}},
 			expectedError: fmt.Errorf("error: more than one ListOptions was passed"),
 			client:        true,
 		},
 		{
-			testNetworkNodeStates: []*srIovV1.SriovNetworkNodeState{buildNodeNetworkState("test", defaultNodeNsName),
-				buildNodeNetworkState("test2", defaultNodeNsName)},
-			nsName:        defaultNodeNsName,
+			testNetworkNodeStates: []*srIovV1.SriovNetworkNodeState{buildNodeNetworkState("test", "testnamespace"),
+				buildNodeNetworkState("test2", "testnamespace")},
+			nsName:        "testnamespace",
 			expectedError: fmt.Errorf("failed to list SriovNetworkNodeStates, 'apiClient' parameter is empty"),
 			client:        false,
 		},
@@ -206,47 +209,48 @@ func TestListNetworkNodeState(t *testing.T) {
 func TestListPolicy(t *testing.T) {
 	testCases := []struct {
 		testNetworkNodeStates []*srIovV1.SriovNetworkNodePolicy
-		listOptions           []v1.ListOptions
+		listOptions           []metav1.ListOptions
 		nsName                string
 		client                bool
 		expectedError         error
 	}{
 		{
 			testNetworkNodeStates: []*srIovV1.SriovNetworkNodePolicy{
-				buildDummySrIovPolicy("test", defaultNodeNsName),
-				buildDummySrIovPolicy("test1", defaultNodeNsName)},
-			nsName: defaultNodeNsName,
+				buildDummySrIovPolicy("test", "testnamespace"),
+				buildDummySrIovPolicy("test1", "testnamespace")},
+			nsName: "testnamespace",
 			client: true,
 		},
 		{
 			testNetworkNodeStates: []*srIovV1.SriovNetworkNodePolicy{
-				buildDummySrIovPolicy("test", defaultNodeNsName),
-				buildDummySrIovPolicy("test1", defaultNodeNsName)},
+				buildDummySrIovPolicy("test", "testnamespace"),
+				buildDummySrIovPolicy("test1", "testnamespace")},
 			expectedError: fmt.Errorf("failed to list SriovNetworkNodePolicies, 'nsname' parameter is empty"),
 			client:        true,
+			nsName:        "",
 		},
 		{
 			testNetworkNodeStates: []*srIovV1.SriovNetworkNodePolicy{
-				buildDummySrIovPolicy("test", defaultNodeNsName),
-				buildDummySrIovPolicy("test1", defaultNodeNsName)},
-			nsName:      defaultNodeNsName,
-			listOptions: []v1.ListOptions{{AllowWatchBookmarks: false}},
+				buildDummySrIovPolicy("test", "testnamespace"),
+				buildDummySrIovPolicy("test1", "testnamespace")},
+			nsName:      "testnamespace",
+			listOptions: []metav1.ListOptions{{AllowWatchBookmarks: false}},
 			client:      true,
 		},
 		{
 			testNetworkNodeStates: []*srIovV1.SriovNetworkNodePolicy{
-				buildDummySrIovPolicy("test", defaultNodeNsName),
-				buildDummySrIovPolicy("test1", defaultNodeNsName)},
-			nsName:        defaultNodeNsName,
-			listOptions:   []v1.ListOptions{{LabelSelector: "test"}, {Continue: "true"}},
+				buildDummySrIovPolicy("test", "testnamespace"),
+				buildDummySrIovPolicy("test1", "testnamespace")},
+			nsName:        "testnamespace",
+			listOptions:   []metav1.ListOptions{{LabelSelector: "test"}, {Continue: "true"}},
 			expectedError: fmt.Errorf("error: more than one ListOptions was passed"),
 			client:        true,
 		},
 		{
 			testNetworkNodeStates: []*srIovV1.SriovNetworkNodePolicy{
-				buildDummySrIovPolicy("test", defaultNodeNsName),
-				buildDummySrIovPolicy("test1", defaultNodeNsName)},
-			nsName:        defaultNodeNsName,
+				buildDummySrIovPolicy("test", "testnamespace"),
+				buildDummySrIovPolicy("test1", "testnamespace")},
+			nsName:        "testnamespace",
 			expectedError: fmt.Errorf("failed to list SriovNetworkNodePolicies, 'apiClient' parameter is empty"),
 			client:        false,
 		},
@@ -278,47 +282,48 @@ func TestListPolicy(t *testing.T) {
 func TestCleanAllNetworkNodePolicies(t *testing.T) {
 	testCases := []struct {
 		testNetworkPolicy []*srIovV1.SriovNetworkNodePolicy
-		listOptions       []v1.ListOptions
+		listOptions       []metav1.ListOptions
 		nsName            string
 		client            bool
 		expectedError     error
 	}{
 		{
 			testNetworkPolicy: []*srIovV1.SriovNetworkNodePolicy{
-				buildDummySrIovPolicy("test", defaultNodeNsName),
-				buildDummySrIovPolicy("test1", defaultNodeNsName)},
-			nsName: defaultNodeNsName,
+				buildDummySrIovPolicy("test", "testnamespace"),
+				buildDummySrIovPolicy("test1", "testnamespace")},
+			nsName: "testnamespace",
 			client: true,
 		},
 		{
 			testNetworkPolicy: []*srIovV1.SriovNetworkNodePolicy{
-				buildDummySrIovPolicy("test", defaultNodeNsName),
-				buildDummySrIovPolicy("test1", defaultNodeNsName)},
+				buildDummySrIovPolicy("test", "testnamespace"),
+				buildDummySrIovPolicy("test1", "testnamespace")},
+			nsName:        "",
 			expectedError: fmt.Errorf("failed to clean up SriovNetworkNodePolicies, 'operatornsname' parameter is empty"),
 			client:        true,
 		},
 		{
 			testNetworkPolicy: []*srIovV1.SriovNetworkNodePolicy{
-				buildDummySrIovPolicy("test", defaultNodeNsName),
-				buildDummySrIovPolicy("test1", defaultNodeNsName)},
-			nsName:      defaultNodeNsName,
-			listOptions: []v1.ListOptions{{AllowWatchBookmarks: false}},
+				buildDummySrIovPolicy("test", "testnamespace"),
+				buildDummySrIovPolicy("test1", "testnamespace")},
+			nsName:      "testnamespace",
+			listOptions: []metav1.ListOptions{{AllowWatchBookmarks: false}},
 			client:      true,
 		},
 		{
 			testNetworkPolicy: []*srIovV1.SriovNetworkNodePolicy{
-				buildDummySrIovPolicy("test", defaultNodeNsName),
-				buildDummySrIovPolicy("test1", defaultNodeNsName)},
-			nsName:        defaultNodeNsName,
-			listOptions:   []v1.ListOptions{{LabelSelector: "test"}, {Continue: "true"}},
+				buildDummySrIovPolicy("test", "testnamespace"),
+				buildDummySrIovPolicy("test1", "testnamespace")},
+			nsName:        "testnamespace",
+			listOptions:   []metav1.ListOptions{{LabelSelector: "test"}, {Continue: "true"}},
 			expectedError: fmt.Errorf("error: more than one ListOptions was passed"),
 			client:        true,
 		},
 		{
 			testNetworkPolicy: []*srIovV1.SriovNetworkNodePolicy{
-				buildDummySrIovPolicy("test", defaultNodeNsName),
-				buildDummySrIovPolicy("test1", defaultNodeNsName)},
-			nsName:        defaultNodeNsName,
+				buildDummySrIovPolicy("test", "testnamespace"),
+				buildDummySrIovPolicy("test1", "testnamespace")},
+			nsName:        "testnamespace",
 			expectedError: fmt.Errorf("failed to list SriovNetworkNodePolicies, 'apiClient' parameter is empty"),
 			client:        false,
 		},
