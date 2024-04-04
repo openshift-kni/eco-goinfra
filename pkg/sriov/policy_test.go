@@ -494,10 +494,14 @@ func buildTestClientWithDummyPolicyObject() *clients.Settings {
 }
 
 func buildDummySrIovPolicyObject() []runtime.Object {
-	return append([]runtime.Object{}, &srIovV1.SriovNetworkNodePolicy{
+	return append([]runtime.Object{}, buildDummySrIovPolicy(defaultNetName, defaultNetNsName))
+}
+
+func buildDummySrIovPolicy(name, namespace string) *srIovV1.SriovNetworkNodePolicy {
+	return &srIovV1.SriovNetworkNodePolicy{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      defaultNetName,
-			Namespace: defaultNetNsName,
+			Name:      name,
+			Namespace: namespace,
 		},
 		Spec: srIovV1.SriovNetworkNodePolicySpec{
 			ResourceName: defaultNetResName,
@@ -508,5 +512,5 @@ func buildDummySrIovPolicyObject() []runtime.Object {
 			},
 			Priority: 1,
 		},
-	})
+	}
 }
