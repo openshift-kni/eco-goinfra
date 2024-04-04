@@ -82,6 +82,12 @@ func (builder *OperatorConfigBuilder) Create() (*OperatorConfigBuilder, error) {
 func PullOperatorConfig(apiClient *clients.Settings, nsname string) (*OperatorConfigBuilder, error) {
 	glog.V(100).Infof("Pulling existing default SriovOperatorConfig: %s", sriovOperatorConfigName)
 
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is empty")
+
+		return nil, fmt.Errorf("SriovOperatorConfig 'apiClient' cannot be empty")
+	}
+
 	builder := OperatorConfigBuilder{
 		apiClient: apiClient.ClientSrIov,
 		Definition: &srIovV1.SriovOperatorConfig{

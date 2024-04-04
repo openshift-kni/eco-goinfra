@@ -42,6 +42,13 @@ func TestPullOperatorConfig(t *testing.T) {
 		{
 			operatorConfigNamespace: "test-namespace",
 			expectedError:           true,
+			expectedErrorText:       "SriovOperatorConfig 'apiClient' cannot be empty",
+			addToRuntimeObjects:     true,
+			client:                  false,
+		},
+		{
+			operatorConfigNamespace: "test-namespace",
+			expectedError:           true,
 			addToRuntimeObjects:     false,
 			expectedErrorText:       "SriovOperatorConfig object default doesn't exist in namespace test-namespace",
 			client:                  true,
