@@ -396,7 +396,8 @@ func (builder *Builder) IsReady(timeout time.Duration) bool {
 				return true, nil
 			}
 
-			if builder.Object.Status.NumberReady == builder.Object.Status.UpdatedNumberScheduled {
+			if builder.Object.Status.NumberReady == builder.Object.Status.UpdatedNumberScheduled &&
+				builder.Object.Status.UpdatedNumberScheduled != 0 {
 				return true, nil
 			}
 
