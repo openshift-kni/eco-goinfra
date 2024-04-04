@@ -497,6 +497,8 @@ func TestUpdate(t *testing.T) {
 		}
 	}
 
+	int32Ptr := func(i int32) *int32 { return &i }
+
 	testCases := []struct {
 		deploymentExistsAlready bool
 	}{
@@ -516,13 +518,27 @@ func TestUpdate(t *testing.T) {
 		}
 
 		testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects)
+
+		// Assert the deployment before the update
+		assert.NotNil(t, testBuilder.Definition)
+		assert.Nil(t, testBuilder.Definition.Spec.Replicas)
+
+		// Set a value in the definition to test the update
+		testBuilder.Definition.Spec.Replicas = int32Ptr(3)
+
+		// Perform the update
 		result, err := testBuilder.Update()
+
+		// Assert the result
+		assert.NotNil(t, testBuilder.Definition)
 
 		if !testCase.deploymentExistsAlready {
 			assert.NotNil(t, err)
+			assert.Nil(t, result.Object)
 		} else {
 			assert.Nil(t, err)
 			assert.Equal(t, testBuilder.Definition.Name, result.Definition.Name)
+			assert.Equal(t, testBuilder.Definition.Spec.Replicas, result.Definition.Spec.Replicas)
 		}
 	}
 }

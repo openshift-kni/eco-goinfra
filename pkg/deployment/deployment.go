@@ -124,9 +124,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 
 // WithNodeSelector applies a nodeSelector to the deployment definition.
 func (builder *Builder) WithNodeSelector(selector map[string]string) *Builder {
-	if valid, err := builder.validate(); !valid {
-		builder.errorMsg = err.Error()
-
+	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
