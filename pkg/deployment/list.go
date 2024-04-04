@@ -46,7 +46,7 @@ func List(apiClient *clients.Settings, nsname string, options ...metav1.ListOpti
 	for _, runningDeployment := range deploymentList.Items {
 		copiedDeployment := runningDeployment
 		deploymentBuilder := &Builder{
-			apiClient:  apiClient,
+			apiClient:  apiClient.AppsV1Interface,
 			Object:     &copiedDeployment,
 			Definition: &copiedDeployment,
 		}
@@ -88,7 +88,7 @@ func ListInAllNamespaces(apiClient *clients.Settings, options ...metav1.ListOpti
 	for _, runningDeployment := range deploymentList.Items {
 		copiedDeployment := runningDeployment
 		deploymentBuilder := &Builder{
-			apiClient:  apiClient,
+			apiClient:  apiClient.AppsV1Interface,
 			Object:     &copiedDeployment,
 			Definition: &copiedDeployment,
 		}
