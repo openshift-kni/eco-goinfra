@@ -389,6 +389,8 @@ func GetTestClients(k8sMockObjects []runtime.Object) *Settings {
 			srIovObjects = append(srIovObjects, v)
 		case *srIovV1.SriovOperatorConfig:
 			srIovObjects = append(srIovObjects, v)
+		case *srIovV1.SriovNetworkNodeState:
+			srIovObjects = append(srIovObjects, v)
 		}
 	}
 
