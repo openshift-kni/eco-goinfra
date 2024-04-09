@@ -339,16 +339,24 @@ func (settings *Settings) GetAPIClient() (*Settings, error) {
 	return settings, nil
 }
 
+// TestClientParams provides the struct to store the parameters for the test client.
+type TestClientParams struct {
+	K8sMockObjects []runtime.Object
+	GVK            []schema.GroupVersionKind
+
+	// Note: Add more fields below if/when needed.
+}
+
 // GetTestClients returns a fake clientset for testing.
 //
 //nolint:funlen,gocyclo
-func GetTestClients(k8sMockObjects []runtime.Object, gvk ...schema.GroupVersionKind) *Settings {
+func GetTestClients(tcp TestClientParams) *Settings {
 	clientSet := &Settings{}
 
 	var k8sClientObjects, genericClientObjects, srIovObjects, veleroClientObjects, cguObjects []runtime.Object
 
 	//nolint:varnamelen
-	for _, v := range k8sMockObjects {
+	for _, v := range tcp.K8sMockObjects {
 		// Based on what type of object is, populate certain object slices
 		// with what is supported by a certain client.
 		// Add more items below if/when needed.
@@ -434,9 +442,9 @@ func GetTestClients(k8sMockObjects []runtime.Object, gvk ...schema.GroupVersionK
 		return nil
 	}
 
-	if len(gvk) > 0 && len(genericClientObjects) > 0 {
+	if len(tcp.GVK) > 0 && len(genericClientObjects) > 0 {
 		fakeClientScheme.AddKnownTypeWithName(
-			gvk[0], genericClientObjects[0])
+			tcp.GVK[0], genericClientObjects[0])
 	}
 
 	clientSet.Interface = dynamicFake.NewSimpleDynamicClient(fakeClientScheme, genericClientObjects...)

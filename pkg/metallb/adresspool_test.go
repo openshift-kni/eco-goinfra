@@ -86,7 +86,10 @@ func TestPullAddressPool(t *testing.T) {
 		}
 
 		if testCase.client {
-			testSettings = clients.GetTestClients(runtimeObjects, addressPoolGvk)
+			testSettings = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects: runtimeObjects,
+				GVK:            []schema.GroupVersionKind{addressPoolGvk},
+			})
 		}
 
 		builderResult, err := PullAddressPool(testSettings, testCase.name, testCase.namespace)
@@ -135,7 +138,9 @@ func TestNewIPAddressPoolBuilder(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients([]runtime.Object{}, addressPoolGvk)
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			GVK: []schema.GroupVersionKind{addressPoolGvk},
+		})
 		testIPAddressPoolBuilder := generateIPAddressPoolBuilder(
 			testSettings, testCase.name, testCase.namespace, testCase.addrPool)
 		assert.Equal(t, testCase.expectedError, testIPAddressPoolBuilder.errorMsg)
@@ -350,7 +355,10 @@ func buildInValidIPAddressPoolBuilder(apiClient *clients.Settings) *IPAddressPoo
 }
 
 func buildTestClientWithDummyObject() *clients.Settings {
-	return clients.GetTestClients(buildDummyIPAddressPool(), addressPoolGvk)
+	return clients.GetTestClients(clients.TestClientParams{
+		K8sMockObjects: buildDummyIPAddressPool(),
+		GVK:            []schema.GroupVersionKind{addressPoolGvk},
+	})
 }
 
 func buildDummyIPAddressPool() []runtime.Object {

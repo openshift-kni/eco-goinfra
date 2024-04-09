@@ -97,7 +97,9 @@ func TestPull(t *testing.T) {
 			runtimeObjects = append(runtimeObjects, testDeployment)
 		}
 
-		testSettings = clients.GetTestClients(runtimeObjects)
+		testSettings = clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: runtimeObjects,
+		})
 
 		// Test the Pull method
 		builderResult, err := Pull(testSettings, testDeployment.Name, testDeployment.Namespace)

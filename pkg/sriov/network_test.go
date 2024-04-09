@@ -94,7 +94,9 @@ func TestPullNetwork(t *testing.T) {
 		}
 
 		if testCase.client {
-			testSettings = clients.GetTestClients(runtimeObjects)
+			testSettings = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects: runtimeObjects,
+			})
 		}
 
 		// Test the Pull method
@@ -168,7 +170,7 @@ func TestNewNetworkBuilder(t *testing.T) {
 		},
 	}
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients([]runtime.Object{})
+		testSettings := clients.GetTestClients(clients.TestClientParams{})
 		testNetworkStructure := generateNetworkBuilder(
 			testSettings, testCase.networkName, testCase.networkNamespace, testCase.targetNs, testCase.resName)
 		assert.NotNil(t, testNetworkStructure)
@@ -519,7 +521,9 @@ func buildInvalidSrIovNetworkTestBuilder(apiClient *clients.Settings) *NetworkBu
 }
 
 func buildTestClientWithDummyObject() *clients.Settings {
-	return clients.GetTestClients(buildDummySrIovNetworkObject())
+	return clients.GetTestClients(clients.TestClientParams{
+		K8sMockObjects: buildDummySrIovNetworkObject(),
+	})
 }
 
 func buildDummySrIovNetworkObject() []runtime.Object {

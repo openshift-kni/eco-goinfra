@@ -94,7 +94,9 @@ func TestPullPolicy(t *testing.T) {
 		}
 
 		if testCase.client {
-			testSettings = clients.GetTestClients(runtimeObjects)
+			testSettings = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects: runtimeObjects,
+			})
 		}
 
 		// Test the Pull method
@@ -194,7 +196,7 @@ func TestNewPolicyBuilder(t *testing.T) {
 		},
 	}
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients([]runtime.Object{})
+		testSettings := clients.GetTestClients(clients.TestClientParams{})
 		testPolicyStructure := generatePolicyBuilder(
 			testSettings,
 			testCase.policyName,
@@ -490,7 +492,9 @@ func buildInvalidSriovPolicyTestBuilder(apiClient *clients.Settings) *PolicyBuil
 }
 
 func buildTestClientWithDummyPolicyObject() *clients.Settings {
-	return clients.GetTestClients(buildDummySrIovPolicyObject())
+	return clients.GetTestClients(clients.TestClientParams{
+		K8sMockObjects: buildDummySrIovPolicyObject(),
+	})
 }
 
 func buildDummySrIovPolicyObject() []runtime.Object {

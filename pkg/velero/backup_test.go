@@ -100,7 +100,9 @@ func TestPullBackup(t *testing.T) {
 			runtimeObjects = append(runtimeObjects, testBackup)
 		}
 
-		testSettings = clients.GetTestClients(runtimeObjects)
+		testSettings = clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: runtimeObjects,
+		})
 
 		// Test the Pull method
 		builderResult, err := PullBackup(testSettings, testCase.name, testCase.namespace)

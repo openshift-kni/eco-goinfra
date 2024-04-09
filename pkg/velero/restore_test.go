@@ -110,7 +110,9 @@ func TestPullRestore(t *testing.T) {
 			runtimeObjects = append(runtimeObjects, testRestore)
 		}
 
-		testSettings = clients.GetTestClients(runtimeObjects)
+		testSettings = clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: runtimeObjects,
+		})
 
 		// Test the Pull method
 		builderResult, err := PullRestore(testSettings, testCase.name, testCase.namespace)
