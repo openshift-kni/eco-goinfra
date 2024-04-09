@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/openshift-kni/eco-goinfra/pkg/metallb/mlbtypes"
+
 	"github.com/golang/glog"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
@@ -27,6 +29,7 @@ import (
 
 	apiExt "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	appsV1Client "k8s.io/client-go/kubernetes/typed/apps/v1"
 	networkV1Client "k8s.io/client-go/kubernetes/typed/networking/v1"
 	rbacV1Client "k8s.io/client-go/kubernetes/typed/rbac/v1"
@@ -82,6 +85,7 @@ import (
 	veleroClient "github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned"
 	veleroFakeClient "github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned/fake"
 	veleroV1Client "github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned/typed/velero/v1"
+	dynamicFake "k8s.io/client-go/dynamic/fake"
 	policiesv1beta1 "open-cluster-management.io/governance-policy-propagator/api/v1beta1"
 	placementrulev1 "open-cluster-management.io/multicloud-operators-subscription/pkg/apis/apps/placementrule/v1"
 )
@@ -330,7 +334,7 @@ func (settings *Settings) GetAPIClient() (*Settings, error) {
 // GetTestClients returns a fake clientset for testing.
 //
 //nolint:funlen
-func GetTestClients(k8sMockObjects []runtime.Object) *Settings {
+func GetTestClients(k8sMockObjects []runtime.Object, gvk ...schema.GroupVersionKind) *Settings {
 	clientSet := &Settings{}
 
 	var k8sClientObjects, genericClientObjects, srIovObjects, veleroClientObjects []runtime.Object
@@ -377,6 +381,8 @@ func GetTestClients(k8sMockObjects []runtime.Object) *Settings {
 		// Generic Client Objects
 		case *routev1.Route:
 			genericClientObjects = append(genericClientObjects, v)
+		case *mlbtypes.IPAddressPool:
+			genericClientObjects = append(genericClientObjects, v)
 		// Velero Client Objects
 		case *velerov1.Backup:
 			veleroClientObjects = append(veleroClientObjects, v)
@@ -414,6 +420,12 @@ func GetTestClients(k8sMockObjects []runtime.Object) *Settings {
 		return nil
 	}
 
+	if len(gvk) > 0 && len(genericClientObjects) > 0 {
+		fakeClientScheme.AddKnownTypeWithName(
+			gvk[0], genericClientObjects[0])
+	}
+
+	clientSet.Interface = dynamicFake.NewSimpleDynamicClient(fakeClientScheme, genericClientObjects...)
 	// Add fake runtime client to clientSet runtime client
 	clientSet.Client = fakeRuntimeClient.NewClientBuilder().WithScheme(fakeClientScheme).
 		WithRuntimeObjects(genericClientObjects...).Build()
