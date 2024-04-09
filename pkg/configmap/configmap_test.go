@@ -1,6 +1,7 @@
 package configmap
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
@@ -10,15 +11,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	k8sfake "k8s.io/client-go/kubernetes/fake"
 )
-
-func generateConfigMap(name, nsname string) *corev1.ConfigMap {
-	return &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: nsname,
-		},
-	}
-}
 
 func TestNewBuilder(t *testing.T) {
 	testCases := []struct {
@@ -137,15 +129,6 @@ func TestPull(t *testing.T) {
 	}
 }
 
-func buildTestBuilderWithFakeObjects(objects []runtime.Object) *Builder {
-	fakeClient := k8sfake.NewSimpleClientset(objects...)
-
-	return NewBuilder(&clients.Settings{
-		CoreV1Interface: fakeClient.CoreV1(),
-		K8sClient:       fakeClient,
-	}, "test-name", "test-namespace")
-}
-
 func TestCreate(t *testing.T) {
 	testCases := []struct {
 		addToRuntimeObjects bool
@@ -219,6 +202,12 @@ func TestWithOptions(t *testing.T) {
 	})
 
 	assert.Equal(t, "", testBuilder.errorMsg)
+
+	testBuilder.WithOptions(func(builder *Builder) (*Builder, error) {
+		return builder, errors.New("error")
+	})
+
+	assert.Equal(t, "error", testBuilder.errorMsg)
 }
 
 func TestGetGVR(t *testing.T) {
@@ -318,5 +307,23 @@ func TestWithData(t *testing.T) {
 
 			assert.Equal(t, testCase.expectedErr, testBuilder.errorMsg)
 		}
+	}
+}
+
+func buildTestBuilderWithFakeObjects(objects []runtime.Object) *Builder {
+	fakeClient := k8sfake.NewSimpleClientset(objects...)
+
+	return NewBuilder(&clients.Settings{
+		CoreV1Interface: fakeClient.CoreV1(),
+		K8sClient:       fakeClient,
+	}, "test-name", "test-namespace")
+}
+
+func generateConfigMap(name, nsname string) *corev1.ConfigMap {
+	return &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: nsname,
+		},
 	}
 }
