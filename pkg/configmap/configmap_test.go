@@ -45,7 +45,7 @@ func TestNewBuilder(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients([]runtime.Object{})
+		testSettings := clients.GetTestClients(clients.TestClientParams{})
 
 		testBuilder := NewBuilder(testSettings, testCase.name, testCase.nsname)
 
@@ -108,7 +108,9 @@ func TestPull(t *testing.T) {
 			runtimeObjects = append(runtimeObjects, testCM)
 		}
 
-		testSettings = clients.GetTestClients(runtimeObjects)
+		testSettings = clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: runtimeObjects,
+		})
 
 		// Test the Pull function
 		builderResult, err := Pull(testSettings, testCase.name, testCase.nsname)

@@ -75,7 +75,9 @@ func TestPullOperatorConfig(t *testing.T) {
 		}
 
 		if testCase.client {
-			testSettings = clients.GetTestClients(runtimeObjects)
+			testSettings = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects: runtimeObjects,
+			})
 		}
 
 		// Test the Pull method
@@ -114,7 +116,7 @@ func TestNewOperatorConfigBuilder(t *testing.T) {
 		},
 	}
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients([]runtime.Object{})
+		testSettings := clients.GetTestClients(clients.TestClientParams{})
 		testPolicyStructure := generatePolicyBuilder(testSettings, testCase.operatorConfigNamespace)
 		assert.NotNil(t, testPolicyStructure)
 		assert.Equal(t, testPolicyStructure.errorMsg, testCase.expectedErrorText)
@@ -281,7 +283,9 @@ func TestOperatorConfigDelete(t *testing.T) {
 }
 
 func buildTestClientWithDummyOperatorConfigObject() *clients.Settings {
-	return clients.GetTestClients(buildDummySrIovOperatorConfigObject())
+	return clients.GetTestClients(clients.TestClientParams{
+		K8sMockObjects: buildDummySrIovOperatorConfigObject(),
+	})
 }
 
 func buildDummySrIovOperatorConfigObject() []runtime.Object {

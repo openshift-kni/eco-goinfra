@@ -55,7 +55,9 @@ func TestNetworkList(t *testing.T) {
 		var testSettings *clients.Settings
 
 		if testCase.client {
-			testSettings = clients.GetTestClients(buildDummySrIovNetworkObject())
+			testSettings = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects: buildDummySrIovNetworkObject(),
+			})
 		}
 
 		netBuilders, err := List(testSettings, testCase.nsName, testCase.listOptions...)
@@ -123,7 +125,9 @@ func TestNetworkCleanAllNetworksByTargetNamespace(t *testing.T) {
 		var testSettings *clients.Settings
 
 		if testCase.client {
-			testSettings = clients.GetTestClients(buildDummySrIovNetworkObject())
+			testSettings = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects: buildDummySrIovNetworkObject(),
+			})
 		}
 
 		err := CleanAllNetworksByTargetNamespace(
@@ -194,7 +198,9 @@ func TestListNetworkNodeState(t *testing.T) {
 		}
 
 		if testCase.client {
-			testSettings = clients.GetTestClients(runtimeObjects)
+			testSettings = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects: runtimeObjects,
+			})
 		}
 
 		builders, err := ListNetworkNodeState(testSettings, testCase.nsName, testCase.listOptions...)
@@ -267,7 +273,9 @@ func TestListPolicy(t *testing.T) {
 		}
 
 		if testCase.client {
-			testSettings = clients.GetTestClients(runtimeObjects)
+			testSettings = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects: runtimeObjects,
+			})
 		}
 
 		builders, err := ListPolicy(testSettings, testCase.nsName, testCase.listOptions...)
@@ -339,7 +347,9 @@ func TestCleanAllNetworkNodePolicies(t *testing.T) {
 		}
 
 		if testCase.client {
-			testSettings = clients.GetTestClients(runtimeObjects)
+			testSettings = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects: runtimeObjects,
+			})
 		}
 
 		err := CleanAllNetworkNodePolicies(testSettings, testCase.nsName, testCase.listOptions...)

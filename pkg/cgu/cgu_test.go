@@ -90,7 +90,9 @@ func TestPullCgu(t *testing.T) {
 		}
 
 		if testCase.client {
-			testSettings = clients.GetTestClients(runtimeObjects)
+			testSettings = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects: runtimeObjects,
+			})
 		}
 
 		// Test the Pull method
@@ -148,7 +150,7 @@ func TestNewCguBuilder(t *testing.T) {
 		},
 	}
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients([]runtime.Object{})
+		testSettings := clients.GetTestClients(clients.TestClientParams{})
 		testCguStructure := generateCguBuilder(
 			testSettings,
 			testCase.cguName,
@@ -309,7 +311,9 @@ func TestCguExist(t *testing.T) {
 }
 
 func buildTestClientWithDummyCguObject() *clients.Settings {
-	return clients.GetTestClients(buildDummyCguObject())
+	return clients.GetTestClients(clients.TestClientParams{
+		K8sMockObjects: buildDummyCguObject(),
+	})
 }
 
 func buildDummyCguObject() []runtime.Object {

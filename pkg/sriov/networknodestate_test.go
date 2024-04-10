@@ -46,7 +46,7 @@ func TestNewNetworkNodeStateBuilder(t *testing.T) {
 		},
 	}
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients([]runtime.Object{})
+		testSettings := clients.GetTestClients(clients.TestClientParams{})
 		testNetworkStructure := generateNetworkBuilder(
 			testSettings, testCase.nodeName, testCase.nsName)
 		assert.NotNil(t, testNetworkStructure)
@@ -109,7 +109,9 @@ func TestNetworkNodeStateDiscovery(t *testing.T) {
 			runtimeObjects = append(runtimeObjects, networkNodeState)
 		}
 
-		testSettings = clients.GetTestClients(runtimeObjects)
+		testSettings = clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: runtimeObjects,
+		})
 
 		networkNodeStateBuilder := NewNetworkNodeStateBuilder(testSettings, testCase.nodeName, testCase.nsName)
 		err := networkNodeStateBuilder.Discover()
@@ -161,7 +163,9 @@ func TestNetworkNodeStateGetNICs(t *testing.T) {
 		networkNodeState := buildNodeNetworkStateWithNics(testCase.netInterface)
 		runtimeObjects = append(runtimeObjects, networkNodeState)
 
-		testSettings = clients.GetTestClients(runtimeObjects)
+		testSettings = clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: runtimeObjects,
+		})
 
 		networkNodeStateBuilder := NewNetworkNodeStateBuilder(testSettings, testCase.nodeName, defaultNodeNsName)
 		nics, err := networkNodeStateBuilder.GetNICs()
@@ -236,7 +240,9 @@ func TestNetworkNodeStateGetUpNICs(t *testing.T) {
 
 	for _, testCase := range testCases {
 		networkNodeState := buildNodeNetworkStateWithNics(testCase.netInterface)
-		testSettings := clients.GetTestClients(append([]runtime.Object{}, networkNodeState))
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: []runtime.Object{networkNodeState},
+		})
 		networkNodeStateBuilder := NewNetworkNodeStateBuilder(testSettings, testCase.nodeName, defaultNodeNsName)
 		nics, err := networkNodeStateBuilder.GetUpNICs()
 
@@ -271,7 +277,9 @@ func TestNetworkNodeStateWaitUntilSyncStatus(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		networkNodeState := buildNodeNetworkStateSyncStatus(defaultNodeName, defaultNodeNsName, testCase.syncStatus)
-		testSettings := clients.GetTestClients(append([]runtime.Object{}, networkNodeState))
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: []runtime.Object{networkNodeState},
+		})
 		networkNodeStateBuilder := NewNetworkNodeStateBuilder(testSettings, defaultNodeName, defaultNodeNsName)
 		err := networkNodeStateBuilder.Discover()
 		assert.Nil(t, err)
@@ -300,7 +308,9 @@ func TestNetworkNodeStateGetNumVFs(t *testing.T) {
 
 	for _, testCase := range testCases {
 		networkNodeState := buildNodeNetworkStateWithNics(testCase.netInterface)
-		testSettings := clients.GetTestClients(append([]runtime.Object{}, networkNodeState))
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: []runtime.Object{networkNodeState},
+		})
 		networkNodeStateBuilder := NewNetworkNodeStateBuilder(testSettings, defaultNodeName, defaultNodeNsName)
 		err := networkNodeStateBuilder.Discover()
 		assert.Nil(t, err)
@@ -333,7 +343,9 @@ func TestNetworkNodeStateGetDriverName(t *testing.T) {
 
 	for _, testCase := range testCases {
 		networkNodeState := buildNodeNetworkStateWithNics(testCase.netInterface)
-		testSettings := clients.GetTestClients(append([]runtime.Object{}, networkNodeState))
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: []runtime.Object{networkNodeState},
+		})
 		networkNodeStateBuilder := NewNetworkNodeStateBuilder(testSettings, defaultNodeName, defaultNetNsName)
 		err := networkNodeStateBuilder.Discover()
 		assert.Nil(t, err)
@@ -366,7 +378,9 @@ func TestNetworkNodeStateGetPciAddress(t *testing.T) {
 
 	for _, testCase := range testCases {
 		networkNodeState := buildNodeNetworkStateWithNics(testCase.netInterface)
-		testSettings := clients.GetTestClients(append([]runtime.Object{}, networkNodeState))
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: []runtime.Object{networkNodeState},
+		})
 		networkNodeStateBuilder := NewNetworkNodeStateBuilder(testSettings, defaultNodeName, defaultNodeNsName)
 		err := networkNodeStateBuilder.Discover()
 		assert.Nil(t, err)
