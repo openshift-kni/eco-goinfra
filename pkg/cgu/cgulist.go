@@ -43,7 +43,7 @@ func ListInAllNamespaces(apiClient *clients.Settings, options ...runtimeclient.L
 	for _, policy := range cguList.Items {
 		copiedCgu := policy
 		cguBuilder := &CguBuilder{
-			apiClient:  apiClient,
+			apiClient:  apiClient.ClientCgu,
 			Object:     &copiedCgu,
 			Definition: &copiedCgu,
 		}
