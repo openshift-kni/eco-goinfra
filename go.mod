@@ -46,6 +46,7 @@ require (
 )
 
 require (
+	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/openshift/assisted-service/api v0.0.0
 	github.com/openshift/assisted-service/models v0.0.0
 	github.com/stretchr/testify v1.9.0
