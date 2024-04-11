@@ -37,6 +37,7 @@ linters-settings:
           - $gostd
           - "github.com/stretchr/testify"
           - "github.com/vmware-tanzu/velero"
+          - "github.com/kelseyhightower/envconfig"
   revive:
     rules:
       - name: indent-error-flow
