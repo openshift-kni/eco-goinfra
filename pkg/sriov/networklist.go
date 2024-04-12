@@ -40,7 +40,7 @@ func List(apiClient *clients.Settings, nsname string, options ...metav1.ListOpti
 	glog.V(100).Infof(logMessage)
 
 	networkList, err := apiClient.ClientSrIov.SriovnetworkV1().
-		SriovNetworks(nsname).List(context.Background(), passedOptions)
+		SriovNetworks(nsname).List(context.TODO(), passedOptions)
 
 	if err != nil {
 		glog.V(100).Infof("Failed to list sriov networks in the namespace %s due to %s", nsname, err.Error())

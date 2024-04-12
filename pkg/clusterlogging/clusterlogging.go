@@ -102,7 +102,7 @@ func (builder *Builder) Get() (*clov1.ClusterLogging, error) {
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	clusterLogging := &clov1.ClusterLogging{}
-	err := builder.apiClient.Get(context.Background(), goclient.ObjectKey{
+	err := builder.apiClient.Get(context.TODO(), goclient.ObjectKey{
 		Name:      builder.Definition.Name,
 		Namespace: builder.Definition.Namespace,
 	}, clusterLogging)
@@ -147,7 +147,7 @@ func (builder *Builder) Delete() error {
 		return fmt.Errorf("clusterLogging cannot be deleted because it does not exist")
 	}
 
-	err := builder.apiClient.Delete(context.Background(), builder.Definition)
+	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
 
 	if err != nil {
 		return fmt.Errorf("can not delete clusterLogging: %w", err)

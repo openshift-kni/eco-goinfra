@@ -407,7 +407,7 @@ func (builder *ControlPlaneBuilder) Delete() error {
 			builder.Definition.Name, builder.Definition.Namespace)
 	}
 
-	err := builder.apiClient.Delete(context.Background(), builder.Definition)
+	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
 
 	if err != nil {
 		return fmt.Errorf("can not delete serviceMeshControlPlane %s in namespace %s due to %w",

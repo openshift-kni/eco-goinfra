@@ -40,7 +40,7 @@ func ListPolicy(apiClient *clients.Settings, nsname string, options ...metav1.Li
 	glog.V(100).Infof(logMessage)
 
 	networkNodePoliciesList, err := apiClient.ClientSrIov.SriovnetworkV1().
-		SriovNetworkNodePolicies(nsname).List(context.Background(), passedOptions)
+		SriovNetworkNodePolicies(nsname).List(context.TODO(), passedOptions)
 
 	if err != nil {
 		glog.V(100).Infof("Failed to list SriovNetworkNodePolicies in the namespace %s due to %s",

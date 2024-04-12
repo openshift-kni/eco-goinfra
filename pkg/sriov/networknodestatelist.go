@@ -41,7 +41,7 @@ func ListNetworkNodeState(
 	glog.V(100).Infof(logMessage)
 
 	networkNodeStateList, err := apiClient.ClientSrIov.SriovnetworkV1().
-		SriovNetworkNodeStates(nsname).List(context.Background(), passedOptions)
+		SriovNetworkNodeStates(nsname).List(context.TODO(), passedOptions)
 
 	if err != nil {
 		glog.V(100).Infof("Failed to list SriovNetworkNodeStates in the namespace %s due to %s", nsname, err.Error())

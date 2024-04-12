@@ -142,7 +142,7 @@ func (builder *LocalVolumeSetBuilder) Delete() error {
 		return fmt.Errorf("localVolumeSet cannot be deleted because it does not exist")
 	}
 
-	err := builder.apiClient.Delete(context.Background(), builder.Definition)
+	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
 
 	if err != nil {
 		return fmt.Errorf("can not delete localVolumeSet: %w", err)

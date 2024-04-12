@@ -66,7 +66,7 @@ func (builder *Builder) Exists() bool {
 	glog.V(100).Infof("Checking if clusterOperator %s exists", builder.Definition.Name)
 
 	_, err := builder.apiClient.ClusterOperators().Get(
-		context.Background(),
+		context.TODO(),
 		builder.Definition.Name,
 		metav1.GetOptions{})
 
@@ -149,7 +149,7 @@ func (builder *Builder) WaitUntilConditionTrue(
 		context.TODO(), time.Second, timeout, true, func(ctx context.Context) (bool, error) {
 			var err error
 			builder.Object, err = builder.apiClient.ClusterOperators().Get(
-				context.Background(),
+				context.TODO(),
 				builder.Definition.Name,
 				metav1.GetOptions{})
 

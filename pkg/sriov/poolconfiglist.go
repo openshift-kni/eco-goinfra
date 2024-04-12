@@ -20,7 +20,7 @@ func ListPoolConfigs(apiClient *clients.Settings, namespace string) ([]*PoolConf
 		return nil, fmt.Errorf("failed to list sriovNetworkPoolConfigs, 'namespace' parameter is empty")
 	}
 
-	err := apiClient.List(context.Background(), sriovNetworkPoolConfigList, &client.ListOptions{Namespace: namespace})
+	err := apiClient.List(context.TODO(), sriovNetworkPoolConfigList, &client.ListOptions{Namespace: namespace})
 
 	if err != nil {
 		glog.V(100).Infof("Failed to list SriovNetworkPoolConfigs in namespace: %s due to %s",

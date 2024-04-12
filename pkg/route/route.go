@@ -205,7 +205,7 @@ func (builder *Builder) Get() (*routev1.Route, error) {
 
 	route := &routev1.Route{}
 
-	err := builder.apiClient.Get(context.Background(), client.ObjectKey{
+	err := builder.apiClient.Get(context.TODO(), client.ObjectKey{
 		Name:      builder.Definition.Name,
 		Namespace: builder.Definition.Namespace,
 	}, route)

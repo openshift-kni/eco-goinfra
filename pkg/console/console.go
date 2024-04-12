@@ -86,7 +86,7 @@ func (builder *Builder) Create() (*Builder, error) {
 	var err error
 	if !builder.Exists() {
 		builder.Object, err = builder.apiClient.Consoles().Create(
-			context.Background(), builder.Definition, metav1.CreateOptions{})
+			context.TODO(), builder.Definition, metav1.CreateOptions{})
 	}
 
 	return builder, err
@@ -102,7 +102,7 @@ func (builder *Builder) Exists() bool {
 
 	var err error
 	builder.Object, err = builder.apiClient.Consoles().Get(
-		context.Background(), builder.Definition.Name, metav1.GetOptions{})
+		context.TODO(), builder.Definition.Name, metav1.GetOptions{})
 
 	return err == nil || !k8serrors.IsNotFound(err)
 }
@@ -119,7 +119,7 @@ func (builder *Builder) Delete() error {
 		return fmt.Errorf("console cannot be deleted because it does not exist")
 	}
 
-	err := builder.apiClient.Consoles().Delete(context.Background(), builder.Definition.Name, metav1.DeleteOptions{})
+	err := builder.apiClient.Consoles().Delete(context.TODO(), builder.Definition.Name, metav1.DeleteOptions{})
 
 	if err != nil {
 		return fmt.Errorf("cannot delete console: %w", err)
@@ -139,7 +139,7 @@ func (builder *Builder) Update() (*Builder, error) {
 	glog.V(100).Info("Updating cluster console %s", builder.Definition.Name)
 
 	var err error
-	builder.Object, err = builder.apiClient.Consoles().Update(context.Background(), builder.Definition,
+	builder.Object, err = builder.apiClient.Consoles().Update(context.TODO(), builder.Definition,
 		metav1.UpdateOptions{})
 
 	return builder, err
