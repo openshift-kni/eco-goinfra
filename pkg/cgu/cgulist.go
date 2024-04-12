@@ -30,7 +30,7 @@ func ListInAllNamespaces(apiClient *clients.Settings, options ...runtimeclient.L
 
 	glog.V(100).Infof(logMessage)
 
-	err := apiClient.Client.List(context.Background(), cguList, &passedOptions)
+	err := apiClient.Client.List(context.TODO(), cguList, &passedOptions)
 
 	if err != nil {
 		glog.V(100).Infof("Failed to list all CGUs in all namespaces due to %s", err.Error())

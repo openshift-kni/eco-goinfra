@@ -156,7 +156,7 @@ func (builder *ClusterLogForwarderBuilder) Get() (*clov1.ClusterLogForwarder, er
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	clusterLogForwarder := &clov1.ClusterLogForwarder{}
-	err := builder.apiClient.Get(context.Background(), goclient.ObjectKey{
+	err := builder.apiClient.Get(context.TODO(), goclient.ObjectKey{
 		Name:      builder.Definition.Name,
 		Namespace: builder.Definition.Namespace,
 	}, clusterLogForwarder)
@@ -201,7 +201,7 @@ func (builder *ClusterLogForwarderBuilder) Delete() error {
 		return fmt.Errorf("clusterlogforwarder cannot be deleted because it does not exist")
 	}
 
-	err := builder.apiClient.Delete(context.Background(), builder.Definition)
+	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
 
 	if err != nil {
 		return fmt.Errorf("can not delete clusterlogforwarder: %w", err)

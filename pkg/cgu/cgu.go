@@ -185,7 +185,7 @@ func (builder *CguBuilder) Exists() bool {
 
 	var err error
 	builder.Object, err = builder.apiClient.RanV1alpha1().ClusterGroupUpgrades(builder.Definition.Namespace).Get(
-		context.Background(), builder.Definition.Name, metav1.GetOptions{})
+		context.TODO(), builder.Definition.Name, metav1.GetOptions{})
 
 	return err == nil || !k8serrors.IsNotFound(err)
 }
@@ -321,7 +321,7 @@ func (builder *CguBuilder) WaitUntilComplete(timeout time.Duration) (*CguBuilder
 	err = wait.PollUntilContextTimeout(
 		context.TODO(), time.Second*3, timeout, true, func(ctx context.Context) (bool, error) {
 			builder.Object, err = builder.apiClient.RanV1alpha1().ClusterGroupUpgrades(builder.Definition.Namespace).Get(
-				context.Background(), builder.Definition.Name, metav1.GetOptions{})
+				context.TODO(), builder.Definition.Name, metav1.GetOptions{})
 
 			if err != nil {
 				return false, nil
