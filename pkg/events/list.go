@@ -47,7 +47,7 @@ func List(
 	for _, event := range eventList.Items {
 		copiedEvent := event
 		stateBuilder := &Builder{
-			apiClient: apiClient,
+			apiClient: apiClient.Events(nsname),
 			Object:    &copiedEvent}
 		eventObjects = append(eventObjects, stateBuilder)
 	}
