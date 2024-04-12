@@ -140,7 +140,7 @@ func (builder *OperatorConfigBuilder) WithInjector(enable bool) *OperatorConfigB
 		enable, builder.Definition.Name,
 	)
 
-	builder.Definition.Spec.EnableInjector = &enable
+	builder.Definition.Spec.EnableInjector = enable
 
 	return builder
 }
@@ -155,7 +155,7 @@ func (builder *OperatorConfigBuilder) WithOperatorWebhook(enable bool) *Operator
 		enable, builder.Definition.Name,
 	)
 
-	builder.Definition.Spec.EnableOperatorWebhook = &enable
+	builder.Definition.Spec.EnableOperatorWebhook = enable
 
 	return builder
 }
