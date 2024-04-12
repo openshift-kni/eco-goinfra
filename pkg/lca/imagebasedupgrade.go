@@ -23,6 +23,7 @@ const (
 	isTrue     = "True"
 	isFalse    = "False"
 	isComplete = "Completed"
+	ibuName    = "upgrade"
 )
 
 // ImageBasedUpgradeBuilder provides struct for the imagebasedupgrade object containing connection to
@@ -41,35 +42,6 @@ type ImageBasedUpgradeBuilder struct {
 
 // AdditionalOptions additional options for imagebasedupgrade object.
 type AdditionalOptions func(builder *ImageBasedUpgradeBuilder) (*ImageBasedUpgradeBuilder, error)
-
-// NewImageBasedUpgradeBuilder creates a new instance of ImageBasedUpgrade.
-func NewImageBasedUpgradeBuilder(
-	apiClient *clients.Settings,
-	name string,
-) *ImageBasedUpgradeBuilder {
-	if apiClient == nil {
-		glog.V(100).Infof("The apiClient cannot be nil")
-
-		return nil
-	}
-
-	builder := ImageBasedUpgradeBuilder{
-		apiClient: apiClient.Client,
-		Definition: &lcav1alpha1.ImageBasedUpgrade{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: name,
-			},
-		},
-	}
-
-	if name == "" {
-		glog.V(100).Infof("The name of the imagebasedupgrade is empty")
-
-		builder.errorMsg = "ImageBasedUpgrade name cannot be empty"
-	}
-
-	return &builder
-}
 
 // WithOptions creates imagebasedupgrade with generic mutation options.
 func (builder *ImageBasedUpgradeBuilder) WithOptions(options ...AdditionalOptions) *ImageBasedUpgradeBuilder {
@@ -97,8 +69,8 @@ func (builder *ImageBasedUpgradeBuilder) WithOptions(options ...AdditionalOption
 }
 
 // PullImageBasedUpgrade pulls existing imagebasedupgrade from cluster.
-func PullImageBasedUpgrade(apiClient *clients.Settings, name string) (*ImageBasedUpgradeBuilder, error) {
-	glog.V(100).Infof("Pulling existing imagebasedupgrade name %s from cluster", name)
+func PullImageBasedUpgrade(apiClient *clients.Settings) (*ImageBasedUpgradeBuilder, error) {
+	glog.V(100).Infof("Pulling existing imagebasedupgrade name %s from cluster", ibuName)
 
 	if apiClient == nil {
 		glog.V(100).Infof("The apiClient cannot be nil")
@@ -110,19 +82,13 @@ func PullImageBasedUpgrade(apiClient *clients.Settings, name string) (*ImageBase
 		apiClient: apiClient.Client,
 		Definition: &lcav1alpha1.ImageBasedUpgrade{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: name,
+				Name: ibuName,
 			},
 		},
 	}
 
-	if name == "" {
-		glog.V(100).Infof("The name of the imagebasedupgrade is empty")
-
-		builder.errorMsg = "imagebasedupgrade 'name' cannot be empty"
-	}
-
 	if !builder.Exists() {
-		return nil, fmt.Errorf("imagebasedupgrade object %s doesn't exist", name)
+		return nil, fmt.Errorf("imagebasedupgrade object %s doesn't exist", ibuName)
 	}
 
 	builder.Definition = builder.Object
