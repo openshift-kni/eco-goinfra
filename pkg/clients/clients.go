@@ -396,6 +396,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			k8sClientObjects = append(k8sClientObjects, v)
 		case *corev1.ConfigMap:
 			k8sClientObjects = append(k8sClientObjects, v)
+		case *corev1.Event:
+			k8sClientObjects = append(k8sClientObjects, v)
 		// Generic Client Objects
 		case *routev1.Route:
 			genericClientObjects = append(genericClientObjects, v)
