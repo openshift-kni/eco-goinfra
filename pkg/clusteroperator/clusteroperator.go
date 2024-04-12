@@ -35,6 +35,28 @@ type Builder struct {
 	errorMsg string
 }
 
+// Pull loads an existing clusterOperator into Builder struct.
+func Pull(apiClient *clients.Settings, clusterOperatorName string) (*Builder, error) {
+	glog.V(100).Infof("Pulling existing clusterOperator: %s", clusterOperatorName)
+
+	builder := Builder{
+		apiClient: apiClient,
+		Definition: &v1.ClusterOperator{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: clusterOperatorName,
+			},
+		},
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("clusterOperator object %s doesn't exist", clusterOperatorName)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
+}
+
 // Exists checks whether the given clusterOperator exists.
 func (builder *Builder) Exists() bool {
 	if valid, _ := builder.validate(); !valid {
