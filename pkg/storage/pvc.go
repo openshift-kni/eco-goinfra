@@ -121,7 +121,7 @@ func (builder *PVCBuilder) WithPVCCapacity(capacity string) (*PVCBuilder, error)
 			glog.V(100).Infof("Failed to parse %v", capacity)
 			builder.errorMsg = fmt.Sprintf("Failed to parse: %v", capacity)
 
-			return builder, fmt.Errorf(fmt.Sprintf("Failed to parse: %v", capacity))
+			return builder, fmt.Errorf("failed to parse: %v", capacity)
 		}
 
 		return builder, nil
