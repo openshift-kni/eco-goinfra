@@ -1,0 +1,43 @@
+name: eco-gotests integration
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    env:
+      SHELL: /bin/bash
+      ECO_GOTESTS_PATH: gotests
+      ECO_GOTESTS_REPO: openshift-kni/eco-gotests
+      ECO_GOTESTS_BRANCH: main
+
+    steps:
+      - name: Set up Go 1.22
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.22.3
+
+      - name: Check out the eco-goinfra code
+        uses: actions/checkout@v4
+
+      - name: Check out the eco-gotests code
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.ECO_GOTESTS_REPO }}
+          ref: ${{ env.ECO_GOTESTS_BRANCH }}
+          path: ${{ env.ECO_GOTESTS_PATH }}
+
+      # Update the go.mod file in eco-gotests to include the current eco-goinfra code
+      - name: Update go.mod in eco-gotests
+        run: |
+          go mod edit -replace github.com/openshift-kni/eco-goinfra=${{ github.workspace }}
+          go mod vendor
+        working-directory: ${{ env.ECO_GOTESTS_PATH }}
+
+      - name: eco-gotests go vet
+        run: make vet
+        working-directory: ${{ env.ECO_GOTESTS_PATH }}
