@@ -124,6 +124,26 @@ func (builder *Builder) IsProgressing() bool {
 	return false
 }
 
+// GetConditionReason returns the specific condition type's reason value or an empty string if it doesn't exist.
+func (builder *Builder) GetConditionReason(conditionType v1.ClusterStatusConditionType) string {
+	glog.V(100).Infof("Get %s clusterOperator %v condition reason if exists",
+		builder.Definition.Name, conditionType)
+
+	err := builder.WaitUntilConditionTrue(conditionType, time.Second)
+
+	if err != nil {
+		return ""
+	}
+
+	for _, condition := range builder.Object.Status.Conditions {
+		if condition.Type == conditionType {
+			return condition.Reason
+		}
+	}
+
+	return ""
+}
+
 // WaitUntilAvailable waits for timeout duration or until clusterOperator is Available.
 func (builder *Builder) WaitUntilAvailable(timeout time.Duration) error {
 	return builder.WaitUntilConditionTrue("Available", timeout)
