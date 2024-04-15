@@ -46,7 +46,8 @@ func TestNewBuilder(t *testing.T) {
 	}
 
 	for _, test := range testcases {
-		testBuilder := NewBuilder(nil, test.name, test.namespace, test.targetService)
+		testBuilder := NewBuilder(clients.GetTestClients(clients.TestClientParams{}),
+			test.name, test.namespace, test.targetService)
 		assert.Equal(t, testBuilder.errorMsg, test.expectedErrMsg)
 	}
 }
@@ -114,10 +115,11 @@ func TestPull(t *testing.T) {
 
 		if testCase.addToRuntimeObjects {
 			runtimeObjects = append(runtimeObjects, testRoute)
-			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
-			})
 		}
+
+		testSettings = clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: runtimeObjects,
+		})
 
 		// Test the Pull method
 		builderResult, err := Pull(testSettings, testCase.name, testCase.namespace)
@@ -140,9 +142,8 @@ func TestPull(t *testing.T) {
 
 // buildValidTestBuilder returns a valid Builder for testing purposes.
 func buildValidTestBuilder() *Builder {
-	return NewBuilder(&clients.Settings{
-		Client: nil,
-	}, "route-test-name", "route-test-namespace", "route-test-service")
+	return NewBuilder(clients.GetTestClients(clients.TestClientParams{}),
+		"route-test-name", "route-test-namespace", "route-test-service")
 }
 
 func TestWithTargetPortNumber(t *testing.T) {
