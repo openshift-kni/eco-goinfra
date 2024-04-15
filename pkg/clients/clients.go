@@ -72,6 +72,8 @@ import (
 
 	plumbingv1 "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/apis/k8s.cni.cncf.io/v1beta1"
 	fakeMultiNetPolicyClient "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/client/clientset/versioned/fake"
+	ocmClient "open-cluster-management.io/api/client/cluster/clientset/versioned"
+	ocmV1Client "open-cluster-management.io/api/client/cluster/clientset/versioned/typed/cluster/v1"
 
 	appsv1 "k8s.io/api/apps/v1"
 	scalingv1 "k8s.io/api/autoscaling/v1"
@@ -136,6 +138,8 @@ type Settings struct {
 	veleroV1Client.VeleroV1Interface
 	ClientCgu clientCgu.Interface
 	clientCguV1.RanV1alpha1Interface
+	OCMClient ocmClient.Interface
+	ocmV1Client.ClusterV1Client
 }
 
 // New returns a *Settings with the given kubeconfig.
@@ -190,6 +194,8 @@ func New(kubeconfig string) *Settings {
 	clientSet.VeleroV1Interface = veleroV1Client.NewForConfigOrDie(config)
 	clientSet.ClientCgu = clientCgu.NewForConfigOrDie(config)
 	clientSet.RanV1alpha1Interface = clientCguV1.NewForConfigOrDie(config)
+	clientSet.OCMClient = ocmClient.NewForConfigOrDie(config)
+	clientSet.ClusterV1Client = *ocmV1Client.NewForConfigOrDie(config)
 	clientSet.Config = config
 
 	crScheme := runtime.NewScheme()

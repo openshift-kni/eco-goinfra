@@ -40,6 +40,7 @@ require (
 	k8s.io/kubelet v0.27.4
 	k8s.io/utils v0.0.0-20231127182322-b307cd553661
 	maistra.io/api v0.0.0-20230704084350-dfc96815fb16
+	open-cluster-management.io/api v0.12.0
 	open-cluster-management.io/governance-policy-propagator v0.12.0
 	open-cluster-management.io/multicloud-operators-subscription v0.11.0
 	sigs.k8s.io/controller-runtime v0.16.3
