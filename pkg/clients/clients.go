@@ -407,6 +407,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *mlbtypes.BGPPeer:
 			genericClientObjects = append(genericClientObjects, v)
+		case *mlbtypes.MetalLB:
+			genericClientObjects = append(genericClientObjects, v)
 		// Velero Client Objects
 		case *velerov1.Backup:
 			veleroClientObjects = append(veleroClientObjects, v)
