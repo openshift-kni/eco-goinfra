@@ -124,7 +124,7 @@ func (builder *Builder) IsProgressing() bool {
 	return false
 }
 
-// GetConditionReason returns specific condition reason value, returns an empty string if not exists.
+// GetConditionReason returns the specific condition type's reason value or an empty string if it doesn't exist.
 func (builder *Builder) GetConditionReason(conditionType v1.ClusterStatusConditionType) string {
 	glog.V(100).Infof("Get %s clusterOperator %v condition reason if exists",
 		builder.Definition.Name, conditionType)
