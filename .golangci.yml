@@ -27,6 +27,8 @@ linters-settings:
           - "github.com/operator-framework/api"
           - "github.com/argoproj-labs/argocd-operator/api"
           - "github.com/golang/glog"
+          - "github.com/kelseyhightower/envconfig"
+          - "github.com/stretchr/testify/assert"
           - "github.com/rh-ecosystem-edge/kernel-module-management/"
           - "maistra.io/api/"
           - "open-cluster-management.io/governance-policy-propagator/api"
@@ -120,10 +122,3 @@ issues:
     - EXC0012  # EXC0012 revive: Annoying issue about not having a comment. The rare codebase has such comments
     - EXC0014  # EXC0014 revive: Annoying issue about not having a comment. The rare codebase has such comments
   exclude-rules:
-    #- # Exclude some linters from running on tests files.
-    - path: 'pkg/polarion'
-      linters:
-        - exhaustive
-
-
-
