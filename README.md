@@ -111,6 +111,7 @@ The project uses a development method - forking workflow
    the [eco-goinfra](https://github.com/openshift-kni/eco-goinfra).
 8) The pull request gets approved from at least 2 reviewers for merge and is merged into
    the [eco-goinfra](https://github.com/openshift-kni/eco-goinfra) .
+#### Note: Every new package requires a coverage of <ins>ALL</ins> its public functions with unit tests. Unit tests are located in the same package as the resource, in a file with the name *resource*_test.go. Examples can be found in [configmap_test.go](./pkg/configmap/configmap_test.go) and [metallb_test.go](./pkg/metallb/metallb_test.go).
 
 ### Code conventions
 #### Lint
