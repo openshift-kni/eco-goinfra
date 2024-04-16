@@ -384,8 +384,7 @@ func (builder *BGPAdvertisementBuilder) WithIPAddressPoolsSelectors(
 		builder.Definition.Name, builder.Definition.Namespace, poolSelector)
 
 	if len(poolSelector) < 1 {
-		builder.errorMsg = "error: IPAddressPoolSelectors setting is empty list, " +
-			"the list should contain at least one element"
+		builder.errorMsg = "error: IPAddressPoolSelectors setting is empty list, the list should contain at least one element"
 	}
 
 	if builder.errorMsg != "" {
