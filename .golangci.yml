@@ -27,6 +27,8 @@ linters-settings:
           - "github.com/argoproj-labs/argocd-operator/api"
           - "github.com/golang/glog"
           - "github.com/rh-ecosystem-edge/kernel-module-management/"
+          - "github.com/kelseyhightower/envconfig"
+          - "github.com/stretchr/testify/assert"
           - "maistra.io/api/"
           - "open-cluster-management.io/governance-policy-propagator/api"
           - "sigs.k8s.io/controller-runtime"
@@ -113,10 +115,5 @@ output:
   format: colored-line-number
 issues:
   exclude-rules:
-    #- # Exclude some linters from running on tests files.
-    - path: 'pkg/polarion'
-      linters:
-        - exhaustive
-
 
 

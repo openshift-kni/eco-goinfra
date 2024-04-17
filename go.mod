@@ -9,6 +9,7 @@ require (
 	github.com/grafana-operator/grafana-operator/v4 v4.10.1
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v1.4.0
 	github.com/k8snetworkplumbingwg/sriov-network-operator v0.0.0-00010101000000-000000000000
+	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/metal3-io/baremetal-operator/apis v0.4.0
 	github.com/metallb/metallb-operator v0.0.0-20231019113803-fbc3c30718ef
 	github.com/nmstate/kubernetes-nmstate/api v0.0.0-20231116153922-80c6e01df02e
@@ -29,6 +30,7 @@ require (
 	github.com/operator-framework/api v0.18.0
 	github.com/operator-framework/operator-lifecycle-manager v0.26.0
 	github.com/rh-ecosystem-edge/kernel-module-management v0.0.0-20231116085833-96c2cd1e77e9
+	github.com/stretchr/testify v1.8.4
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
 	golang.org/x/net v0.17.0
 	gopkg.in/k8snetworkplumbingwg/multus-cni.v4 v4.0.2
@@ -120,6 +122,7 @@ require (
 	github.com/openshift/library-go v0.0.0-20231020125025-211b32f1a1f2 // indirect
 	github.com/operator-framework/operator-registry v1.30.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.17.0 // indirect
 	github.com/prometheus/client_model v0.4.1-0.20230718164431-9a2bf3000d16 // indirect
 	github.com/prometheus/common v0.44.0 // indirect
