@@ -409,6 +409,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *mlbtypes.MetalLB:
 			genericClientObjects = append(genericClientObjects, v)
+		case *mlbtypes.L2Advertisement:
+			genericClientObjects = append(genericClientObjects, v)
 		case *policiesv1.Policy:
 			genericClientObjects = append(genericClientObjects, v)
 		// Velero Client Objects
