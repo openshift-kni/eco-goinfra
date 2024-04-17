@@ -207,6 +207,44 @@ func TestWithVlan(t *testing.T) {
 	}
 }
 
+func TestWithVlanProto(t *testing.T) {
+	testCases := []struct {
+		vlanProtocol      string
+		expectedErrorText string
+	}{
+		{
+			vlanProtocol:      "802.1q",
+			expectedErrorText: "",
+		},
+		{
+			vlanProtocol:      "802.1Q",
+			expectedErrorText: "",
+		},
+		{
+			vlanProtocol:      "802.1ad",
+			expectedErrorText: "",
+		},
+		{
+			vlanProtocol:      "802.1AD",
+			expectedErrorText: "",
+		},
+		{
+			vlanProtocol:      "802.1",
+			expectedErrorText: "invalid 'vlanProtocol' parameters",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
+		netBuilder := buildValidSriovNetworkTestBuilder(testSettings).WithVlanProto(testCase.vlanProtocol)
+		assert.Equal(t, netBuilder.errorMsg, testCase.expectedErrorText)
+
+		if testCase.expectedErrorText == "" {
+			assert.Equal(t, netBuilder.Definition.Spec.VlanProto, testCase.vlanProtocol)
+		}
+	}
+}
+
 func TestWithSpoof(t *testing.T) {
 	testCases := []struct {
 		spoof             bool
