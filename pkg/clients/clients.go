@@ -407,6 +407,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *mlbtypes.BGPPeer:
 			genericClientObjects = append(genericClientObjects, v)
+		case *mlbtypes.BGPAdvertisement:
+			genericClientObjects = append(genericClientObjects, v)
 		case *mlbtypes.MetalLB:
 			genericClientObjects = append(genericClientObjects, v)
 		case *mlbtypes.L2Advertisement:
