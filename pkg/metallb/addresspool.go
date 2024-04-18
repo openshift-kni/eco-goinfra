@@ -38,7 +38,7 @@ func NewIPAddressPoolBuilder(
 		"Initializing new IPAddressPool structure with the following params: %s, %s %s",
 		name, nsname, addrPool)
 
-	builder := IPAddressPoolBuilder{
+	builder := &IPAddressPoolBuilder{
 		apiClient: apiClient,
 		Definition: &mlbtypes.IPAddressPool{
 			TypeMeta: metav1.TypeMeta{
@@ -58,21 +58,27 @@ func NewIPAddressPoolBuilder(
 		glog.V(100).Infof("The name of the IPAddressPool is empty")
 
 		builder.errorMsg = "IPAddressPool 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the IPAddressPool is empty")
 
 		builder.errorMsg = "IPAddressPool 'nsname' cannot be empty"
+
+		return builder
 	}
 
 	if len(addrPool) < 1 {
 		glog.V(100).Infof("The addrPool of the IPAddressPool is empty list")
 
 		builder.errorMsg = "IPAddressPool 'addrPool' cannot be empty list"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // Get returns IPAddressPool object if found.
@@ -126,7 +132,7 @@ func PullAddressPool(apiClient *clients.Settings, name, nsname string) (*IPAddre
 		return nil, fmt.Errorf("addresspool 'apiClient' cannot be empty")
 	}
 
-	builder := IPAddressPoolBuilder{
+	builder := &IPAddressPoolBuilder{
 		apiClient: apiClient,
 		Definition: &mlbtypes.IPAddressPool{
 			ObjectMeta: metav1.ObjectMeta{
@@ -154,7 +160,7 @@ func PullAddressPool(apiClient *clients.Settings, name, nsname string) (*IPAddre
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Create makes a IPAddressPool in the cluster and stores the created object in struct.
@@ -167,7 +173,6 @@ func (builder *IPAddressPoolBuilder) Create() (*IPAddressPoolBuilder, error) {
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
 
-	var err error
 	if !builder.Exists() {
 		unstructuredIPAddressPool, err := runtime.DefaultUnstructuredConverter.ToUnstructured(builder.Definition)
 
@@ -194,7 +199,7 @@ func (builder *IPAddressPoolBuilder) Create() (*IPAddressPoolBuilder, error) {
 		}
 	}
 
-	return builder, err
+	return builder, nil
 }
 
 // Delete removes IPAddressPool object from a cluster.
@@ -309,9 +314,7 @@ func (builder *IPAddressPoolBuilder) WithOptions(options ...IPAddressPoolAdditio
 		glog.V(100).Infof("The IPAddressPool is undefined")
 
 		builder.errorMsg = msg.UndefinedCrdObjectErrString("IPAddressPool")
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -353,13 +356,13 @@ func (builder *IPAddressPoolBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

@@ -51,7 +51,7 @@ func NewInfraEnvBuilder(apiClient *clients.Settings, name, nsname, psName string
 		return nil
 	}
 
-	builder := InfraEnvBuilder{
+	builder := &InfraEnvBuilder{
 		apiClient: apiClient.Client,
 		Definition: &agentInstallV1Beta1.InfraEnv{
 			ObjectMeta: metav1.ObjectMeta{
@@ -70,21 +70,27 @@ func NewInfraEnvBuilder(apiClient *clients.Settings, name, nsname, psName string
 		glog.V(100).Infof("The name of the infraenv is empty")
 
 		builder.errorMsg = "infraenv 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the infraenv is empty")
 
 		builder.errorMsg = "infraenv 'namespace' cannot be empty"
+
+		return builder
 	}
 
 	if psName == "" {
 		glog.V(100).Infof("The pull-secret ref of the infraenv is empty")
 
 		builder.errorMsg = "infraenv 'pull-secret' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // WithClusterRef sets the cluster reference to be used by the infraenv.
@@ -99,15 +105,15 @@ func (builder *InfraEnvBuilder) WithClusterRef(name, nsname string) *InfraEnvBui
 		glog.V(100).Infof("The name of the infraenv clusterRef is empty")
 
 		builder.errorMsg = "infraenv clusterRef 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the infraenv clusterRef is empty")
 
 		builder.errorMsg = "infraenv clusterRef 'namespace' cannot be empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -733,13 +739,13 @@ func PullInfraEnvInstall(apiClient *clients.Settings, name, nsname string) (*Inf
 	if name == "" {
 		glog.V(100).Infof("The name of the infraenv is empty")
 
-		builder.errorMsg = "infraenv 'name' cannot be empty"
+		return nil, fmt.Errorf("infraenv 'name' cannot be empty")
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the infraenv is empty")
 
-		builder.errorMsg = "infraenv 'namespace' cannot be empty"
+		return nil, fmt.Errorf("infraenv 'namespace' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -784,11 +790,7 @@ func (builder *InfraEnvBuilder) Update(force bool) (*InfraEnvBuilder, error) {
 		glog.V(100).Infof("infraenv %s in namespace %s does not exist",
 			builder.Definition.Name, builder.Definition.Namespace)
 
-		builder.errorMsg = "Cannot update non-existent infraenv"
-	}
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
+		return nil, fmt.Errorf("cannot update non-existent infraenv")
 	}
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
@@ -901,13 +903,13 @@ func (builder *InfraEnvBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

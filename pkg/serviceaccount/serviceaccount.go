@@ -32,7 +32,7 @@ type AdditionalOptions func(builder *Builder) (*Builder, error)
 func NewBuilder(apiClient *clients.Settings, name, nsname string) *Builder {
 	glog.V(100).Infof("Initializing new serviceaccount structure with the following params: %s, %s", name, nsname)
 
-	builder := Builder{
+	builder := &Builder{
 		apiClient: apiClient,
 		Definition: &corev1.ServiceAccount{
 			ObjectMeta: metav1.ObjectMeta{
@@ -46,22 +46,26 @@ func NewBuilder(apiClient *clients.Settings, name, nsname string) *Builder {
 		glog.V(100).Infof("The name of the serviceaccount is empty")
 
 		builder.errorMsg = "serviceaccount 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the serviceaccount is empty")
 
 		builder.errorMsg = "serviceaccount 'nsname' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // Pull loads an existing serviceaccount into Builder struct.
 func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	glog.V(100).Infof("Pulling existing serviceaccount name: %s under namespace: %s", name, nsname)
 
-	builder := Builder{
+	builder := &Builder{
 		apiClient: apiClient,
 		Definition: &corev1.ServiceAccount{
 			ObjectMeta: metav1.ObjectMeta{
@@ -72,11 +76,15 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	}
 
 	if name == "" {
-		builder.errorMsg = "serviceaccount 'name' cannot be empty"
+		glog.V(100).Infof("The name of the serviceaccount is empty")
+
+		return nil, fmt.Errorf("serviceaccount 'name' cannot be empty")
 	}
 
 	if nsname == "" {
-		builder.errorMsg = "serviceaccount 'namespace' cannot be empty"
+		glog.V(100).Infof("The namespace of the serviceaccount is empty")
+
+		return nil, fmt.Errorf("serviceaccount 'namespace' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -85,7 +93,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Create makes a serviceaccount in cluster and stores the created object in struct.
@@ -130,7 +138,7 @@ func (builder *Builder) Delete() error {
 
 	builder.Object = nil
 
-	return err
+	return nil
 }
 
 // Exists checks whether the given serviceaccount exists.
@@ -189,13 +197,13 @@ func (builder *Builder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

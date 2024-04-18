@@ -71,10 +71,6 @@ func (builder *MultiNetworkPolicyBuilder) WithPodSelector(podSelector metav1.Lab
 		"Creating MultiNetworkPolicy %s in %s namespace with the podSelector defined: %v",
 		builder.Definition.Name, builder.Definition.Namespace, podSelector)
 
-	if builder.errorMsg != "" {
-		return builder
-	}
-
 	builder.Definition.Spec.PodSelector = podSelector
 
 	return builder
@@ -182,7 +178,7 @@ func (builder *MultiNetworkPolicyBuilder) WithPolicyType(
 func PullMultiNetworkPolicy(apiClient *clients.Settings, name, nsname string) (*MultiNetworkPolicyBuilder, error) {
 	glog.V(100).Infof("Pulling existing MultiNetworkPolicy name: %s, namespace: %s", name, nsname)
 
-	builder := MultiNetworkPolicyBuilder{
+	builder := &MultiNetworkPolicyBuilder{
 		apiClient: apiClient.K8sCniCncfIoV1beta1Interface,
 		Definition: &v1beta1.MultiNetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
@@ -214,7 +210,7 @@ func PullMultiNetworkPolicy(apiClient *clients.Settings, name, nsname string) (*
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Create makes a MultiNetworkPolicy in cluster and stores the created object in struct.

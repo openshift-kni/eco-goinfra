@@ -48,18 +48,24 @@ func NewRestoreBuilder(apiClient *clients.Settings, name, nsname, backupName str
 		glog.V(100).Infof("The name of the restore is empty")
 
 		builder.errorMsg = "restore name cannot be an empty string"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the restore is empty")
 
 		builder.errorMsg = "restore namespace cannot be an empty string"
+
+		return builder
 	}
 
 	if backupName == "" {
 		glog.V(100).Infof("The backupName of the restore is empty")
 
 		builder.errorMsg = "restore backupName cannot be an empty string"
+
+		return builder
 	}
 
 	return builder
@@ -69,7 +75,7 @@ func NewRestoreBuilder(apiClient *clients.Settings, name, nsname, backupName str
 func PullRestore(apiClient *clients.Settings, name, nsname string) (*RestoreBuilder, error) {
 	glog.V(100).Infof("Pulling existing restore name: %s under namespace: %s", name, nsname)
 
-	builder := RestoreBuilder{
+	builder := &RestoreBuilder{
 		apiClient: apiClient.VeleroClient,
 		Definition: &velerov1.Restore{
 			ObjectMeta: metav1.ObjectMeta{
@@ -80,10 +86,14 @@ func PullRestore(apiClient *clients.Settings, name, nsname string) (*RestoreBuil
 	}
 
 	if name == "" {
+		glog.V(100).Infof("The name of the restore is empty")
+
 		return nil, fmt.Errorf("restore name cannot be empty")
 	}
 
 	if nsname == "" {
+		glog.V(100).Infof("The namespace of the restore is empty")
+
 		return nil, fmt.Errorf("restore namespace cannot be empty")
 	}
 
@@ -93,7 +103,7 @@ func PullRestore(apiClient *clients.Settings, name, nsname string) (*RestoreBuil
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // WithStorageLocation adds a storage location to the restore.
@@ -110,9 +120,7 @@ func (builder *RestoreBuilder) WithStorageLocation(location string) *RestoreBuil
 		glog.V(100).Infof("Backup storage location is empty")
 
 		builder.errorMsg = "restore storage location cannot be an empty string"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -213,13 +221,13 @@ func (builder *RestoreBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

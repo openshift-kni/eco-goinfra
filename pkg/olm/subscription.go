@@ -52,30 +52,40 @@ func NewSubscriptionBuilder(apiClient *clients.Settings, subName, subNamespace, 
 		glog.V(100).Infof("The Name of the Subscription is empty")
 
 		builder.errorMsg = "Subscription 'subName' cannot be empty"
+
+		return builder
 	}
 
 	if subNamespace == "" {
 		glog.V(100).Infof("The Namespace of the Subscription is empty")
 
 		builder.errorMsg = "Subscription 'subNamespace' cannot be empty"
+
+		return builder
 	}
 
 	if catalogSource == "" {
 		glog.V(100).Infof("The Catalogsource of the Subscription is empty")
 
 		builder.errorMsg = "Subscription 'catalogSource' cannot be empty"
+
+		return builder
 	}
 
 	if catalogSourceNamespace == "" {
 		glog.V(100).Infof("The Catalogsource namespace of the Subscription is empty")
 
 		builder.errorMsg = "Subscription 'catalogSourceNamespace' cannot be empty"
+
+		return builder
 	}
 
 	if packageName == "" {
 		glog.V(100).Infof("The Package name of the Subscription is empty")
 
 		builder.errorMsg = "Subscription 'packageName' cannot be empty"
+
+		return builder
 	}
 
 	return builder
@@ -91,9 +101,7 @@ func (builder *SubscriptionBuilder) WithChannel(channel string) *SubscriptionBui
 
 	if channel == "" {
 		builder.errorMsg = "can not redefine subscription with empty channel"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -113,9 +121,7 @@ func (builder *SubscriptionBuilder) WithStartingCSV(startingCSV string) *Subscri
 
 	if startingCSV == "" {
 		builder.errorMsg = "can not redefine subscription with empty startingCSV"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -139,9 +145,7 @@ func (builder *SubscriptionBuilder) WithInstallPlanApproval(
 			"or \"Manual\"")
 
 		builder.errorMsg = "Subscription 'installPlanApproval' must be either \"Automatic\" or \"Manual\""
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -207,7 +211,7 @@ func (builder *SubscriptionBuilder) Delete() error {
 
 	builder.Object = nil
 
-	return err
+	return nil
 }
 
 // Update modifies the existing Subscription with the Subscription definition in SubscriptionBuilder.
@@ -250,13 +254,13 @@ func PullSubscription(apiClient *clients.Settings, subName, subNamespace string)
 	if subName == "" {
 		glog.V(100).Infof("The name of the Subscription is empty")
 
-		builder.errorMsg = "Subscription 'subName' cannot be empty"
+		return nil, fmt.Errorf("subscription 'subName' cannot be empty")
 	}
 
 	if subNamespace == "" {
 		glog.V(100).Infof("The namespace of the Subscription is empty")
 
-		builder.errorMsg = "Subscription 'subNamespace' cannot be empty"
+		return nil, fmt.Errorf("subscription 'subNamespace' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -282,13 +286,13 @@ func (builder *SubscriptionBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

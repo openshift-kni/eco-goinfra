@@ -38,7 +38,7 @@ func NewClusterRoleBuilder(apiClient *clients.Settings, name string, rule v1.Pol
 			"name: %s, policy rule: %v",
 		name, rule)
 
-	builder := ClusterRoleBuilder{
+	builder := &ClusterRoleBuilder{
 		apiClient: apiClient,
 		Definition: &v1.ClusterRole{
 			ObjectMeta: metav1.ObjectMeta{
@@ -52,11 +52,13 @@ func NewClusterRoleBuilder(apiClient *clients.Settings, name string, rule v1.Pol
 		glog.V(100).Infof("The name of the clusterrole is empty")
 
 		builder.errorMsg = "clusterrole 'name' cannot be empty"
+
+		return builder
 	}
 
 	builder.WithRules([]v1.PolicyRule{rule})
 
-	return &builder
+	return builder
 }
 
 // WithRules appends additional rules to the clusterrole definition.
@@ -72,9 +74,7 @@ func (builder *ClusterRoleBuilder) WithRules(rules []v1.PolicyRule) *ClusterRole
 		glog.V(100).Infof("The list of rules is empty")
 
 		builder.errorMsg = "cannot accept nil or empty slice as rules"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -83,9 +83,7 @@ func (builder *ClusterRoleBuilder) WithRules(rules []v1.PolicyRule) *ClusterRole
 			glog.V(100).Infof("The clusterrole rule must contain at least one Verb entry")
 
 			builder.errorMsg = "clusterrole rule must contain at least one Verb entry"
-		}
 
-		if builder.errorMsg != "" {
 			return builder
 		}
 	}
@@ -130,7 +128,7 @@ func (builder *ClusterRoleBuilder) WithOptions(options ...ClusterRoleAdditionalO
 func PullClusterRole(apiClient *clients.Settings, name string) (*ClusterRoleBuilder, error) {
 	glog.V(100).Infof("Pulling existing clusterrole name %s from cluster", name)
 
-	builder := ClusterRoleBuilder{
+	builder := &ClusterRoleBuilder{
 		apiClient: apiClient,
 		Definition: &v1.ClusterRole{
 			ObjectMeta: metav1.ObjectMeta{
@@ -142,7 +140,7 @@ func PullClusterRole(apiClient *clients.Settings, name string) (*ClusterRoleBuil
 	if name == "" {
 		glog.V(100).Infof("The name of the clusterrole is empty")
 
-		builder.errorMsg = "clusterrole 'name' cannot be empty"
+		return nil, fmt.Errorf("clusterrole 'name' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -151,7 +149,7 @@ func PullClusterRole(apiClient *clients.Settings, name string) (*ClusterRoleBuil
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Create generates a clusterrole in the cluster and stores the created object in struct.
@@ -194,7 +192,7 @@ func (builder *ClusterRoleBuilder) Delete() error {
 
 	builder.Object = nil
 
-	return err
+	return nil
 }
 
 // Update modifies a clusterrole object in the cluster.
@@ -243,13 +241,13 @@ func (builder *ClusterRoleBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

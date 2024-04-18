@@ -56,18 +56,24 @@ func NewContainerBuilder(name, image string, cmd []string) *ContainerBuilder {
 		glog.V(100).Infof("The name of the container is empty")
 
 		builder.errorMsg = "container's name is empty"
+
+		return builder
 	}
 
 	if image == "" {
 		glog.V(100).Infof("Container's image is empty")
 
 		builder.errorMsg = "container's image is empty"
+
+		return builder
 	}
 
 	if len(cmd) < 1 {
 		glog.V(100).Infof("Container's cmd is empty")
 
 		builder.errorMsg = "container's cmd is empty"
+
+		return builder
 	}
 
 	return builder
@@ -83,6 +89,8 @@ func (builder *ContainerBuilder) WithSecurityCapabilities(sCapabilities []string
 			glog.V(100).Infof("Cannot modify pre-existing SecurityContext")
 
 			builder.errorMsg = "can not modify pre-existing security context"
+
+			return builder
 		}
 
 		builder.definition.SecurityContext = nil
@@ -93,9 +101,7 @@ func (builder *ContainerBuilder) WithSecurityCapabilities(sCapabilities []string
 			sCapabilities, AllowedSCList)
 
 		builder.errorMsg = "one of the give securityCapabilities is invalid. Please extend allowed list or fix parameter"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -197,9 +203,7 @@ func (builder *ContainerBuilder) WithSecurityContext(securityContext *corev1.Sec
 		glog.V(100).Infof("Cannot add empty securityContext to container structure")
 
 		builder.errorMsg = "can not modify container config with empty securityContext"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -217,21 +221,23 @@ func (builder *ContainerBuilder) WithResourceLimit(hugePages, memory string, cpu
 		glog.V(100).Infof("Container's resource limit hugePages is empty")
 
 		builder.errorMsg = "container's resource limit 'hugePages' is empty"
+
+		return builder
 	}
 
 	if memory == "" {
 		glog.V(100).Infof("Container's resource limit memory is empty")
 
 		builder.errorMsg = "container's resource limit 'memory' is empty"
+
+		return builder
 	}
 
 	if cpu <= 0 {
 		glog.V(100).Infof("Container's resource limit cpu can not be zero or negative number.")
 
 		builder.errorMsg = "container's resource limit 'cpu' is invalid"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -253,21 +259,23 @@ func (builder *ContainerBuilder) WithResourceRequest(hugePages, memory string, c
 		glog.V(100).Infof("Container's resource request hugePages is empty")
 
 		builder.errorMsg = "container's resource request 'hugePages' is empty"
+
+		return builder
 	}
 
 	if memory == "" {
 		glog.V(100).Infof("Container's resource request memory is empty")
 
 		builder.errorMsg = "container's resource request 'memory' is empty"
+
+		return builder
 	}
 
 	if cpu <= 0 {
 		glog.V(100).Infof("Container's resource request cpu can not be zero or negative number.")
 
 		builder.errorMsg = "container's resource request 'cpu' is invalid"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -305,9 +313,7 @@ func (builder *ContainerBuilder) WithCustomResourcesLimits(resourceList corev1.R
 		glog.V(100).Infof("Container's resource limit var 'resourceList' is empty")
 
 		builder.errorMsg = "container's resource limit var 'resourceList' is empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -324,9 +330,7 @@ func (builder *ContainerBuilder) WithImagePullPolicy(pullPolicy corev1.PullPolic
 		glog.V(100).Infof("Container's image pull policy 'pullPolicy' is empty")
 
 		builder.errorMsg = "container's pull policy var 'pullPolicy' is empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -343,15 +347,15 @@ func (builder *ContainerBuilder) WithEnvVar(name, value string) *ContainerBuilde
 		glog.V(100).Infof("Container's environment var 'name' is empty")
 
 		builder.errorMsg = "container's environment var 'name' is empty"
+
+		return builder
 	}
 
 	if value == "" {
 		glog.V(100).Infof("Container's environment var 'value' is empty")
 
 		builder.errorMsg = "container's environment var 'value' is empty"
-	}
 
-	if builder.errorMsg != name {
 		return builder
 	}
 
@@ -374,15 +378,15 @@ func (builder *ContainerBuilder) WithVolumeMount(volMount corev1.VolumeMount) *C
 		glog.V(100).Infof("Container's VolumeMount name cannot be empty")
 
 		builder.errorMsg = "container's volume mount name is empty"
+
+		return builder
 	}
 
 	if volMount.MountPath == "" {
 		glog.V(100).Infof("Container's VolumeMount mount path cannot be empty")
 
 		builder.errorMsg = "container's volume mount path is empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
