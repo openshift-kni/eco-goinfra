@@ -212,9 +212,13 @@ func (builder *RoleBindingBuilder) Delete() error {
 	err := builder.apiClient.RoleBindings(builder.Definition.Namespace).Delete(
 		context.TODO(), builder.Definition.Name, metav1.DeleteOptions{})
 
+	if err != nil {
+		return err
+	}
+
 	builder.Object = nil
 
-	return err
+	return nil
 }
 
 // Update modifies an existing RoleBinding in the cluster.

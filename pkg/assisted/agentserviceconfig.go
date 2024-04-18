@@ -261,7 +261,7 @@ func (builder *AgentServiceConfigBuilder) WaitUntilDeployed(timeout time.Duratio
 	if !builder.Exists() {
 		glog.V(100).Infof("The agentserviceconfig does not exist on the cluster")
 
-		return builder, fmt.Errorf("cannot wait for non-existent agentserviceconfig to be deployed")
+		return nil, fmt.Errorf("cannot wait for non-existent agentserviceconfig to be deployed")
 	}
 
 	// Polls every retryInterval to determine if agentserviceconfig is in desired state.
@@ -308,7 +308,7 @@ func PullAgentServiceConfig(apiClient *clients.Settings) (*AgentServiceConfigBui
 		return nil, fmt.Errorf("the apiClient is nil")
 	}
 
-	builder := AgentServiceConfigBuilder{
+	builder := &AgentServiceConfigBuilder{
 		apiClient: apiClient.Client,
 		Definition: &agentInstallV1Beta1.AgentServiceConfig{
 			ObjectMeta: metav1.ObjectMeta{
@@ -323,7 +323,7 @@ func PullAgentServiceConfig(apiClient *clients.Settings) (*AgentServiceConfigBui
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Get fetches the defined agentserviceconfig from the cluster.
@@ -381,7 +381,7 @@ func (builder *AgentServiceConfigBuilder) Update(force bool) (*AgentServiceConfi
 		glog.V(100).Infof("agentserviceconfig %s does not exist",
 			builder.Definition.Name)
 
-		return builder, fmt.Errorf("cannot update non-existent agentserviceconfig")
+		return nil, fmt.Errorf("cannot update non-existent agentserviceconfig")
 	}
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)

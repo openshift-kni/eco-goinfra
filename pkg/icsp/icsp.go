@@ -68,7 +68,7 @@ func NewICSPBuilder(apiClient *clients.Settings, name, source string, mirrors []
 	if name == "" {
 		glog.V(100).Infof("The name of the ImageContentSourcePolicy is empty")
 
-		icspBuilder.errorMsg = "imageContentSourcePolicy 'name' cannot be empty"
+		icspBuilder.errorMsg = "ImageContentSourcePolicy 'name' cannot be empty"
 
 		return icspBuilder
 	}
@@ -76,7 +76,7 @@ func NewICSPBuilder(apiClient *clients.Settings, name, source string, mirrors []
 	if source == "" {
 		glog.V(100).Infof("The Source of the ImageContentSourcePolicy is empty")
 
-		icspBuilder.errorMsg = "imageContentSourcePolicy 'source' cannot be empty"
+		icspBuilder.errorMsg = "ImageContentSourcePolicy 'source' cannot be empty"
 
 		return icspBuilder
 	}
@@ -84,7 +84,7 @@ func NewICSPBuilder(apiClient *clients.Settings, name, source string, mirrors []
 	if len(mirrors) == 0 {
 		glog.V(100).Infof("The mirrors of the ImageContentSourcePolicy are empty")
 
-		icspBuilder.errorMsg = "imageContentSourcePolicy 'mirrors' cannot be empty"
+		icspBuilder.errorMsg = "ImageContentSourcePolicy 'mirrors' cannot be empty"
 
 		return icspBuilder
 	}
@@ -254,7 +254,7 @@ func (builder *ICSPBuilder) WithRepositoryDigestMirror(source string, mirrors []
 	if source == "" {
 		glog.V(100).Infof("The source is empty")
 
-		builder.errorMsg = "imageContentSourcePolicy 'source' cannot be empty"
+		builder.errorMsg = "'source' cannot be empty"
 
 		return builder
 	}
@@ -262,7 +262,7 @@ func (builder *ICSPBuilder) WithRepositoryDigestMirror(source string, mirrors []
 	if len(mirrors) == 0 {
 		glog.V(100).Infof("Mirrors is empty")
 
-		builder.errorMsg = "imageContentSourcePolicy 'mirrors' cannot be empty"
+		builder.errorMsg = "'mirrors' cannot be empty"
 
 		return builder
 	}

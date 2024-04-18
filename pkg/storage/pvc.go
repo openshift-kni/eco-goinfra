@@ -85,16 +85,14 @@ func (builder *PVCBuilder) WithPVCAccessMode(accessMode string) (*PVCBuilder, er
 
 	if accessMode == "" {
 		glog.V(100).Infof("Empty accessMode for PVC %s", builder.Definition.Name)
-		builder.errorMsg = "Empty accessMode for PVC requested"
 
-		return builder, fmt.Errorf(builder.errorMsg)
+		return nil, fmt.Errorf("empty accessMode for PVC requested")
 	}
 
 	if !validatePVCAccessMode(accessMode) {
 		glog.V(100).Infof("Invalid accessMode for PVC %s", accessMode)
-		builder.errorMsg = fmt.Sprintf("Invalid accessMode for PVC %s", accessMode)
 
-		return builder, fmt.Errorf(builder.errorMsg)
+		return builder, fmt.Errorf("invalid accessMode for PVC %s", accessMode)
 	}
 
 	if builder.Definition.Spec.AccessModes != nil {
@@ -120,16 +118,16 @@ func validatePVCAccessMode(accessMode string) bool {
 // WithPVCCapacity configures the minimum resources the volume should have.
 func (builder *PVCBuilder) WithPVCCapacity(capacity string) (*PVCBuilder, error) {
 	if capacity == "" {
-		glog.V(100).Infof("Capacity of the PersistentVolumeClaim is empty")
+		glog.V(100).Infof("capacity of the PersistentVolumeClaim is empty")
 
-		return builder, fmt.Errorf("capacity of the PersistentVolumeClaim is empty")
+		return nil, fmt.Errorf("capacity of the PersistentVolumeClaim is empty")
 	}
 
 	defer func() (*PVCBuilder, error) {
 		if r := recover(); r != nil {
 			glog.V(100).Infof("Failed to parse %v", capacity)
 
-			return builder, fmt.Errorf("failed to parse: %v", capacity)
+			return nil, fmt.Errorf("failed to parse: %v", capacity)
 		}
 
 		return builder, nil
@@ -148,9 +146,9 @@ func (builder *PVCBuilder) WithStorageClass(storageClass string) (*PVCBuilder, e
 	glog.V(100).Infof("Set storage class %s for the PersistentVolumeClaim", storageClass)
 
 	if storageClass == "" {
-		glog.V(100).Infof("Empty storageClass requested for the PersistentVolumeClaim", storageClass)
+		glog.V(100).Infof("empty storageClass requested for the PersistentVolumeClaim", storageClass)
 
-		return builder, fmt.Errorf("empty storageClass requested for the PersistentVolumeClaim %s",
+		return nil, fmt.Errorf("empty storageClass requested for the PersistentVolumeClaim %s",
 			builder.Definition.Name)
 	}
 
@@ -164,17 +162,17 @@ func (builder *PVCBuilder) WithVolumeMode(volumeMode string) (*PVCBuilder, error
 	glog.V(100).Infof("Set VolumeMode %s for the PersistentVolumeClaim", volumeMode)
 
 	if volumeMode == "" {
-		glog.V(100).Infof(fmt.Sprintf("Empty volumeMode requested for the PersistentVolumeClaim %s in %s namespace",
+		glog.V(100).Infof(fmt.Sprintf("empty volumeMode requested for the PersistentVolumeClaim %s in %s namespace",
 			builder.Definition.Name, builder.Definition.Namespace))
 
-		return builder, fmt.Errorf("empty volumeMode requested for the PersistentVolumeClaim %s in %s namespace",
+		return nil, fmt.Errorf("empty volumeMode requested for the PersistentVolumeClaim %s in %s namespace",
 			builder.Definition.Name, builder.Definition.Namespace)
 	}
 
 	if !validateVolumeMode(volumeMode) {
-		glog.V(100).Infof(fmt.Sprintf("Unsupported VolumeMode: %s", volumeMode))
+		glog.V(100).Infof(fmt.Sprintf("unsupported VolumeMode: %s", volumeMode))
 
-		return builder, fmt.Errorf("unsupported VolumeMode %q requested for %s PersistentVolumeClaim in %s namespace",
+		return nil, fmt.Errorf("unsupported VolumeMode %q requested for %s PersistentVolumeClaim in %s namespace",
 			volumeMode, builder.Definition.Name, builder.Definition.Name)
 	}
 

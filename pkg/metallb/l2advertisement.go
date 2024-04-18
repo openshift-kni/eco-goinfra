@@ -257,7 +257,7 @@ func (builder *L2AdvertisementBuilder) Update(force bool) (*L2AdvertisementBuild
 		}
 	}
 
-	return builder, err
+	return builder, nil
 }
 
 // WithNodeSelector adds the specified NodeSelectors to the L2Advertisement.

@@ -276,7 +276,7 @@ func (builder *Builder) GetString() (string, error) {
 		return "", err
 	}
 
-	return string(nadByte), err
+	return string(nadByte), nil
 }
 
 // fillConfigureString adds a configuration string to builder definition specs configuration if needed.

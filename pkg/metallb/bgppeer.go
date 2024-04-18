@@ -156,13 +156,13 @@ func PullBGPPeer(apiClient *clients.Settings, name, nsname string) (*BGPPeerBuil
 	if name == "" {
 		glog.V(100).Infof("The name of the bgppeer is empty")
 
-		return nil, fmt.Errorf("bgppeer 'name' cannot be empty")
+		return nil, fmt.Errorf("bgppeer object name cannot be empty")
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the bgppeer is empty")
 
-		return nil, fmt.Errorf("bgppeer 'namespace' cannot be empty")
+		return nil, fmt.Errorf("bgppeer object namespace cannot be empty")
 	}
 
 	if !builder.Exists() {

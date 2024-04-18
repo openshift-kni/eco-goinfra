@@ -75,36 +75,48 @@ func NewPolicyBuilder(
 	}
 
 	if name == "" {
+		glog.V(100).Infof("The name of the sriovnetworknodepolicy is empty")
+
 		builder.errorMsg = "SriovNetworkNodePolicy 'name' cannot be empty"
 
 		return builder
 	}
 
 	if nsname == "" {
+		glog.V(100).Infof("The namespace of the sriovnetworknodepolicy is empty")
+
 		builder.errorMsg = "SriovNetworkNodePolicy 'nsname' cannot be empty"
 
 		return builder
 	}
 
 	if resName == "" {
+		glog.V(100).Infof("The resName of the sriovnetworknodepolicy is empty")
+
 		builder.errorMsg = "SriovNetworkNodePolicy 'resName' cannot be empty"
 
 		return builder
 	}
 
 	if len(nicNames) == 0 {
+		glog.V(100).Infof("The nicNames of the sriovnetworknodepolicy is empty")
+
 		builder.errorMsg = "SriovNetworkNodePolicy 'nicNames' cannot be empty list"
 
 		return builder
 	}
 
 	if len(nodeSelector) == 0 {
+		glog.V(100).Infof("The nodeSelector of the sriovnetworknodepolicy is empty")
+
 		builder.errorMsg = "SriovNetworkNodePolicy 'nodeSelector' cannot be empty map"
 
 		return builder
 	}
 
 	if vfsNumber <= 0 {
+		glog.V(100).Infof("The vfsNumber of the sriovnetworknodepolicy is zero or negative")
+
 		builder.errorMsg = "SriovNetworkNodePolicy 'vfsNumber' cannot be zero of negative"
 
 		return builder

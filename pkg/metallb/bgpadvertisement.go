@@ -254,7 +254,7 @@ func (builder *BGPAdvertisementBuilder) Update(force bool) (*BGPAdvertisementBui
 		}
 	}
 
-	return builder, err
+	return builder, nil
 }
 
 // WithAggregationLength4 adds the specified AggregationLength to the BGPAdvertisement.

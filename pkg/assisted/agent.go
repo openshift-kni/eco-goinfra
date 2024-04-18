@@ -300,7 +300,7 @@ func (builder *agentBuilder) Update() (*agentBuilder, error) {
 		glog.V(100).Infof("agent %s in namespace %s does not exist",
 			builder.Definition.Name, builder.Definition.Namespace)
 
-		return nil, fmt.Errorf(nonExistentMsg)
+		return builder, fmt.Errorf(nonExistentMsg)
 	}
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)

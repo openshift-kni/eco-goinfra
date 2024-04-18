@@ -91,7 +91,7 @@ func PullPlacementRule(apiClient *clients.Settings, name, nsname string) (*Place
 		return nil, err
 	}
 
-	builder := PlacementRuleBuilder{
+	builder := &PlacementRuleBuilder{
 		apiClient: apiClient.Client,
 		Definition: &placementrulev1.PlacementRule{
 			ObjectMeta: metav1.ObjectMeta{
@@ -119,7 +119,7 @@ func PullPlacementRule(apiClient *clients.Settings, name, nsname string) (*Place
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Exists checks whether the given placementrule exists.

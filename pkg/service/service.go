@@ -43,7 +43,7 @@ func NewBuilder(
 	glog.V(100).Infof(
 		"Initializing new service structure with the following params: %s, %s", name, nsname)
 
-	builder := Builder{
+	builder := &Builder{
 		apiClient: apiClient.CoreV1Interface,
 		Definition: &corev1.Service{
 			ObjectMeta: metav1.ObjectMeta{
@@ -62,7 +62,7 @@ func NewBuilder(
 
 		builder.errorMsg = "Service 'name' cannot be empty"
 
-		return &builder
+		return builder
 	}
 
 	if nsname == "" {
@@ -70,10 +70,10 @@ func NewBuilder(
 
 		builder.errorMsg = "Service 'nsname' cannot be empty"
 
-		return &builder
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // WithNodePort redefines the service with NodePort service type.
@@ -105,7 +105,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 		return nil, fmt.Errorf("service 'apiClient' cannot be empty")
 	}
 
-	builder := Builder{
+	builder := &Builder{
 		apiClient: apiClient.CoreV1Interface,
 		Definition: &corev1.Service{
 			ObjectMeta: metav1.ObjectMeta{
@@ -129,7 +129,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Create the service in the cluster and store the created object in Object.

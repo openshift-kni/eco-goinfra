@@ -63,7 +63,7 @@ func Pull(apiClient *clients.Settings, name string) (*Builder, error) {
 	if name == "" {
 		glog.V(100).Info("The name of the Console is empty")
 
-		return builder, fmt.Errorf("console 'name' cannot be empty")
+		return nil, fmt.Errorf("console 'name' cannot be empty")
 	}
 
 	glog.V(100).Infof("Pulling cluster console %s", name)

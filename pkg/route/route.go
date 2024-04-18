@@ -155,9 +155,7 @@ func (builder *Builder) WithTargetPortName(portName string) *Builder {
 		glog.V(100).Infof("Received empty route portName")
 
 		builder.errorMsg = "route target port name cannot be empty string"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 

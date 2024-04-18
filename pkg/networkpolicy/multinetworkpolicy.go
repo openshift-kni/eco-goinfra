@@ -204,7 +204,7 @@ func PullMultiNetworkPolicy(apiClient *clients.Settings, name, nsname string) (*
 		return nil, err
 	}
 
-	builder := MultiNetworkPolicyBuilder{
+	builder := &MultiNetworkPolicyBuilder{
 		apiClient: apiClient.Client,
 		Definition: &v1beta1.MultiNetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
@@ -236,7 +236,7 @@ func PullMultiNetworkPolicy(apiClient *clients.Settings, name, nsname string) (*
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Get returns MultiNetworkPolicy object if found.
