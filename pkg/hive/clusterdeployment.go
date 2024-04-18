@@ -30,6 +30,8 @@ type ClusterDeploymentAdditionalOptions func(builder *ClusterDeploymentBuilder) 
 
 // NewABMClusterDeploymentBuilder creates a new instance of
 // ClusterDeploymentBuilder with platform type set to agentBareMetal.
+//
+//nolint:funlen
 func NewABMClusterDeploymentBuilder(
 	apiClient *clients.Settings,
 	name string,
@@ -84,7 +86,7 @@ func NewClusterDeploymentByInstallRefBuilder(
 		return nil
 	}
 
-	builder := ClusterDeploymentBuilder{
+	builder := &ClusterDeploymentBuilder{
 		apiClient: apiClient.Client,
 		Definition: &hiveV1.ClusterDeployment{
 			ObjectMeta: metav1.ObjectMeta{
@@ -105,7 +107,7 @@ func NewClusterDeploymentByInstallRefBuilder(
 
 		builder.errorMsg = "clusterdeployment 'name' cannot be empty"
 
-		return &builder
+		return builder
 	}
 
 	if nsname == "" {
@@ -113,7 +115,7 @@ func NewClusterDeploymentByInstallRefBuilder(
 
 		builder.errorMsg = "clusterdeployment 'namespace' cannot be empty"
 
-		return &builder
+		return builder
 	}
 
 	if clusterName == "" {
@@ -121,7 +123,7 @@ func NewClusterDeploymentByInstallRefBuilder(
 
 		builder.errorMsg = "clusterdeployment 'clusterName' cannot be empty"
 
-		return &builder
+		return builder
 	}
 
 	if baseDomain == "" {
@@ -129,18 +131,18 @@ func NewClusterDeploymentByInstallRefBuilder(
 
 		builder.errorMsg = "clusterdeployment 'baseDomain' cannot be empty"
 
-		return &builder
+		return builder
 	}
 
 	if clusterInstallRef.Name == "" {
 		glog.V(100).Infof("The clusterInstallRef name of the clusterdeployment is empty")
 
-		builder.errorMsg = "clusterdeployment 'clusterInstallRef.name' cannot be empty"
+		builder.errorMsg = "clusterdeployment 'clusterInstallRef' cannot be empty"
 
-		return &builder
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // WithAdditionalAgentSelectorLabels inserts additional labels
@@ -159,15 +161,15 @@ func (builder *ClusterDeploymentBuilder) WithAdditionalAgentSelectorLabels(
 		glog.V(100).Infof("The clusterdeployment platform is not agentBareMetal")
 
 		builder.errorMsg = "clusterdeployment type must be AgentBareMetal to use agentSelector"
+
+		return builder
 	}
 
 	if len(agentSelector) == 0 {
 		glog.V(100).Infof("The clusterdeployment agentSelector is empty")
 
 		builder.errorMsg = "agentSelector cannot be empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -407,13 +409,13 @@ func (builder *ClusterDeploymentBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {
