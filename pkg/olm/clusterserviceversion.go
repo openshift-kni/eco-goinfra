@@ -45,7 +45,7 @@ func PullClusterServiceVersion(apiClient *clients.Settings, name, namespace stri
 		return nil, err
 	}
 
-	builder := ClusterServiceVersionBuilder{
+	builder := &ClusterServiceVersionBuilder{
 		apiClient: apiClient,
 		Definition: &oplmV1alpha1.ClusterServiceVersion{
 			ObjectMeta: metav1.ObjectMeta{
@@ -73,7 +73,7 @@ func PullClusterServiceVersion(apiClient *clients.Settings, name, namespace stri
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Get returns ClusterServiceVersion object if found.

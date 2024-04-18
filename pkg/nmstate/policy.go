@@ -86,6 +86,8 @@ func NewPolicyBuilder(apiClient *clients.Settings, name string, nodeSelector map
 		glog.V(100).Infof("The nodeSelector of the NodeNetworkConfigurationPolicy is empty")
 
 		builder.errorMsg = "nodeNetworkConfigurationPolicy 'nodeSelector' cannot be empty map"
+
+		return builder
 	}
 
 	return builder
@@ -112,7 +114,7 @@ func (builder *PolicyBuilder) Get() (*nmstateV1.NodeNetworkConfigurationPolicy, 
 		return nil, err
 	}
 
-	return nmstatePolicy, err
+	return nmstatePolicy, nil
 }
 
 // Exists checks whether the given NodeNetworkConfigurationPolicy exists.

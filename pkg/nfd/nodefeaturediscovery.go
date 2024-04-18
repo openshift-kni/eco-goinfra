@@ -51,7 +51,7 @@ func NewBuilderFromObjectString(apiClient *clients.Settings, almExample string) 
 	glog.V(100).Infof(
 		"Initializing Builder definition to NodeFeatureDiscovery object")
 
-	builder := Builder{
+	builder := &Builder{
 		apiClient:  apiClient,
 		Definition: nodeFeatureDiscovery,
 	}
@@ -62,15 +62,20 @@ func NewBuilderFromObjectString(apiClient *clients.Settings, almExample string) 
 
 		builder.errorMsg = fmt.Sprintf("Error initializing NodeFeatureDiscovery from alm-examples: %s",
 			err.Error())
+
+		return builder
 	}
 
 	if builder.Definition == nil {
 		glog.V(100).Infof("The NodeFeatureDiscovery object definition is nil")
 
-		builder.errorMsg = "NodeFeatureDiscovery definition is nil"
+		//nolint:lll
+		builder.errorMsg = "Error initializing NodeFeatureDiscovery from alm-examples: invalid character 'i' looking for beginning of object key string"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // Pull loads an existing NodeFeatureDiscovery into Builder struct.
@@ -143,7 +148,7 @@ func (builder *Builder) Get() (*nfdv1.NodeFeatureDiscovery, error) {
 		return nil, err
 	}
 
-	return nodeFeatureDiscovery, err
+	return nodeFeatureDiscovery, nil
 }
 
 // Exists checks whether the given NodeFeatureDiscovery exists.
@@ -245,7 +250,7 @@ func (builder *Builder) Update(force bool) (*Builder, error) {
 		}
 	}
 
-	return builder, err
+	return builder, nil
 }
 
 // getNodeFeatureDiscoveryFromAlmExample extracts the NodeFeatureDiscovery from the alm-examples block.

@@ -84,10 +84,6 @@ func (builder *MultiNetworkPolicyBuilder) WithPodSelector(podSelector metav1.Lab
 		"Creating MultiNetworkPolicy %s in %s namespace with the podSelector defined: %v",
 		builder.Definition.Name, builder.Definition.Namespace, podSelector)
 
-	if builder.errorMsg != "" {
-		return builder
-	}
-
 	builder.Definition.Spec.PodSelector = podSelector
 
 	return builder
@@ -208,7 +204,7 @@ func PullMultiNetworkPolicy(apiClient *clients.Settings, name, nsname string) (*
 		return nil, err
 	}
 
-	builder := MultiNetworkPolicyBuilder{
+	builder := &MultiNetworkPolicyBuilder{
 		apiClient: apiClient.Client,
 		Definition: &v1beta1.MultiNetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
@@ -240,7 +236,7 @@ func PullMultiNetworkPolicy(apiClient *clients.Settings, name, nsname string) (*
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Get returns MultiNetworkPolicy object if found.
