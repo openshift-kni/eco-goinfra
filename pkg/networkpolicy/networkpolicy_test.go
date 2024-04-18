@@ -11,7 +11,7 @@ import (
 	k8sfake "k8s.io/client-go/kubernetes/fake"
 )
 
-func TestPull(t *testing.T) {
+func TestNetworkPolicyPull(t *testing.T) {
 	generateNetworkPolicy := func(name, namespace string) *netv1.NetworkPolicy {
 		return &netv1.NetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
@@ -90,7 +90,7 @@ func TestPull(t *testing.T) {
 	}
 }
 
-func TestWithNamespaceIngressRule(t *testing.T) {
+func TestNetworkPolicyWithNamespaceIngressRule(t *testing.T) {
 	testCases := []struct {
 		testNamespaceIngressLabels map[string]string
 		testPodIngressLabels       map[string]string
@@ -147,7 +147,7 @@ func TestWithNamespaceIngressRule(t *testing.T) {
 	}
 }
 
-func TestWithPolicyType(t *testing.T) {
+func TestNetworkPolicyWithPolicyType(t *testing.T) {
 	testCases := []struct {
 		testPolicyType    netv1.PolicyType
 		expectedError     bool
@@ -182,7 +182,7 @@ func TestWithPolicyType(t *testing.T) {
 	}
 }
 
-func TestWithPodSelector(t *testing.T) {
+func TestNetworkPolicyWithPodSelector(t *testing.T) {
 	testCases := []struct {
 		testPodSelector     map[string]string
 		expectedError       bool
@@ -220,7 +220,7 @@ func TestWithPodSelector(t *testing.T) {
 	}
 }
 
-func TestCreate(t *testing.T) {
+func TestNetworkPolicyCreate(t *testing.T) {
 	generateNetworkPolicy := func(name, namespace string) *netv1.NetworkPolicy {
 		return &netv1.NetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
@@ -292,7 +292,7 @@ func TestCreate(t *testing.T) {
 	}
 }
 
-func TestDelete(t *testing.T) {
+func TestNetworkPolicyDelete(t *testing.T) {
 	generateNetworkPolicy := func(name, namespace string) *netv1.NetworkPolicy {
 		return &netv1.NetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
@@ -362,7 +362,7 @@ func TestDelete(t *testing.T) {
 	}
 }
 
-func TestUpdate(t *testing.T) {
+func TestNetworkPolicyUpdate(t *testing.T) {
 	generateNetworkPolicy := func(name, namespace string) *netv1.NetworkPolicy {
 		return &netv1.NetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
@@ -417,7 +417,7 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
-func TestValidate(t *testing.T) {
+func TestNetworkPolicyValidate(t *testing.T) {
 	testCases := []struct {
 		builderNil    bool
 		definitionNil bool
@@ -473,6 +473,48 @@ func TestValidate(t *testing.T) {
 		} else {
 			assert.Nil(t, err)
 			assert.True(t, valid)
+		}
+	}
+}
+
+func TestNewNetworkPolicyBuilder(t *testing.T) {
+	testCases := []struct {
+		testName          string
+		testNamespace     string
+		expectedError     bool
+		expectedErrorText string
+	}{
+		{ // Test Case 1 - empty name
+			testName:          "",
+			testNamespace:     "test-namespace",
+			expectedError:     true,
+			expectedErrorText: "The networkPolicy 'name' cannot be empty",
+		},
+		{ // Test Case 2 - empty namespace
+			testName:          "test-name",
+			testNamespace:     "",
+			expectedError:     true,
+			expectedErrorText: "The networkPolicy 'namespace' cannot be empty",
+		},
+		{ // Test Case 3 - valid name and namespace
+			testName:      "test-name",
+			testNamespace: "test-namespace",
+			expectedError: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testNBP := NewNetworkPolicyBuilder(&clients.Settings{
+			K8sClient:             nil,
+			CoreV1Interface:       nil,
+			AppsV1Interface:       nil,
+			NetworkingV1Interface: nil,
+		}, testCase.testName, testCase.testNamespace)
+
+		if testCase.expectedError {
+			assert.Equal(t, testNBP.errorMsg, testCase.expectedErrorText)
+		} else {
+			assert.NotNil(t, testNBP)
 		}
 	}
 }

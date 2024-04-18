@@ -44,12 +44,16 @@ func NewNetworkPolicyBuilder(apiClient *clients.Settings, name, nsname string) *
 		glog.V(100).Infof("The name of the networkPolicy is empty")
 
 		builder.errorMsg = "The networkPolicy 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the networkPolicy is empty")
 
 		builder.errorMsg = "The networkPolicy 'namespace' cannot be empty"
+
+		return builder
 	}
 
 	return builder
