@@ -45,7 +45,7 @@ func NewInstallPlanBuilder(apiClient *clients.Settings, name, nsname string) *In
 		return nil
 	}
 
-	builder := InstallPlanBuilder{
+	builder := &InstallPlanBuilder{
 		apiClient: apiClient.Client,
 		Definition: &operatorsV1alpha1.InstallPlan{
 			ObjectMeta: metav1.ObjectMeta{
@@ -59,15 +59,19 @@ func NewInstallPlanBuilder(apiClient *clients.Settings, name, nsname string) *In
 		glog.V(100).Infof("The name of the installplan is empty")
 
 		builder.errorMsg = "installplan 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The nsname of the installplan is empty")
 
 		builder.errorMsg = "installplan 'nsname' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // PullInstallPlan loads existing InstallPlan from cluster into the InstallPlanBuilder struct.
@@ -206,7 +210,7 @@ func (builder *InstallPlanBuilder) Delete() error {
 
 	builder.Object = nil
 
-	return err
+	return nil
 }
 
 // Update modifies the existing InstallPlanBuilder with the InstallPlan definition in InstallPlanBuilder.
@@ -246,13 +250,13 @@ func (builder *InstallPlanBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The builder %s apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

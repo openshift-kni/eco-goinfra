@@ -48,12 +48,13 @@ func TestNFDNewBuilderFromObjectString(t *testing.T) {
 		{
 			almString:         "",
 			client:            true,
-			expectedErrorText: "NodeFeatureDiscovery definition is nil",
+			expectedErrorText: "Error initializing NodeFeatureDiscovery from alm-examples: almExample is an empty string",
 		},
 		{
-			almString:         "{invalid}",
-			client:            true,
-			expectedErrorText: "NodeFeatureDiscovery definition is nil",
+			almString: "{invalid}",
+			client:    true,
+			//nolint:lll
+			expectedErrorText: "Error initializing NodeFeatureDiscovery from alm-examples: invalid character 'i' looking for beginning of object key string",
 		},
 		{
 			almString:         almExample,

@@ -110,7 +110,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 		return nil, fmt.Errorf("pod 'apiClient' cannot be empty")
 	}
 
-	builder := Builder{
+	builder := &Builder{
 		apiClient: apiClient,
 		Definition: &corev1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
@@ -141,7 +141,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // DefineOnNode adds nodeName to the pod's definition.
@@ -159,11 +159,11 @@ func (builder *Builder) DefineOnNode(nodeName string) *Builder {
 		glog.V(100).Infof("The node name is empty")
 
 		builder.errorMsg = "can not define pod on empty node"
+
+		return builder
 	}
 
-	if builder.errorMsg == "" {
-		builder.Definition.Spec.NodeName = nodeName
-	}
+	builder.Definition.Spec.NodeName = nodeName
 
 	return builder
 }
@@ -670,9 +670,7 @@ func (builder *Builder) WithRestartPolicy(restartPolicy corev1.RestartPolicy) *B
 			builder.Definition.Name, builder.Definition.Namespace)
 
 		builder.errorMsg = "can not define pod with empty restart policy"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -765,9 +763,7 @@ func (builder *Builder) WithNodeSelector(nodeSelector map[string]string) *Builde
 			builder.Definition.Name, builder.Definition.Namespace)
 
 		builder.errorMsg = "can not define pod with empty nodeSelector"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -809,9 +805,7 @@ func (builder *Builder) WithVolume(volume corev1.Volume) *Builder {
 		glog.V(100).Infof("The volume's Name cannot be empty")
 
 		builder.errorMsg = "the volume's name cannot be empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -838,12 +832,16 @@ func (builder *Builder) WithLocalVolume(volumeName, mountPath string) *Builder {
 		glog.V(100).Infof("The 'volumeName' of the pod is empty")
 
 		builder.errorMsg = "'volumeName' parameter is empty"
+
+		return builder
 	}
 
 	if mountPath == "" {
 		glog.V(100).Infof("The 'mountPath' of the pod is empty")
 
 		builder.errorMsg = "'mountPath' parameter is empty"
+
+		return builder
 	}
 
 	mountConfig := corev1.VolumeMount{Name: volumeName, MountPath: mountPath, ReadOnly: false}
@@ -914,6 +912,8 @@ func (builder *Builder) WithAdditionalInitContainer(container *corev1.Container)
 		glog.V(100).Infof("The 'container' parameter of the pod is empty")
 
 		builder.errorMsg = "'container' parameter cannot be empty"
+
+		return builder
 	}
 
 	if builder.errorMsg != "" {
@@ -943,9 +943,7 @@ func (builder *Builder) WithSecondaryNetwork(network []*multus.NetworkSelectionE
 
 	if err != nil {
 		builder.errorMsg = fmt.Sprintf("error to unmarshal network annotation due to: %s", err.Error())
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -1061,13 +1059,15 @@ func (builder *Builder) WithSecurityContext(securityContext *corev1.PodSecurityC
 		glog.V(100).Infof("The 'securityContext' of the pod is empty")
 
 		builder.errorMsg = "'securityContext' parameter is empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
 	builder.isMutationAllowed("SecurityContext")
+
+	if builder.errorMsg != "" {
+		return builder
+	}
 
 	builder.Definition.Spec.SecurityContext = securityContext
 
@@ -1136,9 +1136,7 @@ func (builder *Builder) WithLabel(labelKey, labelValue string) *Builder {
 
 	if labelKey == "" {
 		builder.errorMsg = "can not apply empty labelKey"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -1339,13 +1337,13 @@ func (builder *Builder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

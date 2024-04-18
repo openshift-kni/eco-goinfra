@@ -58,12 +58,16 @@ func NewBackupBuilder(apiClient *clients.Settings, name, nsname string) *BackupB
 		glog.V(100).Infof("The name of the backup is empty")
 
 		builder.errorMsg = "backup name cannot be an empty string"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the backup is empty")
 
 		builder.errorMsg = "backup namespace cannot be an empty string"
+
+		return builder
 	}
 
 	return builder
@@ -86,7 +90,7 @@ func PullBackup(apiClient *clients.Settings, name, nsname string) (*BackupBuilde
 		return nil, err
 	}
 
-	builder := BackupBuilder{
+	builder := &BackupBuilder{
 		apiClient: apiClient.Client,
 		Definition: &velerov1.Backup{
 			ObjectMeta: metav1.ObjectMeta{
@@ -97,10 +101,14 @@ func PullBackup(apiClient *clients.Settings, name, nsname string) (*BackupBuilde
 	}
 
 	if name == "" {
+		glog.V(100).Infof("Backup name is empty")
+
 		return nil, fmt.Errorf("backup name cannot be empty")
 	}
 
 	if nsname == "" {
+		glog.V(100).Infof("Backup namespace is empty")
+
 		return nil, fmt.Errorf("backup namespace cannot be empty")
 	}
 
@@ -110,7 +118,7 @@ func PullBackup(apiClient *clients.Settings, name, nsname string) (*BackupBuilde
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // WithStorageLocation adds a storage location to the backup.
@@ -127,9 +135,7 @@ func (builder *BackupBuilder) WithStorageLocation(location string) *BackupBuilde
 		glog.V(100).Infof("Backup storage location is empty")
 
 		builder.errorMsg = "backup storage location cannot be an empty string"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -156,9 +162,7 @@ func (builder *BackupBuilder) WithIncludedNamespace(namespace string) *BackupBui
 		glog.V(100).Infof("Backup includedNamespace is empty")
 
 		builder.errorMsg = "backup includedNamespace cannot be an empty string"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -181,9 +185,7 @@ func (builder *BackupBuilder) WithIncludedClusterScopedResource(crd string) *Bac
 		glog.V(100).Infof("Backup includedClusterScopedResource is empty")
 
 		builder.errorMsg = "backup includedClusterScopedResource cannot be an empty string"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -207,9 +209,7 @@ func (builder *BackupBuilder) WithIncludedNamespaceScopedResource(crd string) *B
 		glog.V(100).Infof("Backup includedNamespaceScopedResource is empty")
 
 		builder.errorMsg = "backup includedNamespaceScopedResource cannot be an empty string"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -233,9 +233,7 @@ func (builder *BackupBuilder) WithExcludedClusterScopedResource(crd string) *Bac
 		glog.V(100).Infof("Backup excludedClusterScopedResource is empty")
 
 		builder.errorMsg = "backup excludedClusterScopedResource cannot be an empty string"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -259,9 +257,7 @@ func (builder *BackupBuilder) WithExcludedNamespaceScopedResources(crd string) *
 		glog.V(100).Infof("Backup excludedNamespaceScopedResource is empty")
 
 		builder.errorMsg = "backup excludedNamespaceScopedResource cannot be an empty string"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -383,13 +379,13 @@ func (builder *BackupBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {
