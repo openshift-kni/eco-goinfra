@@ -85,7 +85,7 @@ func NewDefaultAgentServiceConfigBuilder(apiClient *clients.Settings) *AgentServ
 		return nil
 	}
 
-	builder := AgentServiceConfigBuilder{
+	builder := &AgentServiceConfigBuilder{
 		apiClient: apiClient.Client,
 		Definition: &agentInstallV1Beta1.AgentServiceConfig{
 			ObjectMeta: metav1.ObjectMeta{
@@ -100,6 +100,8 @@ func NewDefaultAgentServiceConfigBuilder(apiClient *clients.Settings) *AgentServ
 		glog.V(100).Infof("The ImageStorage size is in wrong format")
 
 		builder.errorMsg = fmt.Sprintf("error retrieving the storage size: %v", err)
+
+		return builder
 	}
 
 	builder.Definition.Spec.ImageStorage = &imageStorageSpec
@@ -109,6 +111,8 @@ func NewDefaultAgentServiceConfigBuilder(apiClient *clients.Settings) *AgentServ
 		glog.V(100).Infof("The DatabaseStorage size is in wrong format")
 
 		builder.errorMsg = fmt.Sprintf("error retrieving the storage size: %v", err)
+
+		return builder
 	}
 
 	builder.Definition.Spec.DatabaseStorage = databaseStorageSpec
@@ -118,11 +122,13 @@ func NewDefaultAgentServiceConfigBuilder(apiClient *clients.Settings) *AgentServ
 		glog.V(100).Infof("The FileSystemStorage size is in wrong format")
 
 		builder.errorMsg = fmt.Sprintf("error retrieving the storage size: %v", err)
+
+		return builder
 	}
 
 	builder.Definition.Spec.FileSystemStorage = fileSystemStorageSpec
 
-	return &builder
+	return builder
 }
 
 // WithImageStorage sets the imageStorageSpec used by the agentserviceconfig.
@@ -151,9 +157,7 @@ func (builder *AgentServiceConfigBuilder) WithMirrorRegistryRef(configMapName st
 		glog.V(100).Infof("The configMapName is empty")
 
 		builder.errorMsg = "cannot add agentserviceconfig mirrorRegistryRef with empty configmap name"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -257,7 +261,7 @@ func (builder *AgentServiceConfigBuilder) WaitUntilDeployed(timeout time.Duratio
 	if !builder.Exists() {
 		glog.V(100).Infof("The agentserviceconfig does not exist on the cluster")
 
-		return builder, fmt.Errorf("cannot wait for non-existent agentserviceconfig to be deployed")
+		return nil, fmt.Errorf("cannot wait for non-existent agentserviceconfig to be deployed")
 	}
 
 	// Polls every retryInterval to determine if agentserviceconfig is in desired state.
@@ -304,7 +308,7 @@ func PullAgentServiceConfig(apiClient *clients.Settings) (*AgentServiceConfigBui
 		return nil, fmt.Errorf("the apiClient is nil")
 	}
 
-	builder := AgentServiceConfigBuilder{
+	builder := &AgentServiceConfigBuilder{
 		apiClient: apiClient.Client,
 		Definition: &agentInstallV1Beta1.AgentServiceConfig{
 			ObjectMeta: metav1.ObjectMeta{
@@ -319,7 +323,7 @@ func PullAgentServiceConfig(apiClient *clients.Settings) (*AgentServiceConfigBui
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Get fetches the defined agentserviceconfig from the cluster.
@@ -377,7 +381,7 @@ func (builder *AgentServiceConfigBuilder) Update(force bool) (*AgentServiceConfi
 		glog.V(100).Infof("agentserviceconfig %s does not exist",
 			builder.Definition.Name)
 
-		return builder, fmt.Errorf("cannot update non-existent agentserviceconfig")
+		return nil, fmt.Errorf("cannot update non-existent agentserviceconfig")
 	}
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
@@ -518,13 +522,13 @@ func (builder *AgentServiceConfigBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

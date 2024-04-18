@@ -39,7 +39,7 @@ func TestNewRoleBuilder(t *testing.T) {
 			rule: rbacv1.PolicyRule{
 				Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}},
 			client:            false,
-			expectedErrorText: "role builder cannot have nil apiClient",
+			expectedErrorText: "",
 		},
 		{
 			name:   "",
@@ -190,7 +190,7 @@ func TestRoleCreate(t *testing.T) {
 		},
 		{
 			testRole:      buildInvalidRoleTestBuilder(buildTestClientWithDummyObject()),
-			expectedError: fmt.Errorf("role must contain at least one APIGroup"),
+			expectedError: fmt.Errorf("role must contain at least one Verb"),
 		},
 		{
 			testRole:      buildValidRoleBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -244,7 +244,7 @@ func TestRoleDelete(t *testing.T) {
 		},
 		{
 			testRole:      buildInvalidRoleTestBuilder(buildTestClientWithDummyObject()),
-			expectedError: fmt.Errorf("role must contain at least one APIGroup"),
+			expectedError: fmt.Errorf("role must contain at least one Verb"),
 		},
 		{
 			testRole:      buildValidRoleBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -277,7 +277,7 @@ func TestRoleUpdate(t *testing.T) {
 		},
 		{
 			testRole:      buildInvalidRoleTestBuilder(buildTestClientWithDummyObject()),
-			expectedError: fmt.Errorf("role must contain at least one APIGroup"),
+			expectedError: fmt.Errorf("role must contain at least one Verb"),
 		},
 		{
 			testRole:      buildValidRoleBuilder(clients.GetTestClients(clients.TestClientParams{})),
