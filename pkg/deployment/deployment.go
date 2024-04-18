@@ -43,7 +43,7 @@ func NewBuilder(
 			"name: %s, namespace: %s, labels: %s, containerSpec %v",
 		name, nsname, labels, containerSpec)
 
-	builder := Builder{
+	builder := &Builder{
 		apiClient: apiClient.AppsV1Interface,
 		Definition: &appsv1.Deployment{
 			Spec: appsv1.DeploymentSpec{
@@ -69,21 +69,27 @@ func NewBuilder(
 		glog.V(100).Infof("The name of the deployment is empty")
 
 		builder.errorMsg = "deployment 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the deployment is empty")
 
 		builder.errorMsg = "deployment 'namespace' cannot be empty"
+
+		return builder
 	}
 
 	if len(labels) == 0 {
 		glog.V(100).Infof("There are no labels for the deployment")
 
 		builder.errorMsg = "deployment 'labels' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // Pull loads an existing deployment into Builder struct.
@@ -97,7 +103,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 
 	glog.V(100).Infof("Pulling existing deployment name: %s under namespace: %s", name, nsname)
 
-	builder := Builder{
+	builder := &Builder{
 		apiClient: apiClient.AppsV1Interface,
 		Definition: &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
@@ -125,7 +131,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // WithNodeSelector applies a nodeSelector to the deployment definition.

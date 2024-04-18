@@ -32,7 +32,7 @@ func NewManagedClusterModuleBuilder(apiClient *clients.Settings, name, nsname st
 	glog.V(100).Infof(
 		"Initializing new ManagedClusterModule structure with following params: %s, %s", name, nsname)
 
-	builder := ManagedClusterModuleBuilder{
+	builder := &ManagedClusterModuleBuilder{
 		apiClient: apiClient,
 		Definition: &mcmV1Beta1.ManagedClusterModule{
 			ObjectMeta: metav1.ObjectMeta{
@@ -46,15 +46,19 @@ func NewManagedClusterModuleBuilder(apiClient *clients.Settings, name, nsname st
 		glog.V(100).Infof("The name of the ManagedClusterModule is empty")
 
 		builder.errorMsg = "ManagedClusterModule 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the ManagedClusterModule is empty")
 
 		builder.errorMsg = "ManagedClusterModule 'nsname' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // WithModuleSpec sets the ModuleSpec.
@@ -78,9 +82,7 @@ func (builder *ManagedClusterModuleBuilder) WithSpokeNamespace(
 
 	if spokeNamespace == "" {
 		builder.errorMsg = "invalid 'spokeNamespace' argument cannot be nil"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -98,9 +100,7 @@ func (builder *ManagedClusterModuleBuilder) WithSelector(
 
 	if len(selector) == 0 {
 		builder.errorMsg = "invalid 'selector' argument cannot be empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -139,7 +139,7 @@ func (builder *ManagedClusterModuleBuilder) WithOptions(
 func PullManagedClusterModule(apiClient *clients.Settings, name, nsname string) (*ManagedClusterModuleBuilder, error) {
 	glog.V(100).Infof("Pulling existing module name %s under namespace %s from cluster", name, nsname)
 
-	builder := ManagedClusterModuleBuilder{
+	builder := &ManagedClusterModuleBuilder{
 		apiClient: apiClient,
 		Definition: &mcmV1Beta1.ManagedClusterModule{
 			ObjectMeta: metav1.ObjectMeta{
@@ -152,13 +152,13 @@ func PullManagedClusterModule(apiClient *clients.Settings, name, nsname string) 
 	if name == "" {
 		glog.V(100).Infof("The name of the managedclustermodule is empty")
 
-		builder.errorMsg = "managedclustermodule 'name' cannot be empty"
+		return nil, fmt.Errorf("managedclustermodule 'name' cannot be empty")
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the managedclustermodule is empty")
 
-		builder.errorMsg = "managedclustermodule 'namespace' cannot be empty"
+		return nil, fmt.Errorf("managedclustermodule 'namespace' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -167,7 +167,7 @@ func PullManagedClusterModule(apiClient *clients.Settings, name, nsname string) 
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Create builds managedclustermodule in the cluster and stores object in struct.
@@ -286,13 +286,13 @@ func (builder *ManagedClusterModuleBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

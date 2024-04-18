@@ -36,7 +36,7 @@ func NewPreflightValidationOCPBuilder(
 	glog.V(100).Infof("Initializing new PreflightValidationOCP structure with following params: %s, %s",
 		name, nsname)
 
-	builder := PreflightValidationOCPBuilder{
+	builder := &PreflightValidationOCPBuilder{
 		apiClient: apiClient,
 		Definition: &moduleV1Beta1.PreflightValidationOCP{
 			ObjectMeta: metav1.ObjectMeta{
@@ -50,15 +50,19 @@ func NewPreflightValidationOCPBuilder(
 		glog.V(100).Infof("The name of the PreflightValidationOCP is empty")
 
 		builder.errorMsg = "PreflightValidationOCP 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the PreflightValidationOCP is empty")
 
 		builder.errorMsg = "PreflightValidationOCP 'nsname' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // WithReleaseImage sets the image for which the preflightvalidationocp checks the module.
@@ -158,17 +162,13 @@ func PullPreflightValidationOCP(apiClient *clients.Settings,
 	if name == "" {
 		glog.V(100).Infof("The name of the preflightvalidationocp is empty")
 
-		builder.errorMsg = "preflightvalidationocp 'name' cannot be empty"
-
-		return &builder, fmt.Errorf(builder.errorMsg)
+		return nil, fmt.Errorf("preflightvalidationocp 'name' cannot be empty")
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the preflightvalidationocp is empty")
 
-		builder.errorMsg = "preflightvalidationocp 'nsname' cannot be empty"
-
-		return &builder, fmt.Errorf(builder.errorMsg)
+		return nil, fmt.Errorf("preflightvalidationocp 'nsname' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -296,13 +296,13 @@ func (builder *PreflightValidationOCPBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

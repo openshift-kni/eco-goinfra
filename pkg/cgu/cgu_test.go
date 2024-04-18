@@ -177,8 +177,15 @@ func TestNewCguBuilder(t *testing.T) {
 			testCase.cguNamespace,
 			testCase.cguMaxConcurrency)
 
-		assert.NotNil(t, testCguStructure)
-		assert.Equal(t, testCguStructure.errorMsg, testCase.expectedErrorText)
+		if testCase.expectedErrorText == "" {
+			assert.NotNil(t, testCguStructure)
+		}
+
+		if testCase.client {
+			assert.Equal(t, testCguStructure.errorMsg, testCase.expectedErrorText)
+		} else {
+			assert.Nil(t, testCguStructure)
+		}
 	}
 }
 

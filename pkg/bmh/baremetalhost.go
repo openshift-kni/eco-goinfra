@@ -33,8 +33,14 @@ type AdditionalOptions func(builder *BmhBuilder) (*BmhBuilder, error)
 
 // NewBuilder creates a new instance of BmhBuilder.
 func NewBuilder(
-	apiClient *clients.Settings, name, nsname, bmcAddress, bmcSecretName, bootMacAddress, bootMode string) *BmhBuilder {
-	builder := BmhBuilder{
+	apiClient *clients.Settings,
+	name string,
+	nsname string,
+	bmcAddress string,
+	bmcSecretName string,
+	bootMacAddress string,
+	bootMode string) *BmhBuilder {
+	builder := &BmhBuilder{
 		apiClient: apiClient.Client,
 		Definition: &bmhv1alpha1.BareMetalHost{
 			Spec: bmhv1alpha1.BareMetalHostSpec{
@@ -60,36 +66,48 @@ func NewBuilder(
 		glog.V(100).Infof("The name of the baremetalhost is empty")
 
 		builder.errorMsg = "BMH 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the baremetalhost is empty")
 
 		builder.errorMsg = "BMH 'nsname' cannot be empty"
+
+		return builder
 	}
 
 	if bmcAddress == "" {
 		glog.V(100).Infof("The bootmacaddress of the baremetalhost is empty")
 
 		builder.errorMsg = "BMH 'bmcAddress' cannot be empty"
+
+		return builder
 	}
 
 	if bmcSecretName == "" {
 		glog.V(100).Infof("The bmcsecret of the baremetalhost is empty")
 
 		builder.errorMsg = "BMH 'bmcSecretName' cannot be empty"
+
+		return builder
 	}
 
 	bootModeAcceptable := []string{"UEFI", "UEFISecureBoot", "legacy"}
 	if !slices.Contains(bootModeAcceptable, bootMode) {
 		builder.errorMsg = "not acceptable 'bootMode' value"
+
+		return builder
 	}
 
 	if bootMacAddress == "" {
 		builder.errorMsg = "BMH 'bootMacAddress' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // WithRootDeviceDeviceName sets rootDeviceHints DeviceName to specified value.
@@ -102,9 +120,7 @@ func (builder *BmhBuilder) WithRootDeviceDeviceName(deviceName string) *BmhBuild
 		glog.V(100).Infof("The baremetalhost rootDeviceHint deviceName is empty")
 
 		builder.errorMsg = "the baremetalhost rootDeviceHint deviceName cannot be empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -127,9 +143,7 @@ func (builder *BmhBuilder) WithRootDeviceHTCL(hctl string) *BmhBuilder {
 		glog.V(100).Infof("The baremetalhost rootDeviceHint hctl is empty")
 
 		builder.errorMsg = "the baremetalhost rootDeviceHint hctl cannot be empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -152,9 +166,7 @@ func (builder *BmhBuilder) WithRootDeviceModel(model string) *BmhBuilder {
 		glog.V(100).Infof("The baremetalhost rootDeviceHint model is empty")
 
 		builder.errorMsg = "the baremetalhost rootDeviceHint model cannot be empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -177,9 +189,7 @@ func (builder *BmhBuilder) WithRootDeviceVendor(vendor string) *BmhBuilder {
 		glog.V(100).Infof("The baremetalhost rootDeviceHint vendor is empty")
 
 		builder.errorMsg = "the baremetalhost rootDeviceHint vendor cannot be empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -202,9 +212,7 @@ func (builder *BmhBuilder) WithRootDeviceSerialNumber(serialNumber string) *BmhB
 		glog.V(100).Infof("The baremetalhost rootDeviceHint serialNumber is empty")
 
 		builder.errorMsg = "the baremetalhost rootDeviceHint serialNumber cannot be empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -227,9 +235,7 @@ func (builder *BmhBuilder) WithRootDeviceMinSizeGigabytes(size int) *BmhBuilder 
 		glog.V(100).Infof("The baremetalhost rootDeviceHint size is less than 0")
 
 		builder.errorMsg = "the baremetalhost rootDeviceHint size cannot be less than 0"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -252,9 +258,7 @@ func (builder *BmhBuilder) WithRootDeviceWWN(wwn string) *BmhBuilder {
 		glog.V(100).Infof("The baremetalhost rootDeviceHint wwn is empty")
 
 		builder.errorMsg = "the baremetalhost rootDeviceHint wwn cannot be empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -277,9 +281,7 @@ func (builder *BmhBuilder) WithRootDeviceWWNWithExtension(wwnWithExtension strin
 		glog.V(100).Infof("The baremetalhost rootDeviceHint wwnWithExtension is empty")
 
 		builder.errorMsg = "the baremetalhost rootDeviceHint wwnWithExtension cannot be empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -302,9 +304,7 @@ func (builder *BmhBuilder) WithRootDeviceWWNVendorExtension(wwnVendorExtension s
 		glog.V(100).Infof("The baremetalhost rootDeviceHint wwnVendorExtension is empty")
 
 		builder.errorMsg = "the baremetalhost rootDeviceHint wwnVendorExtension cannot be empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -367,7 +367,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*BmhBuilder, error)
 		return nil, fmt.Errorf("baremetalhost 'apiClient' cannot be empty")
 	}
 
-	builder := BmhBuilder{
+	builder := &BmhBuilder{
 		apiClient: apiClient.Client,
 		Definition: &bmhv1alpha1.BareMetalHost{
 			ObjectMeta: metav1.ObjectMeta{
@@ -395,7 +395,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*BmhBuilder, error)
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Create makes a bmh in the cluster and stores the created object in struct.
@@ -643,13 +643,13 @@ func (builder *BmhBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

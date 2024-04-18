@@ -54,7 +54,7 @@ func NewAgentClusterInstallBuilder(
 		return nil
 	}
 
-	builder := AgentClusterInstallBuilder{
+	builder := &AgentClusterInstallBuilder{
 		apiClient: apiClient.Client,
 		Definition: &hiveextV1Beta1.AgentClusterInstall{
 			ObjectMeta: metav1.ObjectMeta{
@@ -78,21 +78,27 @@ func NewAgentClusterInstallBuilder(
 		glog.V(100).Infof("The name of the agentclusterinstall is empty")
 
 		builder.errorMsg = "agentclusterinstall 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the agentclusterinstall is empty")
 
 		builder.errorMsg = "agentclusterinstall 'namespace' cannot be empty"
+
+		return builder
 	}
 
 	if clusterDeployment == "" {
 		glog.V(100).Infof("The clusterDeployment ref for the agentclusterinstall is empty")
 
 		builder.errorMsg = "agentclusterinstall 'clusterDeployment' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // WithAPIVip sets the apiVIP to use during multi-node installations.
@@ -105,9 +111,7 @@ func (builder *AgentClusterInstallBuilder) WithAPIVip(apiVIP string) *AgentClust
 		glog.V(100).Infof("The apiVIP is not a properly formatted IP address")
 
 		builder.errorMsg = "agentclusterinstall apiVIP incorrectly formatted"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -126,9 +130,7 @@ func (builder *AgentClusterInstallBuilder) WithAdditionalAPIVip(apiVIP string) *
 		glog.V(100).Infof("The apiVIP is not a properly formatted IP address")
 
 		builder.errorMsg = "agentclusterinstall apiVIP incorrectly formatted"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -147,9 +149,7 @@ func (builder *AgentClusterInstallBuilder) WithIngressVip(ingressVIP string) *Ag
 		glog.V(100).Infof("The ingressVIP is not a properly formatted IP address")
 
 		builder.errorMsg = "agentclusterinstall ingressVIP incorrectly formatted"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -168,9 +168,7 @@ func (builder *AgentClusterInstallBuilder) WithAdditionalIngressVip(ingressVIP s
 		glog.V(100).Infof("The ingressVIP is not a properly formatted IP address")
 
 		builder.errorMsg = "agentclusterinstall ingressVIP incorrectly formatted"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -277,15 +275,15 @@ func (builder *AgentClusterInstallBuilder) WithAdditionalClusterNetwork(
 		glog.V(100).Infof("The agentclusterinstall passed invalid clusterNetwork cidr: %s", cidr)
 
 		builder.errorMsg = "agentclusterinstall contains invalid clusterNetwork cidr"
+
+		return builder
 	}
 
 	if prefix <= 0 {
 		glog.V(100).Infof("Agentclusterinstall passed invalid clusterNetwork prefix: %s", cidr)
 
 		builder.errorMsg = "agentclusterinstall contains invalid clusterNetwork prefix"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -306,9 +304,7 @@ func (builder *AgentClusterInstallBuilder) WithAdditionalServiceNetwork(cidr str
 		glog.V(100).Infof("The agentclusterinstall passed invalid serviceNetwork cidr: %s", cidr)
 
 		builder.errorMsg = "agentclusterinstall contains invalid serviceNetwork cidr"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -594,7 +590,6 @@ func (builder *AgentClusterInstallBuilder) Update(force bool) (*AgentClusterInst
 
 			err = builder.DeleteAndWait(time.Second * 10)
 			builder.Definition.ResourceVersion = ""
-			// fmt.Printf("agentclusterinstall exists: %v\n", builder.Exists())
 
 			if err != nil {
 				glog.V(100).Infof(
@@ -728,13 +723,13 @@ func (builder *AgentClusterInstallBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

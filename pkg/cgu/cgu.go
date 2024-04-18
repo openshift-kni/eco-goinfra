@@ -37,6 +37,18 @@ func NewCguBuilder(apiClient *clients.Settings, name, nsname string, maxConcurre
 		"Initializing new CGU structure with the following params: name: %s, nsname: %s, maxConcurrency: %d",
 		name, nsname, maxConcurrency)
 
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient cannot be nil")
+
+		return nil
+	}
+
+	if apiClient.ClientCgu == nil {
+		glog.V(100).Infof("The apiClient.ClientCgu cannot be nil")
+
+		return nil
+	}
+
 	builder := &CguBuilder{
 		Definition: &v1alpha1.ClusterGroupUpgrade{
 			ObjectMeta: metav1.ObjectMeta{

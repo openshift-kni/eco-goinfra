@@ -33,7 +33,7 @@ type MCAdditionalOptions func(builder *MCBuilder) (*MCBuilder, error)
 func NewMCBuilder(apiClient *clients.Settings, name string) *MCBuilder {
 	glog.V(100).Infof("Initializing new MCBuilder structure with following params: %s", name)
 
-	builder := MCBuilder{
+	builder := &MCBuilder{
 		apiClient: apiClient,
 		Definition: &mcv1.MachineConfig{
 			ObjectMeta: metav1.ObjectMeta{
@@ -46,16 +46,18 @@ func NewMCBuilder(apiClient *clients.Settings, name string) *MCBuilder {
 		glog.V(100).Infof("The name of the MachineConfig is empty")
 
 		builder.errorMsg = "MachineConfig 'name' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // PullMachineConfig fetches existing machineconfig from cluster.
 func PullMachineConfig(apiClient *clients.Settings, name string) (*MCBuilder, error) {
 	glog.V(100).Infof("Pulling existing machineconfig name %s from cluster", name)
 
-	builder := MCBuilder{
+	builder := &MCBuilder{
 		apiClient: apiClient,
 		Definition: &mcv1.MachineConfig{
 			ObjectMeta: metav1.ObjectMeta{
@@ -67,7 +69,7 @@ func PullMachineConfig(apiClient *clients.Settings, name string) (*MCBuilder, er
 	if name == "" {
 		glog.V(100).Infof("The name of the machineconfig is empty")
 
-		builder.errorMsg = "machineconfig 'name' cannot be empty"
+		return nil, fmt.Errorf("machineconfig 'name' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -76,7 +78,7 @@ func PullMachineConfig(apiClient *clients.Settings, name string) (*MCBuilder, er
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Create generates a machineconfig in the cluster and stores the created object in struct.
@@ -117,7 +119,7 @@ func (builder *MCBuilder) Delete() error {
 
 	builder.Object = nil
 
-	return err
+	return nil
 }
 
 // Update renovates the existing machineconfig object with machineconfig definition in builder.
@@ -288,13 +290,13 @@ func (builder *MCBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {
