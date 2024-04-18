@@ -49,7 +49,7 @@ func NewPlacementBindingBuilder(
 		return nil
 	}
 
-	builder := PlacementBindingBuilder{
+	builder := &PlacementBindingBuilder{
 		apiClient: apiClient.Client,
 		Definition: &policiesv1.PlacementBinding{
 			ObjectMeta: metav1.ObjectMeta{
@@ -63,21 +63,29 @@ func NewPlacementBindingBuilder(
 
 	if name == "" {
 		builder.errorMsg = "placementBinding's 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		builder.errorMsg = "placementBinding's 'nsname' cannot be empty"
+
+		return builder
 	}
 
 	if placementRefErr := validatePlacementRef(placementRef); placementRefErr != "" {
 		builder.errorMsg = placementRefErr
+
+		return builder
 	}
 
 	if subjectErr := validateSubject(subject); subjectErr != "" {
 		builder.errorMsg = subjectErr
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // PullPlacementBinding pulls existing placementBinding into Builder struct.
@@ -97,7 +105,7 @@ func PullPlacementBinding(apiClient *clients.Settings, name, nsname string) (*Pl
 		return nil, err
 	}
 
-	builder := PlacementBindingBuilder{
+	builder := &PlacementBindingBuilder{
 		apiClient: apiClient.Client,
 		Definition: &policiesv1.PlacementBinding{
 			ObjectMeta: metav1.ObjectMeta{
@@ -125,7 +133,7 @@ func PullPlacementBinding(apiClient *clients.Settings, name, nsname string) (*Pl
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Exists checks whether the given placementBinding exists.
@@ -343,13 +351,13 @@ func (builder *PlacementBindingBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {
