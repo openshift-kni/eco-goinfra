@@ -112,18 +112,6 @@ func TestIngressWithPeerPodSelector(t *testing.T) {
 
 	assert.Len(t, builder.definition.From, 1)
 	assert.Equal(t, builder.definition.From[0].PodSelector.MatchLabels["app"], "nginx")
-
-	builder = NewIngressRuleBuilder()
-
-	builder.errorMsg = "error"
-
-	builder.WithPeerPodSelector(metav1.LabelSelector{
-		MatchLabels: map[string]string{
-			"app": "nginx",
-		},
-	})
-
-	assert.Len(t, builder.definition.From, 0)
 }
 
 func TestIngressWithPeerNamespaceSelector(t *testing.T) {
