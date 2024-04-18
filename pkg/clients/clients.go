@@ -413,6 +413,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *policiesv1.Policy:
 			genericClientObjects = append(genericClientObjects, v)
+		case *policiesv1.PlacementBinding:
+			genericClientObjects = append(genericClientObjects, v)
 		// Velero Client Objects
 		case *velerov1.Backup:
 			veleroClientObjects = append(veleroClientObjects, v)
