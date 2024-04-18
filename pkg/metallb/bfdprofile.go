@@ -39,7 +39,7 @@ func NewBFDBuilder(apiClient *clients.Settings, name, nsname string) *BFDBuilder
 		return nil
 	}
 
-	builder := BFDBuilder{
+	builder := &BFDBuilder{
 		apiClient: apiClient.Client,
 		Definition: &mlbtypes.BFDProfile{
 			ObjectMeta: metav1.ObjectMeta{
@@ -53,15 +53,19 @@ func NewBFDBuilder(apiClient *clients.Settings, name, nsname string) *BFDBuilder
 		glog.V(100).Infof("The name of the BFDProfile is empty")
 
 		builder.errorMsg = "BFDProfile 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the BFDProfile is empty")
 
 		builder.errorMsg = "BFDProfile 'nsname' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // Get returns BFDProfile object if found.
@@ -345,6 +349,8 @@ func (builder *BFDBuilder) withBoolFlagFor(flagName string, flagValue bool) *BFD
 		builder.Definition.Spec.PassiveMode = &flagValue
 	default:
 		builder.errorMsg = "invalid bool flag name parameter"
+
+		return builder
 	}
 
 	return builder
@@ -368,6 +374,8 @@ func (builder *BFDBuilder) withInterval(intervalName string, interval uint32) *B
 		builder.Definition.Spec.EchoInterval = &interval
 	default:
 		builder.errorMsg = "invalid interval parameters"
+
+		return builder
 	}
 
 	return builder
@@ -387,13 +395,13 @@ func (builder *BFDBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

@@ -55,18 +55,24 @@ func NewICSPBuilder(apiClient *clients.Settings, name, source string, mirrors []
 		glog.V(100).Infof("The name of the ImageContentSourcePolicy is empty")
 
 		icspBuilder.errorMsg = "ImageContentSourcePolicy 'name' cannot be empty"
+
+		return icspBuilder
 	}
 
 	if source == "" {
 		glog.V(100).Infof("The Source of the ImageContentSourcePolicy is empty")
 
 		icspBuilder.errorMsg = "ImageContentSourcePolicy 'source' cannot be empty"
+
+		return icspBuilder
 	}
 
 	if len(mirrors) == 0 {
 		glog.V(100).Infof("The mirrors of the ImageContentSourcePolicy are empty")
 
 		icspBuilder.errorMsg = "ImageContentSourcePolicy 'mirrors' cannot be empty"
+
+		return icspBuilder
 	}
 
 	return icspBuilder
@@ -92,7 +98,7 @@ func (builder *ICSPBuilder) Exists() bool {
 func Pull(apiClient *clients.Settings, name string) (*ICSPBuilder, error) {
 	glog.V(100).Infof("Pulling existing ImageContentSourcePolicy: %s", name)
 
-	builder := ICSPBuilder{
+	builder := &ICSPBuilder{
 		apiClient: apiClient,
 		Definition: &v1alpha1.ImageContentSourcePolicy{
 			ObjectMeta: metav1.ObjectMeta{
@@ -102,7 +108,9 @@ func Pull(apiClient *clients.Settings, name string) (*ICSPBuilder, error) {
 	}
 
 	if name == "" {
-		builder.errorMsg = "ImageContentSourcePolicy 'name' cannot be empty"
+		glog.V(100).Infof("The name of the ImageContentSourcePolicy is empty")
+
+		return builder, fmt.Errorf("ImageContentSourcePolicy 'name' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -111,7 +119,7 @@ func Pull(apiClient *clients.Settings, name string) (*ICSPBuilder, error) {
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Create makes a ImageContentSourcePolicy in the cluster and stores the created object in struct.
@@ -180,15 +188,15 @@ func (builder *ICSPBuilder) WithRepositoryDigestMirror(source string, mirrors []
 		glog.V(100).Infof("The source is empty")
 
 		builder.errorMsg = "'source' cannot be empty"
+
+		return builder
 	}
 
 	if len(mirrors) == 0 {
 		glog.V(100).Infof("Mirrors is empty")
 
 		builder.errorMsg = "'mirrors' cannot be empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -237,13 +245,13 @@ func (builder *ICSPBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {
