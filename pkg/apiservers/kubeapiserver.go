@@ -134,12 +134,13 @@ func (builder *KubeAPIServerBuilder) WaitUntilConditionTrue(
 		return fmt.Errorf("%s kubeAPIServer not found", builder.Definition.Name)
 	}
 
-	return wait.PollUntilContextTimeout(
-		context.TODO(), time.Second, timeout, true, func(ctx context.Context) (bool, error) {
-			var err error
-			builder.Object, err = builder.Get()
+	var errMsg error
 
-			if err != nil {
+	err := wait.PollUntilContextTimeout(
+		context.TODO(), time.Second, timeout, true, func(ctx context.Context) (bool, error) {
+			builder.Object, errMsg = builder.Get()
+
+			if errMsg != nil {
 				return false, nil
 			}
 
@@ -149,12 +150,22 @@ func (builder *KubeAPIServerBuilder) WaitUntilConditionTrue(
 						return true, nil
 					}
 
-					return false, fmt.Errorf("the %s condition did not reach True state yet", conditionType)
+					errMsg = fmt.Errorf("the %s condition did not reach True state yet", conditionType)
+
+					return false, nil
 				}
 			}
 
-			return false, fmt.Errorf("the %s condition not found exists", conditionType)
+			errMsg = fmt.Errorf("the %s condition not found exists", conditionType)
+
+			return false, nil
 		})
+
+	if err != nil {
+		return fmt.Errorf("%w: %w", errMsg, err)
+	}
+
+	return nil
 }
 
 // WaitAllNodesAtTheLatestRevision waits for timeout duration or until all nodes
