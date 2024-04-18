@@ -229,15 +229,11 @@ func (builder *NetworkNodeStateBuilder) findInterfaceByName(sriovInterfaceName s
 	if err := builder.Discover(); err != nil {
 		glog.V(100).Infof("Error to discover sriov network node state for node %s", builder.nodeName)
 
-		builder.errorMsg = "failed to discover sriov network node state"
-
-		return nil, err
+		return nil, fmt.Errorf("failed to discover sriov network node state")
 	}
 
 	if sriovInterfaceName == "" {
 		glog.V(100).Infof("The sriovInterface can not be empty string")
-
-		builder.errorMsg = "the sriovInterface is an empty sting"
 
 		return nil, fmt.Errorf("sriovInterface can not be empty string")
 	}

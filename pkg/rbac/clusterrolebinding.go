@@ -134,7 +134,7 @@ func (builder *ClusterRoleBindingBuilder) WithOptions(
 func PullClusterRoleBinding(apiClient *clients.Settings, name string) (*ClusterRoleBindingBuilder, error) {
 	glog.V(100).Infof("Pulling existing clusterrolebinding name %s from cluster", name)
 
-	builder := ClusterRoleBindingBuilder{
+	builder := &ClusterRoleBindingBuilder{
 		apiClient: apiClient,
 		Definition: &rbacv1.ClusterRoleBinding{
 			ObjectMeta: metav1.ObjectMeta{
@@ -155,7 +155,7 @@ func PullClusterRoleBinding(apiClient *clients.Settings, name string) (*ClusterR
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Create generates a clusterrolebinding in the cluster and stores the created object in struct.

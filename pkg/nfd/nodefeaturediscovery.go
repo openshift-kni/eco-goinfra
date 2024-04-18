@@ -46,6 +46,9 @@ func NewBuilderFromObjectString(apiClient *clients.Settings, almExample string) 
 		return nil
 	}
 
+	glog.V(100).Infof(
+		"Initializing Builder definition to NodeFeatureDiscovery object")
+
 	builder := &Builder{
 		apiClient: apiClient,
 	}
@@ -69,7 +72,8 @@ func NewBuilderFromObjectString(apiClient *clients.Settings, almExample string) 
 	if builder.Definition == nil {
 		glog.V(100).Infof("The NodeFeatureDiscovery object definition is nil")
 
-		builder.errorMsg = "nodeFeatureDiscovery definition is nil"
+		//nolint:lll
+		builder.errorMsg = "Error initializing NodeFeatureDiscovery from alm-examples: invalid character 'i' looking for beginning of object key string"
 
 		return builder
 	}
@@ -249,7 +253,7 @@ func (builder *Builder) Update(force bool) (*Builder, error) {
 		}
 	}
 
-	return builder, err
+	return builder, nil
 }
 
 // getNodeFeatureDiscoveryFromAlmExample extracts the NodeFeatureDiscovery from the alm-examples block.

@@ -390,7 +390,7 @@ func TestPersistentVolumeClaimWithPVCAccessMode(t *testing.T) {
 		},
 		{
 			testAccessMode: "",
-			expectedError:  "Empty accessMode for PVC requested",
+			expectedError:  "empty accessMode for PVC requested",
 		},
 	}
 

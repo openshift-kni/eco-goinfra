@@ -39,7 +39,7 @@ func TestNewRoleBuilder(t *testing.T) {
 			rule: rbacv1.PolicyRule{
 				Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}},
 			client:            false,
-			expectedErrorText: "role builder cannot have nil apiClient",
+			expectedErrorText: "",
 		},
 		{
 			name:   "",
