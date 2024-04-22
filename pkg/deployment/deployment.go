@@ -449,6 +449,8 @@ func (builder *Builder) CreateAndWaitUntilReady(timeout time.Duration) (*Builder
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if _, err := builder.Create(); err != nil {
+		glog.V(100).Infof("Failed to create deployment. Error is: '%s'", err.Error())
+
 		return nil, fmt.Errorf(err.Error())
 	}
 
@@ -481,7 +483,9 @@ func (builder *Builder) IsReady(timeout time.Duration) bool {
 				context.TODO(), builder.Definition.Name, metav1.GetOptions{})
 
 			if err != nil {
-				return false, err
+				glog.V(100).Infof("Failed to get deployment from cluster. Error is: '%s'", err.Error())
+
+				return false, fmt.Errorf(err.Error())
 			}
 
 			if builder.Object.Status.ReadyReplicas > 0 && builder.Object.Status.Replicas == builder.Object.Status.ReadyReplicas {
