@@ -56,6 +56,7 @@ import (
 
 	lcasgv1alpha1 "github.com/openshift-kni/lifecycle-agent/api/seedgenerator/v1alpha1"
 	lcav1alpha1 "github.com/openshift-kni/lifecycle-agent/api/v1alpha1"
+	configV1 "github.com/openshift/api/config/v1"
 	imageregistryV1 "github.com/openshift/api/imageregistry/v1"
 	operatorV1 "github.com/openshift/api/operator/v1"
 	routev1 "github.com/openshift/api/route/v1"
@@ -209,7 +210,7 @@ func New(kubeconfig string) *Settings {
 
 // SetScheme returns mutated apiClient's scheme.
 //
-//nolint:funlen, gocyclo
+//nolint:funlen, gocyclo, gocognit
 func SetScheme(crScheme *runtime.Scheme) error {
 	if err := scheme.AddToScheme(crScheme); err != nil {
 		return err
@@ -244,6 +245,10 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	}
 
 	if err := imageregistryV1.Install(crScheme); err != nil {
+		return err
+	}
+
+	if err := configV1.Install(crScheme); err != nil {
 		return err
 	}
 
