@@ -3,6 +3,7 @@ package cgu
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/openshift-kni/cluster-group-upgrades-operator/pkg/api/clustergroupupgrades/v1alpha1"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
@@ -308,6 +309,20 @@ func TestCguExist(t *testing.T) {
 		exists := testCase.testCgu.Exists()
 		assert.Equal(t, testCase.expectedStatus, exists)
 	}
+}
+
+func TestWaitUntilBackupStarts(t *testing.T) {
+	cguObject := buildDummyCgu(defaultCguName, defaultCguNsName, defaultCguMaxConcurrency)
+	cguObject.Status.Backup = &v1alpha1.BackupStatus{}
+
+	cguBuilder := buildValidCguTestBuilder(clients.GetTestClients(clients.TestClientParams{
+		K8sMockObjects: []runtime.Object{cguObject},
+	}))
+	cguBuilder, err := cguBuilder.WaitUntilBackupStarts(5 * time.Second)
+
+	assert.Nil(t, err)
+	assert.Equal(t, cguBuilder.Object.Name, defaultCguName)
+	assert.Equal(t, cguBuilder.Object.Namespace, defaultCguNsName)
 }
 
 func buildTestClientWithDummyCguObject() *clients.Settings {
