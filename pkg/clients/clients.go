@@ -424,6 +424,9 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *policiesv1beta1.PolicySet:
 			genericClientObjects = append(genericClientObjects, v)
+		// ArgoCD Client Objects
+		case *argocdOperatorv1alpha1.ArgoCD:
+			genericClientObjects = append(genericClientObjects, v)
 		// Velero Client Objects
 		case *velerov1.Backup:
 			veleroClientObjects = append(veleroClientObjects, v)
