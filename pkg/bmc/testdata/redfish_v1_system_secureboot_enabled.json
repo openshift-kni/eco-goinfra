@@ -1,0 +1,41 @@
+{
+    "@odata.context": "/redfish/v1/$metadata#SecureBoot.SecureBoot",
+    "@odata.id": "/redfish/v1/Systems/System.Embedded.1/SecureBoot",
+    "@odata.type": "#SecureBoot.v1_1_0.SecureBoot",
+    "Actions": {
+      "#SecureBoot.ResetKeys": {
+        "ResetKeysType@Redfish.AllowableValues": [
+          "ResetAllKeysToDefault",
+          "DeleteAllKeys",
+          "DeletePK",
+          "ResetPK",
+          "ResetKEK",
+          "ResetDB",
+          "ResetDBX"
+        ],
+        "target": "/redfish/v1/Systems/System.Embedded.1/SecureBoot/Actions/SecureBoot.ResetKeys"
+      },
+      "Oem": {}
+    },
+    "Description": "UEFI Secure Boot",
+    "Id": "SecureBoot",
+    "Name": "UEFI Secure Boot",
+    "Oem": {
+      "Dell": {
+        "@odata.context": "/redfish/v1/$metadata#DellSecureBoot.DellSecureBoot",
+        "@odata.type": "#DellSecureBoot.v1_1_0.DellSecureBoot",
+        "Certificates": {
+          "@odata.id": "/redfish/v1/Systems/System.Embedded.1/SecureBoot/Oem/Dell/Certificates"
+        },
+        "FirmwareImageHashes": {
+          "@odata.id": "/redfish/v1/Systems/System.Embedded.1/SecureBoot/Oem/Dell/FirmwareImageHashes"
+        }
+      }
+    },
+    "SecureBootCurrentBoot": "Enabled",
+    "SecureBootDatabases": {
+      "@odata.id": "/redfish/v1/Systems/System.Embedded.1/SecureBoot/SecureBootDatabases"
+    },
+    "SecureBootEnable": true,
+    "SecureBootMode": "DeployedMode"
+  }
