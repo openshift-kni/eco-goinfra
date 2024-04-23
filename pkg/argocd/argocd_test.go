@@ -17,11 +17,6 @@ var (
 	defaultArgoCdNSName = "test-namespace"
 )
 
-type GroupResource struct {
-	Group    string
-	Resource string
-}
-
 func TestArgoCdPull(t *testing.T) {
 	generateArgoCd := func(name, namespace string) *argocdoperatorv1alpha1.ArgoCD {
 		return &argocdoperatorv1alpha1.ArgoCD{
