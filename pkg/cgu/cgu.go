@@ -344,3 +344,43 @@ func (builder *CguBuilder) WaitUntilComplete(timeout time.Duration) (*CguBuilder
 
 	return nil, err
 }
+
+// WaitUntilBackupStarts waits the specified timeout for the backup to start.
+func (builder *CguBuilder) WaitUntilBackupStarts(timeout time.Duration) (*CguBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
+	glog.V(100).Infof(
+		"Waiting for CGU %s in namespace %s to start backup", builder.Definition.Name, builder.Definition.Namespace)
+
+	if !builder.Exists() {
+		glog.V(100).Infof("The CGU does not exist on the cluster")
+
+		return builder, fmt.Errorf(builder.errorMsg)
+	}
+
+	var err error
+	err = wait.PollUntilContextTimeout(context.TODO(), 3*time.Second, timeout, true, func(context.Context) (bool, error) {
+		builder.Object, err = builder.apiClient.RanV1alpha1().ClusterGroupUpgrades(builder.Definition.Namespace).
+			Get(context.TODO(), builder.Definition.Name, metav1.GetOptions{})
+		if err != nil {
+			glog.V(100).Infof(
+				"Failed to get CGU %s in namespace %s due to: %w", builder.Definition.Name, builder.Definition.Namespace, err)
+
+			return false, nil
+		}
+
+		return builder.Object.Status.Backup != nil, nil
+	})
+
+	if err == nil {
+		return builder, nil
+	}
+
+	glog.V(100).Infof(
+		"Failed to wait for CGU %s in namespace %s to start backup due to: %w",
+		builder.Definition.Name, builder.Definition.Namespace, err)
+
+	return nil, err
+}
