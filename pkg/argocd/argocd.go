@@ -21,7 +21,7 @@ type Builder struct {
 	// created argocd object.
 	Object *argocdoperatorv1alpha1.ArgoCD
 	// api client to interact with the cluster.
-	apiClient *clients.Settings
+	apiClient goclient.Client
 	// used to store latest error message upon defining the argocd definition.
 	errorMsg string
 }
@@ -29,7 +29,7 @@ type Builder struct {
 // NewBuilder creates a new instance of Builder.
 func NewBuilder(apiClient *clients.Settings, name, nsname string) *Builder {
 	builder := Builder{
-		apiClient: apiClient,
+		apiClient: apiClient.Client,
 		Definition: &argocdoperatorv1alpha1.ArgoCD{
 			Spec: argocdoperatorv1alpha1.ArgoCDSpec{},
 			ObjectMeta: metav1.ObjectMeta{
@@ -58,8 +58,14 @@ func NewBuilder(apiClient *clients.Settings, name, nsname string) *Builder {
 func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	glog.V(100).Infof("Pulling existing argocd name %s under namespace %s from cluster", name, nsname)
 
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is empty")
+
+		return nil, fmt.Errorf("argocd 'apiClient' cannot be empty")
+	}
+
 	builder := Builder{
-		apiClient: apiClient,
+		apiClient: apiClient.Client,
 		Definition: &argocdoperatorv1alpha1.ArgoCD{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
@@ -71,13 +77,13 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	if name == "" {
 		glog.V(100).Infof("The name of the argocd is empty")
 
-		builder.errorMsg = "argocd 'name' cannot be empty"
+		return nil, fmt.Errorf("argocd 'name' cannot be empty")
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the argocd is empty")
 
-		builder.errorMsg = "argocd 'namespace' cannot be empty"
+		return nil, fmt.Errorf("argocd 'namespace' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -156,7 +162,12 @@ func (builder *Builder) Delete() (*Builder, error) {
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return builder, fmt.Errorf("argocd cannot be deleted because it does not exist")
+		builder.Object = nil
+
+		glog.V(100).Infof("argocd %s in namespace %s cannot be deleted because it does not exist",
+			builder.Definition.Name, builder.Definition.Namespace)
+
+		return builder, nil
 	}
 
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
@@ -197,6 +208,8 @@ func (builder *Builder) Update(force bool) (*Builder, error) {
 			return builder.Create()
 		}
 	}
+
+	builder.Object = builder.Definition
 
 	return builder, err
 }
