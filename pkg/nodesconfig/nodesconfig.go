@@ -7,18 +7,19 @@ import (
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
-	configv1 "github.com/openshift/api/config/v1"
+	configV1 "github.com/openshift/api/config/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // Builder provides a struct for nodesConfig object from the cluster and a nodesConfig definition.
 type Builder struct {
 	// nodesConfig definition, used to create the nodesConfig object.
-	Definition *configv1.Node
+	Definition *configV1.Node
 	// Created nodesConfig object.
-	Object *configv1.Node
+	Object *configV1.Node
 	// api client to interact with the cluster.
 	apiClient goclient.Client
 	// Used in functions that define or mutate clusterOperator definition. errorMsg is processed before the
@@ -28,6 +29,8 @@ type Builder struct {
 
 // Pull retrieves an existing nodesConfig object from the cluster.
 func Pull(apiClient *clients.Settings, nodesConfigObjName string) (*Builder, error) {
+	glog.V(100).Infof("Pulling nodesConfig object name: %s", nodesConfigObjName)
+
 	if apiClient == nil {
 		glog.V(100).Infof("The apiClient is empty")
 
@@ -40,12 +43,9 @@ func Pull(apiClient *clients.Settings, nodesConfigObjName string) (*Builder, err
 		return nil, fmt.Errorf("nodesConfig 'nodesConfigObjName' cannot be empty")
 	}
 
-	glog.V(100).Infof(
-		"Pulling nodesConfig object name: %s", nodesConfigObjName)
-
 	builder := Builder{
 		apiClient: apiClient.Client,
-		Definition: &configv1.Node{
+		Definition: &configV1.Node{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: nodesConfigObjName,
 			},
@@ -62,20 +62,21 @@ func Pull(apiClient *clients.Settings, nodesConfigObjName string) (*Builder, err
 }
 
 // Get fetches existing nodesConfig from cluster.
-func (builder *Builder) Get() (*configv1.Node, error) {
+func (builder *Builder) Get() (*configV1.Node, error) {
 	if valid, err := builder.validate(); !valid {
 		return nil, err
 	}
 
 	glog.V(100).Infof("Getting existing nodesConfig with name %s from cluster", builder.Definition.Name)
 
-	nodesConfig := &configv1.Node{}
+	nodesConfig := &configV1.Node{}
 	err := builder.apiClient.Get(context.TODO(), goclient.ObjectKey{
 		Name: builder.Definition.Name,
 	}, nodesConfig)
 
 	if err != nil {
-		glog.V(100).Infof("A nodesConfig object %s doesn't exist", builder.Definition.Name)
+		glog.V(100).Infof("Failed to get nodesConfig object %s from cluster due to: %w",
+			builder.Definition.Name, err)
 
 		return nil, err
 	}
@@ -118,7 +119,7 @@ func (builder *Builder) Update() (*Builder, error) {
 }
 
 // GetCGroupMode fetches nodesConfig cgroupMode.
-func (builder *Builder) GetCGroupMode() (configv1.CgroupMode, error) {
+func (builder *Builder) GetCGroupMode() (configV1.CgroupMode, error) {
 	if valid, err := builder.validate(); !valid {
 		return "", err
 	}
@@ -133,18 +134,32 @@ func (builder *Builder) GetCGroupMode() (configv1.CgroupMode, error) {
 }
 
 // WithCGroupMode sets the nodesConfig operator's cgroupMode.
-func (builder *Builder) WithCGroupMode(expectedCGroupMode configv1.CgroupMode) *Builder {
+func (builder *Builder) WithCGroupMode(expectedCGroupMode configV1.CgroupMode) *Builder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
-	glog.V(100).Infof(
-		"Setting nodesConfig %s with ManagementState: %v",
+	glog.V(100).Infof("Setting nodesConfig %s with ManagementState: %v",
 		builder.Definition.Name, expectedCGroupMode)
+
+	if expectedCGroupMode == configV1.CgroupModeEmpty {
+		glog.V(100).Infof("the cGroup mode value can not be empty")
+
+		builder.errorMsg = "the cGroup mode value can not be empty"
+
+		return builder
+	}
 
 	builder.Definition.Spec.CgroupMode = expectedCGroupMode
 
 	return builder
+}
+
+// GetNodesConfigIoGVR returns nodesConfig's GroupVersionResource which could be used for Clean function.
+func GetNodesConfigIoGVR() schema.GroupVersionResource {
+	return schema.GroupVersionResource{
+		Group: APIGroup, Version: APIVersion, Resource: APIKind,
+	}
 }
 
 // validate will check that the builder and builder definition are properly initialized before
