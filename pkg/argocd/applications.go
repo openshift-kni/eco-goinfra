@@ -38,6 +38,12 @@ type ApplicationBuilder struct {
 func PullApplication(apiClient *clients.Settings, name, nsname string) (*ApplicationBuilder, error) {
 	glog.V(100).Infof("Pulling existing Application name %s under namespace %s from cluster", name, nsname)
 
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is empty")
+
+		return nil, fmt.Errorf("application 'apiClient' cannot be empty")
+	}
+
 	builder := ApplicationBuilder{
 		apiClient: apiClient,
 		Definition: &argocdtypes.Application{
@@ -51,13 +57,13 @@ func PullApplication(apiClient *clients.Settings, name, nsname string) (*Applica
 	if name == "" {
 		glog.V(100).Infof("The name of the Application is empty")
 
-		builder.errorMsg = "Application 'name' cannot be empty"
+		return nil, fmt.Errorf("application 'name' cannot be empty")
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the Application is empty")
 
-		builder.errorMsg = "Application 'namespace' cannot be empty"
+		return nil, fmt.Errorf("application 'namespace' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -146,6 +152,8 @@ func (builder *ApplicationBuilder) Update(force bool) (*ApplicationBuilder, erro
 		}
 	}
 
+	builder.Object = builder.Definition
+
 	return builder, err
 }
 
@@ -157,6 +165,15 @@ func (builder *ApplicationBuilder) Delete() (*ApplicationBuilder, error) {
 
 	glog.V(100).Infof("Deleting the argocd application object %s from namespace: %s", builder.Definition.Name,
 		builder.Definition.Namespace)
+
+	if !builder.Exists() {
+		glog.V(100).Infof("application %s in namespace %s cannot be deleted because it does not exist",
+			builder.Definition.Name, builder.Definition.Namespace)
+
+		builder.Object = nil
+
+		return builder, nil
+	}
 
 	err := builder.apiClient.Resource(
 		GetApplicationsGVR()).Namespace(builder.Definition.Namespace).Delete(
@@ -210,45 +227,6 @@ func (builder *ApplicationBuilder) Create() (*ApplicationBuilder, error) {
 	return builder, err
 }
 
-// GetApplicationsGVR returns applications GroupVersionResource which could be used for Clean function.
-func GetApplicationsGVR() schema.GroupVersionResource {
-	return schema.GroupVersionResource{
-		Group: APIGroup, Version: APIVersion, Resource: "applications",
-	}
-}
-
-// validate will check that the builder and builder definition are properly initialized before
-// accessing any member fields.
-func (builder *ApplicationBuilder) validate() (bool, error) {
-	resourceCRD := "Application"
-
-	if builder == nil {
-		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
-
-		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
-	}
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The %s is undefined", resourceCRD)
-
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
-	}
-
-	if builder.apiClient == nil {
-		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
-
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
-	}
-
-	if builder.errorMsg != "" {
-		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
-
-		return false, fmt.Errorf(builder.errorMsg)
-	}
-
-	return true, nil
-}
-
 // WithGitDetails applies git details to application definition.
 func (builder *ApplicationBuilder) WithGitDetails(gitRepo, gitBranch, gitPath string) *ApplicationBuilder {
 	if valid, _ := builder.validate(); !valid {
@@ -288,6 +266,45 @@ func (builder *ApplicationBuilder) WithGitDetails(gitRepo, gitBranch, gitPath st
 	builder.Definition.Spec.Source.Path = gitPath
 
 	return builder
+}
+
+// GetApplicationsGVR returns applications GroupVersionResource which could be used for Clean function.
+func GetApplicationsGVR() schema.GroupVersionResource {
+	return schema.GroupVersionResource{
+		Group: APIGroup, Version: APIVersion, Resource: "applications",
+	}
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *ApplicationBuilder) validate() (bool, error) {
+	resourceCRD := "Application"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
+
+		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+
+		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
 
 func (builder *ApplicationBuilder) convertToStructured(
