@@ -205,7 +205,9 @@ func (builder *L2AdvertisementBuilder) Delete() (*L2AdvertisementBuilder, error)
 	)
 
 	if !builder.Exists() {
-		return builder, fmt.Errorf("L2Advertisement cannot be deleted because it does not exist")
+		builder.Object = nil
+
+		return builder, nil
 	}
 
 	err := builder.apiClient.Resource(

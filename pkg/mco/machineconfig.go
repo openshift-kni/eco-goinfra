@@ -105,7 +105,9 @@ func (builder *MCBuilder) Delete() error {
 	glog.V(100).Infof("Deleting the MachineConfig object %s", builder.Definition.Name)
 
 	if !builder.Exists() {
-		return fmt.Errorf("MachineConfig cannot be deleted because it does not exist")
+		builder.Object = nil
+
+		return nil
 	}
 
 	err := builder.apiClient.MachineConfigs().Delete(

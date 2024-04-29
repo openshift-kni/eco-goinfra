@@ -215,10 +215,6 @@ func TestClusterLoggingDelete(t *testing.T) {
 			expectedError:  nil,
 		},
 		{
-			clusterLogging: buildValidClusterLogging(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:  fmt.Errorf("clusterLogging cannot be deleted because it does not exist"),
-		},
-		{
 			clusterLogging: buildInValidClusterLogging(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError:  fmt.Errorf("the clusterLogging 'name' cannot be empty"),
 		},

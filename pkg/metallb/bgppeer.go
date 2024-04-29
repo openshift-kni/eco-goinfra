@@ -206,7 +206,9 @@ func (builder *BGPPeerBuilder) Delete() (*BGPPeerBuilder, error) {
 	)
 
 	if !builder.Exists() {
-		return builder, fmt.Errorf("BGPPeer cannot be deleted because it does not exist")
+		builder.Object = nil
+
+		return builder, nil
 	}
 
 	err := builder.apiClient.Resource(

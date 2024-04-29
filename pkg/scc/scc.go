@@ -518,6 +518,8 @@ func (builder *Builder) Delete() error {
 	glog.V(100).Infof("Removing SecurityContextConstraints %s", builder.Definition.Name)
 
 	if !builder.Exists() {
+		builder.Object = nil
+
 		return nil
 	}
 

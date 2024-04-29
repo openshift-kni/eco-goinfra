@@ -181,7 +181,9 @@ func (builder *Builder) Delete() error {
 	glog.V(100).Infof("Deleting the node %s", builder.Definition.Name)
 
 	if !builder.Exists() {
-		return fmt.Errorf("node cannot be deleted because it does not exist")
+		builder.Object = nil
+
+		return nil
 	}
 
 	err := builder.apiClient.CoreV1().Nodes().Delete(

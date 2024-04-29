@@ -231,7 +231,9 @@ func (builder *CguBuilder) Delete() (*CguBuilder, error) {
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return builder, fmt.Errorf("cgu cannot be deleted because it does not exist")
+		builder.Object = nil
+
+		return builder, nil
 	}
 
 	err := builder.apiClient.RanV1alpha1().ClusterGroupUpgrades(builder.Definition.Namespace).Delete(

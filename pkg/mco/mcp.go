@@ -117,7 +117,9 @@ func (builder *MCPBuilder) Delete() error {
 		builder.Definition.Name)
 
 	if !builder.Exists() {
-		return fmt.Errorf("MachineConfigPool cannot be deleted because it does not exist")
+		builder.Object = nil
+
+		return nil
 	}
 
 	err := builder.apiClient.MachineConfigPools().Delete(
