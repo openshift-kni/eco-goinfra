@@ -181,6 +181,8 @@ func (builder *Builder) Delete() (*Builder, error) {
 
 		builder.Object = nil
 
+		builder.Object = nil
+
 		return builder, nil
 	}
 
