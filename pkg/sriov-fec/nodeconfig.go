@@ -202,7 +202,9 @@ func (builder *NodeConfigBuilder) Delete() (*NodeConfigBuilder, error) {
 	)
 
 	if !builder.Exists() {
-		return builder, fmt.Errorf("SriovFecNodeConfig cannot be deleted because it does not exist")
+		builder.Object = nil
+
+		return builder, nil
 	}
 
 	err := builder.apiClient.Resource(

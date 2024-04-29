@@ -309,7 +309,7 @@ func TestCguDelete(t *testing.T) {
 		},
 		{
 			testCgu:       buildValidCguTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: fmt.Errorf("cgu cannot be deleted because it does not exist"),
+			expectedError: nil,
 		},
 		{
 			testCgu:       buildInvalidCguTestBuilder(buildTestClientWithDummyCguObject()),
@@ -351,39 +351,24 @@ func TestCguExist(t *testing.T) {
 
 func TestCguUpdate(t *testing.T) {
 	testCases := []struct {
-		alreadyExists bool
-		force         bool
+		force bool
 	}{
 		{
-			alreadyExists: false,
-			force:         false,
+			force: true,
 		},
 		{
-			alreadyExists: true,
-			force:         false,
-		},
-		{
-			alreadyExists: false,
-			force:         true,
-		},
-		{
-			alreadyExists: true,
-			force:         true,
+			force: false,
 		},
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidCguTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
-
 		// Create the builder rather than just adding it to the client so that the proper metadata is added and
 		// the update will not fail.
-		if testCase.alreadyExists {
-			var err error
+		var err error
 
-			testBuilder = buildValidCguTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
-			testBuilder, err = testBuilder.Create()
-			assert.Nil(t, err)
-		}
+		testBuilder := buildValidCguTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+		testBuilder, err = testBuilder.Create()
+		assert.Nil(t, err)
 
 		assert.NotNil(t, testBuilder.Definition)
 		assert.False(t, testBuilder.Definition.Spec.Backup)
@@ -393,13 +378,9 @@ func TestCguUpdate(t *testing.T) {
 		cguBuilder, err := testBuilder.Update(testCase.force)
 		assert.NotNil(t, testBuilder.Definition)
 
-		if testCase.alreadyExists {
-			assert.Nil(t, err)
-			assert.Equal(t, testBuilder.Definition.Name, cguBuilder.Definition.Name)
-			assert.Equal(t, testBuilder.Definition.Spec.Backup, cguBuilder.Definition.Spec.Backup)
-		} else {
-			assert.NotNil(t, err)
-		}
+		assert.Nil(t, err)
+		assert.Equal(t, testBuilder.Definition.Name, cguBuilder.Definition.Name)
+		assert.Equal(t, testBuilder.Definition.Spec.Backup, cguBuilder.Definition.Spec.Backup)
 	}
 }
 
@@ -414,7 +395,7 @@ func TestCguDeleteAndWait(t *testing.T) {
 		},
 		{
 			testCgu:       buildValidCguTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: fmt.Errorf("cgu cannot be deleted because it does not exist"),
+			expectedError: nil,
 		},
 		{
 			testCgu:       buildInvalidCguTestBuilder(buildTestClientWithDummyCguObject()),

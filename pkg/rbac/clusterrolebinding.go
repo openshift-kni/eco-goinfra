@@ -186,6 +186,8 @@ func (builder *ClusterRoleBindingBuilder) Delete() error {
 		builder.Definition.Name)
 
 	if !builder.Exists() {
+		builder.Object = nil
+
 		return nil
 	}
 
