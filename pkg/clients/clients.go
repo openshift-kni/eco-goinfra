@@ -59,7 +59,6 @@ import (
 	lcav1alpha1 "github.com/openshift-kni/lifecycle-agent/api/v1alpha1"
 	configV1 "github.com/openshift/api/config/v1"
 	imageregistryV1 "github.com/openshift/api/imageregistry/v1"
-	operatorV1 "github.com/openshift/api/operator/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	hiveextV1Beta1 "github.com/openshift/assisted-service/api/hiveextension/v1beta1"
 	agentInstallV1Beta1 "github.com/openshift/assisted-service/api/v1beta1"
@@ -79,6 +78,8 @@ import (
 	storagev1 "k8s.io/api/storage/v1"
 	k8sFakeClient "k8s.io/client-go/kubernetes/fake"
 	fakeRuntimeClient "sigs.k8s.io/controller-runtime/pkg/client/fake"
+
+	operatorv1 "github.com/openshift/api/operator/v1"
 
 	nvidiagpuv1 "github.com/NVIDIA/gpu-operator/api/v1"
 	grafanaV4V1Alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
@@ -253,7 +254,7 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
-	if err := operatorV1.Install(crScheme); err != nil {
+	if err := operatorv1.Install(crScheme); err != nil {
 		return err
 	}
 
@@ -436,6 +437,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *policiesv1beta1.PolicySet:
 			genericClientObjects = append(genericClientObjects, v)
 		case *configV1.Node:
+			genericClientObjects = append(genericClientObjects, v)
+		case *operatorv1.IngressController:
 			genericClientObjects = append(genericClientObjects, v)
 		// ArgoCD Client Objects
 		case *argocdOperatorv1alpha1.ArgoCD:
