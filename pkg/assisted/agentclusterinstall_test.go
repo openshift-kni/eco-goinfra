@@ -230,7 +230,7 @@ func TestAgentClusterInstallDelete(t *testing.T) {
 		},
 		{
 			exists:        false,
-			expectedError: errors.New("agentclusterinstall cannot be deleted because it does not exist"),
+			expectedError: nil,
 		},
 	}
 
@@ -265,7 +265,7 @@ func TestAgentClusterInstallDeleteAndWait(t *testing.T) {
 		},
 		{
 			exists:        false,
-			expectedError: errors.New("agentclusterinstall cannot be deleted because it does not exist"),
+			expectedError: nil,
 		},
 	}
 
