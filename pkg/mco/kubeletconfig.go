@@ -108,7 +108,9 @@ func (builder *KubeletConfigBuilder) Delete() error {
 	glog.V(100).Infof("Deleting the kubeletconfig object %s", builder.Definition.Name)
 
 	if !builder.Exists() {
-		return fmt.Errorf("kubeletconfig cannot be deleted because it does not exist")
+		builder.Object = nil
+
+		return nil
 	}
 
 	err := builder.apiClient.KubeletConfigs().Delete(

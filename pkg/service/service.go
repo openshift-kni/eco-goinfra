@@ -170,6 +170,8 @@ func (builder *Builder) Delete() error {
 	glog.V(100).Infof("Deleting the service %s from namespace %s", builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
+		builder.Object = nil
+
 		return nil
 	}
 
@@ -331,6 +333,8 @@ func (builder *Builder) WithAnnotation(annotation map[string]string) *Builder {
 			builder.Definition.Name, builder.Definition.Namespace)
 
 		builder.errorMsg = "annotation can not be empty map"
+
+		return builder
 	}
 
 	for key := range annotation {
@@ -341,10 +345,6 @@ func (builder *Builder) WithAnnotation(annotation map[string]string) *Builder {
 
 			return builder
 		}
-	}
-
-	if builder.errorMsg != "" {
-		return builder
 	}
 
 	builder.Definition.Annotations = annotation
@@ -365,6 +365,8 @@ func (builder *Builder) WithIPFamily(ipFamily []corev1.IPFamily, ipStackPolicy c
 			builder.Definition.Name, builder.Definition.Namespace)
 
 		builder.errorMsg = "failed to set empty ipFamily"
+
+		return builder
 	}
 
 	if ipStackPolicy == "" {
@@ -372,9 +374,7 @@ func (builder *Builder) WithIPFamily(ipFamily []corev1.IPFamily, ipStackPolicy c
 			builder.Definition.Name, builder.Definition.Namespace)
 
 		builder.errorMsg = "failed to set empty ipStackPolicy"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
