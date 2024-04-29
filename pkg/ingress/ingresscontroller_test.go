@@ -35,14 +35,14 @@ func TestIngressPull(t *testing.T) {
 		{
 			expectedError:       true,
 			addToRuntimeObjects: true,
-			expectedErrorText:   "ingresscontroller object test not found in namespace test",
+			expectedErrorText:   "ingresscontroller name cannot be empty",
 			ingressName:         "",
 			ingressNamespace:    "test",
 		},
 		{
 			expectedError:       true,
 			addToRuntimeObjects: true,
-			expectedErrorText:   "ingresscontroller object test not found in namespace test",
+			expectedErrorText:   "ingresscontroller namespace cannot be empty",
 			ingressName:         "test",
 			ingressNamespace:    "",
 		},
@@ -66,7 +66,7 @@ func TestIngressPull(t *testing.T) {
 			K8sMockObjects: runtimeObjects,
 		})
 
-		builderResult, err := Pull(testSettings, "test", "test")
+		builderResult, err := Pull(testSettings, testCase.ingressName, testCase.ingressNamespace)
 
 		if testCase.expectedError {
 			assert.NotNil(t, err)
@@ -80,48 +80,6 @@ func TestIngressPull(t *testing.T) {
 		}
 	}
 }
-
-// func TestIngressUpdate(t *testing.T) {
-// 	testCases := []struct {
-// 		ingressExistsAlready bool
-// 		name                 string
-// 		namespace            string
-// 	}{
-// 		{
-// 			ingressExistsAlready: true,
-// 			name:                 "test",
-// 			namespace:            "test",
-// 		},
-// 		{
-// 			ingressExistsAlready: false,
-// 			name:                 "test",
-// 			namespace:            "test",
-// 		},
-// 	}
-
-// 	for _, testCase := range testCases {
-// 		var runtimeObjects []runtime.Object
-
-// 		if testCase.ingressExistsAlready {
-// 			runtimeObjects = append(runtimeObjects, &operatorv1.IngressController{
-// 				ObjectMeta: metav1.ObjectMeta{
-// 					Name:      testCase.name,
-// 					Namespace: testCase.namespace,
-// 				},
-// 			})
-// 		}
-
-// 		testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects, testCase.name, testCase.namespace)
-
-// 		testBuilder.Definition.CreationTimestamp = metav1.Time{}
-// 		testBuilder.Definition.ResourceVersion = ""
-
-// 		// Updating an ingress controller that already exists leads to failure
-// 		// because it cannot be modified in place.
-// 		_, err := testBuilder.Update()
-// 		assert.Nil(t, err)
-// 	}
-// }
 
 func TestIngressCreate(t *testing.T) {
 	testCases := []struct {
@@ -207,39 +165,34 @@ func TestIngressDelete(t *testing.T) {
 
 func TestIngressValidate(t *testing.T) {
 	testCases := []struct {
-		builderNil      bool
-		definitionNil   bool
-		readerClientNil bool
-		writerClientNil bool
-		expectedError   string
+		builderNil    bool
+		definitionNil bool
+		apiClientNil  bool
+		expectedError string
 	}{
 		{
-			builderNil:      true,
-			definitionNil:   false,
-			readerClientNil: false,
-			writerClientNil: false,
-			expectedError:   "error: received nil IngressController builder",
+			builderNil:    true,
+			definitionNil: false,
+			apiClientNil:  false,
+			expectedError: "error: received nil IngressController builder",
 		},
 		{
-			builderNil:      false,
-			definitionNil:   true,
-			readerClientNil: false,
-			writerClientNil: false,
-			expectedError:   "can not redefine the undefined IngressController",
+			builderNil:    false,
+			definitionNil: true,
+			apiClientNil:  false,
+			expectedError: "can not redefine the undefined IngressController",
 		},
 		{
-			builderNil:      false,
-			definitionNil:   false,
-			readerClientNil: true,
-			writerClientNil: false,
-			expectedError:   "IngressController builder cannot have nil apiClient",
+			builderNil:    false,
+			definitionNil: false,
+			apiClientNil:  true,
+			expectedError: "IngressController builder cannot have nil apiClient",
 		},
 		{
-			builderNil:      false,
-			definitionNil:   false,
-			readerClientNil: false,
-			writerClientNil: false,
-			expectedError:   "",
+			builderNil:    false,
+			definitionNil: false,
+			apiClientNil:  false,
+			expectedError: "",
 		},
 	}
 
@@ -254,12 +207,8 @@ func TestIngressValidate(t *testing.T) {
 			testBuilder.Definition = nil
 		}
 
-		if testCase.readerClientNil {
-			testBuilder.readerClient = nil
-		}
-
-		if testCase.writerClientNil {
-			testBuilder.writerClient = nil
+		if testCase.apiClientNil {
+			testBuilder.apiClient = nil
 		}
 
 		result, err := testBuilder.validate()
@@ -281,8 +230,7 @@ func buildTestBuilderWithFakeObjects(runtimeObjects []runtime.Object,
 	})
 
 	return &Builder{
-		readerClient: testSettings.Client,
-		writerClient: testSettings.Client,
+		apiClient: testSettings,
 		Definition: &operatorv1.IngressController{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,

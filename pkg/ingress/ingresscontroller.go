@@ -20,8 +20,7 @@ type Builder struct {
 	// Created ingresscontroller object.
 	Object *operatorv1.IngressController
 	// api clients to interact with the cluster.
-	readerClient goclient.Reader
-	writerClient goclient.Writer
+	apiClient *clients.Settings
 }
 
 // Pull loads an existing ingresscontroller into Builder struct.
@@ -29,14 +28,25 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	glog.V(100).Infof("Pulling existing ingresscontroller %s in namespace %s", name, nsname)
 
 	builder := &Builder{
-		readerClient: apiClient.Client,
-		writerClient: apiClient.Client,
+		apiClient: apiClient,
 		Definition: &operatorv1.IngressController{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: nsname,
 			},
 		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The ingresscontroller name is empty")
+
+		return nil, fmt.Errorf("ingresscontroller name cannot be empty")
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The ingresscontroller namespace is empty")
+
+		return nil, fmt.Errorf("ingresscontroller namespace cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -58,7 +68,7 @@ func (builder *Builder) Get() (*operatorv1.IngressController, error) {
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	lvs := &operatorv1.IngressController{}
-	err := builder.readerClient.Get(context.TODO(), goclient.ObjectKey{
+	err := builder.apiClient.Get(context.TODO(), goclient.ObjectKey{
 		Name:      builder.Definition.Name,
 		Namespace: builder.Definition.Namespace,
 	}, lvs)
@@ -102,7 +112,7 @@ func (builder *Builder) Update() (*Builder, error) {
 	builder.Definition.CreationTimestamp = metav1.Time{}
 	builder.Definition.ResourceVersion = ""
 
-	err := builder.writerClient.Update(context.TODO(), builder.Definition)
+	err := builder.apiClient.Update(context.TODO(), builder.Definition)
 
 	if err != nil {
 		return nil, fmt.Errorf("cannot update ingresscontroller: %w", err)
@@ -122,7 +132,7 @@ func (builder *Builder) Create() (*Builder, error) {
 
 	var err error
 	if !builder.Exists() {
-		err = builder.writerClient.Create(context.TODO(), builder.Definition)
+		err = builder.apiClient.Create(context.TODO(), builder.Definition)
 
 		if err == nil {
 			builder.Object = builder.Definition
@@ -147,7 +157,7 @@ func (builder *Builder) Delete() error {
 		return nil
 	}
 
-	err := builder.writerClient.Delete(context.TODO(), builder.Definition)
+	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
 
 	if err != nil {
 		return fmt.Errorf("cannot delete ingresscontroller: %w", err)
@@ -175,14 +185,8 @@ func (builder *Builder) validate() (bool, error) {
 		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
-	if builder.readerClient == nil {
-		glog.V(100).Infof("The %s builder readerClient is nil", resourceCRD)
-
-		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
-	}
-
-	if builder.writerClient == nil {
-		glog.V(100).Infof("The %s builder writerClient is nil", resourceCRD)
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiClient is nil", resourceCRD)
 
 		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
