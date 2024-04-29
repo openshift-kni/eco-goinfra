@@ -124,10 +124,10 @@ func (builder *Builder) GetCGroupMode() (configV1.CgroupMode, error) {
 		return "", err
 	}
 
-	glog.V(100).Infof("Getting nodesConfig ManagementState configuration")
+	glog.V(100).Infof("Getting nodesConfig cGroupMode configuration")
 
 	if !builder.Exists() {
-		return "", fmt.Errorf("imageRegistry object doesn't exist")
+		return "", fmt.Errorf("nodesConfig object doesn't exist")
 	}
 
 	return builder.Object.Spec.CgroupMode, nil
@@ -139,13 +139,13 @@ func (builder *Builder) WithCGroupMode(expectedCGroupMode configV1.CgroupMode) *
 		return builder
 	}
 
-	glog.V(100).Infof("Setting nodesConfig %s with ManagementState: %v",
+	glog.V(100).Infof("Setting nodesConfig %s with cGroupMode: %v",
 		builder.Definition.Name, expectedCGroupMode)
 
 	if expectedCGroupMode == configV1.CgroupModeEmpty {
-		glog.V(100).Infof("the cGroup mode value can not be empty")
+		glog.V(100).Infof("the cGroupMode value can not be empty")
 
-		builder.errorMsg = "the cGroup mode value can not be empty"
+		builder.errorMsg = "the cGroupMode value can not be empty"
 
 		return builder
 	}
