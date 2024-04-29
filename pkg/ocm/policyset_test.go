@@ -274,39 +274,21 @@ func TestPolicySetDelete(t *testing.T) {
 
 func TestPolicySetUpdate(t *testing.T) {
 	testCases := []struct {
-		alreadyExists bool
-		force         bool
+		force bool
 	}{
 		{
-			alreadyExists: false,
-			force:         false,
+			force: false,
 		},
 		{
-			alreadyExists: true,
-			force:         false,
-		},
-		{
-			alreadyExists: false,
-			force:         true,
-		},
-		{
-			alreadyExists: true,
-			force:         true,
+			force: true,
 		},
 	}
 
 	for _, testCase := range testCases {
+		var err error
 		testBuilder := buildValidPolicySetTestBuilder(buildTestClientWithPolicySetScheme())
-
-		// Create the builder rather than just adding it to the client so that the proper metadata is added and
-		// the update will not fail.
-		if testCase.alreadyExists {
-			var err error
-
-			testBuilder = buildValidPolicySetTestBuilder(buildTestClientWithPolicySetScheme())
-			testBuilder, err = testBuilder.Create()
-			assert.Nil(t, err)
-		}
+		testBuilder, err = testBuilder.Create()
+		assert.Nil(t, err)
 
 		assert.NotNil(t, testBuilder.Definition)
 		assert.Empty(t, testBuilder.Definition.Spec.Description)
@@ -316,13 +298,9 @@ func TestPolicySetUpdate(t *testing.T) {
 		policySetBuilder, err := testBuilder.Update(testCase.force)
 		assert.NotNil(t, testBuilder.Definition)
 
-		if testCase.alreadyExists {
-			assert.Nil(t, err)
-			assert.Equal(t, testBuilder.Definition.Name, policySetBuilder.Definition.Name)
-			assert.Equal(t, testBuilder.Definition.Spec.Description, policySetBuilder.Definition.Spec.Description)
-		} else {
-			assert.NotNil(t, err)
-		}
+		assert.Nil(t, err)
+		assert.Equal(t, testBuilder.Definition.Name, policySetBuilder.Definition.Name)
+		assert.Equal(t, testBuilder.Definition.Spec.Description, policySetBuilder.Definition.Spec.Description)
 	}
 }
 

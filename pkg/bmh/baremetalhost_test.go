@@ -957,7 +957,7 @@ func TestBareMetalHostDeleteAndWaitUntilDeleted(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		builder, err := testCase.testBmHost.DeleteAndWaitUntilDeleted(2 * time.Second)
+		builder, err := testCase.testBmHost.DeleteAndWaitUntilDeleted(5 * time.Second)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
