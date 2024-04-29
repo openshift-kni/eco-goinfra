@@ -223,6 +223,132 @@ func TestIngressValidate(t *testing.T) {
 	}
 }
 
+func TestIngressGet(t *testing.T) {
+	testCases := []struct {
+		ingressExistsAlready bool
+		name                 string
+		namespace            string
+	}{
+		{
+			ingressExistsAlready: true,
+			name:                 "test",
+			namespace:            "test",
+		},
+		{
+			ingressExistsAlready: false,
+			name:                 "test",
+			namespace:            "test",
+		},
+	}
+
+	for _, testCase := range testCases {
+		var runtimeObjects []runtime.Object
+
+		if testCase.ingressExistsAlready {
+			runtimeObjects = append(runtimeObjects, &operatorv1.IngressController{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      testCase.name,
+					Namespace: testCase.namespace,
+				},
+			})
+		}
+
+		testBuilder, _ := buildTestBuilderWithFakeObjects(runtimeObjects, testCase.name, testCase.namespace)
+
+		result, err := testBuilder.Get()
+		if testCase.ingressExistsAlready {
+			assert.Nil(t, err)
+			assert.NotNil(t, result)
+		} else {
+			assert.NotNil(t, err)
+			assert.Nil(t, result)
+		}
+	}
+}
+
+func TestIngressExists(t *testing.T) {
+	testCases := []struct {
+		ingressExistsAlready bool
+		name                 string
+		namespace            string
+	}{
+		{
+			ingressExistsAlready: true,
+			name:                 "test",
+			namespace:            "test",
+		},
+		{
+			ingressExistsAlready: false,
+			name:                 "test",
+			namespace:            "test",
+		},
+	}
+
+	for _, testCase := range testCases {
+		var runtimeObjects []runtime.Object
+
+		if testCase.ingressExistsAlready {
+			runtimeObjects = append(runtimeObjects, &operatorv1.IngressController{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      testCase.name,
+					Namespace: testCase.namespace,
+				},
+			})
+		}
+
+		testBuilder, _ := buildTestBuilderWithFakeObjects(runtimeObjects, testCase.name, testCase.namespace)
+
+		result := testBuilder.Exists()
+		if testCase.ingressExistsAlready {
+			assert.True(t, result)
+		} else {
+			assert.False(t, result)
+		}
+	}
+}
+
+// func TestIngressUpdate(t *testing.T) {
+// 	testCases := []struct {
+// 		ingressExistsAlready bool
+// 		name                 string
+// 		namespace            string
+// 	}{
+// 		{
+// 			ingressExistsAlready: true,
+// 			name:                 "test",
+// 			namespace:            "test",
+// 		},
+// 		{
+// 			ingressExistsAlready: false,
+// 			name:                 "test",
+// 			namespace:            "test",
+// 		},
+// 	}
+
+// 	for _, testCase := range testCases {
+// 		var runtimeObjects []runtime.Object
+
+// 		if testCase.ingressExistsAlready {
+// 			runtimeObjects = append(runtimeObjects, &operatorv1.IngressController{
+// 				ObjectMeta: metav1.ObjectMeta{
+// 					Name:      testCase.name,
+// 					Namespace: testCase.namespace,
+// 				},
+// 			})
+// 		}
+
+// 		testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects, testCase.name, testCase.namespace)
+
+// 		testBuilder.Definition.CreationTimestamp = metav1.Time{}
+// 		testBuilder.Definition.ResourceVersion = ""
+
+// 		// Updating an ingress controller that already exists leads to failure
+// 		// because it cannot be modified in place.
+// 		_, err := testBuilder.Update()
+// 		assert.Nil(t, err)
+// 	}
+// }
+
 func buildTestBuilderWithFakeObjects(runtimeObjects []runtime.Object,
 	name, namespace string) (*Builder, *clients.Settings) {
 	testSettings := clients.GetTestClients(clients.TestClientParams{
