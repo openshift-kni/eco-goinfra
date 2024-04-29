@@ -364,6 +364,8 @@ func (builder *ClusterDeploymentBuilder) Delete() error {
 
 		builder.Object = nil
 
+		builder.Object = nil
+
 		return nil
 	}
 
