@@ -155,18 +155,19 @@ func WaitForAllNodesToReboot(apiClient *clients.Settings,
 						return false, err
 					}
 
-					rebooted := slices.Contains(rebootedNodes, node.Object.Name)
-					if !ready && !rebooted {
-						glog.V(100).Infof("Node %s was rebooted and is starting to recover", node.Object.Name)
+					if slices.Contains(rebootedNodes, node.Object.Name) {
+						if ready && !slices.Contains(readyNodes, node.Object.Name) {
+							glog.V(100).Infof("Node %s was successfully rebooted after: %v",
+								node.Object.Name, time.Now().Unix()-globalStartTime)
 
-						rebootedNodes = append(rebootedNodes, node.Object.Name)
-					}
+							readyNodes = append(readyNodes, node.Object.Name)
+						}
+					} else {
+						if !ready {
+							glog.V(100).Infof("Node %s was rebooted and is starting to recover", node.Object.Name)
 
-					if ready && rebooted {
-						glog.V(100).Infof("Node %s was successfully rebooted after: %v",
-							time.Now().Unix()-globalStartTime)
-
-						readyNodes = append(readyNodes, node.Object.Name)
+							rebootedNodes = append(rebootedNodes, node.Object.Name)
+						}
 					}
 				}
 			}
