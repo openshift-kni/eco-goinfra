@@ -69,6 +69,9 @@ import (
 	storageV1Client "k8s.io/client-go/kubernetes/typed/storage/v1"
 	policiesv1 "open-cluster-management.io/governance-policy-propagator/api/v1"
 
+	plumbingv1 "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/apis/k8s.cni.cncf.io/v1beta1"
+	fakeMultiNetPolicyClient "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/client/clientset/versioned/fake"
+
 	appsv1 "k8s.io/api/apps/v1"
 	scalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -119,6 +122,7 @@ type Settings struct {
 	clientNetAttDefV1.K8sCniCncfIoV1Interface
 	dynamic.Interface
 	olmv1.OperatorsV1Interface
+	MultiNetworkPolicyClient multinetpolicyclientv1.K8sCniCncfIoV1beta1Interface
 	multinetpolicyclientv1.K8sCniCncfIoV1beta1Interface
 	PackageManifestInterface clientPkgManifestV1.OperatorsV1Interface
 	operatorv1alpha1.OperatorV1alpha1Interface
@@ -366,7 +370,8 @@ type TestClientParams struct {
 func GetTestClients(tcp TestClientParams) *Settings {
 	clientSet := &Settings{}
 
-	var k8sClientObjects, genericClientObjects, srIovObjects, veleroClientObjects, cguObjects []runtime.Object
+	var k8sClientObjects, genericClientObjects, plumbingObjects, srIovObjects,
+		veleroClientObjects, cguObjects []runtime.Object
 
 	//nolint:varnamelen
 	for _, v := range tcp.K8sMockObjects {
@@ -465,6 +470,9 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			cguObjects = append(cguObjects, v)
 		case *srIovV1.SriovNetworkPoolConfig:
 			srIovObjects = append(srIovObjects, v)
+		// MultiNetworkPolicy Client Objects
+		case *plumbingv1.MultiNetworkPolicy:
+			plumbingObjects = append(plumbingObjects, v)
 		}
 	}
 
@@ -475,6 +483,12 @@ func GetTestClients(tcp TestClientParams) *Settings {
 	clientSet.NetworkingV1Interface = clientSet.K8sClient.NetworkingV1()
 	clientSet.RbacV1Interface = clientSet.K8sClient.RbacV1()
 	clientSet.ClientSrIov = clientSrIovFake.NewSimpleClientset(srIovObjects...)
+
+	// Assign the fake multi-networkpolicy clientset to the clientSet
+	// Note: We are not entirely sure that these functions actually work as expected.
+	multiClient := fakeMultiNetPolicyClient.NewSimpleClientset(plumbingObjects...)
+	clientSet.MultiNetworkPolicyClient = multiClient.K8sCniCncfIoV1beta1()
+	clientSet.K8sCniCncfIoV1beta1Interface = multiClient.K8sCniCncfIoV1beta1()
 
 	// Assign the fake velero clientset to the clientSet
 	clientSet.VeleroClient = veleroFakeClient.NewSimpleClientset(veleroClientObjects...)
