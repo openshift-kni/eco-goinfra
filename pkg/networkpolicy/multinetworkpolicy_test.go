@@ -10,7 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func TestNewMultiNetworkPolicyPull(t *testing.T) {
+func TestMultiNetworkPolicyPull(t *testing.T) {
 	generateMultiNetworkPolicy := func(name, namespace string) *v1beta1.MultiNetworkPolicy {
 		return &v1beta1.MultiNetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
@@ -432,6 +432,10 @@ func TestMultiNetworkPolicyWithNetwork(t *testing.T) {
 	result := testBuilder.WithNetwork("test-network")
 
 	assert.Equal(t, "test-network", result.Definition.Annotations["k8s.v1.cni.cncf.io/policy-for"])
+
+	result = testBuilder.WithNetwork("")
+
+	assert.Equal(t, "The networkName is an empty string", result.errorMsg)
 }
 
 func TestMultiNetworkPolicyWithEmptyIngress(t *testing.T) {
@@ -496,6 +500,37 @@ func TestMultiNetworkPolicyWithPolicyType(t *testing.T) {
 	result = testBuilder.WithPolicyType("")
 
 	assert.Equal(t, "The policy Type is an empty string", result.errorMsg)
+}
+
+func TestMultiNetworkPolicyExists(t *testing.T) {
+	testCases := []struct {
+		policyName      string
+		policyNamespace string
+		expected        bool
+	}{
+		{
+			policyName:      "test-policy",
+			policyNamespace: "test-namespace",
+			expected:        true,
+		},
+		{
+			policyName:      "test-policy",
+			policyNamespace: "test-namespace",
+			expected:        false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder, _ := buildTestMultiNetworkPolicyBuilderWithFakeObjects(nil,
+			testCase.policyName, testCase.policyNamespace)
+
+		if testCase.expected {
+			_, err := testBuilder.Create()
+			assert.Nil(t, err)
+		}
+
+		assert.Equal(t, testCase.expected, testBuilder.Exists())
+	}
 }
 
 func buildTestMultiNetworkPolicyBuilderWithFakeObjects(runtimeObjects []runtime.Object,
