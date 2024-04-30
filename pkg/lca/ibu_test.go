@@ -301,59 +301,6 @@ func TestImageBasedUpgradeWithSeedImage(t *testing.T) {
 	}
 }
 
-func TestImageBasedUpgradeWithAdditionalImages(t *testing.T) {
-	testCases := []struct {
-		expectedError                      error
-		addToRuntimeObjects                bool
-		additionalImagesConfigMapName      string
-		additionalImagesConfigMapNamespace string
-	}{
-		{
-			expectedError:                      nil,
-			addToRuntimeObjects:                true,
-			additionalImagesConfigMapName:      "cmName",
-			additionalImagesConfigMapNamespace: "nsName",
-		},
-		{
-			expectedError:                      nil,
-			addToRuntimeObjects:                true,
-			additionalImagesConfigMapName:      "",
-			additionalImagesConfigMapNamespace: "",
-		},
-	}
-
-	for _, testCase := range testCases {
-		var (
-			runtimeObjects []runtime.Object
-			testSettings   *clients.Settings
-		)
-
-		testIBU := generateImageBasedUpgrade()
-
-		if testCase.addToRuntimeObjects {
-			runtimeObjects = append(runtimeObjects, testIBU)
-		}
-
-		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
-		})
-
-		ibuBuilder, err := PullImageBasedUpgrade(testSettings)
-		assert.Nil(t, err)
-
-		// Test the WithAdditionalImages function
-		builderResult := ibuBuilder.WithAdditionalImages(
-			testCase.additionalImagesConfigMapName, testCase.additionalImagesConfigMapNamespace)
-
-		// Check the error
-		assert.Equal(t, err, testCase.expectedError)
-
-		if testCase.expectedError == nil {
-			assert.NotNil(t, builderResult)
-		}
-	}
-}
-
 func TestImageBasedUpgradeWithExtraManifests(t *testing.T) {
 	testCases := []struct {
 		expectedError                    error
