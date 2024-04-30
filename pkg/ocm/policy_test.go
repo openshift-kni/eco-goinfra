@@ -3,6 +3,7 @@ package ocm
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
@@ -353,6 +354,16 @@ func TestWithAdditionalPolicyTemplate(t *testing.T) {
 				t, []*policiesv1.PolicyTemplate{{}, testCase.policyTemplate}, policyBuilder.Definition.Spec.PolicyTemplates)
 		}
 	}
+}
+
+func TestPolicyWaitUntilDeleted(t *testing.T) {
+	// simulate deleted policy using client with no policy object
+	testSettings := clients.GetTestClients(clients.TestClientParams{})
+	policyBuilder := buildValidPolicyTestBuilder(testSettings)
+
+	err := policyBuilder.WaitUntilDeleted(5 * time.Second)
+
+	assert.Nil(t, err)
 }
 
 // buildDummyPolicy returns a Policy with the provided name and namespace.
