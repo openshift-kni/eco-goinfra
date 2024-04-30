@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func TestPullKubeAPIServerBuilder(t *testing.T) {
+func TestPullKubeAPIServer(t *testing.T) {
 	generateKubeAPIServer := func() *operatorv1.KubeAPIServer {
 		return &operatorv1.KubeAPIServer{
 			ObjectMeta: metav1.ObjectMeta{
@@ -60,7 +60,7 @@ func TestPullKubeAPIServerBuilder(t *testing.T) {
 			testSettings = clients.GetTestClients(clients.TestClientParams{K8sMockObjects: runtimeObjects})
 		}
 
-		builderResult, err := PullKubeAPIServerBuilder(testSettings)
+		builderResult, err := PullKubeAPIServer(testSettings)
 
 		assert.Equal(t, testCase.expectedError, err)
 
@@ -202,26 +202,21 @@ func TestKubeAPIServerWaitUntilConditionTrue(t *testing.T) {
 func TestKubeAPIServerWaitAllNodesAtTheLatestRevision(t *testing.T) {
 	testCases := []struct {
 		testKubeAPIServerBuilder *KubeAPIServerBuilder
-		condition                string
 		expectedError            error
 	}{
 		{
-			condition:                "NodeInstallerProgressing",
 			testKubeAPIServerBuilder: buildValidKubeAPIServerBuilder(buildKubeAPIServerWithDummyObject()),
 			expectedError:            nil,
 		},
 		{
-			condition:                "unavailable",
 			testKubeAPIServerBuilder: buildValidKubeAPIServerBuilder(buildKubeAPIServerWithDummyObject()),
 			expectedError:            fmt.Errorf("the unavailable condition not found exists: context deadline exceeded"),
 		},
 		{
-			condition:                "",
 			testKubeAPIServerBuilder: buildValidKubeAPIServerBuilder(buildKubeAPIServerWithDummyObject()),
 			expectedError:            fmt.Errorf("kubeAPIServer 'conditionType' cannot be empty"),
 		},
 		{
-			condition:                "NodeInstallerProgressing",
 			testKubeAPIServerBuilder: buildValidKubeAPIServerBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError:            fmt.Errorf("cluster kubeAPIServer not found"),
 		},

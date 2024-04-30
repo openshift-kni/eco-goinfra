@@ -421,6 +421,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		// Generic Client Objects
 		case *operatorv1.KubeAPIServer:
 			genericClientObjects = append(genericClientObjects, v)
+		case *operatorv1.OpenShiftAPIServer:
+			genericClientObjects = append(genericClientObjects, v)
 		case *routev1.Route:
 			genericClientObjects = append(genericClientObjects, v)
 		case *mlbtypes.IPAddressPool:
