@@ -414,6 +414,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *netv1.NetworkPolicy:
 			k8sClientObjects = append(k8sClientObjects, v)
 		// Generic Client Objects
+		case *operatorv1.KubeAPIServer:
+			genericClientObjects = append(genericClientObjects, v)
 		case *routev1.Route:
 			genericClientObjects = append(genericClientObjects, v)
 		case *mlbtypes.IPAddressPool:
