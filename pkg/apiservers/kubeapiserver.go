@@ -31,8 +31,8 @@ type KubeAPIServerBuilder struct {
 
 var kubeAPIServerObjName = "cluster"
 
-// PullKubeAPIServerBuilder pulls existing kubeApiServer from the cluster.
-func PullKubeAPIServerBuilder(apiClient *clients.Settings) (*KubeAPIServerBuilder, error) {
+// PullKubeAPIServer pulls existing kubeApiServer from the cluster.
+func PullKubeAPIServer(apiClient *clients.Settings) (*KubeAPIServerBuilder, error) {
 	glog.V(100).Infof("Pulling existing kubeApiServer from cluster")
 
 	if apiClient == nil {
