@@ -115,7 +115,7 @@ The project uses a development method - forking workflow
 
 ### Code conventions
 #### Lint
-Push requested are tested in a pipeline with golangci-lint. It is advised to add [Golangci-lint integration](https://golangci-lint.run/usage/integrations/) to your development editor. It's recommended to run `make lint` before uploading a PR.
+Push requested are tested in a pipeline with golangci-lint. It is advised to add [Golangci-lint integration](https://golangci-lint.run/usage/integrations/) to your development editor. It is recommended to run `make lint` before uploading a PR.
 
 #### Functions format
 If the function's arguments fit in a single line - use the following format:
@@ -125,7 +125,7 @@ func Function(argInt1, argInt2 int, argString1, argString2 string) {
 }
 ```
 
-If the function's arguments don't fit in a single line - use the following format:
+If the function's arguments do not fit in a single line - use the following format:
 ```go
 func Function(
     argInt1 int,

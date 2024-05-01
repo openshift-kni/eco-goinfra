@@ -272,7 +272,7 @@ func TestNetworkNodeStateWaitUntilSyncStatus(t *testing.T) {
 		},
 		{
 			syncStatus:    "",
-			expectedError: fmt.Errorf("syncStatus can't be empty"),
+			expectedError: fmt.Errorf("syncStatus cannot be empty"),
 		},
 	}
 	for _, testCase := range testCases {
