@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestNewEgressRuleBuilder(t *testing.T) {
@@ -63,7 +63,7 @@ func TestEgressWithOptions(t *testing.T) {
 func TestEgressWithPeerPodSelector(t *testing.T) {
 	builder := NewEgressRuleBuilder()
 
-	builder.WithPeerPodSelector(v1.LabelSelector{
+	builder.WithPeerPodSelector(metav1.LabelSelector{
 		MatchLabels: map[string]string{
 			"app": "nginx",
 		},
@@ -72,9 +72,10 @@ func TestEgressWithPeerPodSelector(t *testing.T) {
 	assert.Len(t, builder.definition.To, 1)
 	assert.Equal(t, builder.definition.To[0].PodSelector.MatchLabels["app"], "nginx")
 
+	//nolint:goconst
 	builder.errorMsg = "error"
 
-	builder.WithPeerPodSelector(v1.LabelSelector{
+	builder.WithPeerPodSelector(metav1.LabelSelector{
 		MatchLabels: map[string]string{
 			"app": "nginx",
 		},
@@ -86,7 +87,7 @@ func TestEgressWithPeerPodSelector(t *testing.T) {
 func TestEgressWithPeerPodSelectorAndCIDR(t *testing.T) {
 	builder := NewEgressRuleBuilder()
 
-	builder.WithPeerPodSelectorAndCIDR(v1.LabelSelector{
+	builder.WithPeerPodSelectorAndCIDR(metav1.LabelSelector{
 		MatchLabels: map[string]string{
 			"app": "nginx",
 		},
@@ -97,7 +98,7 @@ func TestEgressWithPeerPodSelectorAndCIDR(t *testing.T) {
 	assert.Equal(t, builder.definition.To[0].IPBlock.CIDR, "192.168.0.1/24")
 
 	// Test invalid CIDR
-	builder.WithPeerPodSelectorAndCIDR(v1.LabelSelector{
+	builder.WithPeerPodSelectorAndCIDR(metav1.LabelSelector{
 		MatchLabels: map[string]string{
 			"app": "nginx",
 		},
@@ -106,7 +107,7 @@ func TestEgressWithPeerPodSelectorAndCIDR(t *testing.T) {
 	assert.Equal(t, builder.errorMsg, "Invalid CIDR argument 192.55.55.55")
 
 	// Test with exception
-	builder.WithPeerPodSelectorAndCIDR(v1.LabelSelector{
+	builder.WithPeerPodSelectorAndCIDR(metav1.LabelSelector{
 		MatchLabels: map[string]string{
 			"app": "nginx",
 		},
