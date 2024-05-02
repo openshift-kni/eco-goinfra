@@ -132,7 +132,7 @@ func (builder *NetworkNodeStateBuilder) WaitUntilSyncStatus(syncStatus string, t
 	if syncStatus == "" {
 		glog.V(100).Infof("The syncStatus parameter is empty")
 
-		return fmt.Errorf("syncStatus can't be empty")
+		return fmt.Errorf("syncStatus cannot be empty")
 	}
 
 	// Polls every retryInterval to determine if SriovNetworkNodeState is in desired syncStatus.

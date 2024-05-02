@@ -206,7 +206,7 @@ func (builder *Builder) DeleteAndWait(timeout time.Duration) (*Builder, error) {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Deleting pod %s in namespace %s and waiting for the defined period until it's removed",
+	glog.V(100).Infof("Deleting pod %s in namespace %s and waiting for the defined period until it is removed",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	builder, err := builder.Delete()
@@ -229,7 +229,7 @@ func (builder *Builder) CreateAndWaitUntilRunning(timeout time.Duration) (*Build
 		return builder, err
 	}
 
-	glog.V(100).Infof("Creating pod %s in namespace %s and waiting for the defined period until it's ready",
+	glog.V(100).Infof("Creating pod %s in namespace %s and waiting for the defined period until it is ready",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	builder, err := builder.Create()

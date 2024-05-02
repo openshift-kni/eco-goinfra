@@ -286,7 +286,7 @@ func TestPlacementBindingUpdate(t *testing.T) {
 		testBuilder := buildValidPlacementBindingTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
 
 		// Create the builder rather than just adding it to the client so that the proper metadata is added and
-		// the update won't fail.
+		// the update will not fail.
 		if testCase.alreadyExists {
 			var err error
 
