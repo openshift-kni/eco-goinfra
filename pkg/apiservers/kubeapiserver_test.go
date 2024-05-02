@@ -60,7 +60,7 @@ func TestPullKubeAPIServer(t *testing.T) {
 			testSettings = clients.GetTestClients(clients.TestClientParams{K8sMockObjects: runtimeObjects})
 		}
 
-		builderResult, err := PullKubeAPIServer(testSettings)
+		builderResult, err := PullKubeAPIServerBuilder(testSettings)
 
 		assert.Equal(t, testCase.expectedError, err)
 
