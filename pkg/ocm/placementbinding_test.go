@@ -96,7 +96,7 @@ func TestPullPlacementBinding(t *testing.T) {
 			addToRuntimeObjects:       false,
 			client:                    true,
 			expectedErrorText: fmt.Sprintf(
-				"placementBinding object %s doesn't exist in namespace %s",
+				"placementBinding object %s does not exist in namespace %s",
 				defaultPlacementBindingName,
 				defaultPlacementBindingNsName),
 		},

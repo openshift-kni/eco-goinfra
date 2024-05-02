@@ -53,7 +53,7 @@ func Pull(apiClient *clients.Settings, nodesConfigObjName string) (*Builder, err
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("nodesConfig object %s doesn't exist", nodesConfigObjName)
+		return nil, fmt.Errorf("nodesConfig object %s does not exist", nodesConfigObjName)
 	}
 
 	builder.Definition = builder.Object
@@ -107,7 +107,7 @@ func (builder *Builder) Update() (*Builder, error) {
 	glog.V(100).Infof("Updating the nodesConfig %s", builder.Definition.Name)
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("nodesConfig object %s doesn't exist", builder.Definition.Name)
+		return nil, fmt.Errorf("nodesConfig object %s does not exist", builder.Definition.Name)
 	}
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
@@ -127,7 +127,7 @@ func (builder *Builder) GetCGroupMode() (configV1.CgroupMode, error) {
 	glog.V(100).Infof("Getting nodesConfig cGroupMode configuration")
 
 	if !builder.Exists() {
-		return "", fmt.Errorf("nodesConfig object doesn't exist")
+		return "", fmt.Errorf("nodesConfig object does not exist")
 	}
 
 	return builder.Object.Spec.CgroupMode, nil

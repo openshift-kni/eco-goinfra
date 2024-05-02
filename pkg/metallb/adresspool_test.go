@@ -61,7 +61,7 @@ func TestPullAddressPool(t *testing.T) {
 			name:                "addresspool",
 			namespace:           "test-namespace",
 			addToRuntimeObjects: false,
-			expectedError:       fmt.Errorf("addresspool object addresspool doesn't exist in namespace test-namespace"),
+			expectedError:       fmt.Errorf("addresspool object addresspool does not exist in namespace test-namespace"),
 			client:              true,
 		},
 		{

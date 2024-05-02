@@ -39,7 +39,7 @@ func TestPullOpenshiftAPIServer(t *testing.T) {
 		},
 		{
 			addToRuntimeObjects: false,
-			expectedError:       fmt.Errorf("openshiftAPIServer object cluster doesn't found"),
+			expectedError:       fmt.Errorf("openshiftAPIServer object cluster does not exist"),
 			client:              true,
 		},
 	}

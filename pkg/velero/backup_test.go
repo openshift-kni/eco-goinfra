@@ -70,7 +70,7 @@ func TestPullBackup(t *testing.T) {
 			namespace:           "backup-test-namespace-2",
 			expectedError:       true,
 			addToRuntimeObjects: false,
-			expectedErrorText:   "backup object backup-test-2 doesn't exist in namespace backup-test-namespace-2",
+			expectedErrorText:   "backup object backup-test-2 does not exist in namespace backup-test-namespace-2",
 		},
 		{
 			name:                "",

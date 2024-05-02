@@ -92,7 +92,7 @@ func TestPull(t *testing.T) {
 			nsname:              "testns",
 			expectedError:       true,
 			addToRuntimeObjects: false,
-			expectedErrorText:   "configmap object test doesn't exist in namespace testns",
+			expectedErrorText:   "configmap object test does not exist in namespace testns",
 		},
 	}
 

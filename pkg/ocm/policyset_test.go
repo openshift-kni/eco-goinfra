@@ -85,7 +85,7 @@ func TestPullPolicySet(t *testing.T) {
 			addToRuntimeObjects: false,
 			client:              true,
 			expectedErrorText: fmt.Sprintf(
-				"policyset object %s doesn't exist in namespace %s", defaultPolicySetName, defaultPolicySetNsName),
+				"policyset object %s does not exist in namespace %s", defaultPolicySetName, defaultPolicySetNsName),
 		},
 		{
 			policySetName:       "",

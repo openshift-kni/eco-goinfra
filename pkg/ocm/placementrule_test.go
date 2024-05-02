@@ -74,7 +74,7 @@ func TestPullPlacementRule(t *testing.T) {
 			addToRuntimeObjects:    false,
 			client:                 true,
 			expectedErrorText: fmt.Sprintf(
-				"placementrule object %s doesn't exist in namespace %s", defaultPlacementRuleName, defaultPlacementRuleNsName),
+				"placementrule object %s does not exist in namespace %s", defaultPlacementRuleName, defaultPlacementRuleNsName),
 		},
 		{
 			placementRuleName:      "",

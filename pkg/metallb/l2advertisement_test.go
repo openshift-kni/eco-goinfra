@@ -65,7 +65,7 @@ func TestPullL2Advertisement(t *testing.T) {
 			name:                "l2advertisement",
 			namespace:           "test-namespace",
 			addToRuntimeObjects: false,
-			expectedError:       fmt.Errorf("l2advertisement object l2advertisement doesn't exist in namespace test-namespace"),
+			expectedError:       fmt.Errorf("l2advertisement object l2advertisement does not exist in namespace test-namespace"),
 			client:              true,
 		},
 		{

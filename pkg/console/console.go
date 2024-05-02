@@ -67,7 +67,7 @@ func Pull(apiClient *clients.Settings, name string) (*Builder, error) {
 	glog.V(100).Infof("Pulling cluster console %s", name)
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("the console object %s doesn't exist", name)
+		return nil, fmt.Errorf("the console object %s does not exist", name)
 	}
 
 	builder.Definition = builder.Object

@@ -80,7 +80,7 @@ func TestPullRestore(t *testing.T) {
 			namespace:           "restore-test-namespace-2",
 			expectedError:       true,
 			addToRuntimeObjects: false,
-			expectedErrorText:   "restore object restore-test-2 doesn't exist in namespace restore-test-namespace-2",
+			expectedErrorText:   "restore object restore-test-2 does not exist in namespace restore-test-namespace-2",
 		},
 		{
 			name:                "",

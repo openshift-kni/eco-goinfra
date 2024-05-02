@@ -50,7 +50,7 @@ func TestPullOperatorConfig(t *testing.T) {
 			operatorConfigNamespace: "test-namespace",
 			expectedError:           true,
 			addToRuntimeObjects:     false,
-			expectedErrorText:       "SriovOperatorConfig object default doesn't exist in namespace test-namespace",
+			expectedErrorText:       "SriovOperatorConfig object default does not exist in namespace test-namespace",
 			client:                  true,
 		},
 		{

@@ -341,7 +341,7 @@ func PullControlPlane(apiClient *clients.Settings, name, nsname string) (*Contro
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("serviceMeshControlPlane object %s doesn't exist in namespace %s", name, nsname)
+		return nil, fmt.Errorf("serviceMeshControlPlane object %s does not exist in namespace %s", name, nsname)
 	}
 
 	builder.Definition = builder.Object

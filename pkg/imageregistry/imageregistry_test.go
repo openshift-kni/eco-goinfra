@@ -61,7 +61,7 @@ func TestImageRegistryPull(t *testing.T) {
 		{
 			name:                "irtest",
 			addToRuntimeObjects: false,
-			expectedError:       fmt.Errorf("imageRegistry object irtest doesn't exist"),
+			expectedError:       fmt.Errorf("imageRegistry object irtest does not exist"),
 			client:              true,
 		},
 		{
@@ -237,7 +237,7 @@ func TestImageRegistryGetManagementState(t *testing.T) {
 		},
 		{
 			testImageRegistry: buildValidImageRegistryBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:     fmt.Errorf("imageRegistry object doesn't exist"),
+			expectedError:     fmt.Errorf("imageRegistry object does not exist"),
 		},
 	}
 
@@ -299,7 +299,7 @@ func TestImageRegistryGetStorageConfig(t *testing.T) {
 		},
 		{
 			testImageRegistry: buildValidImageRegistryBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:     fmt.Errorf("imageRegistry object doesn't exist"),
+			expectedError:     fmt.Errorf("imageRegistry object does not exist"),
 		},
 	}
 

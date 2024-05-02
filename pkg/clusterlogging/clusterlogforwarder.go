@@ -140,7 +140,7 @@ func PullClusterLogForwarder(apiClient *clients.Settings, name, namespace string
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("clusterlogforwarder object %s doesn't exist in namespace %s", name, namespace)
+		return nil, fmt.Errorf("clusterlogforwarder object %s does not exist in namespace %s", name, namespace)
 	}
 
 	return builder.Object, nil

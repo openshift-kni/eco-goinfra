@@ -67,7 +67,7 @@ func TestPull(t *testing.T) {
 			deploymentNamespace: "test-namespace",
 			expectedError:       true,
 			addToRuntimeObjects: false,
-			expectedErrorText:   "deployment object test2 doesn't exist in namespace test-namespace",
+			expectedErrorText:   "deployment object test2 does not exist in namespace test-namespace",
 		},
 		{
 			deploymentName:      "",

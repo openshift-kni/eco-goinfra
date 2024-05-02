@@ -39,7 +39,7 @@ func TestPullKubeAPIServer(t *testing.T) {
 		},
 		{
 			addToRuntimeObjects: false,
-			expectedError:       fmt.Errorf("kubeAPIServer object cluster doesn't found"),
+			expectedError:       fmt.Errorf("kubeAPIServer object cluster does not exist"),
 			client:              true,
 		},
 	}
