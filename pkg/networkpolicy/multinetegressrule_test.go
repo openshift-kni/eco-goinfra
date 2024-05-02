@@ -72,6 +72,7 @@ func TestEgressWithPeerPodSelector(t *testing.T) {
 	assert.Len(t, builder.definition.To, 1)
 	assert.Equal(t, builder.definition.To[0].PodSelector.MatchLabels["app"], "nginx")
 
+	//nolint:goconst
 	builder.errorMsg = "error"
 
 	builder.WithPeerPodSelector(metav1.LabelSelector{
