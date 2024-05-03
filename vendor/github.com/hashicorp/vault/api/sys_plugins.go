@@ -1,9 +1,6 @@
-<<<<<<< HEAD
 // Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
-=======
->>>>>>> f03ab420 (bump vendors)
 package api
 
 import (
@@ -147,10 +144,7 @@ type GetPluginResponse struct {
 	Args              []string `json:"args"`
 	Builtin           bool     `json:"builtin"`
 	Command           string   `json:"command"`
-<<<<<<< HEAD
 	OCIImage          string   `json:"oci_image"`
-=======
->>>>>>> f03ab420 (bump vendors)
 	Name              string   `json:"name"`
 	SHA256            string   `json:"sha256"`
 	DeprecationStatus string   `json:"deprecation_status,omitempty"`
@@ -208,7 +202,6 @@ type RegisterPluginInput struct {
 
 	// Version is the optional version of the plugin being registered
 	Version string `json:"version,omitempty"`
-<<<<<<< HEAD
 
 	// OCIImage specifies the container image to run as a plugin.
 	OCIImage string `json:"oci_image,omitempty"`
@@ -216,8 +209,6 @@ type RegisterPluginInput struct {
 	// Env specifies a list of key=value pairs to add to the plugin's environment
 	// variables.
 	Env []string `json:"env,omitempty"`
-=======
->>>>>>> f03ab420 (bump vendors)
 }
 
 // RegisterPlugin wraps RegisterPluginWithContext using context.Background.

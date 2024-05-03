@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+
 	ocsoperatorv1 "github.com/red-hat-storage/ocs-operator/api/v1"
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -33,7 +34,7 @@ func StorageClusterNewBuilder(apiClient *clients.Settings, name, nsname string) 
 		"Initializing new storageCluster structure with the following params: %s, %s", name, nsname)
 
 	builder := StorageClusterBuilder{
-		apiClient: apiClient,
+		apiClient: apiClient.Client,
 		Definition: &ocsoperatorv1.StorageCluster{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       StorageClusterKind,
@@ -73,7 +74,7 @@ func PullStorageCluster(apiClient *clients.Settings, name, namespace string) (*S
 		name, namespace)
 
 	builder := StorageClusterBuilder{
-		apiClient: apiClient,
+		apiClient: apiClient.Client,
 		Definition: &ocsoperatorv1.StorageCluster{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
@@ -176,7 +177,6 @@ func (builder *StorageClusterBuilder) Delete() error {
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
 
 	if err != nil {
-
 		return fmt.Errorf("can not delete storageCluster: %w", err)
 	}
 
@@ -318,14 +318,6 @@ func (builder *StorageClusterBuilder) WithManagedResources(
 		"Setting storageCluster %s in namespace %s with managedResources value: %v",
 		builder.Definition.Name, builder.Definition.Namespace, expectedManagedResources)
 
-	if &expectedManagedResources == nil {
-		glog.V(100).Infof("the expectedManagedResources can not be empty")
-
-		builder.errorMsg = "the expectedManagedResources can not be empty"
-
-		return builder
-	}
-
 	builder.Definition.Spec.ManagedResources = expectedManagedResources
 
 	return builder
@@ -366,14 +358,6 @@ func (builder *StorageClusterBuilder) WithMultiCloudGateway(
 		"Setting storageCluster %s in namespace %s with multiCloudGateway value: %v",
 		builder.Definition.Name, builder.Definition.Namespace, expectedMultiCloudGateway)
 
-	if &expectedMultiCloudGateway == nil {
-		glog.V(100).Infof("the expectedMultiCloudGateway can not be empty")
-
-		builder.errorMsg = "the expectedMultiCloudGateway can not be empty"
-
-		return builder
-	}
-
 	builder.Definition.Spec.MultiCloudGateway = &expectedMultiCloudGateway
 
 	return builder
@@ -389,14 +373,6 @@ func (builder *StorageClusterBuilder) WithStorageDeviceSet(
 	glog.V(100).Infof(
 		"Setting storageCluster %s in namespace %s with storageDeviceSets value: %v",
 		builder.Definition.Name, builder.Definition.Namespace, expectedStorageDeviceSet)
-
-	if &expectedStorageDeviceSet == nil {
-		glog.V(100).Infof("the expectedStorageDeviceSet can not be empty")
-
-		builder.errorMsg = "the expectedStorageDeviceSet can not be empty"
-
-		return builder
-	}
 
 	if builder.Definition.Spec.StorageDeviceSets == nil {
 		glog.V(100).Infof("Plugins are nil. Initializing one")

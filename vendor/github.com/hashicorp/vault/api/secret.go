@@ -1,9 +1,6 @@
-<<<<<<< HEAD
 // Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
-=======
->>>>>>> f03ab420 (bump vendors)
 package api
 
 import (
@@ -153,13 +150,8 @@ TOKEN_DONE:
 
 	// Identity policies
 	{
-<<<<<<< HEAD
 		v, ok := s.Data["identity_policies"]
 		if !ok || v == nil {
-=======
-		_, ok := s.Data["identity_policies"]
-		if !ok {
->>>>>>> f03ab420 (bump vendors)
 			goto DONE
 		}
 

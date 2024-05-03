@@ -18,19 +18,8 @@ package v1
 
 import (
 	"github.com/pkg/errors"
-<<<<<<< HEAD
 )
 
-=======
-	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
-)
-
-// compile-time assertions ensures CephObjectStore implements webhook.Validator so a webhook builder
-// will be registered for the validating webhook.
-var _ webhook.Validator = &CephObjectStore{}
-
->>>>>>> f03ab420 (bump vendors)
 const ServiceServingCertKey = "service.beta.openshift.io/serving-cert-secret-name"
 
 // 38 is the max length of a ceph store name as total length of the resource name cannot be more than 63 characters limit
@@ -74,17 +63,6 @@ func (s *ObjectRealmSpec) IsPullRealm() bool {
 	return s.Pull.Endpoint != ""
 }
 
-<<<<<<< HEAD
-=======
-func (o *CephObjectStore) ValidateCreate() error {
-	logger.Infof("validate create cephobjectstore %v", o)
-	if err := ValidateObjectSpec(o); err != nil {
-		return err
-	}
-	return nil
-}
-
->>>>>>> f03ab420 (bump vendors)
 // ValidateObjectSpec validate the object store arguments
 func ValidateObjectSpec(gs *CephObjectStore) error {
 	if gs.Name == "" {
@@ -113,22 +91,6 @@ func ValidateObjectSpec(gs *CephObjectStore) error {
 	return nil
 }
 
-<<<<<<< HEAD
-=======
-func (o *CephObjectStore) ValidateUpdate(old runtime.Object) error {
-	logger.Info("validate update cephobjectstore")
-	err := ValidateObjectSpec(o)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (o *CephObjectStore) ValidateDelete() error {
-	return nil
-}
-
->>>>>>> f03ab420 (bump vendors)
 func (s *ObjectStoreSpec) GetServiceServingCert() string {
 	if s.Gateway.Service != nil {
 		return s.Gateway.Service.Annotations[ServiceServingCertKey]

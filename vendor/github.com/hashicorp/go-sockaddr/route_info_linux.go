@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 //go:build !android
-=======
->>>>>>> f03ab420 (bump vendors)
 // +build !android
 
 package sockaddr
@@ -11,13 +8,6 @@ import (
 	"os/exec"
 )
 
-<<<<<<< HEAD
-=======
-type routeInfo struct {
-	cmds map[string][]string
-}
-
->>>>>>> f03ab420 (bump vendors)
 // NewRouteInfo returns a Linux-specific implementation of the RouteInfo
 // interface.
 func NewRouteInfo() (routeInfo, error) {

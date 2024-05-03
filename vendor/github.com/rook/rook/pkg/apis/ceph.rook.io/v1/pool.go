@@ -17,25 +17,9 @@ limitations under the License.
 package v1
 
 import (
-<<<<<<< HEAD
 	"github.com/pkg/errors"
 )
 
-=======
-	"github.com/coreos/pkg/capnslog"
-	"github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
-)
-
-var (
-	webhookName = "rook-ceph-webhook"
-	logger      = capnslog.NewPackageLogger("github.com/rook/rook", webhookName)
-)
-
-var _ webhook.Validator = &CephBlockPool{}
-
->>>>>>> f03ab420 (bump vendors)
 func (p *PoolSpec) IsReplicated() bool {
 	return p.Replicated.Size > 0
 }
@@ -56,19 +40,6 @@ func (p *ReplicatedSpec) IsTargetRatioEnabled() bool {
 	return p.TargetSizeRatio != 0
 }
 
-<<<<<<< HEAD
-=======
-func (p *CephBlockPool) ValidateCreate() error {
-	logger.Infof("validate create cephblockpool %v", p)
-
-	err := ValidateCephBlockPool(p)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
->>>>>>> f03ab420 (bump vendors)
 // ValidateCephBlockPool validates specifically a CephBlockPool's spec (not just any NamedPoolSpec)
 func ValidateCephBlockPool(p *CephBlockPool) error {
 	if p.Spec.Name == "device_health_metrics" || p.Spec.Name == ".mgr" || p.Spec.Name == ".nfs" {
@@ -120,37 +91,6 @@ func (p *CephBlockPool) ToNamedPoolSpec() NamedPoolSpec {
 	}
 }
 
-<<<<<<< HEAD
-=======
-func (p *CephBlockPool) ValidateUpdate(old runtime.Object) error {
-	logger.Info("validate update cephblockpool")
-	ocbp := old.(*CephBlockPool)
-	err := ValidateCephBlockPool(p)
-	if err != nil {
-		return err
-	}
-	if ocbp.Spec.Name != p.Spec.Name {
-		return errors.New("invalid update: pool name cannot be changed")
-	}
-	if p.Spec.ErasureCoded.CodingChunks > 0 || p.Spec.ErasureCoded.DataChunks > 0 || p.Spec.ErasureCoded.Algorithm != "" {
-		if ocbp.Spec.Replicated.Size > 0 || ocbp.Spec.Replicated.TargetSizeRatio > 0 {
-			return errors.New("invalid update: replicated field is set already in previous object. cannot be changed to use erasurecoded")
-		}
-	}
-
-	if p.Spec.Replicated.Size > 0 || p.Spec.Replicated.TargetSizeRatio > 0 {
-		if ocbp.Spec.ErasureCoded.CodingChunks > 0 || ocbp.Spec.ErasureCoded.DataChunks > 0 || ocbp.Spec.ErasureCoded.Algorithm != "" {
-			return errors.New("invalid update: erasurecoded field is set already in previous object. cannot be changed to use replicated")
-		}
-	}
-	return nil
-}
-
-func (p *CephBlockPool) ValidateDelete() error {
-	return nil
-}
-
->>>>>>> f03ab420 (bump vendors)
 func (p *CephBlockPool) GetStatusConditions() *[]Condition {
 	return &p.Status.Conditions
 }

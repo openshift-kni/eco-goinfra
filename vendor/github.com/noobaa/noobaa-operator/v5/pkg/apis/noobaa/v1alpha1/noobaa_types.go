@@ -7,11 +7,7 @@ import (
 	conditionsv1 "github.com/openshift/custom-resource-status/conditions/v1"
 )
 
-<<<<<<< HEAD
 // Note 1: Run "make gen-api" to regenerate code after modifying this file
-=======
-// Note 1: Run "operator-sdk generate k8s" to regenerate code after modifying this file
->>>>>>> f03ab420 (bump vendors)
 // Note 2: Add custom validation using kubebuilder tags: https://book.kubebuilder.io/reference/generating-crd.html
 
 func init() {
@@ -121,7 +117,6 @@ type NooBaaSpec struct {
 	// +optional
 	MongoDbURL string `json:"mongoDbURL,omitempty"`
 
-<<<<<<< HEAD
 	// ExternalPgSecret (optional) holds an optional secret with a url to an extrenal Postgres DB to be used
 	// +optional
 	ExternalPgSecret *corev1.SecretReference `json:"externalPgSecret,omitempty"`
@@ -138,8 +133,6 @@ type NooBaaSpec struct {
 	// +optional
 	ExternalPgSSLSecret *corev1.SecretReference `json:"externalPgSSLSecret,omitempty"`
 
-=======
->>>>>>> f03ab420 (bump vendors)
 	// DebugLevel (optional) sets the debug level
 	// +optional
 	// +kubebuilder:validation:Enum=all;nsfs;warn;default_level
@@ -220,7 +213,6 @@ type NooBaaSpec struct {
 	// to true
 	// +optional
 	LoadBalancerSourceSubnets LoadBalancerSourceSubnetSpec `json:"loadBalancerSourceSubnets,omitempty"`
-<<<<<<< HEAD
 
 	// Configuration related to autoscaling
 	// +optional
@@ -237,8 +229,6 @@ type AutoscalerSpec struct {
 	// Prometheus namespace that scrap metrics from noobaa
 	// +optional
 	PrometheusNamespace string `json:"prometheusNamespace,omitempty"`
-=======
->>>>>>> f03ab420 (bump vendors)
 }
 
 // LoadBalancerSourceSubnetSpec defines the subnets that will be allowed to access the NooBaa services
@@ -259,13 +249,10 @@ type SecuritySpec struct {
 
 // KeyManagementServiceSpec represent various details of the KMS server
 type KeyManagementServiceSpec struct {
-<<<<<<< HEAD
 	// +optional
 	EnableKeyRotation bool `json:"enableKeyRotation,omitempty"`
 	// +optional
 	Schedule          string            `json:"schedule,omitempty"`
-=======
->>>>>>> f03ab420 (bump vendors)
 	ConnectionDetails map[string]string `json:"connectionDetails,omitempty"`
 	TokenSecretName   string            `json:"tokenSecretName,omitempty"`
 }
@@ -339,13 +326,10 @@ type NooBaaStatus struct {
 	// Readme is a user readable string with explanations on the system
 	// +optional
 	Readme string `json:"readme,omitempty"`
-<<<<<<< HEAD
 
 	// LastKeyRotateTime is the time system ran an encryption key rotate
 	// +optional
 	LastKeyRotateTime metav1.Time `json:"lastKeyRotateTime,omitempty"`
-=======
->>>>>>> f03ab420 (bump vendors)
 }
 
 // SystemPhase is a string enum type for system phases
@@ -389,19 +373,15 @@ const (
 	// The root key was synchronized from external KMS
 	ConditionKMSSync corev1.ConditionStatus = "Sync"
 
-<<<<<<< HEAD
 	// The root key was rotated
 	ConditionKMSKeyRotate corev1.ConditionStatus = "KeyRotate"
 
-=======
->>>>>>> f03ab420 (bump vendors)
 	// Invalid external KMS definition
 	ConditionKMSInvalid corev1.ConditionStatus = "Invalid"
 
 	// Error reading secret from external KMS
 	ConditionKMSErrorRead corev1.ConditionStatus = "ErrorRead"
 
-<<<<<<< HEAD
 	// Error writing initial root key to external KMS
 	ConditionKMSErrorWrite corev1.ConditionStatus = "ErrorWrite"
 
@@ -410,10 +390,6 @@ const (
 
 	// Error in data format, internal error
 	ConditionKMSErrorSecretReconcile corev1.ConditionStatus = "ErrorSecretReconcile"
-=======
-	// Error writing initial root key to eternal KMS
-	ConditionKMSErrorWrite corev1.ConditionStatus = "ErrorWrite"
->>>>>>> f03ab420 (bump vendors)
 )
 
 // AccountsStatus is the status info of admin account
@@ -518,12 +494,9 @@ const (
 
 	// DeleteOBCConfirmation represents the validation to destry obc
 	DeleteOBCConfirmation CleanupConfirmationProperty = "yes-really-destroy-obc"
-<<<<<<< HEAD
 
 	// SkipTopologyConstraints is Annotation name for disabling default topology Constraints
 	SkipTopologyConstraints = "noobaa.io/skip_topology_spread_constraints"
-=======
->>>>>>> f03ab420 (bump vendors)
 )
 
 // DBTypes is a string enum type for specify the types of DB that are supported.
@@ -536,7 +509,6 @@ const (
 	// DBTypePostgres is postgres
 	DBTypePostgres DBTypes = "postgres"
 )
-<<<<<<< HEAD
 
 // AutoscalerTypes is a string enum type for specifying the types of autoscaling supported.
 type AutoscalerTypes string
@@ -548,5 +520,3 @@ const (
 	// AutoscalerTypeHPAV2 is hpav2
 	AutoscalerTypeHPAV2 AutoscalerTypes = "hpav2"
 )
-=======
->>>>>>> f03ab420 (bump vendors)

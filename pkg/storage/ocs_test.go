@@ -2,13 +2,14 @@ package storage
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	ocsoperatorv1 "github.com/red-hat-storage/ocs-operator/api/v1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"testing"
 )
 
 var (

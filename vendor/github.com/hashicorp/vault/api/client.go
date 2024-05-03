@@ -1,9 +1,6 @@
-<<<<<<< HEAD
 // Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
-=======
->>>>>>> f03ab420 (bump vendors)
 package api
 
 import (
@@ -188,12 +185,9 @@ type Config struct {
 	// CloneToken from parent.
 	CloneToken bool
 
-<<<<<<< HEAD
 	// CloneTLSConfig from parent (tls.Config).
 	CloneTLSConfig bool
 
-=======
->>>>>>> f03ab420 (bump vendors)
 	// ReadYourWrites ensures isolated read-after-write semantics by
 	// providing discovered cluster replication states in each request.
 	// The shared state is automatically propagated to all Client clones.
@@ -212,10 +206,7 @@ type Config struct {
 	// commands such as 'vault operator raft snapshot' as this redirects to the
 	// primary node.
 	DisableRedirects bool
-<<<<<<< HEAD
 	clientTLSConfig  *tls.Config
-=======
->>>>>>> f03ab420 (bump vendors)
 }
 
 // TLSConfig contains the parameters needed to configure TLS on the HTTP client
@@ -302,7 +293,6 @@ func (c *Config) configureTLS(t *TLSConfig) error {
 	if c.HttpClient == nil {
 		c.HttpClient = DefaultConfig().HttpClient
 	}
-<<<<<<< HEAD
 
 	transport, ok := c.HttpClient.Transport.(*http.Transport)
 	if !ok {
@@ -311,9 +301,6 @@ func (c *Config) configureTLS(t *TLSConfig) error {
 	}
 
 	clientTLSConfig := transport.TLSClientConfig
-=======
-	clientTLSConfig := c.HttpClient.Transport.(*http.Transport).TLSClientConfig
->>>>>>> f03ab420 (bump vendors)
 
 	var clientCert tls.Certificate
 	foundClientCert := false
@@ -361,23 +348,17 @@ func (c *Config) configureTLS(t *TLSConfig) error {
 	if t.TLSServerName != "" {
 		clientTLSConfig.ServerName = t.TLSServerName
 	}
-<<<<<<< HEAD
 	c.clientTLSConfig = clientTLSConfig
-=======
->>>>>>> f03ab420 (bump vendors)
 
 	return nil
 }
 
-<<<<<<< HEAD
 func (c *Config) TLSConfig() *tls.Config {
 	c.modifyLock.RLock()
 	defer c.modifyLock.RUnlock()
 	return c.clientTLSConfig.Clone()
 }
 
-=======
->>>>>>> f03ab420 (bump vendors)
 // ConfigureTLS takes a set of TLS configurations and applies those to the
 // HTTP client.
 func (c *Config) ConfigureTLS(t *TLSConfig) error {
@@ -564,11 +545,7 @@ func (c *Config) ParseAddress(address string) (*url.URL, error) {
 			// be pointing to the protocol used in the application layer and not to
 			// the transport layer. Hence, setting the fields accordingly.
 			u.Scheme = "http"
-<<<<<<< HEAD
 			u.Host = "localhost"
-=======
-			u.Host = socket
->>>>>>> f03ab420 (bump vendors)
 			u.Path = ""
 		} else {
 			return nil, fmt.Errorf("attempting to specify unix:// address with non-transport transport")
@@ -706,10 +683,7 @@ func (c *Client) CloneConfig() *Config {
 	newConfig.CloneHeaders = c.config.CloneHeaders
 	newConfig.CloneToken = c.config.CloneToken
 	newConfig.ReadYourWrites = c.config.ReadYourWrites
-<<<<<<< HEAD
 	newConfig.clientTLSConfig = c.config.clientTLSConfig
-=======
->>>>>>> f03ab420 (bump vendors)
 
 	// we specifically want a _copy_ of the client here, not a pointer to the original one
 	newClient := *c.config.HttpClient
@@ -1024,13 +998,9 @@ func (c *Client) Namespace() string {
 func (c *Client) WithNamespace(namespace string) *Client {
 	c2 := *c
 	c2.modifyLock = sync.RWMutex{}
-<<<<<<< HEAD
 	c.modifyLock.RLock()
 	c2.headers = c.headersInternal()
 	c.modifyLock.RUnlock()
-=======
-	c2.headers = c.Headers()
->>>>>>> f03ab420 (bump vendors)
 	if namespace == "" {
 		c2.ClearNamespace()
 	} else {
@@ -1067,16 +1037,12 @@ func (c *Client) ClearToken() {
 func (c *Client) Headers() http.Header {
 	c.modifyLock.RLock()
 	defer c.modifyLock.RUnlock()
-<<<<<<< HEAD
 	return c.headersInternal()
 }
 
 // headersInternal gets the current set of headers used for requests. Must be called
 // with the read modifyLock held.
 func (c *Client) headersInternal() http.Header {
-=======
-
->>>>>>> f03ab420 (bump vendors)
 	if c.headers == nil {
 		return nil
 	}
@@ -1194,7 +1160,6 @@ func (c *Client) ReadYourWrites() bool {
 	return c.config.ReadYourWrites
 }
 
-<<<<<<< HEAD
 // SetCloneTLSConfig from parent.
 func (c *Client) SetCloneTLSConfig(clone bool) {
 	c.modifyLock.Lock()
@@ -1215,8 +1180,6 @@ func (c *Client) CloneTLSConfig() bool {
 	return c.config.CloneTLSConfig
 }
 
-=======
->>>>>>> f03ab420 (bump vendors)
 // Clone creates a new client with the same configuration. Note that the same
 // underlying http.Client is used; modifying the client from more than one
 // goroutine at once may not be safe, so modify the client as needed and then
@@ -1227,47 +1190,28 @@ func (c *Client) CloneTLSConfig() bool {
 // the api.Config struct, such as policy override and wrapping function
 // behavior, must currently then be set as desired on the new client.
 func (c *Client) Clone() (*Client, error) {
-<<<<<<< HEAD
 	c.modifyLock.RLock()
 	defer c.modifyLock.RUnlock()
 	c.config.modifyLock.RLock()
 	defer c.config.modifyLock.RUnlock()
-=======
->>>>>>> f03ab420 (bump vendors)
 	return c.clone(c.config.CloneHeaders)
 }
 
 // CloneWithHeaders creates a new client similar to Clone, with the difference
-<<<<<<< HEAD
 // being that the headers are always cloned
 func (c *Client) CloneWithHeaders() (*Client, error) {
 	c.modifyLock.RLock()
 	defer c.modifyLock.RUnlock()
 	c.config.modifyLock.RLock()
 	defer c.config.modifyLock.RUnlock()
-=======
-// being that the  headers are always cloned
-func (c *Client) CloneWithHeaders() (*Client, error) {
->>>>>>> f03ab420 (bump vendors)
 	return c.clone(true)
 }
 
 // clone creates a new client, with the headers being cloned based on the
-<<<<<<< HEAD
 // passed in cloneheaders boolean.
 // Must be called with the read lock and config read lock held.
 func (c *Client) clone(cloneHeaders bool) (*Client, error) {
 	config := c.config
-=======
-// passed in cloneheaders boolean
-func (c *Client) clone(cloneHeaders bool) (*Client, error) {
-	c.modifyLock.RLock()
-	defer c.modifyLock.RUnlock()
-
-	config := c.config
-	config.modifyLock.RLock()
-	defer config.modifyLock.RUnlock()
->>>>>>> f03ab420 (bump vendors)
 
 	newConfig := &Config{
 		Address:        config.Address,
@@ -1286,25 +1230,18 @@ func (c *Client) clone(cloneHeaders bool) (*Client, error) {
 		CloneToken:     config.CloneToken,
 		ReadYourWrites: config.ReadYourWrites,
 	}
-<<<<<<< HEAD
 
 	if config.CloneTLSConfig {
 		newConfig.clientTLSConfig = config.clientTLSConfig
 	}
 
-=======
->>>>>>> f03ab420 (bump vendors)
 	client, err := NewClient(newConfig)
 	if err != nil {
 		return nil, err
 	}
 
 	if cloneHeaders {
-<<<<<<< HEAD
 		client.SetHeaders(c.headersInternal().Clone())
-=======
-		client.SetHeaders(c.Headers().Clone())
->>>>>>> f03ab420 (bump vendors)
 	}
 
 	if config.CloneToken {
@@ -1335,10 +1272,7 @@ func (c *Client) NewRequest(method, requestPath string) *Request {
 	mfaCreds := c.mfaCreds
 	wrappingLookupFunc := c.wrappingLookupFunc
 	policyOverride := c.policyOverride
-<<<<<<< HEAD
 	headers := c.headersInternal()
-=======
->>>>>>> f03ab420 (bump vendors)
 	c.modifyLock.RUnlock()
 
 	host := addr.Host
@@ -1383,11 +1317,7 @@ func (c *Client) NewRequest(method, requestPath string) *Request {
 		req.WrapTTL = DefaultWrappingLookupFunc(method, lookupPath)
 	}
 
-<<<<<<< HEAD
 	req.Headers = headers
-=======
-	req.Headers = c.Headers()
->>>>>>> f03ab420 (bump vendors)
 	req.PolicyOverride = policyOverride
 
 	return req
@@ -1397,14 +1327,9 @@ func (c *Client) NewRequest(method, requestPath string) *Request {
 // a Vault server not configured with this client. This is an advanced operation
 // that generally won't need to be called externally.
 //
-<<<<<<< HEAD
 // Deprecated: RawRequest exists for historical compatibility and should not be
 // used directly. Use client.Logical().ReadRaw(...) or higher level methods
 // instead.
-=======
-// Deprecated: This method should not be used directly. Use higher level
-// methods instead.
->>>>>>> f03ab420 (bump vendors)
 func (c *Client) RawRequest(r *Request) (*Response, error) {
 	return c.RawRequestWithContext(context.Background(), r)
 }
@@ -1413,14 +1338,9 @@ func (c *Client) RawRequest(r *Request) (*Response, error) {
 // a Vault server not configured with this client. This is an advanced operation
 // that generally won't need to be called externally.
 //
-<<<<<<< HEAD
 // Deprecated: RawRequestWithContext exists for historical compatibility and
 // should not be used directly. Use client.Logical().ReadRawWithContext(...)
 // or higher level methods instead.
-=======
-// Deprecated: This method should not be used directly. Use higher level
-// methods instead.
->>>>>>> f03ab420 (bump vendors)
 func (c *Client) RawRequestWithContext(ctx context.Context, r *Request) (*Response, error) {
 	// Note: we purposefully do not call cancel manually. The reason is
 	// when canceled, the request.Body will EOF when reading due to the way
@@ -1503,10 +1423,7 @@ START:
 		LastOutputPolicyError = &OutputPolicyError{
 			method: req.Method,
 			path:   strings.TrimPrefix(req.URL.Path, "/v1"),
-<<<<<<< HEAD
 			params: req.URL.Query(),
-=======
->>>>>>> f03ab420 (bump vendors)
 		}
 		return nil, LastOutputPolicyError
 	}

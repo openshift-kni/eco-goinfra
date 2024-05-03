@@ -15,7 +15,6 @@ limitations under the License.
 */
 package v1
 
-<<<<<<< HEAD
 import "fmt"
 
 type StoreType string
@@ -28,8 +27,6 @@ const (
 	StoreTypeBlueStoreRDR StoreType = "bluestore-rdr"
 )
 
-=======
->>>>>>> f03ab420 (bump vendors)
 // AnyUseAllDevices gets whether to use all devices
 func (s *StorageScopeSpec) AnyUseAllDevices() bool {
 	if s.Selection.GetUseAllDevices() {
@@ -183,7 +180,6 @@ func (s *StorageScopeSpec) IsOnPVCEncrypted() bool {
 
 	return false
 }
-<<<<<<< HEAD
 
 // GetOSDStore returns osd backend store type provided in the cluster spec
 func (s *StorageScopeSpec) GetOSDStore() string {
@@ -200,5 +196,3 @@ func (s *StorageScopeSpec) GetOSDStoreFlag() string {
 	}
 	return fmt.Sprintf("--%s", s.Store.Type)
 }
-=======
->>>>>>> f03ab420 (bump vendors)
