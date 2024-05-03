@@ -207,8 +207,8 @@ func (builder *StorageClusterBuilder) Update() (*StorageClusterBuilder, error) {
 	return builder, err
 }
 
-// GetManagedNodes fetches storageCluster manageNodes value.
-func (builder *StorageClusterBuilder) GetManagedNodes() (bool, error) {
+// GetManageNodes fetches storageCluster manageNodes value.
+func (builder *StorageClusterBuilder) GetManageNodes() (bool, error) {
 	if valid, err := builder.validate(); !valid {
 		return false, err
 	}
