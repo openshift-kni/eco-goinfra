@@ -449,6 +449,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *operatorv1.IngressController:
 			genericClientObjects = append(genericClientObjects, v)
+		case *operatorv1.Console:
+			genericClientObjects = append(genericClientObjects, v)
 		case *imageregistryV1.Config:
 			genericClientObjects = append(genericClientObjects, v)
 		case *configV1.ClusterOperator:
