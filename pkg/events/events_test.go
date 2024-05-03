@@ -40,7 +40,7 @@ func TestPull(t *testing.T) {
 			namespace:           "test-namespace",
 			expectedError:       true,
 			addToRuntimeObjects: false,
-			expectedErrorText:   "event object test-event doesn't exist in namespace test-namespace",
+			expectedErrorText:   "event object test-event does not exist in namespace test-namespace",
 		},
 		{
 			name:                "",

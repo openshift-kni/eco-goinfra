@@ -415,7 +415,7 @@ func buildInValidBGPPeerBuilder(apiClient *clients.Settings) *BGPPeerBuilder {
 
 func buildBGPPeerTestClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		// Work around. Dynamic client and Unstructured doesn't support unit.
+		// Work around. Dynamic client and Unstructured does not support unit.
 		K8sMockObjects: buildDummyBFDProfile(),
 		GVK:            []schema.GroupVersionKind{bgpPeerGVK},
 	})

@@ -50,7 +50,7 @@ The structure of any object has common interface:
 ```go
 func NewBuilder() or New[ObjectName]Builder() // Initiates object struct. This function require minimum set of parameters that are required to create the object on a cluster.
 func Pull() or Pull[ObjectName]() // Pulls existing object to struct.
-func Create()  // Creates new object on cluster if it doesn't exist.
+func Create()  // Creates new object on cluster if it does not exist.
 func Delete() // Removes object from cluster if it exists.
 func Update() // Updates object based on new object's definition.
 func Exist() // Returns bool if object exist.

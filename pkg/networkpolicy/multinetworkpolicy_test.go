@@ -39,7 +39,7 @@ func TestMultiNetworkPolicyPull(t *testing.T) {
 			policyNamespace:     "test-namespace",
 			expectedError:       true,
 			addToRuntimeObjects: false,
-			expectedErrorText:   "MultiNetworkPolicy object test-policy doesn't exist in namespace test-namespace",
+			expectedErrorText:   "MultiNetworkPolicy object test-policy does not exist in namespace test-namespace",
 		},
 		{
 			policyName:          "",

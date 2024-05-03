@@ -57,7 +57,7 @@ func TestNodeConfigPull(t *testing.T) {
 		{
 			name:                "argocdtest",
 			addToRuntimeObjects: false,
-			expectedError:       fmt.Errorf("nodesConfig object argocdtest doesn't exist"),
+			expectedError:       fmt.Errorf("nodesConfig object argocdtest does not exist"),
 			client:              true,
 		},
 		{

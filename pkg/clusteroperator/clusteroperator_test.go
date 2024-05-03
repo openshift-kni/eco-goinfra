@@ -53,7 +53,7 @@ func TestClusterOperatorPull(t *testing.T) {
 		{
 			name:                "cotest",
 			addToRuntimeObjects: false,
-			expectedError:       fmt.Errorf("clusterOperator object cotest doesn't exist"),
+			expectedError:       fmt.Errorf("clusterOperator object cotest does not exist"),
 			client:              true,
 		},
 		{

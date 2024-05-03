@@ -87,7 +87,7 @@ func TestPull(t *testing.T) {
 			namespace:           "test-namespace2",
 			addToRuntimeObjects: false,
 			expectedError:       true,
-			expectedErrorText:   "route object route-test-name2 doesn't exist in namespace test-namespace2",
+			expectedErrorText:   "route object route-test-name2 does not exist in namespace test-namespace2",
 		},
 		{
 			name:                "",

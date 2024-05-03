@@ -213,7 +213,7 @@ func TestImageBasedUpgradeExists(t *testing.T) {
 			addToRuntimeObjects: true,
 		},
 		{
-			expectedError:       fmt.Errorf("imagebasedupgrade object upgrade doesn't exist"),
+			expectedError:       fmt.Errorf("imagebasedupgrade object upgrade does not exist"),
 			addToRuntimeObjects: false,
 		},
 	}

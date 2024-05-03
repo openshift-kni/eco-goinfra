@@ -66,7 +66,7 @@ func TestMetalLbPull(t *testing.T) {
 			name:                "metallbio",
 			namespace:           "test-namespace",
 			addToRuntimeObjects: false,
-			expectedError:       fmt.Errorf("metallb object metallbio doesn't exist in namespace test-namespace"),
+			expectedError:       fmt.Errorf("metallb object metallbio does not exist in namespace test-namespace"),
 			client:              true,
 		},
 		{

@@ -91,7 +91,7 @@ func PullImageBasedUpgrade(apiClient *clients.Settings) (*ImageBasedUpgradeBuild
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("imagebasedupgrade object %s doesn't exist", ibuName)
+		return nil, fmt.Errorf("imagebasedupgrade object %s does not exist", ibuName)
 	}
 
 	builder.Definition = builder.Object

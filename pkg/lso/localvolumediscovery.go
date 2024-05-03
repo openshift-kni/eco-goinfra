@@ -86,7 +86,7 @@ func PullLocalVolumeDiscovery(apiClient *clients.Settings, name, nsname string) 
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("localVolumeDiscovery object %s doesn't exist in namespace %s", name, nsname)
+		return nil, fmt.Errorf("localVolumeDiscovery object %s does not exist in namespace %s", name, nsname)
 	}
 
 	builder.Definition = builder.Object
@@ -214,7 +214,7 @@ func (builder *LocalVolumeDiscoveryBuilder) Update() (*LocalVolumeDiscoveryBuild
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("localVolumeDiscovery object %s doesn't exist in namespace %s",
+		return nil, fmt.Errorf("localVolumeDiscovery object %s does not exist in namespace %s",
 			builder.Definition.Name, builder.Definition.Namespace)
 	}
 

@@ -50,7 +50,7 @@ func TestPullCgu(t *testing.T) {
 			cguNamespace:        "test-namespace",
 			expectedError:       true,
 			addToRuntimeObjects: false,
-			expectedErrorText:   "cgu object test2 doesn't exist in namespace test-namespace",
+			expectedErrorText:   "cgu object test2 does not exist in namespace test-namespace",
 			client:              true,
 		},
 		{
