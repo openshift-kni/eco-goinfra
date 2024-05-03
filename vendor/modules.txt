@@ -455,7 +455,7 @@ github.com/openshift-kni/cluster-group-upgrades-operator/pkg/generated/clientset
 # github.com/openshift-kni/k8sreporter v1.0.4
 ## explicit; go 1.20
 github.com/openshift-kni/k8sreporter
-# github.com/openshift-kni/lifecycle-agent v0.0.0-20240309022641-e2b836e0f2d3
+# github.com/openshift-kni/lifecycle-agent v0.0.0-20240503112747-fd03bc5fd6b7
 ## explicit; go 1.20
 github.com/openshift-kni/lifecycle-agent/api/seedgenerator/v1alpha1
 github.com/openshift-kni/lifecycle-agent/api/v1alpha1
@@ -795,7 +795,7 @@ go.starlark.net/syntax
 # go4.org v0.0.0-20200104003542-c7e774b10ea0
 ## explicit
 go4.org/errorutil
-# golang.org/x/crypto v0.19.0
+# golang.org/x/crypto v0.22.0
 ## explicit; go 1.18
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
@@ -809,7 +809,7 @@ golang.org/x/exp/slices
 # golang.org/x/mod v0.15.0
 ## explicit; go 1.18
 golang.org/x/mod/semver
-# golang.org/x/net v0.20.0
+# golang.org/x/net v0.23.0
 ## explicit; go 1.18
 golang.org/x/net/context
 golang.org/x/net/http/httpguts
@@ -824,15 +824,15 @@ golang.org/x/net/trace
 ## explicit; go 1.18
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
-# golang.org/x/sync v0.6.0
+# golang.org/x/sync v0.7.0
 ## explicit; go 1.18
 golang.org/x/sync/errgroup
-# golang.org/x/sys v0.17.0
+# golang.org/x/sys v0.19.0
 ## explicit; go 1.18
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/term v0.17.0
+# golang.org/x/term v0.19.0
 ## explicit; go 1.18
 golang.org/x/term
 # golang.org/x/text v0.14.0
