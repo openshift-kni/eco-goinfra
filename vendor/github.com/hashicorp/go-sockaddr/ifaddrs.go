@@ -16,10 +16,15 @@ var (
 	// Centralize all regexps and regexp.Copy() where necessary.
 	signRE       *regexp.Regexp = regexp.MustCompile(`^[\s]*[+-]`)
 	whitespaceRE *regexp.Regexp = regexp.MustCompile(`[\s]+`)
+<<<<<<< HEAD
 	// These regular expressions enable the deprecated parseDefaultIfNameWindows
 	// and should be removed when those functions are.
 	ifNameRE *regexp.Regexp = regexp.MustCompile(`^(?:Ethernet|Wireless LAN) adapter ([^:]+):`)
 	ipAddrRE *regexp.Regexp = regexp.MustCompile(`^   IPv[46] Address\. \. \. \. \. \. \. \. \. \. \. : ([^\s]+)`)
+=======
+	ifNameRE     *regexp.Regexp = regexp.MustCompile(`^(?:Ethernet|Wireless LAN) adapter ([^:]+):`)
+	ipAddrRE     *regexp.Regexp = regexp.MustCompile(`^   IPv[46] Address\. \. \. \. \. \. \. \. \. \. \. : ([^\s]+)`)
+>>>>>>> f03ab420 (bump vendors)
 )
 
 // IfAddrs is a slice of IfAddr
@@ -1216,7 +1221,11 @@ func parseDefaultIfNameFromIPCmd(routeOut string) (string, error) {
 // Android.
 func parseDefaultIfNameFromIPCmdAndroid(routeOut string) (string, error) {
 	parsedLines := parseIfNameFromIPCmd(routeOut)
+<<<<<<< HEAD
 	if len(parsedLines) > 0 {
+=======
+	if (len(parsedLines) > 0) {
+>>>>>>> f03ab420 (bump vendors)
 		ifName := strings.TrimSpace(parsedLines[0][4])
 		return ifName, nil
 	}
@@ -1224,6 +1233,10 @@ func parseDefaultIfNameFromIPCmdAndroid(routeOut string) (string, error) {
 	return "", errors.New("No default interface found")
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> f03ab420 (bump vendors)
 // parseIfNameFromIPCmd parses interfaces from ip(8) for
 // Linux.
 func parseIfNameFromIPCmd(routeOut string) [][]string {
@@ -1242,10 +1255,13 @@ func parseIfNameFromIPCmd(routeOut string) [][]string {
 
 // parseDefaultIfNameWindows parses the default interface from `netstat -rn` and
 // `ipconfig` on Windows.
+<<<<<<< HEAD
 //
 // This has been deprecated in favor of a Powershell-based solution because of
 // issues with localized Windows versions, but is currently retained for backward
 // compatibility
+=======
+>>>>>>> f03ab420 (bump vendors)
 func parseDefaultIfNameWindows(routeOut, ipconfigOut string) (string, error) {
 	defaultIPAddr, err := parseDefaultIPAddrWindowsRoute(routeOut)
 	if err != nil {
@@ -1267,10 +1283,13 @@ func parseDefaultIfNameWindows(routeOut, ipconfigOut string) (string, error) {
 // IPv6 connected host, submit an issue on github.com/hashicorp/go-sockaddr with
 // the output from `netstat -rn`, `ipconfig`, and version of Windows to see IPv6
 // support added.
+<<<<<<< HEAD
 //
 // This has been deprecated in favor of a Powershell-based solution because of
 // issues with localized Windows versions, but is currently retained for backward
 // compatibility.
+=======
+>>>>>>> f03ab420 (bump vendors)
 func parseDefaultIPAddrWindowsRoute(routeOut string) (string, error) {
 	lines := strings.Split(routeOut, "\n")
 	re := whitespaceRE.Copy()
@@ -1291,10 +1310,13 @@ func parseDefaultIPAddrWindowsRoute(routeOut string) (string, error) {
 
 // parseDefaultIfNameWindowsIPConfig parses the output of `ipconfig` to find the
 // interface name forwarding traffic to the default gateway.
+<<<<<<< HEAD
 //
 // This has been deprecated in favor of a Powershell-based solution because of
 // issues with localized Windows versions, but is currently retained for backward
 // compatibility
+=======
+>>>>>>> f03ab420 (bump vendors)
 func parseDefaultIfNameWindowsIPConfig(defaultIPAddr, routeOut string) (string, error) {
 	lines := strings.Split(routeOut, "\n")
 	ifNameRe := ifNameRE.Copy()

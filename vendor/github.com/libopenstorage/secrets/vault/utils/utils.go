@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"errors"
+<<<<<<< HEAD
 	"net/http"
 	"os"
 	"strconv"
@@ -11,6 +12,20 @@ import (
 	"github.com/hashicorp/vault/api"
 	"github.com/hashicorp/vault/api/auth/approle"
 	"github.com/hashicorp/vault/api/auth/kubernetes"
+=======
+	"fmt"
+	"net/http"
+	"os"
+	"path"
+	"strconv"
+	"strings"
+
+	"github.com/hashicorp/go-hclog"
+	"github.com/hashicorp/vault/api"
+	"github.com/hashicorp/vault/api/auth/approle"
+	"github.com/hashicorp/vault/command/agent/auth"
+	"github.com/hashicorp/vault/command/agent/auth/kubernetes"
+>>>>>>> f03ab420 (bump vendors)
 )
 
 const (
@@ -137,7 +152,16 @@ func GetAuthToken(client *api.Client, config map[string]interface{}) (string, er
 	var err error
 	switch method {
 	case AuthMethodKubernetes:
+<<<<<<< HEAD
 		secret, err = authKubernetes(client, config)
+=======
+		path, _, data, err := authenticate(client, config)
+		if err != nil {
+			return "", err
+		}
+		secret, err = client.Logical().Write(path, data)
+
+>>>>>>> f03ab420 (bump vendors)
 	case AuthMethodAppRole:
 		secret, err = authAppRole(client, config)
 	default:
@@ -157,6 +181,7 @@ func GetAuthToken(client *api.Client, config map[string]interface{}) (string, er
 	return secret.Auth.ClientToken, nil
 }
 
+<<<<<<< HEAD
 func authKubernetes(client *api.Client, config map[string]interface{}) (*api.Secret, error) {
 	role := GetVaultParam(config, AuthKubernetesRole)
 	if role == "" {
@@ -182,6 +207,28 @@ func authKubernetes(client *api.Client, config map[string]interface{}) (*api.Sec
 	}
 
 	return kAuth.Login(context.TODO(), client)
+=======
+func authenticate(client *api.Client, config map[string]interface{}) (string, http.Header, map[string]interface{}, error) {
+	method := GetVaultParam(config, AuthMethod)
+	switch method {
+	case AuthMethodKubernetes:
+		return authKubernetes(client, config)
+	}
+	return "", nil, nil, fmt.Errorf("%s method: %s", method, ErrAuthMethodUnknown)
+}
+
+func authKubernetes(client *api.Client, config map[string]interface{}) (string, http.Header, map[string]interface{}, error) {
+	authConfig, err := buildAuthConfig(config)
+	if err != nil {
+		return "", nil, nil, err
+	}
+	method, err := kubernetes.NewKubernetesAuthMethod(authConfig)
+	if err != nil {
+		return "", nil, nil, err
+	}
+
+	return method.Authenticate(context.TODO(), client)
+>>>>>>> f03ab420 (bump vendors)
 }
 
 func authAppRole(client *api.Client, config map[string]interface{}) (*api.Secret, error) {
@@ -203,3 +250,28 @@ func authAppRole(client *api.Client, config map[string]interface{}) (*api.Secret
 
 	return client.Auth().Login(context.TODO(), appRoleAuth)
 }
+<<<<<<< HEAD
+=======
+
+func buildAuthConfig(config map[string]interface{}) (*auth.AuthConfig, error) {
+	role := GetVaultParam(config, AuthKubernetesRole)
+	if role == "" {
+		return nil, ErrKubernetesRole
+	}
+	mountPath := GetVaultParam(config, AuthMountPath)
+	if mountPath == "" {
+		mountPath = AuthKubernetesMountPath
+	}
+	tokenPath := GetVaultParam(config, AuthKubernetesTokenPath)
+
+	authMountPath := path.Join("auth", mountPath)
+	return &auth.AuthConfig{
+		Logger:    hclog.NewNullLogger(),
+		MountPath: authMountPath,
+		Config: map[string]interface{}{
+			"role":       role,
+			"token_path": tokenPath,
+		},
+	}, nil
+}
+>>>>>>> f03ab420 (bump vendors)

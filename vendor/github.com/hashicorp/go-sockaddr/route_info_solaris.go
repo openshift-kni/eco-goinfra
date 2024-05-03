@@ -9,6 +9,13 @@ var cmds map[string][]string = map[string][]string{
 	"route": {"/usr/sbin/route", "-n", "get", "default"},
 }
 
+<<<<<<< HEAD
+=======
+type routeInfo struct {
+	cmds map[string][]string
+}
+
+>>>>>>> f03ab420 (bump vendors)
 // NewRouteInfo returns a BSD-specific implementation of the RouteInfo
 // interface.
 func NewRouteInfo() (routeInfo, error) {

@@ -16,6 +16,7 @@ limitations under the License.
 
 package v1
 
+<<<<<<< HEAD
 import (
 	"encoding/json"
 	"fmt"
@@ -30,11 +31,17 @@ import (
 // IsMultus get whether to use multus network provider
 func (n *NetworkSpec) IsMultus() bool {
 	return n.Provider == NetworkProviderMultus
+=======
+// IsMultus get whether to use multus network provider
+func (n *NetworkSpec) IsMultus() bool {
+	return n.Provider == "multus"
+>>>>>>> f03ab420 (bump vendors)
 }
 
 // IsHost get whether to use host network provider. This method also preserve
 // compatibility with the old HostNetwork field.
 func (n *NetworkSpec) IsHost() bool {
+<<<<<<< HEAD
 	return (n.HostNetwork && n.Provider == NetworkProviderDefault) || n.Provider == NetworkProviderHost
 }
 
@@ -172,4 +179,7 @@ func (l *CIDRList) String() string {
 		sl = append(sl, string(c))
 	}
 	return strings.Join(sl, ", ")
+=======
+	return (n.HostNetwork && n.Provider == "") || n.Provider == "host"
+>>>>>>> f03ab420 (bump vendors)
 }

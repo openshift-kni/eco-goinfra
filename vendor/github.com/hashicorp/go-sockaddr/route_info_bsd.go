@@ -1,14 +1,28 @@
+<<<<<<< HEAD
 //go:build darwin || dragonfly || freebsd || netbsd || openbsd
+=======
+>>>>>>> f03ab420 (bump vendors)
 // +build darwin dragonfly freebsd netbsd openbsd
 
 package sockaddr
 
 import "os/exec"
 
+<<<<<<< HEAD
 var cmds = map[string][]string{
 	"route": {"/sbin/route", "-n", "get", "default"},
 }
 
+=======
+var cmds map[string][]string = map[string][]string{
+	"route": {"/sbin/route", "-n", "get", "default"},
+}
+
+type routeInfo struct {
+	cmds map[string][]string
+}
+
+>>>>>>> f03ab420 (bump vendors)
 // NewRouteInfo returns a BSD-specific implementation of the RouteInfo
 // interface.
 func NewRouteInfo() (routeInfo, error) {

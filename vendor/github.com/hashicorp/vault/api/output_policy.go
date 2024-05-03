@@ -1,13 +1,19 @@
+<<<<<<< HEAD
 // Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
+=======
+>>>>>>> f03ab420 (bump vendors)
 package api
 
 import (
 	"fmt"
 	"net/http"
 	"net/url"
+<<<<<<< HEAD
 	"strconv"
+=======
+>>>>>>> f03ab420 (bump vendors)
 	"strings"
 )
 
@@ -20,7 +26,10 @@ var LastOutputPolicyError *OutputPolicyError
 type OutputPolicyError struct {
 	method         string
 	path           string
+<<<<<<< HEAD
 	params         url.Values
+=======
+>>>>>>> f03ab420 (bump vendors)
 	finalHCLString string
 }
 
@@ -49,6 +58,7 @@ func (d *OutputPolicyError) HCLString() (string, error) {
 
 // Builds a sample policy document from the request
 func (d *OutputPolicyError) buildSamplePolicy() (string, error) {
+<<<<<<< HEAD
 	operation := d.method
 	// List is often defined as a URL param instead of as an http.Method
 	// this will check for the header and properly switch off of the intended functionality
@@ -65,6 +75,10 @@ func (d *OutputPolicyError) buildSamplePolicy() (string, error) {
 
 	var capabilities []string
 	switch operation {
+=======
+	var capabilities []string
+	switch d.method {
+>>>>>>> f03ab420 (bump vendors)
 	case http.MethodGet, "":
 		capabilities = append(capabilities, "read")
 	case http.MethodPost, http.MethodPut:
@@ -78,6 +92,7 @@ func (d *OutputPolicyError) buildSamplePolicy() (string, error) {
 		capabilities = append(capabilities, "list")
 	}
 
+<<<<<<< HEAD
 	// determine whether to add sudo capability
 	if IsSudoPath(d.path) {
 		capabilities = append(capabilities, "sudo")
@@ -87,6 +102,19 @@ func (d *OutputPolicyError) buildSamplePolicy() (string, error) {
 }
 
 func formatOutputPolicy(path string, capabilities []string) string {
+=======
+	// sanitize, then trim the Vault address and v1 from the front of the path
+	path, err := url.PathUnescape(d.path)
+	if err != nil {
+		return "", fmt.Errorf("failed to unescape request URL characters: %v", err)
+	}
+
+	// determine whether to add sudo capability
+	if IsSudoPath(path) {
+		capabilities = append(capabilities, "sudo")
+	}
+
+>>>>>>> f03ab420 (bump vendors)
 	// the OpenAPI response has a / in front of each path,
 	// but policies need the path without that leading slash
 	path = strings.TrimLeft(path, "/")
@@ -95,5 +123,9 @@ func formatOutputPolicy(path string, capabilities []string) string {
 	return fmt.Sprintf(
 		`path "%s" {
   capabilities = ["%s"]
+<<<<<<< HEAD
 }`, path, capStr)
+=======
+}`, path, capStr), nil
+>>>>>>> f03ab420 (bump vendors)
 }

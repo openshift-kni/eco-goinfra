@@ -1,6 +1,9 @@
+<<<<<<< HEAD
 // Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
+=======
+>>>>>>> f03ab420 (bump vendors)
 package parseutil
 
 import (

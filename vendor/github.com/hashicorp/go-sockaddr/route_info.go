@@ -1,5 +1,6 @@
 package sockaddr
 
+<<<<<<< HEAD
 import "errors"
 
 var (
@@ -7,6 +8,8 @@ var (
 	ErrNoRoute     = errors.New("no route info found (unsupported platform)")
 )
 
+=======
+>>>>>>> f03ab420 (bump vendors)
 // RouteInterface specifies an interface for obtaining memoized route table and
 // network information from a given OS.
 type RouteInterface interface {
@@ -16,10 +19,13 @@ type RouteInterface interface {
 	GetDefaultInterfaceName() (string, error)
 }
 
+<<<<<<< HEAD
 type routeInfo struct {
 	cmds map[string][]string
 }
 
+=======
+>>>>>>> f03ab420 (bump vendors)
 // VisitCommands visits each command used by the platform-specific RouteInfo
 // implementation.
 func (ri routeInfo) VisitCommands(fn func(name string, cmd []string)) {
