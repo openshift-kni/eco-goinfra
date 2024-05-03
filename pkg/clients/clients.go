@@ -92,6 +92,7 @@ import (
 	operatorv1alpha1 "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1"
 	nfdv1 "github.com/openshift/cluster-nfd-operator/api/v1"
 	lsoV1alpha1 "github.com/openshift/local-storage-operator/api/v1alpha1"
+	ocsoperatorv1 "github.com/red-hat-storage/ocs-operator/api/v1"
 	mcmV1Beta1 "github.com/rh-ecosystem-edge/kernel-module-management/api-hub/v1beta1"
 	velerov1 "github.com/vmware-tanzu/velero/pkg/apis/velero/v1"
 	veleroClient "github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned"
@@ -342,6 +343,10 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
+	if err := ocsoperatorv1.AddToScheme(crScheme); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -411,6 +416,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *scalingv1.HorizontalPodAutoscaler:
 			k8sClientObjects = append(k8sClientObjects, v)
 		case *storagev1.StorageClass:
+			k8sClientObjects = append(k8sClientObjects, v)
+		case *ocsoperatorv1.StorageCluster:
 			k8sClientObjects = append(k8sClientObjects, v)
 		case *corev1.ConfigMap:
 			k8sClientObjects = append(k8sClientObjects, v)
