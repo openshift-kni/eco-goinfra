@@ -41,8 +41,9 @@ func StorageClusterNewBuilder(apiClient *clients.Settings, name, nsname string) 
 				APIVersion: fmt.Sprintf("%s/%s", APIGroup, APIVersion),
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: nsname,
+				Name:            name,
+				Namespace:       nsname,
+				ResourceVersion: "999",
 			},
 		},
 	}
@@ -96,7 +97,7 @@ func PullStorageCluster(apiClient *clients.Settings, name, namespace string) (*S
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("storageCluster object %s doesn't exist in namespace %s",
+		return nil, fmt.Errorf("storageCluster object %s does not exist in namespace %s",
 			name, namespace)
 	}
 
@@ -116,11 +117,12 @@ func (builder *StorageClusterBuilder) Get() (*ocsoperatorv1.StorageCluster, erro
 
 	storageClusterObj := &ocsoperatorv1.StorageCluster{}
 	err := builder.apiClient.Get(context.TODO(), goclient.ObjectKey{
-		Name: builder.Definition.Name,
+		Name:      builder.Definition.Name,
+		Namespace: builder.Definition.Namespace,
 	}, storageClusterObj)
 
 	if err != nil {
-		glog.V(100).Infof("storageCluster object %s doesn't exist in namespace %s",
+		glog.V(100).Infof("storageCluster object %s does not exist in namespace %s",
 			builder.Definition.Name, builder.Definition.Namespace)
 
 		return nil, err
@@ -195,7 +197,7 @@ func (builder *StorageClusterBuilder) Update() (*StorageClusterBuilder, error) {
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("storageCluster object %s doesn't exist in namespace %s",
+		return nil, fmt.Errorf("storageCluster object %s does not exist in namespace %s",
 			builder.Definition.Name, builder.Definition.Namespace)
 	}
 
@@ -217,7 +219,7 @@ func (builder *StorageClusterBuilder) GetManageNodes() (bool, error) {
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return false, fmt.Errorf("storageCluster object %s doesn't exist in namespace %s",
+		return false, fmt.Errorf("storageCluster object %s does not exist in namespace %s",
 			builder.Definition.Name, builder.Definition.Namespace)
 	}
 
@@ -234,7 +236,7 @@ func (builder *StorageClusterBuilder) GetManagedResources() (*ocsoperatorv1.Mana
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("storageCluster object %s doesn't exist in namespace %s",
+		return nil, fmt.Errorf("storageCluster object %s does not exist in namespace %s",
 			builder.Definition.Name, builder.Definition.Namespace)
 	}
 
@@ -251,7 +253,7 @@ func (builder *StorageClusterBuilder) GetMonDataDirHostPath() (string, error) {
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return "", fmt.Errorf("storageCluster object %s doesn't exist in namespace %s",
+		return "", fmt.Errorf("storageCluster object %s does not exist in namespace %s",
 			builder.Definition.Name, builder.Definition.Namespace)
 	}
 
@@ -268,7 +270,7 @@ func (builder *StorageClusterBuilder) GetMultiCloudGateway() (*ocsoperatorv1.Mul
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("storageCluster object %s doesn't exist in namespace %s",
+		return nil, fmt.Errorf("storageCluster object %s does not exist in namespace %s",
 			builder.Definition.Name, builder.Definition.Namespace)
 	}
 
@@ -285,15 +287,15 @@ func (builder *StorageClusterBuilder) GetStorageDeviceSets() ([]ocsoperatorv1.St
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("storageCluster object %s doesn't exist in namespace %s",
+		return nil, fmt.Errorf("storageCluster object %s does not exist in namespace %s",
 			builder.Definition.Name, builder.Definition.Namespace)
 	}
 
 	return builder.Object.Spec.StorageDeviceSets, nil
 }
 
-// WithManagedNodes sets the storageCluster's managedNodes value.
-func (builder *StorageClusterBuilder) WithManagedNodes(expectedManagedNodesValue bool) *StorageClusterBuilder {
+// WithManageNodes sets the storageCluster's managedNodes value.
+func (builder *StorageClusterBuilder) WithManageNodes(expectedManagedNodesValue bool) *StorageClusterBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}

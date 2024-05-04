@@ -417,8 +417,6 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			k8sClientObjects = append(k8sClientObjects, v)
 		case *storagev1.StorageClass:
 			k8sClientObjects = append(k8sClientObjects, v)
-		case *ocsoperatorv1.StorageCluster:
-			k8sClientObjects = append(k8sClientObjects, v)
 		case *corev1.ConfigMap:
 			k8sClientObjects = append(k8sClientObjects, v)
 		case *corev1.Event:
@@ -463,6 +461,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *configV1.ClusterOperator:
 			genericClientObjects = append(genericClientObjects, v)
 		case *cguapiv1alpha1.PreCachingConfig:
+			genericClientObjects = append(genericClientObjects, v)
+		case *ocsoperatorv1.StorageCluster:
 			genericClientObjects = append(genericClientObjects, v)
 		// ArgoCD Client Objects
 		case *argocdOperatorv1alpha1.ArgoCD:
