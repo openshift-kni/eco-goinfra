@@ -14,7 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// StorageClusterBuilder provides struct for PullStorageCluster object containing connection
+// StorageClusterBuilder provides struct for StorageCluster object containing connection
 // to the cluster and the storageCluster definitions.
 type StorageClusterBuilder struct {
 	// StorageCluster definition. Used to create a storageCluster object
@@ -28,8 +28,8 @@ type StorageClusterBuilder struct {
 	errorMsg string
 }
 
-// StorageClusterNewBuilder creates a new instance of Builder.
-func StorageClusterNewBuilder(apiClient *clients.Settings, name, nsname string) *StorageClusterBuilder {
+// NewStorageClusterBuilder creates a new instance of Builder.
+func NewStorageClusterBuilder(apiClient *clients.Settings, name, nsname string) *StorageClusterBuilder {
 	glog.V(100).Infof(
 		"Initializing new storageCluster structure with the following params: %s, %s", name, nsname)
 
@@ -41,9 +41,8 @@ func StorageClusterNewBuilder(apiClient *clients.Settings, name, nsname string) 
 				APIVersion: fmt.Sprintf("%s/%s", APIGroup, APIVersion),
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:            name,
-				Namespace:       nsname,
-				ResourceVersion: "999",
+				Name:      name,
+				Namespace: nsname,
 			},
 		},
 	}
@@ -63,7 +62,7 @@ func StorageClusterNewBuilder(apiClient *clients.Settings, name, nsname string) 
 	return &builder
 }
 
-// PullStorageCluster gets an existing storageCluster from the cluster.
+// PullStorageCluster gets an existing storageCluster object from the cluster.
 func PullStorageCluster(apiClient *clients.Settings, name, namespace string) (*StorageClusterBuilder, error) {
 	if apiClient == nil {
 		glog.V(100).Infof("The apiClient is empty")
@@ -301,7 +300,7 @@ func (builder *StorageClusterBuilder) WithManageNodes(expectedManagedNodesValue 
 	}
 
 	glog.V(100).Infof(
-		"Setting storageCluster %s in namespace %s with managedNodes value: %v",
+		"Setting storageCluster %s in namespace %s with managedNodes value: %t",
 		builder.Definition.Name, builder.Definition.Namespace, expectedManagedNodesValue)
 
 	builder.Definition.Spec.ManageNodes = expectedManagedNodesValue
@@ -333,7 +332,7 @@ func (builder *StorageClusterBuilder) WithMonDataDirHostPath(
 	}
 
 	glog.V(100).Infof(
-		"Setting storageCluster %s in namespace %s with monDataDirHostPath value: %v",
+		"Setting storageCluster %s in namespace %s with monDataDirHostPath value: %s",
 		builder.Definition.Name, builder.Definition.Namespace, expectedMonDataDirHostPath)
 
 	if expectedMonDataDirHostPath == "" {
@@ -375,12 +374,6 @@ func (builder *StorageClusterBuilder) WithStorageDeviceSet(
 	glog.V(100).Infof(
 		"Setting storageCluster %s in namespace %s with storageDeviceSets value: %v",
 		builder.Definition.Name, builder.Definition.Namespace, expectedStorageDeviceSet)
-
-	if builder.Definition.Spec.StorageDeviceSets == nil {
-		glog.V(100).Infof("Plugins are nil. Initializing one")
-
-		builder.Definition.Spec.StorageDeviceSets = []ocsoperatorv1.StorageDeviceSet{}
-	}
 
 	builder.Definition.Spec.StorageDeviceSets =
 		append(builder.Definition.Spec.StorageDeviceSets, expectedStorageDeviceSet)

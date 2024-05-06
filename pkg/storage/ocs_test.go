@@ -136,9 +136,7 @@ func TestSorageClusterPull(t *testing.T) {
 	}
 }
 
-func TestStorageClusterNewBuilder(t *testing.T) {
-	generateMetalLb := StorageClusterNewBuilder
-
+func TestNewStorageClusterBuilder(t *testing.T) {
 	testCases := []struct {
 		name          string
 		namespace     string
@@ -165,7 +163,7 @@ func TestStorageClusterNewBuilder(t *testing.T) {
 		testSettings := clients.GetTestClients(clients.TestClientParams{
 			GVK: []schema.GroupVersionKind{storageClusterGVK},
 		})
-		testStorageClusterBuilder := generateMetalLb(testSettings, testCase.name, testCase.namespace)
+		testStorageClusterBuilder := NewStorageClusterBuilder(testSettings, testCase.name, testCase.namespace)
 		assert.Equal(t, testCase.expectedError, testStorageClusterBuilder.errorMsg)
 		assert.NotNil(t, testStorageClusterBuilder.Definition)
 
@@ -225,6 +223,59 @@ func TestStorageClusterGet(t *testing.T) {
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, storageClusterObj, testCase.testStorageCluster.Definition)
+		} else {
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
+		}
+	}
+}
+
+func TestStorageClusterCreate(t *testing.T) {
+	testCases := []struct {
+		testStorageCluster *StorageClusterBuilder
+		expectedError      string
+	}{
+		{
+			testStorageCluster: buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
+			expectedError:      "",
+		},
+		{
+			testStorageCluster: buildInValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
+			expectedError: fmt.Sprintf("StorageCluster.ocs.openshift.io \"\" is invalid: " +
+				"metadata.name: Required value: name is required"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		testStorageClusterBuilder, err := testCase.testStorageCluster.Create()
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, testStorageClusterBuilder.Definition, testStorageClusterBuilder.Object)
+		} else {
+			assert.Equal(t, testCase.expectedError, err.Error())
+		}
+	}
+}
+
+func TestStorageClusterDelete(t *testing.T) {
+	testCases := []struct {
+		testStorageCluster *StorageClusterBuilder
+		expectedError      error
+	}{
+		{
+			testStorageCluster: buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
+			expectedError:      nil,
+		},
+		{
+			testStorageCluster: buildInValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
+			expectedError:      fmt.Errorf("can not delete storageCluster: storageclusters.ocs.openshift.io \"\" not found"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		err := testCase.testStorageCluster.Delete()
+
+		if testCase.expectedError == nil {
+			assert.Nil(t, testCase.testStorageCluster.Object)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
@@ -601,11 +652,19 @@ func TestStorageClusterGetStorageDeviceSets(t *testing.T) {
 }
 
 func buildValidStorageClusterBuilder(apiClient *clients.Settings) *StorageClusterBuilder {
-	return StorageClusterNewBuilder(apiClient, defaultStorageClusterName, defaultStorageClusterNamespace)
+	storageClusterBuilder := NewStorageClusterBuilder(
+		apiClient, defaultStorageClusterName, defaultStorageClusterNamespace)
+	storageClusterBuilder.Definition.ResourceVersion = "999"
+
+	return storageClusterBuilder
 }
 
 func buildInValidStorageClusterBuilder(apiClient *clients.Settings) *StorageClusterBuilder {
-	return StorageClusterNewBuilder(apiClient, "", defaultStorageClusterNamespace)
+	storageClusterBuilder := NewStorageClusterBuilder(
+		apiClient, "", defaultStorageClusterNamespace)
+	storageClusterBuilder.Definition.ResourceVersion = "999"
+
+	return storageClusterBuilder
 }
 
 func buildStorageClusterClientWithDummyObject() *clients.Settings {
