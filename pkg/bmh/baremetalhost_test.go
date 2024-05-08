@@ -1026,7 +1026,13 @@ func buildBareMetalHostTestClientWithDummyObject(state ...bmhv1alpha1.Provisioni
 	})
 }
 
-func buildDummyBmHost(state bmhv1alpha1.ProvisioningState) []runtime.Object {
+func buildDummyBmHost(
+	state bmhv1alpha1.ProvisioningState, operationalStatus ...bmhv1alpha1.OperationalStatus) []runtime.Object {
+	operState := bmhv1alpha1.OperationalStatusOK
+	if len(operationalStatus) > 0 {
+		operState = operationalStatus[0]
+	}
+
 	return append([]runtime.Object{}, &bmhv1alpha1.BareMetalHost{
 		Spec: bmhv1alpha1.BareMetalHostSpec{
 			BMC: bmhv1alpha1.BMCDetails{
@@ -1044,7 +1050,7 @@ func buildDummyBmHost(state bmhv1alpha1.ProvisioningState) []runtime.Object {
 			Namespace: defaultBmHostNsName,
 		},
 		Status: bmhv1alpha1.BareMetalHostStatus{
-			OperationalStatus: bmhv1alpha1.OperationalStatusOK,
+			OperationalStatus: operState,
 			PoweredOn:         true,
 			Provisioning: bmhv1alpha1.ProvisionStatus{
 				State: state,
