@@ -101,7 +101,7 @@ func (builder *KubeAPIServerBuilder) GetCondition(conditionType string) (*operat
 		return nil, "", err
 	}
 
-	glog.V(100).Infof("Get %s kubeAPIServer %s condition", builder.Definition.Name, conditionType)
+	glog.V(80).Infof("Get %s kubeAPIServer %s condition", builder.Definition.Name, conditionType)
 
 	if conditionType == "" {
 		return nil, "", fmt.Errorf("kubeAPIServer 'conditionType' cannot be empty")
@@ -198,7 +198,7 @@ func (builder *KubeAPIServerBuilder) WaitAllNodesAtTheLatestRevision(timeout tim
 				return false, nil
 			}
 
-			glog.V(100).Infof("Found reason message: %s", reasonMsg)
+			glog.V(80).Infof("Found reason message: %s", reasonMsg)
 
 			if reasonMsg != verificationStr {
 				return false, nil

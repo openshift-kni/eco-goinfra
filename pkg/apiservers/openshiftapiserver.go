@@ -102,7 +102,7 @@ func (builder *OpenshiftAPIServerBuilder) GetCondition(conditionType string) (
 		return nil, "", err
 	}
 
-	glog.V(100).Infof("Get %s openshiftAPIServer %s condition", builder.Definition.Name, conditionType)
+	glog.V(80).Infof("Get %s openshiftAPIServer %s condition", builder.Definition.Name, conditionType)
 
 	if conditionType == "" {
 		return nil, "", fmt.Errorf("openshiftAPIServer 'conditionType' cannot be empty")
@@ -203,7 +203,7 @@ func (builder *OpenshiftAPIServerBuilder) WaitAllPodsAtTheLatestGeneration(timeo
 				return false, nil
 			}
 
-			glog.V(100).Infof("Found reason message: %s", reasonMsg)
+			glog.V(80).Infof("Found reason message: %s", reasonMsg)
 
 			if reasonMsg != verificationStr {
 				return false, nil

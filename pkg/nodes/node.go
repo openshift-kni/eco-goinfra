@@ -163,7 +163,7 @@ func (builder *Builder) Exists() bool {
 		return false
 	}
 
-	glog.V(100).Infof("Checking if node %s exists", builder.Definition.Name)
+	glog.V(80).Infof("Checking if node %s exists", builder.Definition.Name)
 
 	var err error
 	builder.Object, err = builder.apiClient.CoreV1().Nodes().Get(
@@ -309,7 +309,7 @@ func (builder *Builder) IsReady() (bool, error) {
 		return false, err
 	}
 
-	glog.V(100).Infof("Verify %s node availability", builder.Definition.Name)
+	glog.V(80).Infof("Verify %s node availability", builder.Definition.Name)
 
 	if !builder.Exists() {
 		return false, fmt.Errorf("%s node object does not exist", builder.Definition.Name)
