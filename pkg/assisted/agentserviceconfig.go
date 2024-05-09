@@ -302,7 +302,7 @@ func PullAgentServiceConfig(apiClient *clients.Settings) (*AgentServiceConfigBui
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("agentserviceconfig object %s doesn't exist", agentServiceConfigName)
+		return nil, fmt.Errorf("agentserviceconfig object %s does not exist", agentServiceConfigName)
 	}
 
 	builder.Definition = builder.Object
@@ -433,14 +433,14 @@ func (builder *AgentServiceConfigBuilder) DeleteAndWait(timeout time.Duration) e
 	}
 
 	glog.V(100).Infof(`Deleting agentserviceconfig %s and 
-	waiting for the defined period until it's removed`,
+	waiting for the defined period until it is removed`,
 		builder.Definition.Name)
 
 	if err := builder.Delete(); err != nil {
 		return err
 	}
 
-	// Polls the agentserviceconfig every second until it's removed.
+	// Polls the agentserviceconfig every second until it is removed.
 	return wait.PollUntilContextTimeout(
 		context.TODO(), time.Second, timeout, true, func(ctx context.Context) (bool, error) {
 			_, err := builder.Get()

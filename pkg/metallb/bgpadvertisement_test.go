@@ -66,7 +66,7 @@ func TestPullBGPAdvertisement(t *testing.T) {
 			namespace:           "test-namespace",
 			addToRuntimeObjects: false,
 			expectedError: fmt.Errorf(
-				"bgpadvertisement object bgpadvertisement doesn't exist in namespace test-namespace"),
+				"bgpadvertisement object bgpadvertisement does not exist in namespace test-namespace"),
 			client: true,
 		},
 		{

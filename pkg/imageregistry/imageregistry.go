@@ -8,7 +8,7 @@ import (
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	imageregistryv1 "github.com/openshift/api/imageregistry/v1"
-	v1 "github.com/openshift/api/operator/v1"
+	operatorv1 "github.com/openshift/api/operator/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -33,7 +33,7 @@ func Pull(apiClient *clients.Settings, imageRegistryObjName string) (*Builder, e
 	if apiClient == nil {
 		glog.V(100).Infof("The apiClient is empty")
 
-		return nil, fmt.Errorf("imageregistry Config 'apiClient' cannot be empty")
+		return nil, fmt.Errorf("imageRegistry Config 'apiClient' cannot be empty")
 	}
 
 	if imageRegistryObjName == "" {
@@ -55,7 +55,7 @@ func Pull(apiClient *clients.Settings, imageRegistryObjName string) (*Builder, e
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("imageRegistry object %s doesn't exist", imageRegistryObjName)
+		return nil, fmt.Errorf("imageRegistry object %s does not exist", imageRegistryObjName)
 	}
 
 	builder.Definition = builder.Object
@@ -77,7 +77,7 @@ func (builder *Builder) Get() (*imageregistryv1.Config, error) {
 	}, imageRegistry)
 
 	if err != nil {
-		glog.V(100).Infof("ImageRegistry object %s doesn't exist", builder.Definition.Name)
+		glog.V(100).Infof("ImageRegistry object %s does not exist", builder.Definition.Name)
 
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (builder *Builder) Update() (*Builder, error) {
 	glog.V(100).Infof("Updating the imageRegistry %s", builder.Definition.Name)
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("imageRegistry object %s doesn't exist", builder.Definition.Name)
+		return nil, fmt.Errorf("imageRegistry object %s does not exist", builder.Definition.Name)
 	}
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
@@ -120,22 +120,37 @@ func (builder *Builder) Update() (*Builder, error) {
 }
 
 // GetManagementState fetches imageRegistry ManagementState.
-func (builder *Builder) GetManagementState() (v1.ManagementState, error) {
+func (builder *Builder) GetManagementState() (*operatorv1.ManagementState, error) {
 	if valid, err := builder.validate(); !valid {
-		return "", err
+		return nil, err
 	}
 
 	glog.V(100).Infof("Getting imageRegistry ManagementState configuration")
 
 	if !builder.Exists() {
-		return "", fmt.Errorf("imageRegistry object doesn't exist")
+		return nil, fmt.Errorf("imageRegistry object does not exist")
 	}
 
-	return builder.Object.Spec.ManagementState, nil
+	return &builder.Object.Spec.ManagementState, nil
+}
+
+// GetStorageConfig fetches imageRegistry Storage configuration.
+func (builder *Builder) GetStorageConfig() (*imageregistryv1.ImageRegistryConfigStorage, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
+	glog.V(100).Infof("Getting imageRegistry Storage configuration")
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("imageRegistry object does not exist")
+	}
+
+	return &builder.Object.Spec.Storage, nil
 }
 
 // WithManagementState sets the imageRegistry operator's management state.
-func (builder *Builder) WithManagementState(expectedManagementState v1.ManagementState) *Builder {
+func (builder *Builder) WithManagementState(expectedManagementState operatorv1.ManagementState) *Builder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -145,6 +160,21 @@ func (builder *Builder) WithManagementState(expectedManagementState v1.Managemen
 		builder.Definition.Name, expectedManagementState)
 
 	builder.Definition.Spec.ManagementState = expectedManagementState
+
+	return builder
+}
+
+// WithStorage sets the imageRegistry operator's storage.
+func (builder *Builder) WithStorage(expectedStorage imageregistryv1.ImageRegistryConfigStorage) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof(
+		"Setting imageRegistry %s with Storage: %v",
+		builder.Definition.Name, expectedStorage)
+
+	builder.Definition.Spec.Storage = expectedStorage
 
 	return builder
 }

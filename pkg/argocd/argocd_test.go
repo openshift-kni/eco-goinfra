@@ -60,7 +60,7 @@ func TestArgoCdPull(t *testing.T) {
 			name:                "argocdtest",
 			namespace:           "test-namespace",
 			addToRuntimeObjects: false,
-			expectedError:       fmt.Errorf("argocd object argocdtest doesn't exist in namespace test-namespace"),
+			expectedError:       fmt.Errorf("argocd object argocdtest does not exist in namespace test-namespace"),
 			client:              true,
 		},
 		{

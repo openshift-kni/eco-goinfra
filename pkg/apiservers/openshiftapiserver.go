@@ -31,24 +31,8 @@ type OpenshiftAPIServerBuilder struct {
 	errorMsg string
 }
 
-// Exists checks whether the given openshiftAPIServer exists.
-func (builder *OpenshiftAPIServerBuilder) Exists() bool {
-	if valid, _ := builder.validate(); !valid {
-		return false
-	}
-
-	var err error
-	builder.Object, err = builder.Get()
-
-	if err != nil {
-		glog.V(100).Infof("Failed to collect openshiftAPIServer object due to %s", err.Error())
-	}
-
-	return err == nil || !k8serrors.IsNotFound(err)
-}
-
-// PullOpenshiftAPIServerBuilder pulls existing openshiftApiServer from the cluster.
-func PullOpenshiftAPIServerBuilder(apiClient *clients.Settings) (*OpenshiftAPIServerBuilder, error) {
+// PullOpenshiftAPIServer pulls existing openshiftApiServer from the cluster.
+func PullOpenshiftAPIServer(apiClient *clients.Settings) (*OpenshiftAPIServerBuilder, error) {
 	glog.V(100).Infof("Pulling existing openshiftApiServer from cluster")
 
 	if apiClient == nil {
@@ -67,12 +51,28 @@ func PullOpenshiftAPIServerBuilder(apiClient *clients.Settings) (*OpenshiftAPISe
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("openshiftAPIServer object %s doesn't found", openshiftAPIServerObjName)
+		return nil, fmt.Errorf("openshiftAPIServer object %s does not exist", openshiftAPIServerObjName)
 	}
 
 	builder.Definition = builder.Object
 
 	return &builder, nil
+}
+
+// Exists checks whether the given openshiftAPIServer exists.
+func (builder *OpenshiftAPIServerBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
+	var err error
+	builder.Object, err = builder.Get()
+
+	if err != nil {
+		glog.V(100).Infof("Failed to collect openshiftAPIServer object due to %s", err.Error())
+	}
+
+	return err == nil || !k8serrors.IsNotFound(err)
 }
 
 // Get returns openshiftAPIServer object if found.
@@ -87,9 +87,9 @@ func (builder *OpenshiftAPIServerBuilder) Get() (*operatorV1.OpenShiftAPIServer,
 	}, openshiftAPIServer)
 
 	if err != nil {
-		glog.V(100).Infof("openshiftAPIServer object doesn't exist")
+		glog.V(100).Infof("openshiftAPIServer object does not exist")
 
-		return nil, fmt.Errorf("openshiftAPIServer object doesn't exist")
+		return nil, err
 	}
 
 	return openshiftAPIServer, err
@@ -103,6 +103,10 @@ func (builder *OpenshiftAPIServerBuilder) GetCondition(conditionType string) (
 	}
 
 	glog.V(100).Infof("Get %s openshiftAPIServer %s condition", builder.Definition.Name, conditionType)
+
+	if conditionType == "" {
+		return nil, "", fmt.Errorf("openshiftAPIServer 'conditionType' cannot be empty")
+	}
 
 	if !builder.Exists() {
 		return nil, "", fmt.Errorf("%s openshiftAPIServer not found", builder.Definition.Name)
@@ -129,6 +133,10 @@ func (builder *OpenshiftAPIServerBuilder) WaitUntilConditionTrue(
 	conditionType string, timeout time.Duration) error {
 	if valid, err := builder.validate(); !valid {
 		return err
+	}
+
+	if conditionType == "" {
+		return fmt.Errorf("openshiftAPIServer 'conditionType' cannot be empty")
 	}
 
 	if !builder.Exists() {

@@ -50,7 +50,7 @@ The structure of any object has common interface:
 ```go
 func NewBuilder() or New[ObjectName]Builder() // Initiates object struct. This function require minimum set of parameters that are required to create the object on a cluster.
 func Pull() or Pull[ObjectName]() // Pulls existing object to struct.
-func Create()  // Creates new object on cluster if it doesn't exist.
+func Create()  // Creates new object on cluster if it does not exist.
 func Delete() // Removes object from cluster if it exists.
 func Update() // Updates object based on new object's definition.
 func Exist() // Returns bool if object exist.
@@ -115,7 +115,7 @@ The project uses a development method - forking workflow
 
 ### Code conventions
 #### Lint
-Push requested are tested in a pipeline with golangci-lint. It is advised to add [Golangci-lint integration](https://golangci-lint.run/usage/integrations/) to your development editor. It's recommended to run `make lint` before uploading a PR.
+Push requested are tested in a pipeline with golangci-lint. It is advised to add [Golangci-lint integration](https://golangci-lint.run/usage/integrations/) to your development editor. It is recommended to run `make lint` before uploading a PR.
 
 #### Functions format
 If the function's arguments fit in a single line - use the following format:
@@ -125,7 +125,7 @@ func Function(argInt1, argInt2 int, argString1, argString2 string) {
 }
 ```
 
-If the function's arguments don't fit in a single line - use the following format:
+If the function's arguments do not fit in a single line - use the following format:
 ```go
 func Function(
     argInt1 int,

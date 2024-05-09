@@ -522,7 +522,7 @@ func PullAgentClusterInstall(apiClient *clients.Settings, name, nsname string) (
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("agentclusterinstall object %s doesn't exist in namespace %s", name, nsname)
+		return nil, fmt.Errorf("agentclusterinstall object %s does not exist in namespace %s", name, nsname)
 	}
 
 	builder.Definition = builder.Object
@@ -627,14 +627,14 @@ func (builder *AgentClusterInstallBuilder) DeleteAndWait(timeout time.Duration) 
 	}
 
 	glog.V(100).Infof(`Deleting agentclusterinstall %s in namespace %s and 
-	waiting for the defined period until it's removed`,
+	waiting for the defined period until it is removed`,
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if err := builder.Delete(); err != nil {
 		return err
 	}
 
-	// Polls the agentclusterinstall every second until it's removed.
+	// Polls the agentclusterinstall every second until it is removed.
 	return wait.PollUntilContextTimeout(
 		context.TODO(), time.Second, timeout, true, func(ctx context.Context) (bool, error) {
 			_, err := builder.Get()
@@ -671,7 +671,7 @@ func (builder *AgentClusterInstallBuilder) getCondition(conditionType string) (*
 	err := wait.PollUntilContextTimeout(
 		context.TODO(), time.Second, time.Second*5, true, func(ctx context.Context) (bool, error) {
 			if !builder.Exists() {
-				return false, fmt.Errorf("agentclusterinstall object %s doesn't exist in namespace %s",
+				return false, fmt.Errorf("agentclusterinstall object %s does not exist in namespace %s",
 					builder.Definition.Name, builder.Definition.Namespace)
 			}
 

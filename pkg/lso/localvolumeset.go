@@ -84,7 +84,7 @@ func PullLocalVolumeSet(apiClient *clients.Settings, name, nsname string) (*Loca
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("localVolumeSet object %s doesn't exist in namespace %s", name, nsname)
+		return nil, fmt.Errorf("localVolumeSet object %s does not exist in namespace %s", name, nsname)
 	}
 
 	builder.Definition = builder.Object
@@ -183,7 +183,7 @@ func (builder *LocalVolumeSetBuilder) Update() (*LocalVolumeSetBuilder, error) {
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("LocalVolumeSetBuilder object %s doesn't exist in namespace %s",
+		return nil, fmt.Errorf("LocalVolumeSetBuilder object %s does not exist in namespace %s",
 			builder.Definition.Name, builder.Definition.Namespace)
 	}
 

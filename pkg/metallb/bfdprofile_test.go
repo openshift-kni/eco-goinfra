@@ -65,7 +65,7 @@ func TestPullBFDProfile(t *testing.T) {
 			name:                "bfdprofile",
 			namespace:           "test-namespace",
 			addToRuntimeObjects: false,
-			expectedError:       fmt.Errorf("bfdprofile object bfdprofile doesn't exist in namespace test-namespace"),
+			expectedError:       fmt.Errorf("bfdprofile object bfdprofile does not exist in namespace test-namespace"),
 			client:              true,
 		},
 		{

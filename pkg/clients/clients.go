@@ -69,6 +69,9 @@ import (
 	storageV1Client "k8s.io/client-go/kubernetes/typed/storage/v1"
 	policiesv1 "open-cluster-management.io/governance-policy-propagator/api/v1"
 
+	plumbingv1 "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/apis/k8s.cni.cncf.io/v1beta1"
+	fakeMultiNetPolicyClient "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/client/clientset/versioned/fake"
+
 	appsv1 "k8s.io/api/apps/v1"
 	scalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -89,6 +92,7 @@ import (
 	operatorv1alpha1 "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1"
 	nfdv1 "github.com/openshift/cluster-nfd-operator/api/v1"
 	lsoV1alpha1 "github.com/openshift/local-storage-operator/api/v1alpha1"
+	ocsoperatorv1 "github.com/red-hat-storage/ocs-operator/api/v1"
 	mcmV1Beta1 "github.com/rh-ecosystem-edge/kernel-module-management/api-hub/v1beta1"
 	velerov1 "github.com/vmware-tanzu/velero/pkg/apis/velero/v1"
 	veleroClient "github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned"
@@ -119,6 +123,7 @@ type Settings struct {
 	clientNetAttDefV1.K8sCniCncfIoV1Interface
 	dynamic.Interface
 	olmv1.OperatorsV1Interface
+	MultiNetworkPolicyClient multinetpolicyclientv1.K8sCniCncfIoV1beta1Interface
 	multinetpolicyclientv1.K8sCniCncfIoV1beta1Interface
 	PackageManifestInterface clientPkgManifestV1.OperatorsV1Interface
 	operatorv1alpha1.OperatorV1alpha1Interface
@@ -338,6 +343,10 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
+	if err := ocsoperatorv1.AddToScheme(crScheme); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -366,7 +375,8 @@ type TestClientParams struct {
 func GetTestClients(tcp TestClientParams) *Settings {
 	clientSet := &Settings{}
 
-	var k8sClientObjects, genericClientObjects, srIovObjects, veleroClientObjects, cguObjects []runtime.Object
+	var k8sClientObjects, genericClientObjects, plumbingObjects, srIovObjects,
+		veleroClientObjects, cguObjects []runtime.Object
 
 	//nolint:varnamelen
 	for _, v := range tcp.K8sMockObjects {
@@ -414,6 +424,12 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *netv1.NetworkPolicy:
 			k8sClientObjects = append(k8sClientObjects, v)
 		// Generic Client Objects
+		case *bmhv1alpha1.BareMetalHost:
+			genericClientObjects = append(genericClientObjects, v)
+		case *operatorv1.KubeAPIServer:
+			genericClientObjects = append(genericClientObjects, v)
+		case *operatorv1.OpenShiftAPIServer:
+			genericClientObjects = append(genericClientObjects, v)
 		case *routev1.Route:
 			genericClientObjects = append(genericClientObjects, v)
 		case *mlbtypes.IPAddressPool:
@@ -440,10 +456,25 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *operatorv1.IngressController:
 			genericClientObjects = append(genericClientObjects, v)
+		case *operatorv1.Console:
+			genericClientObjects = append(genericClientObjects, v)
+		case *imageregistryV1.Config:
+			genericClientObjects = append(genericClientObjects, v)
+		case *configV1.ClusterOperator:
+			genericClientObjects = append(genericClientObjects, v)
+		case *cguapiv1alpha1.PreCachingConfig:
+			genericClientObjects = append(genericClientObjects, v)
+		case *ocsoperatorv1.StorageCluster:
+			genericClientObjects = append(genericClientObjects, v)
 		// ArgoCD Client Objects
 		case *argocdOperatorv1alpha1.ArgoCD:
 			genericClientObjects = append(genericClientObjects, v)
 		case *argocdtypes.Application:
+			genericClientObjects = append(genericClientObjects, v)
+		// LCA Client Objects
+		case *lcav1alpha1.ImageBasedUpgrade:
+			genericClientObjects = append(genericClientObjects, v)
+		case *lcasgv1alpha1.SeedGenerator:
 			genericClientObjects = append(genericClientObjects, v)
 		// Velero Client Objects
 		case *velerov1.Backup:
@@ -463,6 +494,9 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			cguObjects = append(cguObjects, v)
 		case *srIovV1.SriovNetworkPoolConfig:
 			srIovObjects = append(srIovObjects, v)
+		// MultiNetworkPolicy Client Objects
+		case *plumbingv1.MultiNetworkPolicy:
+			plumbingObjects = append(plumbingObjects, v)
 		}
 	}
 
@@ -473,6 +507,12 @@ func GetTestClients(tcp TestClientParams) *Settings {
 	clientSet.NetworkingV1Interface = clientSet.K8sClient.NetworkingV1()
 	clientSet.RbacV1Interface = clientSet.K8sClient.RbacV1()
 	clientSet.ClientSrIov = clientSrIovFake.NewSimpleClientset(srIovObjects...)
+
+	// Assign the fake multi-networkpolicy clientset to the clientSet
+	// Note: We are not entirely sure that these functions actually work as expected.
+	multiClient := fakeMultiNetPolicyClient.NewSimpleClientset(plumbingObjects...)
+	clientSet.MultiNetworkPolicyClient = multiClient.K8sCniCncfIoV1beta1()
+	clientSet.K8sCniCncfIoV1beta1Interface = multiClient.K8sCniCncfIoV1beta1()
 
 	// Assign the fake velero clientset to the clientSet
 	clientSet.VeleroClient = veleroFakeClient.NewSimpleClientset(veleroClientObjects...)

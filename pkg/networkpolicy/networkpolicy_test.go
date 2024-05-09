@@ -40,7 +40,7 @@ func TestNetworkPolicyPull(t *testing.T) {
 			policyNamespace:     "test-namespace",
 			expectedError:       true,
 			addToRuntimeObjects: false,
-			expectedErrorText:   "networkPolicy object test-policy doesn't exist in namespace test-namespace",
+			expectedErrorText:   "networkPolicy object test-policy does not exist in namespace test-namespace",
 		},
 		{
 			policyName:          "",

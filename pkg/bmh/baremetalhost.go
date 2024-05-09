@@ -24,7 +24,7 @@ import (
 type BmhBuilder struct {
 	Definition *bmhv1alpha1.BareMetalHost
 	Object     *bmhv1alpha1.BareMetalHost
-	apiClient  *clients.Settings
+	apiClient  goclient.Client
 	errorMsg   string
 }
 
@@ -33,15 +33,9 @@ type AdditionalOptions func(builder *BmhBuilder) (*BmhBuilder, error)
 
 // NewBuilder creates a new instance of BmhBuilder.
 func NewBuilder(
-	apiClient *clients.Settings,
-	name string,
-	nsname string,
-	bmcAddress string,
-	bmcSecretName string,
-	bootMacAddress string,
-	bootMode string) *BmhBuilder {
+	apiClient *clients.Settings, name, nsname, bmcAddress, bmcSecretName, bootMacAddress, bootMode string) *BmhBuilder {
 	builder := BmhBuilder{
-		apiClient: apiClient,
+		apiClient: apiClient.Client,
 		Definition: &bmhv1alpha1.BareMetalHost{
 			Spec: bmhv1alpha1.BareMetalHostSpec{
 
@@ -88,7 +82,7 @@ func NewBuilder(
 
 	bootModeAcceptable := []string{"UEFI", "UEFISecureBoot", "legacy"}
 	if !slices.Contains(bootModeAcceptable, bootMode) {
-		builder.errorMsg = "Not acceptable 'bootMode' value"
+		builder.errorMsg = "not acceptable 'bootMode' value"
 	}
 
 	if bootMacAddress == "" {
@@ -367,8 +361,14 @@ func (builder *BmhBuilder) WithOptions(options ...AdditionalOptions) *BmhBuilder
 func Pull(apiClient *clients.Settings, name, nsname string) (*BmhBuilder, error) {
 	glog.V(100).Infof("Pulling existing baremetalhost name %s under namespace %s from cluster", name, nsname)
 
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is empty")
+
+		return nil, fmt.Errorf("baremetalhost 'apiClient' cannot be empty")
+	}
+
 	builder := BmhBuilder{
-		apiClient: apiClient,
+		apiClient: apiClient.Client,
 		Definition: &bmhv1alpha1.BareMetalHost{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
@@ -380,17 +380,17 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*BmhBuilder, error)
 	if name == "" {
 		glog.V(100).Infof("The name of the baremetalhost is empty")
 
-		builder.errorMsg = "baremetalhost 'name' cannot be empty"
+		return nil, fmt.Errorf("baremetalhost 'name' cannot be empty")
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the baremetalhost is empty")
 
-		builder.errorMsg = "baremetalhost 'namespace' cannot be empty"
+		return nil, fmt.Errorf("baremetalhost 'namespace' cannot be empty")
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("baremetalhost object %s doesn't exist in namespace %s", name, nsname)
+		return nil, fmt.Errorf("baremetalhost object %s does not exist in namespace %s", name, nsname)
 	}
 
 	builder.Definition = builder.Object
@@ -518,7 +518,7 @@ func (builder *BmhBuilder) CreateAndWaitUntilProvisioned(timeout time.Duration) 
 	}
 
 	glog.V(100).Infof(`Creating the baremetalhost %s in namespace %s and 
-	waiting for the defined period until it's created`,
+	waiting for the defined period until it is created`,
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	builder, err := builder.Create()
@@ -581,7 +581,7 @@ func (builder *BmhBuilder) DeleteAndWaitUntilDeleted(timeout time.Duration) (*Bm
 	}
 
 	glog.V(100).Infof(`Deleting baremetalhost %s in namespace %s and 
-	waiting for the defined period until it's removed`,
+	waiting for the defined period until it is removed`,
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	builder, err := builder.Delete()

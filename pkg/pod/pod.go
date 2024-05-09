@@ -117,10 +117,10 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	}
 
 	if !builder.Exists() {
-		glog.V(100).Infof("Failed to pull pod object %s from namespace %s. Object doesn't exist",
+		glog.V(100).Infof("Failed to pull pod object %s from namespace %s. Object does not exist",
 			name, nsname)
 
-		return nil, fmt.Errorf("pod object %s doesn't exist in namespace %s", name, nsname)
+		return nil, fmt.Errorf("pod object %s does not exist in namespace %s", name, nsname)
 	}
 
 	builder.Definition = builder.Object
@@ -206,7 +206,7 @@ func (builder *Builder) DeleteAndWait(timeout time.Duration) (*Builder, error) {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Deleting pod %s in namespace %s and waiting for the defined period until it's removed",
+	glog.V(100).Infof("Deleting pod %s in namespace %s and waiting for the defined period until it is removed",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	builder, err := builder.Delete()
@@ -229,7 +229,7 @@ func (builder *Builder) CreateAndWaitUntilRunning(timeout time.Duration) (*Build
 		return builder, err
 	}
 
-	glog.V(100).Infof("Creating pod %s in namespace %s and waiting for the defined period until it's ready",
+	glog.V(100).Infof("Creating pod %s in namespace %s and waiting for the defined period until it is ready",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	builder, err := builder.Create()
@@ -1066,6 +1066,26 @@ func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
 			}
 		}
 	}
+
+	return builder
+}
+
+// WithTerminationGracePeriodSeconds configures TerminationGracePeriodSeconds on the pod.
+func (builder *Builder) WithTerminationGracePeriodSeconds(terminationGracePeriodSeconds int64) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Applying terminationGracePeriodSeconds flag to the configuration of pod: %s in namespace: %s",
+		builder.Definition.Name, builder.Definition.Namespace)
+
+	builder.isMutationAllowed("terminationGracePeriodSeconds")
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	builder.Definition.Spec.TerminationGracePeriodSeconds = &terminationGracePeriodSeconds
 
 	return builder
 }

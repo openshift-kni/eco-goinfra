@@ -157,7 +157,7 @@ func TestIngressDelete(t *testing.T) {
 		err := testBuilder.Delete()
 		assert.Nil(t, err)
 
-		// Assert that the object actually doesn't exist
+		// Assert that the object actually does not exist
 		_, err = Pull(client, testCase.name, testCase.namespace)
 		assert.NotNil(t, err)
 	}

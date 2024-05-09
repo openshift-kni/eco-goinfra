@@ -74,7 +74,7 @@ func PullKubeletConfig(apiClient *clients.Settings, name string) (*KubeletConfig
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("kubeletconfig object %s doesn't exist", name)
+		return nil, fmt.Errorf("kubeletconfig object %s does not exist", name)
 	}
 
 	builder.Definition = builder.Object
@@ -147,7 +147,7 @@ func (builder *KubeletConfigBuilder) WithMCPoolSelector(key, value string) *Kube
 	glog.V(100).Infof("Labeling the kubeletconfig %s with %s=%s", builder.Definition.Name, key, value)
 
 	if key == "" {
-		glog.V(100).Infof("The key can't be empty")
+		glog.V(100).Infof("The key cannot be empty")
 
 		builder.errorMsg = "'key' cannot be empty"
 
@@ -177,13 +177,13 @@ func (builder *KubeletConfigBuilder) WithSystemReserved(cpu, memory string) *Kub
 		cpu, memory, builder.Definition.Name)
 
 	if cpu == "" {
-		glog.V(100).Infof("The cpu can't be empty")
+		glog.V(100).Infof("The cpu cannot be empty")
 
 		builder.errorMsg = "'cpu' cannot be empty"
 	}
 
 	if memory == "" {
-		glog.V(100).Infof("The memory can't be empty")
+		glog.V(100).Infof("The memory cannot be empty")
 
 		builder.errorMsg = "'memory' cannot be empty"
 	}
@@ -198,8 +198,8 @@ func (builder *KubeletConfigBuilder) WithSystemReserved(cpu, memory string) *Kub
 
 	systemReservedKubeletConfiguration := &kubeletconfigv1beta1.KubeletConfiguration{
 		SystemReserved: map[string]string{
-			cpu:    cpu,
-			memory: memory,
+			"cpu":    cpu,
+			"memory": memory,
 		},
 	}
 

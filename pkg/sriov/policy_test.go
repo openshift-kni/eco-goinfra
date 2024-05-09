@@ -52,7 +52,7 @@ func TestPullPolicy(t *testing.T) {
 			networkNamespace:    "test-namespace",
 			expectedError:       true,
 			addToRuntimeObjects: false,
-			expectedErrorText:   "sriovnetworknodepolicy object test2 doesn't exist in namespace test-namespace",
+			expectedErrorText:   "sriovnetworknodepolicy object test2 does not exist in namespace test-namespace",
 			client:              true,
 		},
 		{

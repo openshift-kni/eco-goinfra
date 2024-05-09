@@ -74,7 +74,7 @@ func TestPullPlacementRule(t *testing.T) {
 			addToRuntimeObjects:    false,
 			client:                 true,
 			expectedErrorText: fmt.Sprintf(
-				"placementrule object %s doesn't exist in namespace %s", defaultPlacementRuleName, defaultPlacementRuleNsName),
+				"placementrule object %s does not exist in namespace %s", defaultPlacementRuleName, defaultPlacementRuleNsName),
 		},
 		{
 			placementRuleName:      "",
@@ -261,7 +261,7 @@ func TestPlacementRuleUpdate(t *testing.T) {
 		testBuilder := buildValidPlacementRuleTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
 
 		// Create the builder rather than just adding it to the client so that the proper metadata is added and
-		// the update won't fail.
+		// the update will not fail.
 		if testCase.alreadyExists {
 			var err error
 

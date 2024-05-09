@@ -67,7 +67,7 @@ func PullApplication(apiClient *clients.Settings, name, nsname string) (*Applica
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("application object %s doesn't exist in namespace %s", name, nsname)
+		return nil, fmt.Errorf("application object %s does not exist in namespace %s", name, nsname)
 	}
 
 	builder.Definition = builder.Object

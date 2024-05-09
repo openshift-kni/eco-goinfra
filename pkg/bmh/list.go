@@ -20,6 +20,12 @@ const (
 
 // List returns bareMetalHosts inventory in the given namespace.
 func List(apiClient *clients.Settings, nsname string, options ...goclient.ListOptions) ([]*BmhBuilder, error) {
+	if apiClient == nil {
+		glog.V(100).Infof("BareMetalHosts 'apiClient' parameter can not be empty")
+
+		return nil, fmt.Errorf("failed to list bareMetalHosts, 'apiClient' parameter is empty")
+	}
+
 	if nsname == "" {
 		glog.V(100).Infof("bareMetalHost 'nsname' parameter can not be empty")
 
@@ -58,7 +64,7 @@ func List(apiClient *clients.Settings, nsname string, options ...goclient.ListOp
 	for _, baremetalhost := range bmhList.Items {
 		copiedBmh := baremetalhost
 		bmhBuilder := &BmhBuilder{
-			apiClient:  apiClient,
+			apiClient:  apiClient.Client,
 			Object:     &copiedBmh,
 			Definition: &copiedBmh,
 		}

@@ -65,7 +65,7 @@ func TestPullApplication(t *testing.T) {
 			name:                "applicationtest",
 			namespace:           "test-namespace",
 			addToRuntimeObjects: false,
-			expectedError:       fmt.Errorf("application object applicationtest doesn't exist in namespace test-namespace"),
+			expectedError:       fmt.Errorf("application object applicationtest does not exist in namespace test-namespace"),
 			client:              true,
 		},
 		{

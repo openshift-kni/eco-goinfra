@@ -50,7 +50,7 @@ func TestPullCgu(t *testing.T) {
 			cguNamespace:        "test-namespace",
 			expectedError:       true,
 			addToRuntimeObjects: false,
-			expectedErrorText:   "cgu object test2 doesn't exist in namespace test-namespace",
+			expectedErrorText:   "cgu object test2 does not exist in namespace test-namespace",
 			client:              true,
 		},
 		{
@@ -309,6 +309,95 @@ func TestCguExist(t *testing.T) {
 		exists := testCase.testCgu.Exists()
 		assert.Equal(t, testCase.expectedStatus, exists)
 	}
+}
+
+func TestCguUpdate(t *testing.T) {
+	testCases := []struct {
+		alreadyExists bool
+		force         bool
+	}{
+		{
+			alreadyExists: false,
+			force:         false,
+		},
+		{
+			alreadyExists: true,
+			force:         false,
+		},
+		{
+			alreadyExists: false,
+			force:         true,
+		},
+		{
+			alreadyExists: true,
+			force:         true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidCguTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+
+		// Create the builder rather than just adding it to the client so that the proper metadata is added and
+		// the update will not fail.
+		if testCase.alreadyExists {
+			var err error
+
+			testBuilder = buildValidCguTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+			testBuilder, err = testBuilder.Create()
+			assert.Nil(t, err)
+		}
+
+		assert.NotNil(t, testBuilder.Definition)
+		assert.False(t, testBuilder.Definition.Spec.Backup)
+
+		testBuilder.Definition.Spec.Backup = true
+
+		cguBuilder, err := testBuilder.Update(testCase.force)
+		assert.NotNil(t, testBuilder.Definition)
+
+		if testCase.alreadyExists {
+			assert.Nil(t, err)
+			assert.Equal(t, testBuilder.Definition.Name, cguBuilder.Definition.Name)
+			assert.Equal(t, testBuilder.Definition.Spec.Backup, cguBuilder.Definition.Spec.Backup)
+		} else {
+			assert.NotNil(t, err)
+		}
+	}
+}
+
+func TestCguDeleteAndWait(t *testing.T) {
+	testCases := []struct {
+		testCgu       *CguBuilder
+		expectedError error
+	}{
+		{
+			testCgu:       buildValidCguTestBuilder(buildTestClientWithDummyCguObject()),
+			expectedError: nil,
+		},
+		{
+			testCgu:       buildInvalidCguTestBuilder(buildTestClientWithDummyCguObject()),
+			expectedError: fmt.Errorf("CGU 'nsname' cannot be empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		_, err := testCase.testCgu.DeleteAndWait(5 * time.Second)
+		assert.Equal(t, testCase.expectedError, err)
+
+		if testCase.expectedError == nil {
+			assert.Nil(t, testCase.testCgu.Object)
+		}
+	}
+}
+
+func TestCguWaitUntilDeleted(t *testing.T) {
+	// simulate deleted cgu using client with no cgu object
+	testSettings := clients.GetTestClients(clients.TestClientParams{})
+	cguBuilder := buildValidCguTestBuilder(testSettings)
+
+	err := cguBuilder.WaitUntilDeleted(5 * time.Second)
+
+	assert.Nil(t, err)
 }
 
 func TestWaitUntilBackupStarts(t *testing.T) {

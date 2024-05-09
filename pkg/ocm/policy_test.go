@@ -3,6 +3,7 @@ package ocm
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
@@ -80,7 +81,7 @@ func TestPullPolicy(t *testing.T) {
 			addToRuntimeObjects: false,
 			client:              true,
 			expectedErrorText: fmt.Sprintf(
-				"policy object %s doesn't exist in namespace %s", defaultPolicyName, defaultPolicyNsName),
+				"policy object %s does not exist in namespace %s", defaultPolicyName, defaultPolicyNsName),
 		},
 		{
 			policyName:          "",
@@ -263,7 +264,7 @@ func TestPolicyUpdate(t *testing.T) {
 		testBuilder := buildValidPolicyTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
 
 		// Create the builder rather than just adding it to the client so that the proper metadata is added and
-		// the update won't fail.
+		// the update will not fail.
 		if testCase.alreadyExists {
 			var err error
 
@@ -353,6 +354,16 @@ func TestWithAdditionalPolicyTemplate(t *testing.T) {
 				t, []*policiesv1.PolicyTemplate{{}, testCase.policyTemplate}, policyBuilder.Definition.Spec.PolicyTemplates)
 		}
 	}
+}
+
+func TestPolicyWaitUntilDeleted(t *testing.T) {
+	// simulate deleted policy using client with no policy object
+	testSettings := clients.GetTestClients(clients.TestClientParams{})
+	policyBuilder := buildValidPolicyTestBuilder(testSettings)
+
+	err := policyBuilder.WaitUntilDeleted(5 * time.Second)
+
+	assert.Nil(t, err)
 }
 
 // buildDummyPolicy returns a Policy with the provided name and namespace.
