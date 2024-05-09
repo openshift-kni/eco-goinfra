@@ -366,6 +366,38 @@ func TestPolicyWaitUntilDeleted(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestPolicyWaitUntilComplianceState(t *testing.T) {
+	testCases := []struct {
+		state policiesv1.ComplianceState
+	}{
+		{
+			state: policiesv1.Compliant,
+		},
+		{
+			state: policiesv1.NonCompliant,
+		},
+		{
+			state: policiesv1.Pending,
+		},
+	}
+
+	for _, testCase := range testCases {
+		dummyPolicy := buildDummyPolicy(defaultPolicyName, defaultPolicyNsName)
+		dummyPolicy.Status.ComplianceState = testCase.state
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: []runtime.Object{
+				dummyPolicy,
+			},
+		})
+
+		policyBuilder := buildValidPolicyTestBuilder(testSettings)
+		err := policyBuilder.WaitUntilComplianceState(testCase.state, 5*time.Second)
+
+		assert.Nil(t, err)
+	}
+}
+
 // buildDummyPolicy returns a Policy with the provided name and namespace.
 func buildDummyPolicy(name, nsname string) *policiesv1.Policy {
 	return &policiesv1.Policy{
