@@ -52,6 +52,9 @@ type BMC struct {
 // New returns a new BMC struct. The default system index to be used in redfish requests is 0.
 // Use SetSystemIndex to modify it.
 func New(host string, redfishUser, sshUser User, timeOuts TimeOuts) (*BMC, error) {
+	glog.V(100).Infof("Initializing new BMC structure with the following params: %s, %v, %v, %v (system index = 0)",
+		host, redfishUser, sshUser, timeOuts)
+
 	errMsgs := []string{}
 	if host == "" {
 		errMsgs = append(errMsgs, "host is empty")
@@ -97,9 +100,6 @@ func New(host string, redfishUser, sshUser User, timeOuts TimeOuts) (*BMC, error
 
 		return nil, errors.New(errMsg)
 	}
-
-	glog.V(100).Infof("Initializing new BMC structure with the following params: %s, %v, %v, %v (system index = 0)",
-		host, redfishUser, sshUser, timeOuts)
 
 	return &BMC{
 		host:        host,
