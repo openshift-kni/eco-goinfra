@@ -3,8 +3,9 @@ package bmc
 import (
 	_ "embed"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io"
+	"regexp"
 	"strings"
 	"time"
 
@@ -130,6 +131,157 @@ func createFakeRedfishLocalServer(secureBootEnabled bool, callbacks redfishAPIRe
 	return redfishServer
 }
 
+var (
+	validUser     = User{"user1", "pass1"}
+	validTimeOuts = TimeOuts{Redfish: 1 * time.Minute, SSH: 15 * time.Second}
+)
+
+const (
+	//nolint:lll // If the literal is broken in two parts with "+" it will be flagged with goconst...
+	secureBootFailFmt = "failed to get secure boot: failed to get redfish system: invalid system index %d (base-index=0, num systems=1)"
+)
+
+//nolint:funlen
+func TestBMC_New(t *testing.T) {
+	testCases := []struct {
+		name           string
+		host           string
+		redfishUser    User
+		sshUser        User
+		tiemeouts      TimeOuts
+		expectedErrMsg string
+	}{
+		{
+			name:        "All params empty",
+			host:        "",
+			redfishUser: User{},
+			sshUser:     User{},
+			tiemeouts:   TimeOuts{},
+			expectedErrMsg: "host is empty, redfish user's name is empty, redfish user's password is empty, " +
+				"ssh user's name is empty, ssh user's password is empty, redfish timeout is 0, ssh timeout is 0",
+		},
+		{
+			name:           "Everything's alright",
+			host:           "1.2.3.4",
+			redfishUser:    validUser,
+			sshUser:        validUser,
+			tiemeouts:      validTimeOuts,
+			expectedErrMsg: "",
+		},
+		{
+			name:           "Host is empty",
+			host:           "",
+			redfishUser:    validUser,
+			sshUser:        validUser,
+			tiemeouts:      validTimeOuts,
+			expectedErrMsg: "host is empty",
+		},
+		{
+			name:           "redfish user's name is empty",
+			host:           "1.2.3.4",
+			redfishUser:    User{Password: "pass1"},
+			sshUser:        validUser,
+			tiemeouts:      validTimeOuts,
+			expectedErrMsg: "redfish user's name is empty",
+		},
+		{
+			name:           "redfish user's password is empty",
+			host:           "1.2.3.4",
+			redfishUser:    User{Name: "user2"},
+			sshUser:        validUser,
+			tiemeouts:      validTimeOuts,
+			expectedErrMsg: "redfish user's password is empty",
+		},
+		{
+			name:           "ssh user's name is empty",
+			host:           "1.2.3.4",
+			redfishUser:    validUser,
+			sshUser:        User{Password: "pass1"},
+			tiemeouts:      validTimeOuts,
+			expectedErrMsg: "ssh user's name is empty",
+		},
+		{
+			name:           "ssh user's password is empty",
+			host:           "1.2.3.4",
+			redfishUser:    validUser,
+			sshUser:        User{Name: "user2"},
+			tiemeouts:      validTimeOuts,
+			expectedErrMsg: "ssh user's password is empty",
+		},
+		{
+			name:           "invalid redfish timeout",
+			host:           "1.2.3.4",
+			redfishUser:    validUser,
+			sshUser:        validUser,
+			tiemeouts:      TimeOuts{Redfish: 0, SSH: 1 * time.Second},
+			expectedErrMsg: "redfish timeout is 0",
+		},
+		{
+			name:           "invalid SSH timeout",
+			host:           "1.2.3.4",
+			redfishUser:    validUser,
+			sshUser:        validUser,
+			tiemeouts:      TimeOuts{Redfish: 1 * time.Second, SSH: 0},
+			expectedErrMsg: "ssh timeout is 0",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(newT *testing.T) {
+			_, err := New(testCase.host, testCase.redfishUser, testCase.sshUser, testCase.tiemeouts)
+			if err != nil {
+				if err.Error() != testCase.expectedErrMsg {
+					newT.Errorf("Unexpected error. Got: %v, Want: %s", err, testCase.expectedErrMsg)
+				}
+			} else {
+				if testCase.expectedErrMsg != "" {
+					newT.Errorf("Error is nil. Expected error: %v", testCase.expectedErrMsg)
+				}
+			}
+		})
+	}
+}
+
+func TestBMC_SetSystemIndex(t *testing.T) {
+	testCases := []struct {
+		index          int
+		expectedErrMsg string
+	}{
+		{
+			index:          0,
+			expectedErrMsg: "",
+		},
+		{
+			index:          5,
+			expectedErrMsg: "",
+		},
+		{
+			index:          -1,
+			expectedErrMsg: "invalid index -1",
+		},
+		{
+			index:          -5,
+			expectedErrMsg: "invalid index -5",
+		},
+	}
+
+	bmc, err := New("1.2.3.4", validUser, validUser, DefaultTimeOuts)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	for _, testCase := range testCases {
+		err = bmc.SetSystemIndex(testCase.index)
+		if err == nil {
+			if testCase.expectedErrMsg != "" {
+				t.Errorf("Err is nil. Expected: %v", testCase.expectedErrMsg)
+			}
+		} else if err.Error() != testCase.expectedErrMsg {
+			t.Errorf("Unexpected error. Want: %v, Got: %v", testCase.expectedErrMsg, err.Error())
+		}
+	}
+}
+
 func TestBMC_Manufacturer(t *testing.T) {
 	respCallbacks := redfishAPIResponseCallbacks{}
 
@@ -145,12 +297,15 @@ func TestBMC_Manufacturer(t *testing.T) {
 	redfishAuth := User{"user1", "pass1"}
 
 	// No ssh credentials needed.
-	bmc := New(host, redfishAuth, User{}, DefaultTimeOuts)
+	bmc, err := New(host, redfishAuth, validUser, DefaultTimeOuts)
+	if err != nil {
+		t.Errorf("Failed to instantiate bmc: %v", err)
+	}
 
 	// Get the manufacturer of system index = 0
 	const expectedManufacturer = "Dell Inc."
 
-	manufacturer, err := bmc.SystemManufacturer(0)
+	manufacturer, err := bmc.SystemManufacturer()
 	if err != nil {
 		t.Errorf("Failed to get system manufacturer: %v", err)
 	}
@@ -167,7 +322,12 @@ func TestBMC_Manufacturer(t *testing.T) {
 	// Try getting the manufacturer of a non-existent system (e.g. index 1).
 	const expectedErrMsg = "failed to get redfish system: invalid system index 1 (base-index=0, num systems=1)"
 
-	_, err = bmc.SystemManufacturer(1)
+	err = bmc.SetSystemIndex(1)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	_, err = bmc.SystemManufacturer()
 	if err.Error() != expectedErrMsg {
 		t.Errorf("Unexpected error when getting manufacturer of non-existent system. Want: %v, Got: %v", expectedErrMsg, err)
 	}
@@ -186,19 +346,27 @@ func TestBMC_ManufacturerTimeout(t *testing.T) {
 	redfishAuth := User{"user1", "pass1"}
 
 	// Set a maximum 100ms timeout from redfish api.
-	bmc := New(host, redfishAuth, User{}, TimeOuts{Redfish: 100 * time.Millisecond})
+	bmc, err := New(host, redfishAuth, validUser, TimeOuts{Redfish: 100 * time.Millisecond, SSH: 100 * time.Millisecond})
+	if err != nil {
+		t.Errorf("Failed to instantiate bmc: %v", err)
+	}
 
 	// Get Manufacturer. Since we've force a response greater than the configured timeout, we
 	// should get an error.
-	const expectedTimeoutErrMsg = "context deadline exceeded"
+	const expectedTimeoutErrMsgRegex = `redfish connection error: failed to connect to redfish endpoint: ` +
+		`Post "https://127\.0\.0\.1:\d+/redfish/v1/SessionService/Sessions": context deadline exceeded`
 
-	_, err := bmc.SystemManufacturer(0)
+	regex := regexp.MustCompile(expectedTimeoutErrMsgRegex)
+
+	_, err = bmc.SystemManufacturer()
 	if err == nil {
-		t.Errorf("No error found. Expected err: %v", expectedTimeoutErrMsg)
+		t.Errorf("No error found. Expected err regexp: %v", expectedTimeoutErrMsgRegex)
 	} else {
-		errMsg := errors.Unwrap(errors.Unwrap(err)).Error()
-		if errMsg != expectedTimeoutErrMsg {
-			t.Errorf("Expected error won't match. Expectd %v, Got: %v", expectedTimeoutErrMsg, errMsg)
+		errMsg := err.Error()
+
+		match := regex.Find([]byte(errMsg))
+		if len(match) == 0 {
+			t.Errorf("Expected error won't match. Expected regexp %v, Got: %v", expectedTimeoutErrMsgRegex, errMsg)
 		}
 	}
 }
@@ -210,12 +378,15 @@ func Test_BMCSecureBootStatus(t *testing.T) {
 	redfishAuth := User{"user1", "pass1"}
 
 	// No ssh credentials needed.
-	bmc := New(host, redfishAuth, User{}, DefaultTimeOuts)
+	bmc, err := New(host, redfishAuth, validUser, DefaultTimeOuts)
+	if err != nil {
+		t.Errorf("Failed to instantiate bmc: %v", err)
+	}
 
 	// Get twice the SecureBoot status, which should be false.
 	expectedSecureBootStatus := false
 
-	sbStatus, err := bmc.IsSecureBootEnabled(0)
+	sbStatus, err := bmc.IsSecureBootEnabled()
 	if err != nil {
 		t.Errorf("Unexpected error found when getting secure boot status: %v", err)
 	}
@@ -225,9 +396,14 @@ func Test_BMCSecureBootStatus(t *testing.T) {
 	}
 
 	// Try getting the secureboot status from a non-existent system (e.g index 2)
-	const expectedErrMsg = "failed to get redfish system: invalid system index 2 (base-index=0, num systems=1)"
+	expectedErrMsg := fmt.Sprintf(secureBootFailFmt, 2)
 
-	_, err = bmc.IsSecureBootEnabled(2)
+	err = bmc.SetSystemIndex(2)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	_, err = bmc.IsSecureBootEnabled()
 	if err.Error() != expectedErrMsg {
 		t.Errorf("Unexpected error when getting manufacturer of non-existent system. Want: %v, Got: %v", expectedErrMsg, err)
 	}
@@ -242,12 +418,15 @@ func Test_BMCSecureBootStatus(t *testing.T) {
 	redfishAuth = User{"user1", "pass1"}
 
 	// No ssh credentials needed.
-	bmc = New(host, redfishAuth, User{}, DefaultTimeOuts)
+	bmc, err = New(host, redfishAuth, validUser, DefaultTimeOuts)
+	if err != nil {
+		t.Errorf("Failed to instantiate bmc: %v", err)
+	}
 
 	// Get twice the SecureBoot status, which should be true.
 	expectedSecureBootStatus = true
 
-	sbStatus, err = bmc.IsSecureBootEnabled(0)
+	sbStatus, err = bmc.IsSecureBootEnabled()
 	if err != nil {
 		t.Errorf("Unexpected error found when getting secure boot status: %v", err)
 	}
@@ -266,24 +445,32 @@ func Test_BMCSecureBootEnable(t *testing.T) {
 	redfishAuth := User{"user1", "pass1"}
 
 	// No ssh credentials needed.
-	bmc := New(host, redfishAuth, User{}, DefaultTimeOuts)
+	bmc, err := New(host, redfishAuth, validUser, DefaultTimeOuts)
+	if err != nil {
+		t.Errorf("Failed to instantiate bmc: %v", err)
+	}
 
 	// Secure boot is already disabled, so we should get an error if we try to disable it again.
 	const expectedErrorMsg = "secure boot is already disabled"
 
-	err := bmc.SecureBootDisable(0)
+	err = bmc.SecureBootDisable()
 	if err.Error() != expectedErrorMsg {
 		t.Errorf("Unexpected error when disabling secure boot. Want: %v, Got: %v", expectedErrorMsg, err)
 	}
 
-	if err := bmc.SecureBootEnable(0); err != nil {
+	if err := bmc.SecureBootEnable(); err != nil {
 		t.Errorf("Unexpected error found when enabling secure boot: %v", err)
 	}
 
 	// Try enabling the secureboot status from a non-existent system (e.g index 2)
-	const expectedErrMsg = "failed to get redfish system: invalid system index 2 (base-index=0, num systems=1)"
+	expectedErrMsg := fmt.Sprintf(secureBootFailFmt, 2)
 
-	err = bmc.SecureBootEnable(2)
+	err = bmc.SetSystemIndex(2)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	err = bmc.SecureBootEnable()
 	if err.Error() != expectedErrMsg {
 		t.Errorf("Unexpected error when getting manufacturer of non-existent system. Want: %v, Got: %v", expectedErrMsg, err)
 	}
@@ -298,24 +485,33 @@ func Test_BMCSecureBootDisable(t *testing.T) {
 	redfishAuth := User{"user1", "pass1"}
 
 	// No ssh credentials needed.
-	bmc := New(host, redfishAuth, User{}, DefaultTimeOuts)
+	bmc, err := New(host, redfishAuth, validUser, DefaultTimeOuts)
+	if err != nil {
+		t.Errorf("Failed to instantiate bmc: %v", err)
+	}
 
 	// Secure boot is already disabled, so we should get an error if we try to disable it again.
 	const expectedErrorMsg = "secure boot is already enabled"
 
-	err := bmc.SecureBootEnable(0)
+	err = bmc.SecureBootEnable()
 	if err.Error() != expectedErrorMsg {
 		t.Errorf("Unexpected error when disabling secure boot. Want: %v, Got: %v", expectedErrorMsg, err)
 	}
 
-	if err := bmc.SecureBootDisable(0); err != nil {
+	if err := bmc.SecureBootDisable(); err != nil {
 		t.Errorf("Unexpected error found when enabling secure boot: %v", err)
 	}
 
 	// Try enabling the secureboot status from a non-existent system (e.g index 2)
-	const expectedErrMsg = "failed to get redfish system: invalid system index 2 (base-index=0, num systems=1)"
+	const expectedErrMsg = "failed to get secure boot: failed to get redfish system: " +
+		"invalid system index 2 (base-index=0, num systems=1)"
 
-	err = bmc.SecureBootEnable(2)
+	err = bmc.SetSystemIndex(2)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	err = bmc.SecureBootEnable()
 	if err.Error() != expectedErrMsg {
 		t.Errorf("Unexpected error when getting manufacturer of non-existent system. Want: %v, Got: %v", expectedErrMsg, err)
 	}
@@ -330,10 +526,13 @@ func Test_BMCSystemForceReboot(t *testing.T) {
 	redfishAuth := User{"user1", "pass1"}
 
 	// No ssh credentials needed.
-	bmc := New(host, redfishAuth, User{}, DefaultTimeOuts)
+	bmc, err := New(host, redfishAuth, validUser, DefaultTimeOuts)
+	if err != nil {
+		t.Errorf("Failed to instantiate bmc: %v", err)
+	}
 
 	// Try ForceReset on system 0
-	err := bmc.SystemForceReset(0)
+	err = bmc.SystemForceReset()
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
@@ -341,32 +540,13 @@ func Test_BMCSystemForceReboot(t *testing.T) {
 	// Try enabling the secureboot status from a non-existent system (e.g index 2)
 	const expectedErrMsg = "failed to get redfish system: invalid system index 2 (base-index=0, num systems=1)"
 
-	err = bmc.SystemForceReset(2)
+	err = bmc.SetSystemIndex(2)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	err = bmc.SystemForceReset()
 	if err.Error() != expectedErrMsg {
 		t.Errorf("Unexpected error when getting manufacturer of non-existent system. Want: %v, Got: %v", expectedErrMsg, err)
-	}
-}
-
-func Test_OpenSerialConsoleTimeout(t *testing.T) {
-	bmc := New("1.2.3.4", User{}, User{}, TimeOuts{Redfish: 100 * time.Millisecond, SSH: 100 * time.Millisecond})
-
-	expectedErrorMsg := "failed to get redfish system manufacturer: failed to connect to redfish endpoint: " +
-		"Get \"https://1.2.3.4/redfish/v1/\": context deadline exceeded"
-
-	// Try to use redfish's Manufacturer to get the cli command to open the serial console.
-	_, _, err := bmc.OpenSerialConsole("")
-	if err == nil {
-		t.Errorf("An error was expected here.")
-	} else if err.Error() != expectedErrorMsg {
-		t.Errorf("Unexpected error. Expected: %v, Got: %v", expectedErrorMsg, err.Error())
-	}
-
-	expectedErrorMsg = "failed to connect: dial tcp 1.2.3.4:22: i/o timeout"
-	// Try with custom cli command to get the ssh-tunneled serial port.
-	_, _, err = bmc.OpenSerialConsole("fake-cli-cmd")
-	if err == nil {
-		t.Errorf("An error was expected here.")
-	} else if err.Error() != expectedErrorMsg {
-		t.Errorf("Unexpected error. Expected: %v, Got: %v", expectedErrorMsg, err.Error())
 	}
 }
