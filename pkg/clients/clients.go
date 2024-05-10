@@ -473,6 +473,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *clov1.ClusterLogging:
 			genericClientObjects = append(genericClientObjects, v)
+		case *clov1.ClusterLogForwarder:
+			genericClientObjects = append(genericClientObjects, v)
 		// ArgoCD Client Objects
 		case *argocdOperatorv1alpha1.ArgoCD:
 			genericClientObjects = append(genericClientObjects, v)
