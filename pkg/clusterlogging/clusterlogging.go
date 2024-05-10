@@ -20,7 +20,7 @@ type Builder struct {
 	// Created clusterLogging object on the cluster.
 	Object *clov1.ClusterLogging
 	// api client to interact with the cluster.
-	apiClient *clients.Settings
+	apiClient goclient.Client
 	// errorMsg is processed before clusterLogging object is created.
 	errorMsg string
 }
@@ -32,7 +32,7 @@ func NewBuilder(
 		name, nsname)
 
 	builder := &Builder{
-		apiClient: apiClient,
+		apiClient: apiClient.Client,
 		Definition: &clov1.ClusterLogging{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
@@ -44,13 +44,13 @@ func NewBuilder(
 	if name == "" {
 		glog.V(100).Infof("The name of the clusterLogging is empty")
 
-		builder.errorMsg = "The clusterLogging 'name' cannot be empty"
+		builder.errorMsg = "the clusterLogging 'name' cannot be empty"
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the clusterLogging is empty")
 
-		builder.errorMsg = "The clusterLogging 'namespace' cannot be empty"
+		builder.errorMsg = "the clusterLogging 'nsname' cannot be empty"
 	}
 
 	return builder
@@ -61,8 +61,14 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	glog.V(100).Infof(
 		"Pulling clusterLogging object name:%s in namespace: %s", name, nsname)
 
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is empty")
+
+		return nil, fmt.Errorf("clusterLogging 'apiClient' cannot be empty")
+	}
+
 	builder := Builder{
-		apiClient: apiClient,
+		apiClient: apiClient.Client,
 		Definition: &clov1.ClusterLogging{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
@@ -74,13 +80,13 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	if name == "" {
 		glog.V(100).Infof("The name of the clusterLogging is empty")
 
-		builder.errorMsg = "clusterLogging 'name' cannot be empty"
+		return nil, fmt.Errorf("clusterLogging 'name' cannot be empty")
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the clusterLogging is empty")
 
-		builder.errorMsg = "clusterLogging 'nsname' cannot be empty"
+		return nil, fmt.Errorf("clusterLogging 'nsname' cannot be empty")
 	}
 
 	if !builder.Exists() {
