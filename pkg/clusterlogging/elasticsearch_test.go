@@ -4,35 +4,33 @@ import (
 	"fmt"
 	"testing"
 
+	eskv1 "github.com/openshift/elasticsearch-operator/apis/logging/v1"
+
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	clov1 "github.com/openshift/cluster-logging-operator/apis/logging/v1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var (
-	clusterLoggingGVK = schema.GroupVersionKind{
-		Group:   APIGroup,
-		Version: APIVersion,
-		Kind:    CLOKind,
-	}
-	defaultClusterLoggingName      = "instance"
-	defaultClusterLoggingNamespace = "openshift-logging"
-	defaultManagementState         = clov1.ManagementState("")
+	apiGroup                            = "logging.openshift.io"
+	apiVersion                          = "v1"
+	kind                                = "Elasticsearch"
+	metaDataNameErrorMgs                = "metadata.name: Required value: name is required"
+	defaultElasticsearchName            = "elasticsearch"
+	defaultElasticsearchNamespace       = "openshift-logging"
+	defaultElasticsearchManagementState = eskv1.ManagementState("")
 )
 
-//nolint:funlen
-func TestClusterLoggingPull(t *testing.T) {
-	generateClusterLogging := func(name, namespace string) *clov1.ClusterLogging {
-		return &clov1.ClusterLogging{
+func TestElasticsearchPull(t *testing.T) {
+	generateElasticsearch := func(name, namespace string) *eskv1.Elasticsearch {
+		return &eskv1.Elasticsearch{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,
 			},
-			Spec: clov1.ClusterLoggingSpec{
-				ManagementState: clov1.ManagementStateManaged,
+			Spec: eskv1.ElasticsearchSpec{
+				ManagementState: eskv1.ManagementStateManaged,
 			},
 		}
 	}
@@ -55,28 +53,28 @@ func TestClusterLoggingPull(t *testing.T) {
 			name:                "",
 			namespace:           "openshift-logging",
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("clusterLogging 'name' cannot be empty"),
+			expectedError:       fmt.Errorf("elasticsearch 'name' cannot be empty"),
 			client:              true,
 		},
 		{
 			name:                "test",
 			namespace:           "",
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("clusterLogging 'nsname' cannot be empty"),
+			expectedError:       fmt.Errorf("elasticsearch 'nsname' cannot be empty"),
 			client:              true,
 		},
 		{
-			name:                "clotest",
+			name:                "esktest",
 			namespace:           "openshift-logging",
 			addToRuntimeObjects: false,
-			expectedError:       fmt.Errorf("clusterLogging object clotest does not exist in namespace openshift-logging"),
+			expectedError:       fmt.Errorf("elasticsearch object esktest does not exist in namespace openshift-logging"),
 			client:              true,
 		},
 		{
-			name:                "clotest",
+			name:                "esktest",
 			namespace:           "openshift-logging",
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("clusterLogging 'apiClient' cannot be empty"),
+			expectedError:       fmt.Errorf("elasticsearch 'apiClient' cannot be empty"),
 			client:              false,
 		},
 	}
@@ -87,10 +85,10 @@ func TestClusterLoggingPull(t *testing.T) {
 
 		var testSettings *clients.Settings
 
-		testClusterLogging := generateClusterLogging(testCase.name, testCase.namespace)
+		testElasticsearch := generateElasticsearch(testCase.name, testCase.namespace)
 
 		if testCase.addToRuntimeObjects {
-			runtimeObjects = append(runtimeObjects, testClusterLogging)
+			runtimeObjects = append(runtimeObjects, testElasticsearch)
 		}
 
 		if testCase.client {
@@ -99,216 +97,222 @@ func TestClusterLoggingPull(t *testing.T) {
 			})
 		}
 
-		builderResult, err := Pull(testSettings, testCase.name, testCase.namespace)
+		builderResult, err := PullElasticsearch(testSettings, testCase.name, testCase.namespace)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError != nil {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		} else {
-			assert.Equal(t, testClusterLogging.Name, builderResult.Object.Name)
+			assert.Equal(t, testElasticsearch.Name, builderResult.Object.Name)
 		}
 	}
 }
 
-func TestNewBuilder(t *testing.T) {
+func TestNewElasticsearchBuilder(t *testing.T) {
 	testCases := []struct {
 		name          string
 		namespace     string
 		expectedError string
 	}{
 		{
-			name:          defaultClusterLoggingName,
-			namespace:     defaultClusterLoggingNamespace,
+			name:          defaultElasticsearchName,
+			namespace:     defaultElasticsearchNamespace,
 			expectedError: "",
 		},
 		{
 			name:          "",
-			namespace:     defaultClusterLoggingNamespace,
-			expectedError: "clusterLogging 'name' cannot be empty",
+			namespace:     defaultElasticsearchNamespace,
+			expectedError: "elasticsearch 'name' cannot be empty",
 		},
 		{
-			name:          defaultClusterLoggingName,
+			name:          defaultElasticsearchName,
 			namespace:     "",
-			expectedError: "clusterLogging 'nsname' cannot be empty",
+			expectedError: "elasticsearch 'nsname' cannot be empty",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients(clients.TestClientParams{
-			GVK: []schema.GroupVersionKind{clusterLoggingGVK},
-		})
-		testClusterLoggingBuilder := NewBuilder(testSettings, testCase.name, testCase.namespace)
-		assert.Equal(t, testCase.expectedError, testClusterLoggingBuilder.errorMsg)
-		assert.NotNil(t, testClusterLoggingBuilder.Definition)
+		testSettings := clients.GetTestClients(clients.TestClientParams{})
+		testElasticsearchBuilder := NewElasticsearchBuilder(testSettings, testCase.name, testCase.namespace)
+		assert.Equal(t, testCase.expectedError, testElasticsearchBuilder.errorMsg)
+		assert.NotNil(t, testElasticsearchBuilder.Definition)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testCase.name, testClusterLoggingBuilder.Definition.Name)
-			assert.Equal(t, testCase.namespace, testClusterLoggingBuilder.Definition.Namespace)
+			assert.Equal(t, testCase.name, testElasticsearchBuilder.Definition.Name)
+			assert.Equal(t, testCase.namespace, testElasticsearchBuilder.Definition.Namespace)
 		}
 	}
 }
 
-func TestClusterLoggingExist(t *testing.T) {
+func TestElasticsearchExist(t *testing.T) {
 	testCases := []struct {
-		testClusterLogging *Builder
-		expectedStatus     bool
+		testElasticsearch *ElasticsearchBuilder
+		expectedStatus    bool
 	}{
 		{
-			testClusterLogging: buildValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
-			expectedStatus:     true,
+			testElasticsearch: buildValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
+			expectedStatus:    true,
 		},
 		{
-			testClusterLogging: buildInValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
-			expectedStatus:     false,
+			testElasticsearch: buildInValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
+			expectedStatus:    false,
 		},
 		{
-			testClusterLogging: buildValidClusterLoggingBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedStatus:     false,
+			testElasticsearch: buildValidElasticsearchBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedStatus:    false,
 		},
 	}
 
 	for _, testCase := range testCases {
-		exist := testCase.testClusterLogging.Exists()
+		exist := testCase.testElasticsearch.Exists()
 		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
-func TestClusterLoggingGet(t *testing.T) {
+func TestElasticsearchGet(t *testing.T) {
 	testCases := []struct {
-		testClusterLogging *Builder
-		expectedError      error
+		testElasticsearch *ElasticsearchBuilder
+		expectedError     error
 	}{
 		{
-			testClusterLogging: buildValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
-			expectedError:      nil,
+			testElasticsearch: buildValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
+			expectedError:     nil,
 		},
 		{
-			testClusterLogging: buildInValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
-			expectedError:      fmt.Errorf("clusterloggings.logging.openshift.io \"\" not found"),
+			testElasticsearch: buildInValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
+			expectedError:     fmt.Errorf("elasticsearchs.logging.openshift.io \"\" not found"),
 		},
 		{
-			testClusterLogging: buildValidClusterLoggingBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:      fmt.Errorf("clusterloggings.logging.openshift.io \"instance\" not found"),
+			testElasticsearch: buildValidElasticsearchBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:     fmt.Errorf("elasticsearchs.logging.openshift.io \"elasticsearch\" not found"),
 		},
 	}
 
 	for _, testCase := range testCases {
-		storageClusterObj, err := testCase.testClusterLogging.Get()
+		elasticsearchObj, err := testCase.testElasticsearch.Get()
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, storageClusterObj, testCase.testClusterLogging.Definition)
+			assert.Equal(t, elasticsearchObj, testCase.testElasticsearch.Definition)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 	}
 }
 
-func TestClusterLoggingCreate(t *testing.T) {
+func TestElasticsearchCreate(t *testing.T) {
 	testCases := []struct {
-		testClusterLogging *Builder
-		expectedError      string
+		testElasticsearch *ElasticsearchBuilder
+		expectedError     string
 	}{
 		{
-			testClusterLogging: buildValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
-			expectedError:      "",
+			testElasticsearch: buildValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
+			expectedError:     "",
 		},
 		{
-			testClusterLogging: buildInValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
-			expectedError: fmt.Sprintf("ClusterLogging.logging.openshift.io \"\" is invalid: " +
-				"metadata.name: Required value: name is required"),
+			testElasticsearch: buildInValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
+			expectedError: fmt.Sprintf("Elasticsearch.logging.openshift.io \"\" is invalid: %s",
+				metaDataNameErrorMgs),
+		},
+		{
+			testElasticsearch: buildValidElasticsearchBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:     "resourceVersion can not be set for Create requests",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testClusterLoggingBuilder, err := testCase.testClusterLogging.Create()
+		testElasticsearchBuilder, err := testCase.testElasticsearch.Create()
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testClusterLoggingBuilder.Definition, testClusterLoggingBuilder.Object)
+			assert.Equal(t, testElasticsearchBuilder.Definition, testElasticsearchBuilder.Object)
 		} else {
 			assert.Equal(t, testCase.expectedError, err.Error())
 		}
 	}
 }
 
-func TestClusterLoggingDelete(t *testing.T) {
+func TestElasticsearchDelete(t *testing.T) {
 	testCases := []struct {
-		testClusterLogging *Builder
-		expectedError      error
+		testElasticsearch *ElasticsearchBuilder
+		expectedError     error
 	}{
 		{
-			testClusterLogging: buildValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
-			expectedError:      nil,
+			testElasticsearch: buildValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
+			expectedError:     nil,
 		},
 		{
-			testClusterLogging: buildInValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
-			expectedError:      fmt.Errorf("clusterLogging cannot be deleted because it does not exist"),
+			testElasticsearch: buildInValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
+			expectedError:     fmt.Errorf("elasticsearch cannot be deleted because it does not exist"),
+		},
+		{
+			testElasticsearch: buildValidElasticsearchBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:     nil,
 		},
 	}
 
 	for _, testCase := range testCases {
-		err := testCase.testClusterLogging.Delete()
+		err := testCase.testElasticsearch.Delete()
 
 		if testCase.expectedError == nil {
-			assert.Nil(t, testCase.testClusterLogging.Object)
+			assert.Nil(t, testCase.testElasticsearch.Object)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 	}
 }
 
-func TestClusterLoggingUpdate(t *testing.T) {
+func TestElasticsearchUpdate(t *testing.T) {
 	testCases := []struct {
-		testClusterLogging *Builder
-		expectedError      string
-		managementState    clov1.ManagementState
+		testElasticsearch *ElasticsearchBuilder
+		expectedError     string
+		managementState   eskv1.ManagementState
 	}{
 		{
-			testClusterLogging: buildValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
-			expectedError:      "",
-			managementState:    clov1.ManagementStateManaged,
+			testElasticsearch: buildValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
+			expectedError:     "",
+			managementState:   eskv1.ManagementStateManaged,
 		},
 		{
-			testClusterLogging: buildInValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
-			expectedError: fmt.Sprintf("ClusterLogging.logging.openshift.io \"\" is invalid: " +
-				"metadata.name: Required value: name is required"),
-			managementState: clov1.ManagementStateManaged,
+			testElasticsearch: buildInValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
+			expectedError: fmt.Sprintf("Elasticsearch.logging.openshift.io \"\" is invalid: %s",
+				metaDataNameErrorMgs),
+			managementState: eskv1.ManagementStateManaged,
 		},
 	}
 
 	for _, testCase := range testCases {
-		assert.Equal(t, defaultManagementState, testCase.testClusterLogging.Definition.Spec.ManagementState)
-		assert.Nil(t, nil, testCase.testClusterLogging.Object)
-		testCase.testClusterLogging.WithManagementState(testCase.managementState)
-		_, err := testCase.testClusterLogging.Update()
+		assert.Equal(t, defaultElasticsearchManagementState, testCase.testElasticsearch.Definition.Spec.ManagementState)
+		assert.Nil(t, nil, testCase.testElasticsearch.Object)
+		testCase.testElasticsearch.WithManagementState(testCase.managementState)
+		_, err := testCase.testElasticsearch.Update()
 
 		if testCase.expectedError != "" {
 			assert.Equal(t, testCase.expectedError, err.Error())
 		} else {
-			assert.Equal(t, testCase.managementState, testCase.testClusterLogging.Definition.Spec.ManagementState)
+			assert.Equal(t, testCase.managementState, testCase.testElasticsearch.Definition.Spec.ManagementState)
 		}
 	}
 }
 
-func TestWithManagementState(t *testing.T) {
+func TestElasticsearchWithManagementState(t *testing.T) {
 	testCases := []struct {
-		testManagementState clov1.ManagementState
+		testManagementState eskv1.ManagementState
 		expectedError       bool
 		expectedErrorText   string
 	}{
 		{
-			testManagementState: clov1.ManagementStateUnmanaged,
+			testManagementState: eskv1.ManagementStateUnmanaged,
 			expectedError:       false,
 			expectedErrorText:   "",
 		},
 		{
-			testManagementState: clov1.ManagementStateManaged,
+			testManagementState: eskv1.ManagementStateManaged,
 			expectedError:       false,
 			expectedErrorText:   "",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject())
+		testBuilder := buildValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject())
 
 		result := testBuilder.WithManagementState(testCase.testManagementState)
 
@@ -323,64 +327,71 @@ func TestWithManagementState(t *testing.T) {
 	}
 }
 
-func TestImageRegistryGetManagementState(t *testing.T) {
+func TestElasticsearchGetManagementState(t *testing.T) {
 	testCases := []struct {
-		testImageRegistry *Builder
+		testElasticsearch *ElasticsearchBuilder
 		expectedError     error
 	}{
 		{
-			testImageRegistry: buildValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
+			testElasticsearch: buildValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
 			expectedError:     nil,
 		},
 		{
-			testImageRegistry: buildValidClusterLoggingBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:     fmt.Errorf("clusterLogging object does not exist"),
+			testElasticsearch: buildValidElasticsearchBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:     fmt.Errorf("elasticsearch object does not exist"),
 		},
 	}
 
 	for _, testCase := range testCases {
-		currentManagementState, err := testCase.testImageRegistry.GetManagementState()
+		currentManagementState, err := testCase.testElasticsearch.GetManagementState()
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, *currentManagementState, testCase.testImageRegistry.Object.Spec.ManagementState)
+			assert.Equal(t, *currentManagementState, testCase.testElasticsearch.Object.Spec.ManagementState)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 	}
 }
 
-func buildValidClusterLoggingBuilder(apiClient *clients.Settings) *Builder {
-	clusterLoggingBuilder := NewBuilder(
-		apiClient, defaultClusterLoggingName, defaultClusterLoggingNamespace)
-	clusterLoggingBuilder.Definition.ResourceVersion = "999"
-	clusterLoggingBuilder.Definition.Spec.ManagementState = ""
+func buildValidElasticsearchBuilder(apiClient *clients.Settings) *ElasticsearchBuilder {
+	elasticsearchBuilder := NewElasticsearchBuilder(
+		apiClient, defaultElasticsearchName, defaultElasticsearchNamespace)
+	elasticsearchBuilder.Definition.ResourceVersion = "999"
+	elasticsearchBuilder.Definition.Spec.ManagementState = ""
+	elasticsearchBuilder.Definition.TypeMeta = metav1.TypeMeta{
+		Kind:       kind,
+		APIVersion: fmt.Sprintf("%s/%s", apiGroup, apiVersion),
+	}
 
-	return clusterLoggingBuilder
+	return elasticsearchBuilder
 }
 
-func buildInValidClusterLoggingBuilder(apiClient *clients.Settings) *Builder {
-	clusterLoggingBuilder := NewBuilder(
-		apiClient, "", defaultClusterLoggingNamespace)
-	clusterLoggingBuilder.Definition.ResourceVersion = "999"
-	clusterLoggingBuilder.Definition.Spec.ManagementState = ""
+func buildInValidElasticsearchBuilder(apiClient *clients.Settings) *ElasticsearchBuilder {
+	elasticsearchBuilder := NewElasticsearchBuilder(
+		apiClient, "", defaultElasticsearchNamespace)
+	elasticsearchBuilder.Definition.ResourceVersion = "999"
+	elasticsearchBuilder.Definition.Spec.ManagementState = ""
+	elasticsearchBuilder.Definition.TypeMeta = metav1.TypeMeta{
+		Kind:       kind,
+		APIVersion: fmt.Sprintf("%s/%s", apiGroup, apiVersion),
+	}
 
-	return clusterLoggingBuilder
+	return elasticsearchBuilder
 }
 
-func buildClusterLoggingClientWithDummyObject() *clients.Settings {
+func buildElasticsearchClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyClusterLogging(),
-		GVK:            []schema.GroupVersionKind{clusterLoggingGVK},
+		K8sMockObjects: buildDummyElasticsearch(),
 	})
 }
 
-func buildDummyClusterLogging() []runtime.Object {
-	return append([]runtime.Object{}, &clov1.ClusterLogging{
+func buildDummyElasticsearch() []runtime.Object {
+	return append([]runtime.Object{}, &eskv1.Elasticsearch{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      defaultClusterLoggingName,
-			Namespace: defaultClusterLoggingNamespace,
+			Name:      defaultElasticsearchName,
+			Namespace: defaultElasticsearchNamespace,
 		},
-		Spec: clov1.ClusterLoggingSpec{
+		Spec: eskv1.ElasticsearchSpec{
 			ManagementState: "",
 		},
 	})
