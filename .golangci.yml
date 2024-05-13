@@ -39,6 +39,7 @@ linters-settings:
           - "github.com/vmware-tanzu/velero"
           - "github.com/kelseyhightower/envconfig"
           - "github.com/red-hat-storage/ocs-operator"
+          - "github.com/stmcginnis/gofish"
   revive:
     rules:
       - name: indent-error-flow
