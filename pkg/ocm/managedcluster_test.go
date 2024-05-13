@@ -16,20 +16,33 @@ var defaultManagedClusterName = "managedcluster-test"
 func TestNewManagedClusterBuilder(t *testing.T) {
 	testCases := []struct {
 		managedClusterName string
+		client             bool
 		expectedErrorText  string
 	}{
 		{
 			managedClusterName: defaultManagedClusterName,
+			client:             true,
 			expectedErrorText:  "",
 		},
 		{
 			managedClusterName: "",
+			client:             true,
 			expectedErrorText:  "managedCluster 'name' cannot be empty",
+		},
+		{
+			managedClusterName: defaultManagedClusterName,
+			client:             false,
+			expectedErrorText:  "managedCluster 'apiClient' cannot be nil",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients(clients.TestClientParams{})
+		var testSettings *clients.Settings
+
+		if testCase.client {
+			testSettings = clients.GetTestClients(clients.TestClientParams{})
+		}
+
 		managedClusterBuilder := NewManagedClusterBuilder(testSettings, testCase.managedClusterName)
 
 		assert.NotNil(t, managedClusterBuilder)
