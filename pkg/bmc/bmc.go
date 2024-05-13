@@ -224,7 +224,7 @@ func (bmc *BMC) SecureBootEnable() error {
 		return fmt.Errorf("failed to enable secure boot: %w", err)
 	}
 
-	return sboot.Update()
+	return nil
 }
 
 // SecureBootDisable disables the SecureBoot feature using the BMC's RedFish API endpoint.
@@ -259,7 +259,7 @@ func (bmc *BMC) SecureBootDisable() error {
 		return fmt.Errorf("secure boot is already disabled")
 	}
 
-	sboot.SecureBootEnable = true
+	sboot.SecureBootEnable = false
 
 	err = sboot.Update()
 	if err != nil {
@@ -268,7 +268,7 @@ func (bmc *BMC) SecureBootDisable() error {
 		return fmt.Errorf("failed to disable secure boot: %w", err)
 	}
 
-	return sboot.Update()
+	return nil
 }
 
 // SystemForceReset performs a (non-graceful) forced system reset using redfish API.
