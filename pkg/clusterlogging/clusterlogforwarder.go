@@ -45,13 +45,13 @@ func NewClusterLogForwarderBuilder(
 	if name == "" {
 		glog.V(100).Infof("The name of the clusterlogforwarder is empty")
 
-		builder.errorMsg = "The clusterlogforwarder 'name' cannot be empty"
+		builder.errorMsg = "clusterlogforwarder 'name' cannot be empty"
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the clusterlogforwarder is empty")
 
-		builder.errorMsg = "The clusterlogforwarder 'namespace' cannot be empty"
+		builder.errorMsg = "clusterlogforwarder 'nsname' cannot be empty"
 	}
 
 	return builder
@@ -114,15 +114,21 @@ func (builder *ClusterLogForwarderBuilder) WithPipeline(pipelineSpec *clov1.Pipe
 }
 
 // PullClusterLogForwarder retrieves an existing clusterlogforwarder object from the cluster.
-func PullClusterLogForwarder(apiClient *clients.Settings, name, namespace string) (*clov1.ClusterLogForwarder, error) {
-	glog.V(100).Infof("Pulling existing clusterlogforwarder %s in namespace %s", name, namespace)
+func PullClusterLogForwarder(apiClient *clients.Settings, name, nsname string) (*ClusterLogForwarderBuilder, error) {
+	glog.V(100).Infof("Pulling existing clusterlogforwarder %s in nsname %s", name, nsname)
+
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is empty")
+
+		return nil, fmt.Errorf("clusterlogforwarder 'apiClient' cannot be empty")
+	}
 
 	builder := ClusterLogForwarderBuilder{
 		apiClient: apiClient,
 		Definition: &clov1.ClusterLogForwarder{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
-				Namespace: namespace,
+				Namespace: nsname,
 			},
 		},
 	}
@@ -130,20 +136,20 @@ func PullClusterLogForwarder(apiClient *clients.Settings, name, namespace string
 	if name == "" {
 		glog.V(100).Infof("The name of the clusterlogforwarder is empty")
 
-		builder.errorMsg = "clusterlogforwarder 'name' cannot be empty"
+		return nil, fmt.Errorf("clusterlogforwarder 'name' cannot be empty")
 	}
 
-	if namespace == "" {
-		glog.V(100).Infof("The namespace of the clusterlogforwarder is empty")
+	if nsname == "" {
+		glog.V(100).Infof("The nsname of the clusterlogforwarder is empty")
 
-		builder.errorMsg = "clusterlogforwarder 'namespace' cannot be empty"
+		return nil, fmt.Errorf("clusterlogforwarder 'nsname' cannot be empty")
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("clusterlogforwarder object %s does not exist in namespace %s", name, namespace)
+		return nil, fmt.Errorf("clusterlogforwarder object %s does not exist in namespace %s", name, nsname)
 	}
 
-	return builder.Object, nil
+	return &builder, nil
 }
 
 // Get returns clusterlogforwarder object if found.
