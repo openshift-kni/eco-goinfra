@@ -56,10 +56,10 @@ linters-settings:
     statements: 40
   unused:
     check-exported: true
-    go: "1.20"
+    go: "1.22"
   stylecheck:
     # Select the Go version to target. The default is '1.13'.
-    go: "1.20"
+    go: "1.22"
     # https://staticcheck.io/docs/options#checks
     checks:
       - all
