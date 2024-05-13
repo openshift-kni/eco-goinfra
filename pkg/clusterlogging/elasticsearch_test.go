@@ -13,10 +13,9 @@ import (
 )
 
 var (
-	apiGroup                            = "logging.openshift.io"
-	apiVersion                          = "v1"
-	kind                                = "Elasticsearch"
-	metaDataNameErrorMgs                = "metadata.name: Required value: name is required"
+	eskAPIGroup                         = "logging.openshift.io"
+	eskAPIVersion                       = "v1"
+	eskKind                             = "Elasticsearch"
 	defaultElasticsearchName            = "elasticsearch"
 	defaultElasticsearchNamespace       = "openshift-logging"
 	defaultElasticsearchManagementState = eskv1.ManagementState("")
@@ -359,8 +358,8 @@ func buildValidElasticsearchBuilder(apiClient *clients.Settings) *ElasticsearchB
 	elasticsearchBuilder.Definition.ResourceVersion = "999"
 	elasticsearchBuilder.Definition.Spec.ManagementState = ""
 	elasticsearchBuilder.Definition.TypeMeta = metav1.TypeMeta{
-		Kind:       kind,
-		APIVersion: fmt.Sprintf("%s/%s", apiGroup, apiVersion),
+		Kind:       eskKind,
+		APIVersion: fmt.Sprintf("%s/%s", eskAPIGroup, eskAPIVersion),
 	}
 
 	return elasticsearchBuilder
@@ -372,8 +371,8 @@ func buildInValidElasticsearchBuilder(apiClient *clients.Settings) *Elasticsearc
 	elasticsearchBuilder.Definition.ResourceVersion = "999"
 	elasticsearchBuilder.Definition.Spec.ManagementState = ""
 	elasticsearchBuilder.Definition.TypeMeta = metav1.TypeMeta{
-		Kind:       kind,
-		APIVersion: fmt.Sprintf("%s/%s", apiGroup, apiVersion),
+		Kind:       eskKind,
+		APIVersion: fmt.Sprintf("%s/%s", eskAPIGroup, eskAPIVersion),
 	}
 
 	return elasticsearchBuilder

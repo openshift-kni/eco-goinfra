@@ -479,7 +479,6 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *clov1.ClusterLogging:
 			genericClientObjects = append(genericClientObjects, v)
 		case *clov1.ClusterLogForwarder:
-
 			genericClientObjects = append(genericClientObjects, v)
 		case *eskv1.Elasticsearch:
 			genericClientObjects = append(genericClientObjects, v)
