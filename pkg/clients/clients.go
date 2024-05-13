@@ -90,8 +90,8 @@ import (
 	grafanaV4V1Alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	multinetpolicyclientv1 "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/client/clientset/versioned/typed/k8s.cni.cncf.io/v1beta1"
 	cguapiv1alpha1 "github.com/openshift-kni/cluster-group-upgrades-operator/pkg/api/clustergroupupgrades/v1alpha1"
-	machinev1beta1client "github.com/openshift/client-go/machine/clientset/versioned/typed/machine/v1beta1"
-	operatorv1alpha1 "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1"
+	machinev1 "github.com/openshift/client-go/machine/clientset/versioned/typed/machine/v1"
+	clientgooperatorv1 "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1"
 	nfdv1 "github.com/openshift/cluster-nfd-operator/api/v1"
 	lsoV1alpha1 "github.com/openshift/local-storage-operator/api/v1alpha1"
 	ocsoperatorv1 "github.com/red-hat-storage/ocs-operator/api/v1"
@@ -128,10 +128,10 @@ type Settings struct {
 	MultiNetworkPolicyClient multinetpolicyclientv1.K8sCniCncfIoV1beta1Interface
 	multinetpolicyclientv1.K8sCniCncfIoV1beta1Interface
 	PackageManifestInterface clientPkgManifestV1.OperatorsV1Interface
-	operatorv1alpha1.OperatorV1alpha1Interface
+	clientgooperatorv1.OperatorV1Interface
 	grafanaV4V1Alpha1.Grafana
 	LocalVolumeInterface lsoV1alpha1.LocalVolumeSet
-	machinev1beta1client.MachineV1beta1Interface
+	machinev1.MachineV1Interface
 	storageV1Client.StorageV1Interface
 	VeleroClient veleroClient.Interface
 	veleroV1Client.VeleroV1Interface
@@ -182,8 +182,8 @@ func New(kubeconfig string) *Settings {
 	clientSet.OperatorsV1Interface = olmv1.NewForConfigOrDie(config)
 	clientSet.PackageManifestInterface = clientPkgManifestV1.NewForConfigOrDie(config)
 	clientSet.SecurityV1Interface = v1security.NewForConfigOrDie(config)
-	clientSet.OperatorV1alpha1Interface = operatorv1alpha1.NewForConfigOrDie(config)
-	clientSet.MachineV1beta1Interface = machinev1beta1client.NewForConfigOrDie(config)
+	clientSet.OperatorV1Interface = clientgooperatorv1.NewForConfigOrDie(config)
+	clientSet.MachineV1Interface = machinev1.NewForConfigOrDie(config)
 	clientSet.K8sCniCncfIoV1beta1Interface = multinetpolicyclientv1.NewForConfigOrDie(config)
 	clientSet.StorageV1Interface = storageV1Client.NewForConfigOrDie(config)
 	clientSet.K8sClient = kubernetes.NewForConfigOrDie(config)
