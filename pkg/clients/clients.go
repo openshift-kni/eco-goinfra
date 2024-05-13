@@ -16,6 +16,7 @@ import (
 	bmhv1alpha1 "github.com/metal3-io/baremetal-operator/apis/metal3.io/v1alpha1"
 	clov1 "github.com/openshift/cluster-logging-operator/apis/logging/v1"
 	performanceV2 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/performanceprofile/v2"
+	eskv1 "github.com/openshift/elasticsearch-operator/apis/logging/v1"
 
 	clientConfigV1 "github.com/openshift/client-go/config/clientset/versioned/typed/config/v1"
 	v1security "github.com/openshift/client-go/security/clientset/versioned/typed/security/v1"
@@ -352,6 +353,10 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
+	if err := eskv1.AddToScheme(crScheme); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -474,6 +479,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *clov1.ClusterLogging:
 			genericClientObjects = append(genericClientObjects, v)
 		case *clov1.ClusterLogForwarder:
+			genericClientObjects = append(genericClientObjects, v)
+		case *eskv1.Elasticsearch:
 			genericClientObjects = append(genericClientObjects, v)
 		// ArgoCD Client Objects
 		case *argocdOperatorv1alpha1.ArgoCD:

@@ -49,6 +49,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/openshift/assisted-service/api v0.0.0
 	github.com/openshift/assisted-service/models v0.0.0
+	github.com/openshift/elasticsearch-operator v0.0.0-20220613183908-e1648e67c298
 	github.com/red-hat-storage/ocs-operator v0.4.13
 	github.com/stretchr/testify v1.9.0
 	github.com/vmware-tanzu/velero v1.12.1
@@ -162,7 +163,6 @@ require (
 	github.com/onsi/gomega v1.31.1 // indirect
 	github.com/openshift/assisted-service v1.0.10-0.20230830164851-6573b5d7021d // indirect
 	github.com/openshift/custom-resource-status v1.1.3-0.20220503160415-f2fdb4999d87 // indirect
-	github.com/openshift/elasticsearch-operator v0.0.0-20220613183908-e1648e67c298 // indirect
 	github.com/openshift/library-go v0.0.0-20231027143522-b8cd45d2d2c8 // indirect
 	github.com/operator-framework/operator-registry v1.35.0 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
