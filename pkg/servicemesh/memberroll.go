@@ -3,14 +3,17 @@ package servicemesh
 import (
 	"context"
 	"fmt"
+	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	istioV1 "maistra.io/api/core/v1"
+	istiov1 "maistra.io/api/core/v1"
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -18,14 +21,14 @@ import (
 // a serviceMeshMemberRoll definition.
 type MemberRollBuilder struct {
 	// serviceMeshMemberRoll definition, used to create the serviceMeshMemberRoll object.
-	Definition *istioV1.ServiceMeshMemberRoll
+	Definition *istiov1.ServiceMeshMemberRoll
 	// Created serviceMeshMemberRoll object.
-	Object *istioV1.ServiceMeshMemberRoll
+	Object *istiov1.ServiceMeshMemberRoll
 	// Used in functions that define or mutate serviceMeshMemberRoll definition. errorMsg is processed
 	// before the serviceMeshMemberRoll object is created.
 	errorMsg string
 	// api client to interact with the cluster.
-	apiClient *clients.Settings
+	apiClient goclient.Client
 }
 
 // NewMemberRollBuilder method creates new instance of builder.
@@ -34,38 +37,8 @@ func NewMemberRollBuilder(apiClient *clients.Settings, name, nsname string) *Mem
 		"params: name: %s, namespace: %s", name, nsname)
 
 	builder := &MemberRollBuilder{
-		apiClient: apiClient,
-		Definition: &istioV1.ServiceMeshMemberRoll{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: nsname,
-			},
-		},
-	}
-
-	if name == "" {
-		glog.V(100).Infof("The name of the serviceMeshMemberRoll is empty")
-
-		builder.errorMsg = "The serviceMeshMemberRoll 'name' cannot be empty"
-	}
-
-	if nsname == "" {
-		glog.V(100).Infof("The namespace of the serviceMeshMemberRoll is empty")
-
-		builder.errorMsg = "The serviceMeshMemberRoll 'namespace' cannot be empty"
-	}
-
-	return builder
-}
-
-// PullMemberRole retrieves an existing serviceMeshMemberRoll object from the cluster.
-func PullMemberRole(apiClient *clients.Settings, name, nsname string) (*MemberRollBuilder, error) {
-	glog.V(100).Infof(
-		"Pulling serviceMeshMemberRoll object name: %s in namespace: %s", name, nsname)
-
-	builder := MemberRollBuilder{
-		apiClient: apiClient,
-		Definition: &istioV1.ServiceMeshMemberRoll{
+		apiClient: apiClient.Client,
+		Definition: &istiov1.ServiceMeshMemberRoll{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: nsname,
@@ -85,6 +58,42 @@ func PullMemberRole(apiClient *clients.Settings, name, nsname string) (*MemberRo
 		builder.errorMsg = "serviceMeshMemberRoll 'nsname' cannot be empty"
 	}
 
+	return builder
+}
+
+// PullMemberRoll retrieves an existing serviceMeshMemberRoll object from the cluster.
+func PullMemberRoll(apiClient *clients.Settings, name, nsname string) (*MemberRollBuilder, error) {
+	glog.V(100).Infof(
+		"Pulling serviceMeshMemberRoll object name: %s in namespace: %s", name, nsname)
+
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is empty")
+
+		return nil, fmt.Errorf("serviceMeshMemberRoll 'apiClient' cannot be empty")
+	}
+
+	builder := MemberRollBuilder{
+		apiClient: apiClient.Client,
+		Definition: &istiov1.ServiceMeshMemberRoll{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The name of the serviceMeshMemberRoll is empty")
+
+		return nil, fmt.Errorf("serviceMeshMemberRoll 'name' cannot be empty")
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The namespace of the serviceMeshMemberRoll is empty")
+
+		return nil, fmt.Errorf("serviceMeshMemberRoll 'nsname' cannot be empty")
+	}
+
 	if !builder.Exists() {
 		return nil, fmt.Errorf("serviceMeshMemberRoll object %s does not exist in namespace %s", name, nsname)
 	}
@@ -95,7 +104,7 @@ func PullMemberRole(apiClient *clients.Settings, name, nsname string) (*MemberRo
 }
 
 // Get fetches existing serviceMeshMemberRoll from cluster.
-func (builder *MemberRollBuilder) Get() (*istioV1.ServiceMeshMemberRoll, error) {
+func (builder *MemberRollBuilder) Get() (*istiov1.ServiceMeshMemberRoll, error) {
 	if valid, err := builder.validate(); !valid {
 		return nil, err
 	}
@@ -103,7 +112,7 @@ func (builder *MemberRollBuilder) Get() (*istioV1.ServiceMeshMemberRoll, error) 
 	glog.V(100).Infof("Fetching existing serviceMeshMemberRoll with name %s under namespace %s from cluster",
 		builder.Definition.Name, builder.Definition.Namespace)
 
-	servicemeshmemberroll := &istioV1.ServiceMeshMemberRoll{}
+	servicemeshmemberroll := &istiov1.ServiceMeshMemberRoll{}
 	err := builder.apiClient.Get(context.TODO(), goclient.ObjectKey{
 		Name:      builder.Definition.Name,
 		Namespace: builder.Definition.Namespace,
@@ -213,7 +222,7 @@ func (builder *MemberRollBuilder) Exists() bool {
 	return err == nil || !k8serrors.IsNotFound(err)
 }
 
-// WithMembersList adds member list section to the ServiceMeshMemberRoleBuilder.
+// WithMembersList adds member list section to the MemberRollBuilder.
 func (builder *MemberRollBuilder) WithMembersList(membersList []string) *MemberRollBuilder {
 	glog.V(100).Infof("Adding member list %v section to the MemberRollBuilder", membersList)
 
@@ -234,6 +243,54 @@ func (builder *MemberRollBuilder) WithMembersList(membersList []string) *MemberR
 	}
 
 	return builder
+}
+
+// GetMembersList fetches memberRoll's membersList.
+func (builder *MemberRollBuilder) GetMembersList() (*[]string, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
+	glog.V(100).Infof("Getting memberRoll %s in namespace %s membersList configuration",
+		builder.Definition.Name, builder.Definition.Namespace)
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("memberRoll object %s does not exist in namespace %s",
+			builder.Definition.Name, builder.Definition.Namespace)
+	}
+
+	return &builder.Object.Spec.Members, nil
+}
+
+// IsReady check if the ServiceMesh MemberRoll is Ready.
+func (builder *MemberRollBuilder) IsReady(timeout time.Duration) (bool, error) {
+	if valid, err := builder.validate(); !valid {
+		return false, err
+	}
+
+	err := wait.PollUntilContextTimeout(
+		context.TODO(), time.Second, timeout, true, func(ctx context.Context) (bool, error) {
+			if !builder.Exists() {
+				return false, nil
+			}
+
+			for _, condition := range builder.Object.Status.Conditions {
+				if condition.Type == istiov1.ConditionTypeMemberRollReady {
+					if condition.Status == corev1.ConditionTrue {
+						return true, nil
+					}
+				}
+			}
+
+			return false, nil
+		})
+
+	if err != nil {
+		return false, fmt.Errorf("the Ready condition did not reached for the Service Mesh MemberRoll %s in "+
+			"namespace %s during %v; %v", builder.Definition.Name, builder.Definition.Namespace, timeout, err)
+	}
+
+	return true, nil
 }
 
 // validate will check that the builder and builder definition are properly initialized before

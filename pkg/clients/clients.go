@@ -90,6 +90,8 @@ import (
 	fakeRuntimeClient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	operatorv1 "github.com/openshift/api/operator/v1"
+	istiov1 "maistra.io/api/core/v1"
+	istiov2 "maistra.io/api/core/v2"
 
 	nvidiagpuv1 "github.com/NVIDIA/gpu-operator/api/v1"
 	grafanaV4V1Alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
@@ -366,6 +368,14 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
+	if err := istiov1.AddToScheme(crScheme); err != nil {
+		return err
+	}
+
+	if err := istiov2.AddToScheme(crScheme); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -484,6 +494,10 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *cguapiv1alpha1.PreCachingConfig:
 			genericClientObjects = append(genericClientObjects, v)
 		case *ocsoperatorv1.StorageCluster:
+			genericClientObjects = append(genericClientObjects, v)
+		case *istiov1.ServiceMeshMemberRoll:
+			genericClientObjects = append(genericClientObjects, v)
+		case *istiov2.ServiceMeshControlPlane:
 			genericClientObjects = append(genericClientObjects, v)
 		case *clov1.ClusterLogging:
 			genericClientObjects = append(genericClientObjects, v)

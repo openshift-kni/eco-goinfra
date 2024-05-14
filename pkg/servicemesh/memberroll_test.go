@@ -3,6 +3,7 @@ package servicemesh
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
@@ -19,6 +20,20 @@ var (
 	defaultServiceMeshNamespace = "istio-system"
 	defaultMembersList          = []string(nil)
 	newMembersList              = []string{"test-ns1", "test-ns2"}
+	readyCondition              = istiov1.ServiceMeshMemberRollCondition{
+		Type:               "Ready",
+		Status:             "True",
+		LastTransitionTime: metav1.Time{Time: time.Now()},
+		Reason:             "Configured",
+		Message:            "All namespaces have been configured successfully",
+	}
+	notReadyCondition = istiov1.ServiceMeshMemberRollCondition{
+		Type:               "Ready",
+		Status:             "False",
+		LastTransitionTime: metav1.Time{Time: time.Now()},
+		Reason:             "ErrSMCPMissing",
+		Message:            "No ServiceMeshControlPlane exists in the namespace",
+	}
 )
 
 func TestPullMemberRoll(t *testing.T) {
@@ -144,7 +159,7 @@ func TestNewMemberRollBuilder(t *testing.T) {
 	}
 }
 
-func TestMemberRollExist(t *testing.T) {
+func TestMemberRollExists(t *testing.T) {
 	testCases := []struct {
 		testMemberRoll *MemberRollBuilder
 		expectedStatus bool
@@ -292,7 +307,7 @@ func TestMemberRollUpdate(t *testing.T) {
 	}
 }
 
-func TestWithMembers(t *testing.T) {
+func TestMemberRollWithMembersList(t *testing.T) {
 	testCases := []struct {
 		testMembers       []string
 		expectedError     bool
@@ -324,6 +339,76 @@ func TestWithMembers(t *testing.T) {
 			assert.Equal(t, testCase.testMembers, result.Definition.Spec.Members)
 		}
 	}
+}
+
+func TestMemberRollGetMembersList(t *testing.T) {
+	testCases := []struct {
+		testMemberRoll *MemberRollBuilder
+		expectedError  error
+	}{
+		{
+			testMemberRoll: buildValidMemberRollBuilder(buildMemberRollClientWithDummyObject()),
+			expectedError:  nil,
+		},
+		{
+			testMemberRoll: buildValidMemberRollBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:  fmt.Errorf("memberRoll object default does not exist in namespace istio-system"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		currentMemberRollMembersList, err := testCase.testMemberRoll.GetMembersList()
+
+		if testCase.expectedError == nil {
+			assert.Equal(t, *currentMemberRollMembersList, testCase.testMemberRoll.Object.Spec.Members)
+		} else {
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
+		}
+	}
+}
+
+func TestMemberRollIsReady(t *testing.T) {
+	testCases := []struct {
+		testMemberRoll *MemberRollBuilder
+		testCondition  bool
+		expectedError  error
+	}{
+		{
+			testMemberRoll: buildValidMemberRollBuilderWithCondition(buildMemberRollClientWithDummyObject(),
+				readyCondition),
+			expectedError: nil,
+		},
+		{
+			testMemberRoll: buildValidMemberRollBuilderWithCondition(buildMemberRollClientWithDummyObject(),
+				notReadyCondition),
+			expectedError: fmt.Errorf("the Ready condition did not reached for the Service Mesh MemberRoll " +
+				"default in namespace istio-system during 2s; context deadline exceeded"),
+		},
+		{
+			testMemberRoll: buildValidMemberRollBuilderWithCondition(clients.GetTestClients(clients.TestClientParams{}),
+				readyCondition),
+			expectedError: fmt.Errorf("the Ready condition did not reached for the Service Mesh MemberRoll " +
+				"default in namespace istio-system during 2s; context deadline exceeded"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		isReadyResult, err := testCase.testMemberRoll.IsReady(2 * time.Second)
+
+		if testCase.expectedError == nil {
+			assert.Equal(t, testCase.testCondition, isReadyResult)
+		} else {
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
+		}
+	}
+}
+
+func buildValidMemberRollBuilderWithCondition(apiClient *clients.Settings,
+	condition istiov1.ServiceMeshMemberRollCondition) *MemberRollBuilder {
+	memberRollBuilder := buildValidMemberRollBuilder(apiClient)
+	memberRollBuilder.Definition.Status.Conditions = []istiov1.ServiceMeshMemberRollCondition{condition}
+
+	return memberRollBuilder
 }
 
 func buildValidMemberRollBuilder(apiClient *clients.Settings) *MemberRollBuilder {
