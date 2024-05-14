@@ -96,6 +96,59 @@ exit status 1
 ```
 Please refer to the [secret pkg](./pkg/secret/secret.go)'s use of the validate method for more information.
 
+### BMC Package
+The BMC package can be used to access the BMC's Redfish API, run BMC's CLI commands or getting the systems' serial console. Credentials for both Redfish and SSH user, the SSH port and timeouts need to be passed as parameters of the New() method. E.g.
+
+```
+redfishUser := bmc.User{Name: "redfishuser1", Password: "redfishpass1"}
+sshUser := bmc.User{Name: "sshuser1", Password: "sshpass1"}
+timeOuts := bmc.TimeOuts{Redfish: 10*time.Second, SSH: 10*time.Second}
+
+bmc, err := bmc.New("1.2.3.4", redfishUser, sshUser, 22, timeOuts)
+```
+
+You can check an example program for the BMC package [here](usage/bmc/bmc.go).
+
+#### BMC's Redfish API
+The access to BMC's Redfish API is done by methods that encapsulate the underlaying HTTP calls made by the external gofish library. The redfish system index is defaulted to 0, but it can be changed with `SetSystemIndex()`:
+```
+const systemIndex = 3
+err = bmc.SetSystemIndex(systemIndex)
+if err != nil {
+    ...
+}
+
+manufacturer, err := bmc.SystemManufacturer()
+if err != nil {
+    ...
+}
+
+fmt.Printf("System %d's manufacturer: %v", systemIndex, manufacturer)
+
+```
+
+#### BMC's CLI
+The method `RunCLICommand` has been implemented to run CLI commands.
+```
+func (bmc *BMC) RunCLICommand(cmd string, combineOutput bool, timeout time.Duration) stdout string, stderr string, err error)
+```
+This method is not interactive: it blocks the caller until the command ends, copying its output into stdout and stderr strings.
+
+#### Serial Console
+The method `OpenSerialConsole` can be used to get the systems's serial console, which is tunneled in the an underlaying SSH session.
+```
+func (bmc *BMC) OpenSerialConsole(openConsoleCliCmd string) (io.Reader, io.WriteCloser, error)
+```
+The user gets a (piped) reader and writer interfaces in order to read the output or write custom input (like CLI commands) in a interactive fashion.
+A use case for this is a test case that needs to wait for some pattern to appear in the system's serial console after rebooting the system.
+
+The `openConsoleCliCmd` is the command that will be sent to the BMC's (SSH'd) CLI to open the serial console. In case the user doesn't know the command,
+it can be left empty. In that case, there's a best effort mechanism that will try to guess the CLI command based on the system's manufacturer, which will
+be internally retrieved using the Redfish API.
+
+It's important to close the serial console using the method `bmc.CloseSerialConsole()`, which closes the underlying SSH session. Otherwise, BMC's can reach
+the maximum number of concurrent SSH sessions making other (SSH'd CLI) commands to fail. See an example program [here](usage/bmc/bmc.go).
+
 # eco-goinfra - How to contribute
 
 The project uses a development method - forking workflow
