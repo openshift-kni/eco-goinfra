@@ -168,9 +168,13 @@ func (certificate *Certificate) UnmarshalJSON(b []byte) error {
 		Oem           json.RawMessage
 	}
 	type actions struct {
-		RekeyCertificate common.ActionTarget `json:"#Certificate.Rekey"`
-		RenewCertificate common.ActionTarget `json:"#Certificate.Renew"`
-		Oem              json.RawMessage     // OEM actions will be stored here
+		RekeyCertificate struct {
+			Target string
+		} `json:"#Certificate.Rekey"`
+		RenewCertificate struct {
+			Target string
+		} `json:"#Certificate.Renew"`
+		Oem json.RawMessage // OEM actions will be stored here
 	}
 	var t struct {
 		temp
@@ -202,7 +206,7 @@ func GetCertificate(c common.Client, uri string) (*Certificate, error) {
 }
 
 // ListReferencedCertificates gets the Certificates collection.
-func ListReferencedCertificates(c common.Client, link string) ([]*Certificate, error) {
+func ListReferencedCertificates(c common.Client, link string) ([]*Certificate, error) { //nolint:dupl
 	var result []*Certificate
 	if link == "" {
 		return result, nil

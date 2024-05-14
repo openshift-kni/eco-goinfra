@@ -13,15 +13,11 @@ import (
 
 // VLAN shall contain any attributes of a Virtual LAN.
 type VLAN struct {
-	// Tagged shall indicate whether this VLAN is tagged or untagged for this interface.
-	Tagged bool
 	// VLANEnable is used to indicate if this VLAN is enabled for this
 	// interface.
 	VLANEnable bool
 	// VLANID is used to indicate the VLAN identifier for this VLAN.
 	VLANID int16 `json:"VLANId"`
-	// VLANPriority shall contain the priority for this VLAN (0-7).
-	VLANPriority int
 }
 
 // VLanNetworkInterface shall contain any attributes of a Virtual LAN.
@@ -39,8 +35,6 @@ type VLanNetworkInterface struct {
 	VLANEnable bool
 	// VLANID is used to indicate the VLAN identifier for this VLAN.
 	VLANID int16 `json:"VLANId"`
-	// VLANPriority shall contain the priority for this VLAN (0-7).
-	VLANPriority int
 	// rawData holds the original serialized JSON so we can compare updates.
 	rawData []byte
 }
@@ -78,7 +72,6 @@ func (vlannetworkinterface *VLanNetworkInterface) Update() error {
 	readWriteFields := []string{
 		"VLANEnable",
 		"VLANId",
-		"VLANPriority",
 	}
 
 	originalElement := reflect.ValueOf(original).Elem()
@@ -95,7 +88,7 @@ func GetVLanNetworkInterface(c common.Client, uri string) (*VLanNetworkInterface
 
 // ListReferencedVLanNetworkInterfaces gets the collection of VLanNetworkInterface from
 // a provided reference.
-func ListReferencedVLanNetworkInterfaces(c common.Client, link string) ([]*VLanNetworkInterface, error) {
+func ListReferencedVLanNetworkInterfaces(c common.Client, link string) ([]*VLanNetworkInterface, error) { //nolint:dupl
 	var result []*VLanNetworkInterface
 	if link == "" {
 		return result, nil

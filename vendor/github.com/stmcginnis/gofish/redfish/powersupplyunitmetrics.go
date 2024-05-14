@@ -84,8 +84,10 @@ func (metrics *PowerSupplyUnitMetrics) UnmarshalJSON(b []byte) error {
 	type temp PowerSupplyUnitMetrics
 
 	type actions struct {
-		ResetMetrics common.ActionTarget `json:"#PowerSupplyMetrics.ResetMetrics"`
-		Oem          json.RawMessage     // OEM actions will be stored here
+		ResetMetrics struct {
+			Target string
+		} `json:"#PowerSupplyMetrics.ResetMetrics"`
+		Oem json.RawMessage // OEM actions will be stored here
 	}
 	var t struct {
 		temp
