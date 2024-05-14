@@ -51,7 +51,7 @@ require (
 	github.com/openshift/assisted-service/models v0.0.0
 	github.com/openshift/elasticsearch-operator v0.0.0-20220613183908-e1648e67c298
 	github.com/red-hat-storage/ocs-operator v0.4.13
-	github.com/stmcginnis/gofish v0.17.0
+	github.com/stmcginnis/gofish v0.15.0
 	github.com/stretchr/testify v1.9.0
 	github.com/vmware-tanzu/velero v1.12.1
 	golang.org/x/crypto v0.22.0

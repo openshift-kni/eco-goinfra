@@ -21,7 +21,7 @@ func GetStorageSystem(c common.Client, uri string) (*StorageSystem, error) {
 }
 
 // ListReferencedStorageSystems gets the collection of StorageSystems.
-func ListReferencedStorageSystems(c common.Client, link string) ([]*StorageSystem, error) {
+func ListReferencedStorageSystems(c common.Client, link string) ([]*StorageSystem, error) { //nolint:dupl
 	var result []*StorageSystem
 	if link == "" {
 		return result, nil

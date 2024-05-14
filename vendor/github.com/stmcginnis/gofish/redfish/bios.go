@@ -56,8 +56,12 @@ type Bios struct {
 func (bios *Bios) UnmarshalJSON(b []byte) error {
 	type temp Bios
 	type Actions struct {
-		ChangePassword common.ActionTarget `json:"#Bios.ChangePassword"`
-		ResetBios      common.ActionTarget `json:"#Bios.ResetBios"`
+		ChangePassword struct {
+			Target string
+		} `json:"#Bios.ChangePassword"`
+		ResetBios struct {
+			Target string
+		} `json:"#Bios.ResetBios"`
 	}
 	type Links struct {
 		ActiveSoftwareImage struct {
@@ -104,7 +108,7 @@ func GetBios(c common.Client, uri string) (*Bios, error) {
 }
 
 // ListReferencedBioss gets the collection of Bios from a provided reference.
-func ListReferencedBioss(c common.Client, link string) ([]*Bios, error) {
+func ListReferencedBioss(c common.Client, link string) ([]*Bios, error) { //nolint:dupl
 	var result []*Bios
 	if link == "" {
 		return result, nil

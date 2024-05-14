@@ -164,7 +164,7 @@ func GetFileShare(c common.Client, uri string) (*FileShare, error) {
 
 // ListReferencedFileShares gets the collection of FileShare from a provided
 // reference.
-func ListReferencedFileShares(c common.Client, link string) ([]*FileShare, error) {
+func ListReferencedFileShares(c common.Client, link string) ([]*FileShare, error) { //nolint:dupl
 	var result []*FileShare
 	if link == "" {
 		return result, nil
