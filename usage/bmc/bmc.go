@@ -17,7 +17,7 @@ var (
 	hostFlag        *string        = flag.String("host", "", "RedFish host name/ip")
 	sshUserFlag     *string        = flag.String("sshuser", "", "SSH user's name")
 	sshPassFlag     *string        = flag.String("sshpass", "", "SSH user's password")
-	sshPortFlag     *int           = flag.Int("sshport", 22, "SSH port")
+	sshPortFlag     *uint          = flag.Uint("sshport", 22, "SSH port")
 	redfishUserFlag *string        = flag.String("redfishuser", "", "Redfish user's name")
 	redfishPassFlag *string        = flag.String("redfishpass", "", "Redfish user's password")
 	timeoutFlag     *time.Duration = flag.Duration("timeout", 0, "Timeout (1s, 1m30s, ...)")
@@ -110,7 +110,7 @@ func main() {
 
 	fmt.Printf("Getting redfish information from host %s, timeouts: %+v\n", *hostFlag, timeOuts)
 
-	bmc, err := bmc.New(*hostFlag, redfishUser, sshUser, *sshPortFlag, timeOuts)
+	bmc, err := bmc.New(*hostFlag, redfishUser, sshUser, uint16(*sshPortFlag), timeOuts)
 	if err != nil {
 		fmt.Printf("Failed to create BMC struct: %v\n", err)
 		os.Exit(1)

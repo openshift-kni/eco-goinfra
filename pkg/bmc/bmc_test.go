@@ -152,7 +152,7 @@ func TestBMC_New(t *testing.T) {
 		host           string
 		redfishUser    User
 		sshUser        User
-		sshPort        int
+		sshPort        uint16
 		tiemeouts      TimeOuts
 		expectedErrMsg string
 	}{

@@ -56,7 +56,7 @@ type BMC struct {
 	host        string
 	redfishUser User
 	sshUser     User
-	sshPort     int
+	sshPort     uint16
 	systemIndex int
 
 	timeOuts TimeOuts
@@ -66,7 +66,7 @@ type BMC struct {
 
 // New returns a new BMC struct. The default system index to be used in redfish requests is 0.
 // Use SetSystemIndex to modify it.
-func New(host string, redfishUser, sshUser User, sshPort int, timeOuts TimeOuts) (*BMC, error) {
+func New(host string, redfishUser, sshUser User, sshPort uint16, timeOuts TimeOuts) (*BMC, error) {
 	glog.V(100).Infof("Initializing new BMC structure with the following params: %s, %v, %v, %v (system index = 0)",
 		host, redfishUser, sshUser, timeOuts)
 
@@ -473,7 +473,11 @@ func (bmc *BMC) RunCLICommand(cmd string, combineOutput bool, timeout time.Durat
 // provided, it will be sent to the BMC's cli. Otherwise, a best effort will
 // be made to run the appropriate cli command based on the system manufacturer.
 func (bmc *BMC) OpenSerialConsole(openConsoleCliCmd string) (io.Reader, io.WriteCloser, error) {
+	glog.V(100).Infof("Opening serial console.")
+
 	if bmc.sshSessionForSerialConsole != nil {
+		glog.V(100).Infof("There is already a serial console opened for this BMC. Use OpenSerialConsole() first.")
+
 		return nil, nil, fmt.Errorf("there is already a serial console opened for this BMC")
 	}
 
@@ -483,23 +487,31 @@ func (bmc *BMC) OpenSerialConsole(openConsoleCliCmd string) (io.Reader, io.Write
 		// manufacturer.
 		manufacturer, err := bmc.SystemManufacturer()
 		if err != nil {
+			glog.V(100).Infof("Failed to get redifsh system manufacturer: %v", err)
+
 			return nil, nil, fmt.Errorf("failed to get redfish system manufacturer: %w", err)
 		}
 
 		var found bool
 		if cliCmd, found = cliCmdSerialConsole[manufacturer]; !found {
+			glog.V(100).Infof("CLI command to get serial console not found for manufacturer %v", manufacturer)
+
 			return nil, nil, fmt.Errorf("cli command to get serial console not found for manufacturer %v", manufacturer)
 		}
 	}
 
 	sshSession, err := bmc.CreateCLISSHSession()
 	if err != nil {
+		glog.V(100).Infof("Failed to create underlying ssh session: %v", err)
+
 		return nil, nil, err
 	}
 
 	// Pipes need to be retrieved before session.Start()
 	reader, err := sshSession.StdoutPipe()
 	if err != nil {
+		glog.V(100).Infof("Failed to get stdout pipe from ssh session: %v", err)
+
 		_ = sshSession.Close()
 
 		return nil, nil, fmt.Errorf("failed to get stdout pipe from ssh session: %w", err)
@@ -507,6 +519,8 @@ func (bmc *BMC) OpenSerialConsole(openConsoleCliCmd string) (io.Reader, io.Write
 
 	writer, err := sshSession.StdinPipe()
 	if err != nil {
+		glog.V(100).Infof("Failed to get stdin pipe from ssh session: %v", err)
+
 		_ = sshSession.Close()
 
 		return nil, nil, fmt.Errorf("failed to get stdin pipe from ssh session: %w", err)
@@ -514,6 +528,8 @@ func (bmc *BMC) OpenSerialConsole(openConsoleCliCmd string) (io.Reader, io.Write
 
 	err = sshSession.Start(cliCmd)
 	if err != nil {
+		glog.V(100).Infof("Failed to start CLI command %q: %v", cliCmd, err)
+
 		_ = sshSession.Close()
 
 		return nil, nil, fmt.Errorf("failed to start serial console with cli command %q: %w", cliCmd, err)
@@ -528,12 +544,18 @@ func (bmc *BMC) OpenSerialConsole(openConsoleCliCmd string) (io.Reader, io.Write
 
 // CloseSerialConsole closes the serial console's underlying ssh session.
 func (bmc *BMC) CloseSerialConsole() error {
+	glog.V(100).Infof("Closing serial console.")
+
 	if bmc.sshSessionForSerialConsole == nil {
+		glog.V(100).Infof("No underlying ssh session found. Please use OpenSerialConsole() first.")
+
 		return fmt.Errorf("no underlying ssh session found")
 	}
 
 	err := bmc.sshSessionForSerialConsole.Close()
 	if err != nil {
+		glog.V(100).Infof("Failed to close underlying ssh session: %v", err)
+
 		return fmt.Errorf("failed to close underlying ssh session: %w", err)
 	}
 
