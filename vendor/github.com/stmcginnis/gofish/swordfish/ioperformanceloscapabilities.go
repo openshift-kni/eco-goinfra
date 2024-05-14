@@ -124,7 +124,7 @@ func GetIOPerformanceLoSCapabilities(c common.Client, uri string) (*IOPerformanc
 
 // ListReferencedIOPerformanceLoSCapabilitiess gets the collection of IOPerformanceLoSCapabilities from
 // a provided reference.
-func ListReferencedIOPerformanceLoSCapabilitiess(c common.Client, link string) ([]*IOPerformanceLoSCapabilities, error) {
+func ListReferencedIOPerformanceLoSCapabilitiess(c common.Client, link string) ([]*IOPerformanceLoSCapabilities, error) { //nolint:dupl
 	var result []*IOPerformanceLoSCapabilities
 	if link == "" {
 		return result, nil

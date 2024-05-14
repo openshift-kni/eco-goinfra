@@ -12,6 +12,8 @@ import (
 
 // Device shall describe a storage device visible to SimpleStorage.
 type Device struct {
+	// Name shall be a user-friendly name for the device.
+	Name string
 	// CapacityBytes shall represent the size (in bytes) of the Storage Device.
 	CapacityBytes int64
 	// Manufacturer shall indicate the name of the manufacturer of this storage device.
@@ -19,11 +21,6 @@ type Device struct {
 	// Model shall indicate the model information as provided by the manufacturer
 	// of this storage device.
 	Model string
-	// Name shall be a user-friendly name for the device.
-	Name string
-	// Oem shall contain the OEM extensions. All values for properties contained in this object shall conform to the
-	// Redfish Specification-described requirements.
-	OEM json.RawMessage `json:"Oem"`
 	// Status shall contain any status or health properties
 	// of the resource.
 	Status common.Status
@@ -38,6 +35,9 @@ type SimpleStorage struct {
 	ODataContext string `json:"@odata.context"`
 	// ODataType is the odata type.
 	ODataType string `json:"@odata.type"`
+	// Actions is The Actions property shall contain the available actions
+	// for this resource.
+	Actions string
 	// Description provides a description of this resource.
 	Description string
 	// Devices shall contain a list of storage devices
@@ -49,13 +49,9 @@ type SimpleStorage struct {
 	// UefiDevicePath is used to identify and locate the specific storage
 	// controller.
 	UefiDevicePath string
-
 	// chassis shall be a reference to a resource of type Chassis that
 	// represent the physical container associated with this Simple Storage.
 	chassis string
-	// Storage shall contain a link to a Resource of type Storage that represents the same storage subsystem as this
-	// Resource.
-	storage string
 }
 
 // UnmarshalJSON unmarshals a SimpleStorage object from the raw JSON.
@@ -64,8 +60,9 @@ func (simplestorage *SimpleStorage) UnmarshalJSON(b []byte) error {
 	var t struct {
 		temp
 		Links struct {
+			// Chassis shall be a reference to a resource of type Chassis that
+			// represent the physical container associated with this Simple Storage.
 			Chassis common.Link
-			Storage common.Link
 		}
 	}
 
@@ -77,7 +74,6 @@ func (simplestorage *SimpleStorage) UnmarshalJSON(b []byte) error {
 	// Extract the links to other entities for later
 	*simplestorage = SimpleStorage(t.temp)
 	simplestorage.chassis = t.Links.Chassis.String()
-	simplestorage.storage = t.Links.Storage.String()
 
 	return nil
 }
@@ -90,7 +86,7 @@ func GetSimpleStorage(c common.Client, uri string) (*SimpleStorage, error) {
 
 // ListReferencedSimpleStorages gets the collection of SimpleStorage from
 // a provided reference.
-func ListReferencedSimpleStorages(c common.Client, link string) ([]*SimpleStorage, error) {
+func ListReferencedSimpleStorages(c common.Client, link string) ([]*SimpleStorage, error) { //nolint:dupl
 	var result []*SimpleStorage
 	if link == "" {
 		return result, nil
@@ -139,13 +135,4 @@ func (simplestorage *SimpleStorage) Chassis() (*Chassis, error) {
 	}
 
 	return GetChassis(simplestorage.GetClient(), simplestorage.chassis)
-}
-
-// Storage gets the chassis containing this storage service.
-func (simplestorage *SimpleStorage) Storage() (*Storage, error) {
-	if simplestorage.storage == "" {
-		return nil, nil
-	}
-
-	return GetStorage(simplestorage.GetClient(), simplestorage.storage)
 }

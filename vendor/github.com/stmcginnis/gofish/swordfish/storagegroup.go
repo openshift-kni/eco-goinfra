@@ -147,8 +147,12 @@ func (storagegroup *StorageGroup) UnmarshalJSON(b []byte) error {
 		ParentStorageGroupsCount int `json:"ParentStorageGroups@odata.count"`
 	}
 	type actions struct {
-		ExposeVolumes common.ActionTarget `json:"#StorageGroup.ExposeVolumes"`
-		HideVolumes   common.ActionTarget `json:"#StorageGroup.HideVolumes"`
+		ExposeVolumes struct {
+			Target string
+		} `json:"#StorageGroup.ExposeVolumes"`
+		HideVolumes struct {
+			Target string
+		} `json:"#StorageGroup.HideVolumes"`
 	}
 	var t struct {
 		temp
@@ -210,7 +214,7 @@ func GetStorageGroup(c common.Client, uri string) (*StorageGroup, error) {
 
 // ListReferencedStorageGroups gets the collection of StorageGroup from
 // a provided reference.
-func ListReferencedStorageGroups(c common.Client, link string) ([]*StorageGroup, error) {
+func ListReferencedStorageGroups(c common.Client, link string) ([]*StorageGroup, error) { //nolint:dupl
 	var result []*StorageGroup
 	if link == "" {
 		return result, nil

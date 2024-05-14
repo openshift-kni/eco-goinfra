@@ -3,8 +3,6 @@
 #
 
 PKGS := $(shell go list ./... | grep -v example | grep -v tools)
-ROOT_DIR := $(shell git rev-parse --show-toplevel)
-GOLANGCI_VERSION := "v1.57"
 
 all: lint build test
 
@@ -15,11 +13,7 @@ build:
 	go build
 
 lint:
-	docker run --rm \
-                -v "$(ROOT_DIR)":/src \
-                -w /src \
-                "golangci/golangci-lint:$(GOLANGCI_VERSION)" \
-                golangci-lint run -v
+	golangci-lint run -v
 
 clean:
 	go clean

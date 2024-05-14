@@ -6,7 +6,7 @@ package redfish
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"reflect"
 
 	"github.com/stmcginnis/gofish/common"
@@ -400,10 +400,16 @@ func (circuit *Circuit) UnmarshalJSON(b []byte) error {
 		SourceCircuit             common.Link
 	}
 	type actions struct {
-		BreakerControl common.ActionTarget `json:"#Circuit.BreakerControl"`
-		PowerControl   common.ActionTarget `json:"#Circuit.PowerControl"`
-		ResetMetrics   common.ActionTarget `json:"#Circuit.ResetMetrics"`
-		Oem            json.RawMessage     // OEM actions will be stored here
+		BreakerControl struct {
+			Target string
+		} `json:"#Circuit.BreakerControl"`
+		PowerControl struct {
+			Target string
+		} `json:"#Circuit.PowerControl"`
+		ResetMetrics struct {
+			Target string
+		} `json:"#Circuit.ResetMetrics"`
+		Oem json.RawMessage // OEM actions will be stored here
 	}
 	var t struct {
 		temp
@@ -481,7 +487,7 @@ func (circuit *Circuit) Update() error {
 // This action shall control the state of the circuit breaker or over-current protection device.
 func (circuit *Circuit) BreakerControl(powerState ActionPowerState) error {
 	if circuit.breakerControlTarget == "" {
-		return errors.New("BreakerControl is not supported")
+		return fmt.Errorf("BreakerControl is not supported") //nolint:golint
 	}
 
 	t := struct {
@@ -494,7 +500,7 @@ func (circuit *Circuit) BreakerControl(powerState ActionPowerState) error {
 // This action shall control the power state of the circuit.
 func (circuit *Circuit) PowerControl(powerState ActionPowerState) error {
 	if circuit.powerControlTarget == "" {
-		return errors.New("PowerControl is not supported")
+		return fmt.Errorf("PowerControl is not supported") //nolint:golint
 	}
 
 	t := struct {
@@ -507,7 +513,7 @@ func (circuit *Circuit) PowerControl(powerState ActionPowerState) error {
 // This action shall reset any time intervals or counted values for this circuit.
 func (circuit *Circuit) ResetMetrics() error {
 	if circuit.resetMetricsTarget == "" {
-		return errors.New("ResetMetrics is not supported")
+		return fmt.Errorf("ResetMetrics is not supported") //nolint:golint
 	}
 
 	return circuit.Post(circuit.resetMetricsTarget, nil)
@@ -515,7 +521,7 @@ func (circuit *Circuit) ResetMetrics() error {
 
 // ListReferencedCircuits gets the collection of Circuits from
 // a provided reference.
-func ListReferencedCircuits(c common.Client, link string) ([]*Circuit, error) {
+func ListReferencedCircuits(c common.Client, link string) ([]*Circuit, error) { //nolint:dupl
 	var result []*Circuit
 	if link == "" {
 		return result, nil
