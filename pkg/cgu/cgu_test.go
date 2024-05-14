@@ -122,41 +122,59 @@ func TestNewCguBuilder(t *testing.T) {
 		cguName           string
 		cguNamespace      string
 		cguMaxConcurrency int
-		expectedErrorText string
 		client            bool
+		expectedErrorText string
 	}{
 		{
 			cguName:           "test1",
 			cguNamespace:      "test-namespace",
 			cguMaxConcurrency: 1,
+			client:            true,
 			expectedErrorText: "",
 		},
 		{
 			cguName:           "",
 			cguNamespace:      "test-namespace",
 			cguMaxConcurrency: 1,
+			client:            true,
 			expectedErrorText: "CGU 'name' cannot be empty",
 		},
 		{
 			cguName:           "test1",
 			cguNamespace:      "",
 			cguMaxConcurrency: 1,
+			client:            true,
 			expectedErrorText: "CGU 'nsname' cannot be empty",
 		},
 		{
 			cguName:           "test1",
 			cguNamespace:      "test-namespace",
 			cguMaxConcurrency: 0,
+			client:            true,
 			expectedErrorText: "CGU 'maxConcurrency' cannot be less than 1",
 		},
+		{
+			cguName:           "test1",
+			cguNamespace:      "test-namespace",
+			cguMaxConcurrency: 1,
+			client:            false,
+			expectedErrorText: "CGU 'apiClient' cannot be nil",
+		},
 	}
+
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients(clients.TestClientParams{})
+		var testSettings *clients.Settings
+
+		if testCase.client {
+			testSettings = clients.GetTestClients(clients.TestClientParams{})
+		}
+
 		testCguStructure := generateCguBuilder(
 			testSettings,
 			testCase.cguName,
 			testCase.cguNamespace,
 			testCase.cguMaxConcurrency)
+
 		assert.NotNil(t, testCguStructure)
 		assert.Equal(t, testCguStructure.errorMsg, testCase.expectedErrorText)
 	}

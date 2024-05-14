@@ -30,20 +30,23 @@ func NewManagedClusterBuilder(apiClient *clients.Settings, name string) *Managed
 	glog.V(100).Infof(
 		"Initializing new ManagedCluster structure with the following params: name: %s", name)
 
-	if apiClient == nil {
-		glog.V(100).Info("The apiClient for the ManagedCluster is nil")
-
-		return nil
-	}
-
 	builder := &ManagedClusterBuilder{
-		apiClient: apiClient.ClusterV1Interface,
 		Definition: &clusterv1.ManagedCluster{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
 			},
 		},
 	}
+
+	if apiClient == nil {
+		glog.V(100).Info("The apiClient for the ManagedCluster is nil")
+
+		builder.errorMsg = "managedCluster 'apiClient' cannot be nil"
+
+		return builder
+	}
+
+	builder.apiClient = apiClient.ClusterV1Interface
 
 	if name == "" {
 		glog.V(100).Infof("The name of the ManagedCluster is empty")
