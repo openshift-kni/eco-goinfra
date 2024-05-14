@@ -53,11 +53,12 @@ type TimeOuts struct {
 
 // BMC is the holder struct for BMC access through redfish & ssh.
 type BMC struct {
-	host        string
-	redfishUser User
-	sshUser     User
-	sshPort     uint16
-	systemIndex int
+	host              string
+	redfishUser       User
+	sshUser           User
+	sshPort           uint16
+	systemIndex       int
+	powerControlIndex int
 
 	timeOuts TimeOuts
 
@@ -121,12 +122,13 @@ func New(host string, redfishUser, sshUser User, sshPort uint16, timeOuts TimeOu
 	}
 
 	return &BMC{
-		host:        host,
-		redfishUser: redfishUser,
-		sshUser:     sshUser,
-		sshPort:     sshPort,
-		timeOuts:    timeOuts,
-		systemIndex: 0,
+		host:              host,
+		redfishUser:       redfishUser,
+		sshUser:           sshUser,
+		sshPort:           sshPort,
+		timeOuts:          timeOuts,
+		systemIndex:       0,
+		powerControlIndex: 0,
 	}, nil
 }
 
@@ -141,6 +143,21 @@ func (bmc *BMC) SetSystemIndex(index int) error {
 	}
 
 	bmc.systemIndex = index
+
+	return nil
+}
+
+// SetPowerControlIndex sets the power control index to be used in Redfish API requests.
+func (bmc *BMC) SetPowerControlIndex(index int) error {
+	glog.V(100).Infof("Setting default Redfish Power Control Index to %d", index)
+
+	if index < 0 {
+		glog.V(100).Infof("Invalid power control index %d: must be >= 0", index)
+
+		return fmt.Errorf("invalid index %d", index)
+	}
+
+	bmc.powerControlIndex = index
 
 	return nil
 }
@@ -291,9 +308,9 @@ func (bmc *BMC) SecureBootDisable() error {
 	return nil
 }
 
-// SystemForceReset performs a (non-graceful) forced system reset using redfish API.
-func (bmc *BMC) SystemForceReset() error {
-	glog.V(100).Infof("Forcing system reset from bmc's redfish endpoint")
+// SystemResetAction performs the specified reset action against the system.
+func (bmc *BMC) SystemResetAction(action redfish.ResetType) error {
+	glog.V(100).Infof("Performing reset action %s from the bmc's redfish endpoint")
 
 	redfishClient, cancel, err := redfishConnect(
 		bmc.host,
@@ -317,55 +334,57 @@ func (bmc *BMC) SystemForceReset() error {
 		return fmt.Errorf("failed to get redfish system: %w", err)
 	}
 
-	return system.Reset(redfish.ForceRestartResetType)
+	return system.Reset(action)
 }
 
-func redfishConnect(host, user, password string, sessionTimeout time.Duration) (
-	*gofish.APIClient, context.CancelFunc, error) {
-	gofishConfig := gofish.ClientConfig{
-		Endpoint: "https://" + host,
-		Username: user,
-		Password: password,
-		Insecure: true,
+// SystemForceReset performs a (non-graceful) forced system reset using redfish API.
+func (bmc *BMC) SystemForceReset() error {
+	return bmc.SystemResetAction(redfish.ForceRestartResetType)
+}
+
+// SystemGracefulShutdown performs a graceful shutdown using the redfish API.
+func (bmc *BMC) SystemGracefulShutdown() error {
+	return bmc.SystemResetAction(redfish.GracefulShutdownResetType)
+}
+
+// SystemPowerOn powers on the system using the redfish API.
+func (bmc *BMC) SystemPowerOn() error {
+	return bmc.SystemResetAction(redfish.OnResetType)
+}
+
+// SystemPowerCycle power cycles the system using the redfish API.
+func (bmc *BMC) SystemPowerCycle() error {
+	return bmc.SystemResetAction(redfish.PowerCycleResetType)
+}
+
+// PowerUsage returns the current power usage of the chassis in watts using the redfish API. This method uses the first
+// chassis with a power link and the power control index for the BMC client.
+func (bmc *BMC) PowerUsage() (float32, error) {
+	glog.V(100).Info("Collecting current power usage from bmc's redfish endpoint")
+
+	redfishClient, cancel, err := redfishConnect(
+		bmc.host,
+		bmc.redfishUser.Name, bmc.redfishUser.Password,
+		bmc.timeOuts.Redfish)
+	if err != nil {
+		glog.V(100).Infof("Redfish connection error: %v", err)
+
+		return 0.0, fmt.Errorf("redfish connection error: %w", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), sessionTimeout)
-
-	client, err := gofish.ConnectContext(ctx, gofishConfig)
-	if err != nil {
+	defer func() {
+		redfishClient.Logout()
 		cancel()
+	}()
 
-		return nil, nil, fmt.Errorf("failed to connect to redfish endpoint: %w", err)
-	}
-
-	return client, cancel, nil
-}
-
-func redfishGetSystem(redfishClient *gofish.APIClient, index int) (*redfish.ComputerSystem, error) {
-	systems, err := redfishClient.GetService().Systems()
+	powerControl, err := redfishGetPowerControl(redfishClient, bmc.powerControlIndex)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get systems: %w", err)
+		glog.V(100).Infof("Failed to get redfish power control: %v", err)
+
+		return 0.0, fmt.Errorf("failed to get redfish power control: %w", err)
 	}
 
-	if len(systems) < index+1 {
-		return nil, fmt.Errorf("invalid system index %d (base-index=0, num systems=%d)", index, len(systems))
-	}
-
-	return systems[index], nil
-}
-
-func redfishGetSystemSecureBoot(redfishClient *gofish.APIClient, systemIndex int) (*redfish.SecureBoot, error) {
-	system, err := redfishGetSystem(redfishClient, systemIndex)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get redfish system: %w", err)
-	}
-
-	sboot, err := system.SecureBoot()
-	if err != nil {
-		return nil, err
-	}
-
-	return sboot, nil
+	return powerControl.PowerConsumedWatts, nil
 }
 
 // CreateCLISSHSession creates a ssh Session to the host.
@@ -565,4 +584,81 @@ func (bmc *BMC) CloseSerialConsole() error {
 	bmc.sshSessionForSerialConsole = nil
 
 	return nil
+}
+
+func redfishConnect(host, user, password string, sessionTimeout time.Duration) (
+	*gofish.APIClient, context.CancelFunc, error) {
+	gofishConfig := gofish.ClientConfig{
+		Endpoint: "https://" + host,
+		Username: user,
+		Password: password,
+		Insecure: true,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), sessionTimeout)
+
+	client, err := gofish.ConnectContext(ctx, gofishConfig)
+	if err != nil {
+		cancel()
+
+		return nil, nil, fmt.Errorf("failed to connect to redfish endpoint: %w", err)
+	}
+
+	return client, cancel, nil
+}
+
+func redfishGetSystem(redfishClient *gofish.APIClient, index int) (*redfish.ComputerSystem, error) {
+	systems, err := redfishClient.GetService().Systems()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get systems: %w", err)
+	}
+
+	if len(systems) < index+1 {
+		return nil, fmt.Errorf("invalid system index %d (base-index=0, num systems=%d)", index, len(systems))
+	}
+
+	return systems[index], nil
+}
+
+func redfishGetSystemSecureBoot(redfishClient *gofish.APIClient, systemIndex int) (*redfish.SecureBoot, error) {
+	system, err := redfishGetSystem(redfishClient, systemIndex)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get redfish system: %w", err)
+	}
+
+	sboot, err := system.SecureBoot()
+	if err != nil {
+		return nil, err
+	}
+
+	return sboot, nil
+}
+
+// redfishGetPowerControl gets the specified PowerControl from the first chassis with a power link from the redfish API.
+func redfishGetPowerControl(
+	redfishClient *gofish.APIClient, powerControlIndex int) (*redfish.PowerControl, error) {
+	chassisCollection, err := redfishClient.GetService().Chassis()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get chassis collection: %w", err)
+	}
+
+	for chassisIndex, chassis := range chassisCollection {
+		power, err := chassis.Power()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get power for chassis index %d: %w", chassisIndex, err)
+		}
+
+		if power == nil {
+			continue
+		}
+
+		if powerControlIndex >= len(power.PowerControl) {
+			return nil, fmt.Errorf(
+				"invalid power control index %d (base-index=0, num power control=%d)", powerControlIndex, len(power.PowerControl))
+		}
+
+		return &power.PowerControl[powerControlIndex], nil
+	}
+
+	return nil, fmt.Errorf("failed to get power control: no chassis with power link found")
 }
