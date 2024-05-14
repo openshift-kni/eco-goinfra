@@ -55,6 +55,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/vmware-tanzu/velero v1.12.1
 	golang.org/x/crypto v0.22.0
+	open-cluster-management.io/api v0.12.0
 )
 
 require (
