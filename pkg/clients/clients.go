@@ -74,6 +74,11 @@ import (
 	plumbingv1 "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/apis/k8s.cni.cncf.io/v1beta1"
 	fakeMultiNetPolicyClient "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/client/clientset/versioned/fake"
 
+	clusterClient "open-cluster-management.io/api/client/cluster/clientset/versioned"
+	clusterClientFake "open-cluster-management.io/api/client/cluster/clientset/versioned/fake"
+	clusterV1Client "open-cluster-management.io/api/client/cluster/clientset/versioned/typed/cluster/v1"
+	clusterv1 "open-cluster-management.io/api/cluster/v1"
+
 	appsv1 "k8s.io/api/apps/v1"
 	scalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -137,6 +142,8 @@ type Settings struct {
 	veleroV1Client.VeleroV1Interface
 	ClientCgu clientCgu.Interface
 	clientCguV1.RanV1alpha1Interface
+	ClusterClient clusterClient.Interface
+	clusterV1Client.ClusterV1Interface
 }
 
 // New returns a *Settings with the given kubeconfig.
@@ -191,6 +198,8 @@ func New(kubeconfig string) *Settings {
 	clientSet.VeleroV1Interface = veleroV1Client.NewForConfigOrDie(config)
 	clientSet.ClientCgu = clientCgu.NewForConfigOrDie(config)
 	clientSet.RanV1alpha1Interface = clientCguV1.NewForConfigOrDie(config)
+	clientSet.ClusterClient = clusterClient.NewForConfigOrDie(config)
+	clientSet.ClusterV1Interface = clusterV1Client.NewForConfigOrDie(config)
 	clientSet.Config = config
 
 	crScheme := runtime.NewScheme()
@@ -386,7 +395,7 @@ func GetTestClients(tcp TestClientParams) *Settings {
 	clientSet := &Settings{}
 
 	var k8sClientObjects, genericClientObjects, plumbingObjects, srIovObjects,
-		veleroClientObjects, cguObjects []runtime.Object
+		veleroClientObjects, cguObjects, ocmObjects []runtime.Object
 
 	//nolint:varnamelen
 	for _, v := range tcp.K8sMockObjects {
@@ -513,6 +522,9 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		// MultiNetworkPolicy Client Objects
 		case *plumbingv1.MultiNetworkPolicy:
 			plumbingObjects = append(plumbingObjects, v)
+		// OCM Cluster Client Objects
+		case *clusterv1.ManagedCluster:
+			ocmObjects = append(ocmObjects, v)
 		}
 	}
 
@@ -523,6 +535,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 	clientSet.NetworkingV1Interface = clientSet.K8sClient.NetworkingV1()
 	clientSet.RbacV1Interface = clientSet.K8sClient.RbacV1()
 	clientSet.ClientSrIov = clientSrIovFake.NewSimpleClientset(srIovObjects...)
+	clientSet.ClusterClient = clusterClientFake.NewSimpleClientset(ocmObjects...)
+	clientSet.ClusterV1Interface = clientSet.ClusterClient.ClusterV1()
 
 	// Assign the fake multi-networkpolicy clientset to the clientSet
 	// Note: We are not entirely sure that these functions actually work as expected.

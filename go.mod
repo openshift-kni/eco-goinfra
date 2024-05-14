@@ -54,6 +54,7 @@ require (
 	github.com/stmcginnis/gofish v0.17.0
 	github.com/stretchr/testify v1.9.0
 	github.com/vmware-tanzu/velero v1.12.1
+	open-cluster-management.io/api v0.12.0
 )
 
 require (
