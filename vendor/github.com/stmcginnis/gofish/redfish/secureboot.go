@@ -72,19 +72,18 @@ type SecureBoot struct {
 	// SecureBootMode shall contain the current Secure Boot mode, as defined in
 	// the UEFI Specification.
 	SecureBootMode SecureBootModeType
-	// resetKeysTarget is the URL to send ResetKeys requests.
-	resetKeysTarget string
 	// rawData holds the original serialized JSON so we can compare updates.
 	rawData []byte
+
+	// resetKeysTarget is the URL to send ResetKeys requests.
+	resetKeysTarget string
 }
 
 // UnmarshalJSON unmarshals a SecureBoot object from the raw JSON.
 func (secureboot *SecureBoot) UnmarshalJSON(b []byte) error {
 	type temp SecureBoot
 	type actions struct {
-		ResetKeys struct {
-			Target string
-		} `json:"#SecureBoot.ResetKeys"`
+		ResetKeys common.ActionTarget `json:"#SecureBoot.ResetKeys"`
 	}
 	var t struct {
 		temp
@@ -134,7 +133,7 @@ func GetSecureBoot(c common.Client, uri string) (*SecureBoot, error) {
 
 // ListReferencedSecureBoots gets the collection of SecureBoot from
 // a provided reference.
-func ListReferencedSecureBoots(c common.Client, link string) ([]*SecureBoot, error) { //nolint:dupl
+func ListReferencedSecureBoots(c common.Client, link string) ([]*SecureBoot, error) {
 	var result []*SecureBoot
 	if link == "" {
 		return result, nil

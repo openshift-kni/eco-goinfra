@@ -15,23 +15,37 @@ import (
 type PrivilegeType string
 
 const (
-
-	// LoginPrivilegeType Can log in to the service and read Resources.
+	// LoginPrivilegeType Can log in to the service and read resources.
 	LoginPrivilegeType PrivilegeType = "Login"
 	// ConfigureManagerPrivilegeType Can configure managers.
 	ConfigureManagerPrivilegeType PrivilegeType = "ConfigureManager"
 	// ConfigureUsersPrivilegeType Can configure users and their accounts.
 	ConfigureUsersPrivilegeType PrivilegeType = "ConfigureUsers"
-	// ConfigureSelfPrivilegeType Can change the password for the current
-	// user account and log out of their own sessions.
+	// ConfigureSelfPrivilegeType Can change the password for the current user account, log out of their own sessions,
+	// and perform operations on resources they created. Services will need to be aware of resource ownership to map
+	// this privilege to an operation from a particular user.
 	ConfigureSelfPrivilegeType PrivilegeType = "ConfigureSelf"
-	// ConfigureComponentsPrivilegeType Can configure components that this
-	// service manages.
+	// ConfigureComponentsPrivilegeType Can configure components that this service manages.
 	ConfigureComponentsPrivilegeType PrivilegeType = "ConfigureComponents"
-	// NoAuthPrivilegeType shall be used to indicate an operation does not
-	// require authentication.  This privilege shall not be used in Redfish
-	// Roles.
+	// NoAuthPrivilegeType shall be used to indicate an operation does not require authentication. This privilege shall
+	// not be used in Redfish roles.
 	NoAuthPrivilegeType PrivilegeType = "NoAuth"
+	// ConfigureCompositionInfrastructurePrivilegeType shall be used to indicate the user can view and configure
+	// composition service resources without matching the Client property in the ResourceBlock or
+	// CompositionReservation resources.
+	ConfigureCompositionInfrastructurePrivilegeType PrivilegeType = "ConfigureCompositionInfrastructure"
+	// AdministrateSystemsPrivilegeType Administrator for systems found in the systems collection. Able to manage boot
+	// configuration, keys, and certificates for systems.
+	AdministrateSystemsPrivilegeType PrivilegeType = "AdministrateSystems"
+	// OperateSystemsPrivilegeType Operator for systems found in the systems collection. Able to perform resets and
+	// configure interfaces.
+	OperateSystemsPrivilegeType PrivilegeType = "OperateSystems"
+	// AdministrateStoragePrivilegeType Administrator for storage subsystems and storage systems found in the storage
+	// collection and storage system collection respectively.
+	AdministrateStoragePrivilegeType PrivilegeType = "AdministrateStorage"
+	// OperateStorageBackupPrivilegeType Operator for storage backup functionality for storage subsystems and storage
+	// systems found in the storage collection and storage system collection respectively.
+	OperateStorageBackupPrivilegeType PrivilegeType = "OperateStorageBackup"
 )
 
 // Role represents the Redfish Role for the user account.
@@ -57,6 +71,10 @@ type Role struct {
 	// For custom Roles, some implementations may not allow writing to this
 	// property.
 	OemPrivileges []string
+	// Restricted shall indicate whether use of the role is restricted by a service as defined by the 'Restricted roles
+	// and restricted privileges' clause of the Redfish Specification. If this property is not present, the value shall
+	// be assumed to be 'false'.
+	Restricted bool
 	// RoleID shall contain the string name of the Role.
 	// This property shall contain the same value as the Id property.
 	RoleID string `json:"RoleId"`
@@ -113,7 +131,7 @@ func GetRole(c common.Client, uri string) (*Role, error) {
 
 // ListReferencedRoles gets the collection of Role from
 // a provided reference.
-func ListReferencedRoles(c common.Client, link string) ([]*Role, error) { //nolint:dupl
+func ListReferencedRoles(c common.Client, link string) ([]*Role, error) {
 	var result []*Role
 	if link == "" {
 		return result, nil
