@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	lcav1alpha1 "github.com/openshift-kni/lifecycle-agent/api/v1alpha1"
+	lcav1 "github.com/openshift-kni/lifecycle-agent/api/imagebasedupgrade/v1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -602,8 +602,8 @@ func TestImageBasedUpgradeWithStage(t *testing.T) {
 	}
 }
 
-func generateImageBasedUpgrade() *lcav1alpha1.ImageBasedUpgrade {
-	return &lcav1alpha1.ImageBasedUpgrade{
+func generateImageBasedUpgrade() *lcav1.ImageBasedUpgrade {
+	return &lcav1.ImageBasedUpgrade{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "upgrade",
 		},
@@ -621,14 +621,14 @@ func buildTestClientWithoutDummyObject() *clients.Settings {
 }
 
 func buildDummyIBU() []runtime.Object {
-	return append([]runtime.Object{}, &lcav1alpha1.ImageBasedUpgrade{
+	return append([]runtime.Object{}, &lcav1.ImageBasedUpgrade{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "upgrade",
 		},
-		Spec: lcav1alpha1.ImageBasedUpgradeSpec{
+		Spec: lcav1.ImageBasedUpgradeSpec{
 			Stage: "Idle",
 		},
-		Status: lcav1alpha1.ImageBasedUpgradeStatus{
+		Status: lcav1.ImageBasedUpgradeStatus{
 			Conditions: []metav1.Condition{
 				{
 					Type:   idle,

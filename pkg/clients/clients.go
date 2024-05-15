@@ -57,8 +57,8 @@ import (
 	nmstatev1 "github.com/nmstate/kubernetes-nmstate/api/v1"
 	nmstateV1alpha1 "github.com/nmstate/kubernetes-nmstate/api/v1alpha1"
 
-	lcasgv1alpha1 "github.com/openshift-kni/lifecycle-agent/api/seedgenerator/v1alpha1"
-	lcav1alpha1 "github.com/openshift-kni/lifecycle-agent/api/v1alpha1"
+	lcav1 "github.com/openshift-kni/lifecycle-agent/api/imagebasedupgrade/v1"
+	lcasgv1 "github.com/openshift-kni/lifecycle-agent/api/seedgenerator/v1"
 	configV1 "github.com/openshift/api/config/v1"
 	imageregistryV1 "github.com/openshift/api/imageregistry/v1"
 	routev1 "github.com/openshift/api/route/v1"
@@ -260,11 +260,11 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
-	if err := lcav1alpha1.AddToScheme(crScheme); err != nil {
+	if err := lcav1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
-	if err := lcasgv1alpha1.AddToScheme(crScheme); err != nil {
+	if err := lcasgv1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
@@ -511,9 +511,9 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *argocdtypes.Application:
 			genericClientObjects = append(genericClientObjects, v)
 		// LCA Client Objects
-		case *lcav1alpha1.ImageBasedUpgrade:
+		case *lcav1.ImageBasedUpgrade:
 			genericClientObjects = append(genericClientObjects, v)
-		case *lcasgv1alpha1.SeedGenerator:
+		case *lcasgv1.SeedGenerator:
 			genericClientObjects = append(genericClientObjects, v)
 		// Velero Client Objects
 		case *velerov1.Backup:
