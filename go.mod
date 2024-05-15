@@ -15,7 +15,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.15.0
 	github.com/openshift-kni/cluster-group-upgrades-operator v0.0.0-20240227195723-b6e045729e4d
 	github.com/openshift-kni/k8sreporter v1.0.4
-	github.com/openshift-kni/lifecycle-agent v0.0.0-20240503112747-fd03bc5fd6b7
+	github.com/openshift-kni/lifecycle-agent v0.0.0-20240514130907-854cbc8fe101
 	github.com/openshift/api v3.9.1-0.20191111211345-a27ff30ebf09+incompatible
 	github.com/openshift/client-go v0.0.1
 	github.com/openshift/cluster-logging-operator v0.0.0-20240220162552-cbb65f2dca2b // release-5.8
@@ -192,13 +192,13 @@ require (
 	go.mongodb.org/mongo-driver v1.11.1 // indirect
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	go4.org v0.0.0-20200104003542-c7e774b10ea0 // indirect
-	golang.org/x/crypto v0.22.0 // indirect
+	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/mod v0.15.0 // indirect
 	golang.org/x/oauth2 v0.15.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.19.0 // indirect
-	golang.org/x/term v0.19.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/term v0.20.0 // indirect
+	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.16.1 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
