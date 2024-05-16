@@ -394,7 +394,7 @@ func TestListPoolConfigs(t *testing.T) {
 	}
 }
 
-func TestCleanAllNonDefaultPoolConfigs(t *testing.T) {
+func TestCleanPoolConfigs(t *testing.T) {
 	testCases := []struct {
 		poolConfigs       []*PoolConfigBuilder
 		operatorNamespace string
@@ -414,7 +414,7 @@ func TestCleanAllNonDefaultPoolConfigs(t *testing.T) {
 			_, _ = poolConfig.Create()
 		}
 
-		err := CleanAllNonDefaultPoolConfigs(testCase.poolConfigs[0].apiClient, testCase.operatorNamespace)
+		err := CleanAllPoolConfigs(testCase.poolConfigs[0].apiClient, testCase.operatorNamespace)
 		assert.Equal(t, err, testCase.expectedError)
 
 		if testCase.expectedError == nil {
