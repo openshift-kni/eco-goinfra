@@ -1,10 +1,10 @@
-package clusterlogging
+package nto //nolint:misspell
 
 import (
 	"fmt"
 	"testing"
 
-	eskv1 "github.com/openshift/elasticsearch-operator/apis/logging/v1"
+	tunedv1 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/tuned/v1"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
@@ -13,23 +13,22 @@ import (
 )
 
 var (
-	eskAPIGroup                         = "logging.openshift.io"
-	eskAPIVersion                       = "v1"
-	eskKind                             = "Elasticsearch"
-	defaultElasticsearchName            = "elasticsearch"
-	defaultElasticsearchNamespace       = "openshift-logging"
-	defaultElasticsearchManagementState = eskv1.ManagementState("")
+	tunedAPIGroup           = "tuned.openshift.io"
+	tunedAPIVersion         = "v1"
+	tunedKind               = "Tuned"
+	defaultTunedName        = "default"
+	defaultTunedNamespace   = "openshift-cluster-node-tuning-operator"
+	defaultTunedProfileName = "openshift"
+	defaultTunedProfileData = "[main]\nsummary=Optimize systems running OpenShift (provider specific parent profile)" +
+		"\ninclude=-provider-${f:exec:cat:/var/lib/ocp-tuned/provider},openshift\n"
 )
 
-func TestElasticsearchPull(t *testing.T) {
-	generateElasticsearch := func(name, namespace string) *eskv1.Elasticsearch {
-		return &eskv1.Elasticsearch{
+func TestPullTuned(t *testing.T) {
+	generateTuned := func(name, namespace string) *tunedv1.Tuned {
+		return &tunedv1.Tuned{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,
-			},
-			Spec: eskv1.ElasticsearchSpec{
-				ManagementState: eskv1.ManagementStateManaged,
 			},
 		}
 	}
@@ -43,37 +42,38 @@ func TestElasticsearchPull(t *testing.T) {
 	}{
 		{
 			name:                "test",
-			namespace:           "openshift-logging",
+			namespace:           "openshift-cluster-node-tuning-operator",
 			addToRuntimeObjects: true,
 			expectedError:       nil,
 			client:              true,
 		},
 		{
 			name:                "",
-			namespace:           "openshift-logging",
+			namespace:           "openshift-cluster-node-tuning-operator",
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("elasticsearch 'name' cannot be empty"),
+			expectedError:       fmt.Errorf("tuned 'name' cannot be empty"),
 			client:              true,
 		},
 		{
 			name:                "test",
 			namespace:           "",
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("elasticsearch 'nsname' cannot be empty"),
+			expectedError:       fmt.Errorf("tuned 'nsname' cannot be empty"),
 			client:              true,
 		},
 		{
-			name:                "esktest",
-			namespace:           "openshift-logging",
+			name:                "tunedtest",
+			namespace:           "openshift-cluster-node-tuning-operator",
 			addToRuntimeObjects: false,
-			expectedError:       fmt.Errorf("elasticsearch object esktest does not exist in namespace openshift-logging"),
-			client:              true,
+			expectedError: fmt.Errorf("tuned object tunedtest does not exist in " +
+				"namespace openshift-cluster-node-tuning-operator"),
+			client: true,
 		},
 		{
-			name:                "esktest",
-			namespace:           "openshift-logging",
+			name:                "tunedtest",
+			namespace:           "openshift-cluster-node-tuning-operator",
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("elasticsearch 'apiClient' cannot be empty"),
+			expectedError:       fmt.Errorf("tuned 'apiClient' cannot be empty"),
 			client:              false,
 		},
 	}
@@ -84,10 +84,10 @@ func TestElasticsearchPull(t *testing.T) {
 
 		var testSettings *clients.Settings
 
-		testElasticsearch := generateElasticsearch(testCase.name, testCase.namespace)
+		testTuned := generateTuned(testCase.name, testCase.namespace)
 
 		if testCase.addToRuntimeObjects {
-			runtimeObjects = append(runtimeObjects, testElasticsearch)
+			runtimeObjects = append(runtimeObjects, testTuned)
 		}
 
 		if testCase.client {
@@ -96,224 +96,232 @@ func TestElasticsearchPull(t *testing.T) {
 			})
 		}
 
-		builderResult, err := PullElasticsearch(testSettings, testCase.name, testCase.namespace)
+		builderResult, err := PullTuned(testSettings, testCase.name, testCase.namespace)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError != nil {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		} else {
-			assert.Equal(t, testElasticsearch.Name, builderResult.Object.Name)
+			assert.Equal(t, testTuned.Name, builderResult.Object.Name)
 		}
 	}
 }
 
-func TestNewElasticsearchBuilder(t *testing.T) {
+func TestNewTunedBuilder(t *testing.T) {
 	testCases := []struct {
 		name          string
 		namespace     string
 		expectedError string
 	}{
 		{
-			name:          defaultElasticsearchName,
-			namespace:     defaultElasticsearchNamespace,
+			name:          defaultTunedName,
+			namespace:     defaultTunedNamespace,
 			expectedError: "",
 		},
 		{
 			name:          "",
-			namespace:     defaultElasticsearchNamespace,
-			expectedError: "elasticsearch 'name' cannot be empty",
+			namespace:     defaultTunedNamespace,
+			expectedError: "tuned 'name' cannot be empty",
 		},
 		{
-			name:          defaultElasticsearchName,
+			name:          defaultTunedName,
 			namespace:     "",
-			expectedError: "elasticsearch 'nsname' cannot be empty",
+			expectedError: "tuned 'nsname' cannot be empty",
 		},
 	}
 
 	for _, testCase := range testCases {
 		testSettings := clients.GetTestClients(clients.TestClientParams{})
-		testElasticsearchBuilder := NewElasticsearchBuilder(testSettings, testCase.name, testCase.namespace)
-		assert.Equal(t, testCase.expectedError, testElasticsearchBuilder.errorMsg)
-		assert.NotNil(t, testElasticsearchBuilder.Definition)
+		testTunedBuilder := NewTunedBuilder(testSettings, testCase.name, testCase.namespace)
+		assert.Equal(t, testCase.expectedError, testTunedBuilder.errorMsg)
+		assert.NotNil(t, testTunedBuilder.Definition)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testCase.name, testElasticsearchBuilder.Definition.Name)
-			assert.Equal(t, testCase.namespace, testElasticsearchBuilder.Definition.Namespace)
+			assert.Equal(t, testCase.name, testTunedBuilder.Definition.Name)
+			assert.Equal(t, testCase.namespace, testTunedBuilder.Definition.Namespace)
 		}
 	}
 }
 
-func TestElasticsearchExist(t *testing.T) {
+func TestTunedExists(t *testing.T) {
 	testCases := []struct {
-		testElasticsearch *ElasticsearchBuilder
-		expectedStatus    bool
+		testTuned      *TunedBuilder
+		expectedStatus bool
 	}{
 		{
-			testElasticsearch: buildValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
-			expectedStatus:    true,
+			testTuned:      buildValidTunedBuilder(buildTunedClientWithDummyObject()),
+			expectedStatus: true,
 		},
 		{
-			testElasticsearch: buildInValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
-			expectedStatus:    false,
+			testTuned:      buildInValidTunedBuilder(buildTunedClientWithDummyObject()),
+			expectedStatus: false,
 		},
 		{
-			testElasticsearch: buildValidElasticsearchBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedStatus:    false,
+			testTuned:      buildValidTunedBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedStatus: false,
 		},
 	}
 
 	for _, testCase := range testCases {
-		exist := testCase.testElasticsearch.Exists()
+		exist := testCase.testTuned.Exists()
 		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
-func TestElasticsearchGet(t *testing.T) {
+func TestTunedGet(t *testing.T) {
 	testCases := []struct {
-		testElasticsearch *ElasticsearchBuilder
-		expectedError     error
+		testTuned     *TunedBuilder
+		expectedError error
 	}{
 		{
-			testElasticsearch: buildValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
-			expectedError:     nil,
+			testTuned:     buildValidTunedBuilder(buildTunedClientWithDummyObject()),
+			expectedError: nil,
 		},
 		{
-			testElasticsearch: buildInValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
-			expectedError:     fmt.Errorf("elasticsearchs.logging.openshift.io \"\" not found"),
+			testTuned:     buildInValidTunedBuilder(buildTunedClientWithDummyObject()),
+			expectedError: fmt.Errorf("tuneds.tuned.openshift.io \"\" not found"),
 		},
 		{
-			testElasticsearch: buildValidElasticsearchBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:     fmt.Errorf("elasticsearchs.logging.openshift.io \"elasticsearch\" not found"),
+			testTuned:     buildValidTunedBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: fmt.Errorf("tuneds.tuned.openshift.io \"default\" not found"),
 		},
 	}
 
 	for _, testCase := range testCases {
-		elasticsearchObj, err := testCase.testElasticsearch.Get()
+		tunedObj, err := testCase.testTuned.Get()
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, elasticsearchObj, testCase.testElasticsearch.Definition)
+			assert.Equal(t, tunedObj, testCase.testTuned.Definition)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 	}
 }
 
-func TestElasticsearchCreate(t *testing.T) {
+func TestTunedCreate(t *testing.T) {
 	testCases := []struct {
-		testElasticsearch *ElasticsearchBuilder
-		expectedError     string
+		testTuned     *TunedBuilder
+		expectedError string
 	}{
 		{
-			testElasticsearch: buildValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
-			expectedError:     "",
+			testTuned:     buildValidTunedBuilder(buildTunedClientWithDummyObject()),
+			expectedError: "",
 		},
 		{
-			testElasticsearch: buildInValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
-			expectedError: fmt.Sprintf("Elasticsearch.logging.openshift.io \"\" is invalid: %s",
-				metaDataNameErrorMgs),
+			testTuned:     buildInValidTunedBuilder(buildTunedClientWithDummyObject()),
+			expectedError: "Tuned.tuned.openshift.io \"\" is invalid: metadata.name: Required value: name is required",
 		},
 		{
-			testElasticsearch: buildValidElasticsearchBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:     "resourceVersion can not be set for Create requests",
+			testTuned:     buildValidTunedBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: "resourceVersion can not be set for Create requests",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testElasticsearchBuilder, err := testCase.testElasticsearch.Create()
+		testTunedBuilder, err := testCase.testTuned.Create()
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testElasticsearchBuilder.Definition, testElasticsearchBuilder.Object)
+			assert.Equal(t, testTunedBuilder.Definition, testTunedBuilder.Object)
 		} else {
 			assert.Equal(t, testCase.expectedError, err.Error())
 		}
 	}
 }
 
-func TestElasticsearchDelete(t *testing.T) {
+func TestTunedDelete(t *testing.T) {
 	testCases := []struct {
-		testElasticsearch *ElasticsearchBuilder
-		expectedError     error
+		testTuned     *TunedBuilder
+		expectedError error
 	}{
 		{
-			testElasticsearch: buildValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
-			expectedError:     nil,
+			testTuned:     buildValidTunedBuilder(buildTunedClientWithDummyObject()),
+			expectedError: nil,
 		},
 		{
-			testElasticsearch: buildInValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
-			expectedError:     fmt.Errorf("elasticsearch cannot be deleted because it does not exist"),
+			testTuned:     buildInValidTunedBuilder(buildTunedClientWithDummyObject()),
+			expectedError: fmt.Errorf("tuned cannot be deleted because it does not exist"),
 		},
 		{
-			testElasticsearch: buildValidElasticsearchBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:     nil,
+			testTuned:     buildValidTunedBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: nil,
 		},
 	}
 
 	for _, testCase := range testCases {
-		err := testCase.testElasticsearch.Delete()
+		err := testCase.testTuned.Delete()
 
 		if testCase.expectedError == nil {
-			assert.Nil(t, testCase.testElasticsearch.Object)
+			assert.Nil(t, testCase.testTuned.Object)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 	}
 }
 
-func TestElasticsearchUpdate(t *testing.T) {
+func TestTunedUpdate(t *testing.T) {
 	testCases := []struct {
-		testElasticsearch *ElasticsearchBuilder
-		expectedError     string
-		managementState   eskv1.ManagementState
+		testTuned     *TunedBuilder
+		expectedError string
+		profile       tunedv1.TunedProfile
 	}{
 		{
-			testElasticsearch: buildValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
-			expectedError:     "",
-			managementState:   eskv1.ManagementStateManaged,
+			testTuned:     buildValidTunedBuilder(buildTunedClientWithDummyObject()),
+			expectedError: "",
+			profile: tunedv1.TunedProfile{
+				Name: &defaultTunedProfileName,
+				Data: &defaultTunedProfileData,
+			},
 		},
 		{
-			testElasticsearch: buildInValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
-			expectedError: fmt.Sprintf("Elasticsearch.logging.openshift.io \"\" is invalid: %s",
-				metaDataNameErrorMgs),
-			managementState: eskv1.ManagementStateManaged,
+			testTuned: buildInValidTunedBuilder(buildTunedClientWithDummyObject()),
+			expectedError: "Tuned.tuned.openshift.io \"\" is invalid: metadata.name: " +
+				"Required value: name is required",
+			profile: tunedv1.TunedProfile{
+				Name: &defaultTunedProfileName,
+				Data: &defaultTunedProfileData,
+			},
 		},
 	}
 
 	for _, testCase := range testCases {
-		assert.Equal(t, defaultElasticsearchManagementState, testCase.testElasticsearch.Definition.Spec.ManagementState)
-		assert.Nil(t, nil, testCase.testElasticsearch.Object)
-		testCase.testElasticsearch.WithManagementState(testCase.managementState)
-		_, err := testCase.testElasticsearch.Update()
+		assert.Equal(t, []tunedv1.TunedProfile(nil), testCase.testTuned.Definition.Spec.Profile)
+		assert.Nil(t, nil, testCase.testTuned.Object)
+		testCase.testTuned.WithProfile(testCase.profile)
+		_, err := testCase.testTuned.Update()
 
 		if testCase.expectedError != "" {
 			assert.Equal(t, testCase.expectedError, err.Error())
 		} else {
-			assert.Equal(t, testCase.managementState, testCase.testElasticsearch.Definition.Spec.ManagementState)
+			assert.Equal(t, []tunedv1.TunedProfile{testCase.profile}, testCase.testTuned.Definition.Spec.Profile)
 		}
 	}
 }
 
-func TestElasticsearchWithManagementState(t *testing.T) {
+func TestTunedWithProfile(t *testing.T) {
 	testCases := []struct {
-		testManagementState eskv1.ManagementState
-		expectedError       bool
-		expectedErrorText   string
+		testProfile       tunedv1.TunedProfile
+		expectedError     bool
+		expectedErrorText string
 	}{
 		{
-			testManagementState: eskv1.ManagementStateUnmanaged,
-			expectedError:       false,
-			expectedErrorText:   "",
+			testProfile: tunedv1.TunedProfile{
+				Name: &defaultTunedName,
+				Data: &defaultTunedProfileData,
+			},
+			expectedError:     false,
+			expectedErrorText: "",
 		},
 		{
-			testManagementState: eskv1.ManagementStateManaged,
-			expectedError:       false,
-			expectedErrorText:   "",
+			testProfile:       tunedv1.TunedProfile{},
+			expectedError:     false,
+			expectedErrorText: "'profile' argument cannot be empty",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject())
+		testBuilder := buildValidTunedBuilder(buildTunedClientWithDummyObject())
 
-		result := testBuilder.WithManagementState(testCase.testManagementState)
+		result := testBuilder.WithProfile(testCase.testProfile)
 
 		if testCase.expectedError {
 			if testCase.expectedErrorText != "" {
@@ -321,77 +329,46 @@ func TestElasticsearchWithManagementState(t *testing.T) {
 			}
 		} else {
 			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testManagementState, result.Definition.Spec.ManagementState)
+			assert.Equal(t, []tunedv1.TunedProfile{testCase.testProfile}, result.Definition.Spec.Profile)
 		}
 	}
 }
 
-func TestElasticsearchGetManagementState(t *testing.T) {
-	testCases := []struct {
-		testElasticsearch *ElasticsearchBuilder
-		expectedError     error
-	}{
-		{
-			testElasticsearch: buildValidElasticsearchBuilder(buildElasticsearchClientWithDummyObject()),
-			expectedError:     nil,
-		},
-		{
-			testElasticsearch: buildValidElasticsearchBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:     fmt.Errorf("elasticsearch object does not exist"),
-		},
+func buildValidTunedBuilder(apiClient *clients.Settings) *TunedBuilder {
+	tunedBuilder := NewTunedBuilder(
+		apiClient, defaultTunedName, defaultTunedNamespace)
+	tunedBuilder.Definition.ResourceVersion = "999"
+	tunedBuilder.Definition.TypeMeta = metav1.TypeMeta{
+		Kind:       tunedKind,
+		APIVersion: fmt.Sprintf("%s/%s", tunedAPIGroup, tunedAPIVersion),
 	}
 
-	for _, testCase := range testCases {
-		currentManagementState, err := testCase.testElasticsearch.GetManagementState()
-
-		if testCase.expectedError == nil {
-			assert.Equal(t, *currentManagementState, testCase.testElasticsearch.Object.Spec.ManagementState)
-		} else {
-			assert.Equal(t, testCase.expectedError.Error(), err.Error())
-		}
-	}
+	return tunedBuilder
 }
 
-func buildValidElasticsearchBuilder(apiClient *clients.Settings) *ElasticsearchBuilder {
-	elasticsearchBuilder := NewElasticsearchBuilder(
-		apiClient, defaultElasticsearchName, defaultElasticsearchNamespace)
-	elasticsearchBuilder.Definition.ResourceVersion = "999"
-	elasticsearchBuilder.Definition.Spec.ManagementState = ""
-	elasticsearchBuilder.Definition.TypeMeta = metav1.TypeMeta{
-		Kind:       eskKind,
-		APIVersion: fmt.Sprintf("%s/%s", eskAPIGroup, eskAPIVersion),
+func buildInValidTunedBuilder(apiClient *clients.Settings) *TunedBuilder {
+	tunedBuilder := NewTunedBuilder(
+		apiClient, "", defaultTunedNamespace)
+	tunedBuilder.Definition.ResourceVersion = "999"
+	tunedBuilder.Definition.TypeMeta = metav1.TypeMeta{
+		Kind:       tunedKind,
+		APIVersion: fmt.Sprintf("%s/%s", tunedAPIGroup, tunedAPIVersion),
 	}
 
-	return elasticsearchBuilder
+	return tunedBuilder
 }
 
-func buildInValidElasticsearchBuilder(apiClient *clients.Settings) *ElasticsearchBuilder {
-	elasticsearchBuilder := NewElasticsearchBuilder(
-		apiClient, "", defaultElasticsearchNamespace)
-	elasticsearchBuilder.Definition.ResourceVersion = "999"
-	elasticsearchBuilder.Definition.Spec.ManagementState = ""
-	elasticsearchBuilder.Definition.TypeMeta = metav1.TypeMeta{
-		Kind:       eskKind,
-		APIVersion: fmt.Sprintf("%s/%s", eskAPIGroup, eskAPIVersion),
-	}
-
-	return elasticsearchBuilder
-}
-
-func buildElasticsearchClientWithDummyObject() *clients.Settings {
+func buildTunedClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyElasticsearch(),
+		K8sMockObjects: buildDummyTuned(),
 	})
 }
 
-func buildDummyElasticsearch() []runtime.Object {
-	return append([]runtime.Object{}, &eskv1.Elasticsearch{
+func buildDummyTuned() []runtime.Object {
+	return append([]runtime.Object{}, &tunedv1.Tuned{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      defaultElasticsearchName,
-			Namespace: defaultElasticsearchNamespace,
-		},
-		Spec: eskv1.ElasticsearchSpec{
-			ManagementState: "",
+			Name:      defaultTunedName,
+			Namespace: defaultTunedNamespace,
 		},
 	})
 }
