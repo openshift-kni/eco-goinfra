@@ -621,7 +621,8 @@ func Test_BMCSerialConsole(t *testing.T) {
 		t.Errorf("Failed to instantiate bmc: %v", err)
 	}
 
-	var expectedErrMsg = `failed to connect to BMC's SSH server: dial tcp 1.2.3.4:22: i/o timeout`
+	var expectedErrMsg = `failed to create underlying ssh session for 1.2.3.4: ` +
+		`failed to connect to BMC's SSH server: dial tcp 1.2.3.4:22: i/o timeout`
 
 	_, _, err = bmc.OpenSerialConsole("console com2")
 	if err == nil {
@@ -631,7 +632,7 @@ func Test_BMCSerialConsole(t *testing.T) {
 	}
 
 	// Test without cli command... A best effort is made to open it based on system's manufacturer.
-	expectedErrMsg = `failed to get redfish system manufacturer: redfish connection error: ` +
+	expectedErrMsg = `failed to get redfish system manufacturer for 1.2.3.4: redfish connection error: ` +
 		`failed to connect to redfish endpoint: Get "https://1.2.3.4/redfish/v1/": context deadline exceeded`
 
 	_, _, err = bmc.OpenSerialConsole("")
@@ -641,7 +642,7 @@ func Test_BMCSerialConsole(t *testing.T) {
 		t.Errorf("Unexpected error. Expected %v, Got: %v", expectedErrMsg, err.Error())
 	}
 
-	expectedErrMsg = "no underlying ssh session found"
+	expectedErrMsg = "no underlying ssh session found for 1.2.3.4"
 
 	err = bmc.CloseSerialConsole()
 	if err == nil {
