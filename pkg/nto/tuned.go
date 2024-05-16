@@ -46,12 +46,16 @@ func NewTunedBuilder(
 		glog.V(100).Infof("The name of the Tuned is empty")
 
 		builder.errorMsg = "tuned 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The nsname of the tuned is empty")
 
 		builder.errorMsg = "tuned 'nsname' cannot be empty"
+
+		return builder
 	}
 
 	return builder
@@ -117,7 +121,7 @@ func (builder *TunedBuilder) Get() (*tunedv1.Tuned, error) {
 		return nil, err
 	}
 
-	return tunedObj, err
+	return tunedObj, nil
 }
 
 // Create makes a tuned in the cluster and stores the created object in struct.
@@ -141,27 +145,32 @@ func (builder *TunedBuilder) Create() (*TunedBuilder, error) {
 }
 
 // Delete removes tuned from a cluster.
-func (builder *TunedBuilder) Delete() error {
+func (builder *TunedBuilder) Delete() (*TunedBuilder, error) {
 	if valid, err := builder.validate(); !valid {
-		return err
+		return builder, err
 	}
 
 	glog.V(100).Infof("Deleting the tuned %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return fmt.Errorf("tuned cannot be deleted because it does not exist")
+		glog.V(100).Infof("tuned %s in namespace %s cannot be deleted because it does not exist",
+			builder.Definition.Name, builder.Definition.Namespace)
+
+		builder.Object = nil
+
+		return builder, nil
 	}
 
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
 
 	if err != nil {
-		return fmt.Errorf("can not delete tuned: %w", err)
+		return builder, fmt.Errorf("can not delete tuned: %w", err)
 	}
 
 	builder.Object = nil
 
-	return nil
+	return builder, nil
 }
 
 // Exists checks whether the given tuned exists.
@@ -197,11 +206,9 @@ func (builder *TunedBuilder) Update() (*TunedBuilder, error) {
 		return nil, err
 	}
 
-	if err == nil {
-		builder.Object = builder.Definition
-	}
+	builder.Object = builder.Definition
 
-	return builder, err
+	return builder, nil
 }
 
 // WithProfile sets the tuned operator's profile.

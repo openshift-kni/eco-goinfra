@@ -103,6 +103,7 @@ func TestPullTuned(t *testing.T) {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		} else {
 			assert.Equal(t, testTuned.Name, builderResult.Object.Name)
+			assert.Nil(t, err)
 		}
 	}
 }
@@ -191,7 +192,9 @@ func TestTunedGet(t *testing.T) {
 		tunedObj, err := testCase.testTuned.Get()
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, tunedObj, testCase.testTuned.Definition)
+			assert.Equal(t, tunedObj.Name, testCase.testTuned.Definition.Name)
+			assert.Equal(t, tunedObj.Namespace, testCase.testTuned.Definition.Namespace)
+			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
@@ -213,7 +216,7 @@ func TestTunedCreate(t *testing.T) {
 		},
 		{
 			testTuned:     buildValidTunedBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: "resourceVersion can not be set for Create requests",
+			expectedError: "",
 		},
 	}
 
@@ -221,7 +224,9 @@ func TestTunedCreate(t *testing.T) {
 		testTunedBuilder, err := testCase.testTuned.Create()
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testTunedBuilder.Definition, testTunedBuilder.Object)
+			assert.Equal(t, testTunedBuilder.Definition.Name, testTunedBuilder.Object.Name)
+			assert.Equal(t, testTunedBuilder.Definition.Namespace, testTunedBuilder.Object.Namespace)
+			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError, err.Error())
 		}
@@ -239,7 +244,7 @@ func TestTunedDelete(t *testing.T) {
 		},
 		{
 			testTuned:     buildInValidTunedBuilder(buildTunedClientWithDummyObject()),
-			expectedError: fmt.Errorf("tuned cannot be deleted because it does not exist"),
+			expectedError: nil,
 		},
 		{
 			testTuned:     buildValidTunedBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -248,10 +253,11 @@ func TestTunedDelete(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		err := testCase.testTuned.Delete()
+		_, err := testCase.testTuned.Delete()
 
 		if testCase.expectedError == nil {
 			assert.Nil(t, testCase.testTuned.Object)
+			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
@@ -337,7 +343,6 @@ func TestTunedWithProfile(t *testing.T) {
 func buildValidTunedBuilder(apiClient *clients.Settings) *TunedBuilder {
 	tunedBuilder := NewTunedBuilder(
 		apiClient, defaultTunedName, defaultTunedNamespace)
-	tunedBuilder.Definition.ResourceVersion = "999"
 	tunedBuilder.Definition.TypeMeta = metav1.TypeMeta{
 		Kind:       tunedKind,
 		APIVersion: fmt.Sprintf("%s/%s", tunedAPIGroup, tunedAPIVersion),
@@ -349,7 +354,6 @@ func buildValidTunedBuilder(apiClient *clients.Settings) *TunedBuilder {
 func buildInValidTunedBuilder(apiClient *clients.Settings) *TunedBuilder {
 	tunedBuilder := NewTunedBuilder(
 		apiClient, "", defaultTunedNamespace)
-	tunedBuilder.Definition.ResourceVersion = "999"
 	tunedBuilder.Definition.TypeMeta = metav1.TypeMeta{
 		Kind:       tunedKind,
 		APIVersion: fmt.Sprintf("%s/%s", tunedAPIGroup, tunedAPIVersion),
