@@ -1,1 +1,0 @@
-package nto //nolint:misspell
