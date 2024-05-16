@@ -890,8 +890,15 @@ go4.org/errorutil
 ## explicit; go 1.18
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
+golang.org/x/crypto/chacha20
+golang.org/x/crypto/curve25519
+golang.org/x/crypto/curve25519/internal/field
+golang.org/x/crypto/internal/alias
+golang.org/x/crypto/internal/poly1305
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/scrypt
+golang.org/x/crypto/ssh
+golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 # golang.org/x/exp v0.0.0-20231127185646-65229373498e
 ## explicit; go 1.20
 golang.org/x/exp/constraints
@@ -920,6 +927,7 @@ golang.org/x/oauth2/internal
 golang.org/x/sync/errgroup
 # golang.org/x/sys v0.20.0
 ## explicit; go 1.18
+golang.org/x/sys/cpu
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
