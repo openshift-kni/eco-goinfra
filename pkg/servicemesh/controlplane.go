@@ -9,7 +9,7 @@ import (
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	istioV2 "maistra.io/api/core/v2"
+	istiov2 "maistra.io/api/core/v2"
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -17,14 +17,14 @@ import (
 // a serviceMeshControlPlane definition.
 type ControlPlaneBuilder struct {
 	// serviceMeshControlPlane definition, used to create the serviceMeshControlPlane object.
-	Definition *istioV2.ServiceMeshControlPlane
+	Definition *istiov2.ServiceMeshControlPlane
 	// Created serviceMeshControlPlane object.
-	Object *istioV2.ServiceMeshControlPlane
+	Object *istiov2.ServiceMeshControlPlane
 	// Used in functions that define or mutate serviceMeshControlPlane definition. errorMsg is processed
 	// before the serviceMeshControlPlane object is created.
 	errorMsg string
 	// api client to interact with the cluster.
-	apiClient *clients.Settings
+	apiClient goclient.Client
 }
 
 // NewControlPlaneBuilder method creates new instance of builder.
@@ -33,8 +33,8 @@ func NewControlPlaneBuilder(apiClient *clients.Settings, name, nsname string) *C
 		"params: name: %s, namespace: %s", name, nsname)
 
 	builder := &ControlPlaneBuilder{
-		apiClient: apiClient,
-		Definition: &istioV2.ServiceMeshControlPlane{
+		apiClient: apiClient.Client,
+		Definition: &istiov2.ServiceMeshControlPlane{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: nsname,
@@ -45,13 +45,13 @@ func NewControlPlaneBuilder(apiClient *clients.Settings, name, nsname string) *C
 	if name == "" {
 		glog.V(100).Infof("The name of the serviceMeshControlPlane is empty")
 
-		builder.errorMsg = "the serviceMeshControlPlane 'name' cannot be empty"
+		builder.errorMsg = "serviceMeshControlPlane 'name' cannot be empty"
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the serviceMeshControlPlane is empty")
 
-		builder.errorMsg = "the serviceMeshControlPlane 'namespace' cannot be empty"
+		builder.errorMsg = "serviceMeshControlPlane 'nsname' cannot be empty"
 	}
 
 	return builder
@@ -69,18 +69,18 @@ func (builder *ControlPlaneBuilder) WithAllAddonsDisabled() *ControlPlaneBuilder
 		"Creating serviceMeshControlPlane %s in namespace %s with the all addons disabled",
 		builder.Definition.Name, builder.Definition.Namespace)
 
-	disableAllAddons := istioV2.AddonsConfig{
-		Prometheus: &istioV2.PrometheusAddonConfig{
-			Enablement: istioV2.Enablement{Enabled: &enablement},
+	disableAllAddons := istiov2.AddonsConfig{
+		Prometheus: &istiov2.PrometheusAddonConfig{
+			Enablement: istiov2.Enablement{Enabled: &enablement},
 		},
-		Grafana: &istioV2.GrafanaAddonConfig{
-			Enablement: istioV2.Enablement{Enabled: &enablement},
+		Grafana: &istiov2.GrafanaAddonConfig{
+			Enablement: istiov2.Enablement{Enabled: &enablement},
 		},
-		Kiali: &istioV2.KialiAddonConfig{
-			Enablement: istioV2.Enablement{Enabled: &enablement},
+		Kiali: &istiov2.KialiAddonConfig{
+			Enablement: istiov2.Enablement{Enabled: &enablement},
 		},
-		ThreeScale: &istioV2.ThreeScaleAddonConfig{
-			Enablement: istioV2.Enablement{Enabled: &enablement},
+		ThreeScale: &istiov2.ThreeScaleAddonConfig{
+			Enablement: istiov2.Enablement{Enabled: &enablement},
 		},
 	}
 
@@ -92,14 +92,14 @@ func (builder *ControlPlaneBuilder) WithAllAddonsDisabled() *ControlPlaneBuilder
 // WithGrafanaAddon adds grafana addon to the serviceMeshControlPlane.
 func (builder *ControlPlaneBuilder) WithGrafanaAddon(
 	enablement bool,
-	grafanaInstallConfig *istioV2.GrafanaInstallConfig,
+	grafanaInstallConfig *istiov2.GrafanaInstallConfig,
 	address string) *ControlPlaneBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
 	glog.V(100).Infof(
-		"Creating serviceMeshControlPlane %s in namespace %s with the Grafana addons defined: enablement %s, "+
+		"Creating serviceMeshControlPlane %s in namespace %s with the Grafana addons defined: enablement %v, "+
 			"grafanaInstallConfig %v, address %s", builder.Definition.Name, builder.Definition.Namespace,
 		enablement, grafanaInstallConfig, address)
 
@@ -121,8 +121,8 @@ func (builder *ControlPlaneBuilder) WithGrafanaAddon(
 		return builder
 	}
 
-	addonConfig := &istioV2.GrafanaAddonConfig{
-		Enablement: istioV2.Enablement{
+	addonConfig := &istiov2.GrafanaAddonConfig{
+		Enablement: istiov2.Enablement{
 			Enabled: &enablement,
 		},
 		Install: grafanaInstallConfig,
@@ -130,7 +130,7 @@ func (builder *ControlPlaneBuilder) WithGrafanaAddon(
 	}
 
 	if builder.Definition.Spec.Addons == nil {
-		builder.Definition.Spec.Addons = new(istioV2.AddonsConfig)
+		builder.Definition.Spec.Addons = new(istiov2.AddonsConfig)
 	}
 
 	builder.Definition.Spec.Addons.Grafana = addonConfig
@@ -141,7 +141,7 @@ func (builder *ControlPlaneBuilder) WithGrafanaAddon(
 // WithJaegerAddon adds jaeger addon to the serviceMeshControlPlane.
 func (builder *ControlPlaneBuilder) WithJaegerAddon(
 	name string,
-	jaegerInstallConfig *istioV2.JaegerInstallConfig) *ControlPlaneBuilder {
+	jaegerInstallConfig *istiov2.JaegerInstallConfig) *ControlPlaneBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -166,13 +166,13 @@ func (builder *ControlPlaneBuilder) WithJaegerAddon(
 		return builder
 	}
 
-	addonConfig := &istioV2.JaegerAddonConfig{
+	addonConfig := &istiov2.JaegerAddonConfig{
 		Name:    name,
 		Install: jaegerInstallConfig,
 	}
 
 	if builder.Definition.Spec.Addons == nil {
-		builder.Definition.Spec.Addons = new(istioV2.AddonsConfig)
+		builder.Definition.Spec.Addons = new(istiov2.AddonsConfig)
 	}
 
 	builder.Definition.Spec.Addons.Jaeger = addonConfig
@@ -184,7 +184,7 @@ func (builder *ControlPlaneBuilder) WithJaegerAddon(
 func (builder *ControlPlaneBuilder) WithKialiAddon(
 	enablement bool,
 	name string,
-	kialiInstallConfig *istioV2.KialiInstallConfig) *ControlPlaneBuilder {
+	kialiInstallConfig *istiov2.KialiInstallConfig) *ControlPlaneBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -211,8 +211,8 @@ func (builder *ControlPlaneBuilder) WithKialiAddon(
 		return builder
 	}
 
-	addonConfig := &istioV2.KialiAddonConfig{
-		Enablement: istioV2.Enablement{
+	addonConfig := &istiov2.KialiAddonConfig{
+		Enablement: istiov2.Enablement{
 			Enabled: &enablement,
 		},
 		Name:    name,
@@ -220,7 +220,7 @@ func (builder *ControlPlaneBuilder) WithKialiAddon(
 	}
 
 	if builder.Definition.Spec.Addons == nil {
-		builder.Definition.Spec.Addons = new(istioV2.AddonsConfig)
+		builder.Definition.Spec.Addons = new(istiov2.AddonsConfig)
 	}
 
 	builder.Definition.Spec.Addons.Kiali = addonConfig
@@ -234,7 +234,7 @@ func (builder *ControlPlaneBuilder) WithPrometheusAddon(
 	scrape bool,
 	metricsExpiryDuration string,
 	address string,
-	prometheusInstallConfig *istioV2.PrometheusInstallConfig) *ControlPlaneBuilder {
+	prometheusInstallConfig *istiov2.PrometheusInstallConfig) *ControlPlaneBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
@@ -269,8 +269,8 @@ func (builder *ControlPlaneBuilder) WithPrometheusAddon(
 		return builder
 	}
 
-	addonConfig := &istioV2.PrometheusAddonConfig{
-		Enablement: istioV2.Enablement{
+	addonConfig := &istiov2.PrometheusAddonConfig{
+		Enablement: istiov2.Enablement{
 			Enabled: &enablement,
 		},
 		MetricsExpiryDuration: metricsExpiryDuration,
@@ -280,7 +280,7 @@ func (builder *ControlPlaneBuilder) WithPrometheusAddon(
 	}
 
 	if builder.Definition.Spec.Addons == nil {
-		builder.Definition.Spec.Addons = new(istioV2.AddonsConfig)
+		builder.Definition.Spec.Addons = new(istiov2.AddonsConfig)
 	}
 
 	builder.Definition.Spec.Addons.Prometheus = addonConfig
@@ -298,10 +298,10 @@ func (builder *ControlPlaneBuilder) WithGatewaysEnablement(enablement bool) *Con
 		"Creating serviceMeshControlPlane %s in namespace %s with enabled Gateways",
 		builder.Definition.Name, builder.Definition.Namespace)
 
-	gatewaysConfig := istioV2.Enablement{Enabled: &enablement}
+	gatewaysConfig := istiov2.Enablement{Enabled: &enablement}
 
 	if builder.Definition.Spec.Gateways == nil {
-		builder.Definition.Spec.Gateways = &istioV2.GatewaysConfig{}
+		builder.Definition.Spec.Gateways = &istiov2.GatewaysConfig{}
 	}
 
 	builder.Definition.Spec.Gateways.Enablement = gatewaysConfig
@@ -314,9 +314,15 @@ func PullControlPlane(apiClient *clients.Settings, name, nsname string) (*Contro
 	glog.V(100).Infof(
 		"Pulling serviceMeshControlPlane object name %s in namespace: %s", name, nsname)
 
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is empty")
+
+		return nil, fmt.Errorf("serviceMeshControlPlane 'apiClient' cannot be empty")
+	}
+
 	builder := ControlPlaneBuilder{
-		apiClient: apiClient,
-		Definition: &istioV2.ServiceMeshControlPlane{
+		apiClient: apiClient.Client,
+		Definition: &istiov2.ServiceMeshControlPlane{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: nsname,
@@ -327,13 +333,13 @@ func PullControlPlane(apiClient *clients.Settings, name, nsname string) (*Contro
 	if name == "" {
 		glog.V(100).Infof("The name of the serviceMeshControlPlane is empty")
 
-		builder.errorMsg = "serviceMeshControlPlane 'name' cannot be empty"
+		return nil, fmt.Errorf("serviceMeshControlPlane 'name' cannot be empty")
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the serviceMeshControlPlane is empty")
 
-		builder.errorMsg = "serviceMeshControlPlane 'nsname' cannot be empty"
+		return nil, fmt.Errorf("serviceMeshControlPlane 'nsname' cannot be empty")
 	}
 
 	if builder.errorMsg != "" {
@@ -350,7 +356,7 @@ func PullControlPlane(apiClient *clients.Settings, name, nsname string) (*Contro
 }
 
 // Get fetches existing serviceMeshControlPlane from cluster.
-func (builder *ControlPlaneBuilder) Get() (*istioV2.ServiceMeshControlPlane, error) {
+func (builder *ControlPlaneBuilder) Get() (*istiov2.ServiceMeshControlPlane, error) {
 	if valid, err := builder.validate(); !valid {
 		return nil, err
 	}
@@ -358,7 +364,7 @@ func (builder *ControlPlaneBuilder) Get() (*istioV2.ServiceMeshControlPlane, err
 	glog.V(100).Infof("Pulling existing serviceMeshControlPlane with name %s in namespace %s from cluster",
 		builder.Definition.Name, builder.Definition.Namespace)
 
-	servicemeshcontrolplane := &istioV2.ServiceMeshControlPlane{}
+	servicemeshcontrolplane := &istiov2.ServiceMeshControlPlane{}
 	err := builder.apiClient.Get(context.TODO(), goclient.ObjectKey{
 		Name:      builder.Definition.Name,
 		Namespace: builder.Definition.Namespace,

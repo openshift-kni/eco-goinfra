@@ -528,10 +528,10 @@ github.com/openshift-kni/cluster-group-upgrades-operator/pkg/generated/clientset
 # github.com/openshift-kni/k8sreporter v1.0.4
 ## explicit; go 1.20
 github.com/openshift-kni/k8sreporter
-# github.com/openshift-kni/lifecycle-agent v0.0.0-20240503112747-fd03bc5fd6b7
+# github.com/openshift-kni/lifecycle-agent v0.0.0-20240514130907-854cbc8fe101
 ## explicit; go 1.20
-github.com/openshift-kni/lifecycle-agent/api/seedgenerator/v1alpha1
-github.com/openshift-kni/lifecycle-agent/api/v1alpha1
+github.com/openshift-kni/lifecycle-agent/api/imagebasedupgrade/v1
+github.com/openshift-kni/lifecycle-agent/api/seedgenerator/v1
 # github.com/openshift/api v3.9.1-0.20191111211345-a27ff30ebf09+incompatible => github.com/openshift/api v0.0.0-20240228005710-4511c790cc60
 ## explicit; go 1.20
 github.com/openshift/api
@@ -886,7 +886,7 @@ go.starlark.net/syntax
 # go4.org v0.0.0-20200104003542-c7e774b10ea0
 ## explicit
 go4.org/errorutil
-# golang.org/x/crypto v0.22.0
+# golang.org/x/crypto v0.23.0
 ## explicit; go 1.18
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
@@ -925,16 +925,16 @@ golang.org/x/oauth2/internal
 # golang.org/x/sync v0.7.0
 ## explicit; go 1.18
 golang.org/x/sync/errgroup
-# golang.org/x/sys v0.19.0
+# golang.org/x/sys v0.20.0
 ## explicit; go 1.18
 golang.org/x/sys/cpu
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/term v0.19.0
+# golang.org/x/term v0.20.0
 ## explicit; go 1.18
 golang.org/x/term
-# golang.org/x/text v0.14.0
+# golang.org/x/text v0.15.0
 ## explicit; go 1.18
 golang.org/x/text/encoding
 golang.org/x/text/encoding/internal
