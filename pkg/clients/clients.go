@@ -516,6 +516,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *tunedv1.Tuned:
 			genericClientObjects = append(genericClientObjects, v)
+		case *agentInstallV1Beta1.AgentServiceConfig:
+			genericClientObjects = append(genericClientObjects, v)
 		// ArgoCD Client Objects
 		case *argocdOperatorv1alpha1.ArgoCD:
 			genericClientObjects = append(genericClientObjects, v)
