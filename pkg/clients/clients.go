@@ -505,6 +505,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *eskv1.Elasticsearch:
 			genericClientObjects = append(genericClientObjects, v)
+		case *hiveextV1Beta1.AgentClusterInstall:
+			genericClientObjects = append(genericClientObjects, v)
 		// ArgoCD Client Objects
 		case *argocdOperatorv1alpha1.ArgoCD:
 			genericClientObjects = append(genericClientObjects, v)

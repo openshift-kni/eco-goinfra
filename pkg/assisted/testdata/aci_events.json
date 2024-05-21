@@ -1,0 +1,525 @@
+[
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:38:21.396Z",
+      "message": "Successfully registered cluster",
+      "name": "cluster_registration_succeeded",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:38:29.976Z",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Updated image information (Image type is \"minimal-iso\", SSH public key is set)",
+      "name": "image_info_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:39:13.297Z",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Updated image information (Image type is \"minimal-iso\", SSH public key is set)",
+      "name": "image_info_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:44:52.559Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host f8adf340-e9d4-47e2-bb3a-43c7256ab571: Successfully registered",
+      "name": "host_registration_succeeded",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:44:59.755Z",
+      "message": "Cluster validation 'all-hosts-are-ready-to-install' that used to succeed is now failing",
+      "name": "cluster_validation_failed",
+      "severity": "warning"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:44:59.756Z",
+      "message": "Cluster validation 'sufficient-masters-count' is now fixed",
+      "name": "cluster_validation_fixed",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:44:59.757Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host testdata.example.com: updated status from discovering to insufficient (Host cannot be installed due to following failing validation(s): Host couldn't synchronize with any NTP server)",
+      "name": "host_status_updated",
+      "severity": "warning"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:45:55.762Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host testdata: updated status from insufficient to known (Host is ready to be installed)",
+      "name": "host_status_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:45:59.754Z",
+      "message": "Cluster validation 'all-hosts-are-ready-to-install' is now fixed",
+      "name": "cluster_validation_fixed",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:45:59.765Z",
+      "message": "Updated status of the cluster to ready",
+      "name": "cluster_status_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:45:59.807Z",
+      "message": "Updated status of the cluster to preparing-for-installation",
+      "name": "cluster_status_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:46:03.757Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host testdata: updated status from known to preparing-for-installation (Host finished successfully to prepare for installation)",
+      "name": "host_status_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:47:11.601Z",
+      "message": "Cluster starting to prepare for installation",
+      "name": "cluster_prepare_installation_started",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:47:14.290Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host testdata: New image status quay.io/openshift-release-dev/ocp-release@sha256:b584f5458fb946115b0cf0f1793dc9224c5e6a4567e74018f0590805a03eb523. result: success. time: 8.71 seconds; size: 501.79 Megabytes; download rate: 60.41 MBps",
+      "name": "image_status_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:47:14.295Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host testdata: New image status quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:a125f282c98a565bc89e93db70163991514f058f379ed8045bc6d01ea643798d. result: success. time: 3.85 seconds; size: 632.05 Megabytes; download rate: 172.16 MBps",
+      "name": "image_status_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:47:14.299Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host testdata: New image status quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:07a68ac8ce683916b782d190aaa06f05d408802349b83f259386cb6ca837bfcb. result: success. time: 3.28 seconds; size: 602.62 Megabytes; download rate: 192.52 MBps",
+      "name": "image_status_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:47:14.301Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host testdata: New image status registry.redhat.io/multicluster-engine/assisted-installer-rhel8@sha256:751e6ea48be4ba2c931cda65418cb26638d3f44b36ccca4c41ced07a081ba7d3. result: success. time: 3.75 seconds; size: 192.15 Megabytes; download rate: 53.70 MBps",
+      "name": "image_status_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:47:15.755Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host testdata: updated status from preparing-for-installation to preparing-successful (Host finished successfully to prepare for installation)",
+      "name": "host_status_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:47:19.760Z",
+      "message": "Updated status of the cluster to installing",
+      "name": "cluster_status_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:47:23.755Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host testdata: updated status from preparing-successful to installing (Installation is in progress)",
+      "name": "host_status_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:47:54.612Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host testdata: updated status from installing to installing-in-progress (Starting installation)",
+      "name": "host_status_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:47:54.615Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Starting installation: bootstrap",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:47:54.732Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Installing: bootstrap",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:48:00.514Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Waiting for bootkube",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:51:26.315Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:51:28.379Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk: 5%",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:51:30.379Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk: 11%",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:51:34.379Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk: 17%",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:51:41.385Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk: 22%",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:51:45.386Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk: 29%",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:51:47.387Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk: 35%",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:51:50.386Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk: 40%",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:51:52.386Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk: 46%",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:51:54.386Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk: 51%",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:51:56.387Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk: 56%",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:51:59.390Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk: 61%",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:52:03.393Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk: 66%",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:52:06.399Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk: 72%",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:52:11.404Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk: 77%",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:52:15.405Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk: 83%",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:52:18.406Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk: 90%",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:52:20.406Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk: 95%",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:52:23.933Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Writing image to disk: 100%",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:52:26.100Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Uploaded logs for host testdata cluster bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "name": "host_logs_uploaded",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:52:26.394Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Rebooting: Ironic will reboot the node shortly",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:55:37.148Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Joined",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:57:37.160Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host testdata: updated status from installing-in-progress to installed (Done)",
+      "name": "host_status_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:57:37.165Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host: testdata, reached installation stage Done",
+      "name": "host_install_progress_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:57:39.756Z",
+      "message": "Updated status of the cluster to finalizing",
+      "name": "cluster_status_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:57:49.900Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Node testdata has been rebooted 2 times before completing installation",
+      "name": "reboots_for_node",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:58:07.152Z",
+      "message": "Updated finalizing stage of the cluster to 'Waiting for cluster operators'",
+      "name": "cluster_finalizing_stage_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:58:07.167Z",
+      "message": "Operator console status: progressing message: ",
+      "name": "cluster_operator_status",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T19:58:07.177Z",
+      "message": "Operator cvo status: failed message: ",
+      "name": "cluster_operator_status",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T20:00:37.189Z",
+      "message": "Uploaded logs for the cluster",
+      "name": "cluster_logs_uploaded",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T20:10:07.247Z",
+      "message": "Operator console status: progressing message: SyncLoopRefreshProgressing: Working toward version x.y.z, 0 replicas available",
+      "name": "cluster_operator_status",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T20:13:07.215Z",
+      "message": "Operator console status: available message: All is well",
+      "name": "cluster_operator_status",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T20:18:07.233Z",
+      "message": "Operator cvo status: available message: Done applying x.y.z",
+      "name": "cluster_operator_status",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T20:18:07.308Z",
+      "message": "Updated finalizing stage of the cluster to 'Adding router ca'",
+      "name": "cluster_finalizing_stage_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T20:18:07.333Z",
+      "message": "Updated finalizing stage of the cluster to 'Waiting for olm operators csv initialization'",
+      "name": "cluster_finalizing_stage_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T20:18:07.344Z",
+      "message": "Updated finalizing stage of the cluster to 'Done'",
+      "name": "cluster_finalizing_stage_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T20:18:09.755Z",
+      "message": "Updated status of the cluster to installed",
+      "name": "cluster_status_updated",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T20:18:09.756Z",
+      "message": "Successfully completed installing cluster",
+      "name": "cluster_installation_completed",
+      "severity": "info"
+    },
+    {
+      "cluster_id": "bacfcadc-8d32-4eba-a18b-6587962f98ad",
+      "event_time": "2024-05-20T20:18:11.754Z",
+      "host_id": "f8adf340-e9d4-47e2-bb3a-43c7256ab571",
+      "infra_env_id": "d666d596-0885-4525-8d68-b40e61d0a5ed",
+      "message": "Host testdata: validation 'api-int-domain-name-resolved-correctly' that used to succeed is now failing",
+      "name": "host_validation_failed",
+      "severity": "warning"
+    }
+  ]  
