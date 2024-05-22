@@ -98,37 +98,27 @@ func testSerialConsole(bmc *bmc.BMC, readTime time.Duration) {
 func main() {
 	flag.Parse()
 
-	// Create users and timeout structs.
-	redfishUser := bmc.User{Name: *redfishUserFlag, Password: *redfishPassFlag}
-	sshUser := bmc.User{Name: *sshUserFlag, Password: *sshPassFlag}
-	timeOuts := bmc.TimeOuts{Redfish: *timeoutFlag, SSH: *timeoutFlag}
+	fmt.Printf("Getting redfish information from host %s, timeouts: %s\n", *hostFlag, *timeoutFlag)
 
-	if *timeoutFlag == 0 {
+	bmcClient := bmc.New(*hostFlag).
+		WithRedfishUser(*redfishUserFlag, *redfishPassFlag).
+		WithSSHUser(*sshUserFlag, *sshPassFlag).
+		WithSSHPort(uint16(*sshPortFlag)).
+		WithRedfishSystemIndex(*systemIndexFlag)
+
+	if *timeoutFlag != 0 {
+		bmcClient = bmcClient.WithRedfishTimeout(*timeoutFlag).WithSSHTimeout(*timeoutFlag)
+	} else {
 		fmt.Printf("Timeout not set (or set to 0): using defaults %+v\n", bmc.DefaultTimeOuts)
-		timeOuts = bmc.DefaultTimeOuts
 	}
 
-	fmt.Printf("Getting redfish information from host %s, timeouts: %+v\n", *hostFlag, timeOuts)
-
-	bmc, err := bmc.New(*hostFlag, redfishUser, sshUser, uint16(*sshPortFlag), timeOuts)
-	if err != nil {
-		fmt.Printf("Failed to create BMC struct: %v\n", err)
-		os.Exit(1)
-	}
-
-	err = bmc.SetSystemIndex(*systemIndexFlag)
-	if err != nil {
-		fmt.Printf("Failed to set system index: %v\n", err)
-		os.Exit(1)
-	}
-
-	manufacturer, err := bmc.SystemManufacturer()
+	manufacturer, err := bmcClient.SystemManufacturer()
 	if err != nil {
 		fmt.Printf("Failed to get manufacturer from redfish api on %v: %v\n", *hostFlag, err)
 		os.Exit(1)
 	}
 
-	sbEnabled, err := bmc.IsSecureBootEnabled()
+	sbEnabled, err := bmcClient.IsSecureBootEnabled()
 	if err != nil {
 		fmt.Printf("Failed to get secure boot status on %v: %v\n", *hostFlag, err)
 	}
@@ -137,17 +127,17 @@ func main() {
 	fmt.Printf("System %d SecureBoot enabled : %v\n", *systemIndexFlag, sbEnabled)
 
 	// Run the help command. We should see all the available CLI commands.
-	runCLICommand(bmc, "help", true, 10*time.Second)
+	runCLICommand(bmcClient, "help", true, 10*time.Second)
 
 	// Run an invalid command.
-	runCLICommand(bmc, "wrongcommand", true, 10*time.Second)
+	runCLICommand(bmcClient, "wrongcommand", true, 10*time.Second)
 
 	// Another wrong command, but in this case we want to force a timeout.
-	runCLICommand(bmc, "anotherwrongcommand", false, 1*time.Millisecond)
+	runCLICommand(bmcClient, "anotherwrongcommand", false, 1*time.Millisecond)
 
 	// The rest of the code tests the ssh-tunneled serial console.
 	if *testSerialConsoleFlag {
 		fmt.Printf("Reading from Serial Console for 10 seconds. Use ctrl+c to stop it...\n")
-		testSerialConsole(bmc, 10*time.Second)
+		testSerialConsole(bmcClient, 10*time.Second)
 	}
 }

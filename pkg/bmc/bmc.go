@@ -3,7 +3,6 @@ package bmc
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"time"
@@ -15,6 +14,8 @@ import (
 )
 
 const (
+	// defaultSSHPort is the default port that will be used for SSH connections.
+	defaultSSHPort = 22
 	defaultTimeOut = 5 * time.Second
 
 	manufacturerDell = "Dell Inc."
@@ -53,117 +54,215 @@ type TimeOuts struct {
 
 // BMC is the holder struct for BMC access through redfish & ssh.
 type BMC struct {
-	host              string
-	redfishUser       User
-	sshUser           User
-	sshPort           uint16
+	host        string
+	redfishUser *User
+	sshUser     *User
+	sshPort     uint16
+	timeOuts    TimeOuts
+
 	systemIndex       int
 	powerControlIndex int
 
-	timeOuts TimeOuts
-
 	sshSessionForSerialConsole *ssh.Session
+
+	errorMsg string
 }
 
-// New returns a new BMC struct. The default system index to be used in redfish requests is 0.
-// Use SetSystemIndex to modify it.
-func New(host string, redfishUser, sshUser User, sshPort uint16, timeOuts TimeOuts) (*BMC, error) {
-	glog.V(100).Infof("Initializing new BMC structure with the following params: %s, %v, %v, %v (system index = 0)",
-		host, redfishUser, sshUser, timeOuts)
+// New returns a BMC struct with the specified host. The host should be nonempty. WithRedfishUser and WithSSHUser must
+// be called before connecting to Redfish or over SSH, respectively. The SSH port and timeouts are set to DefaultSSHPort
+// and DefaultTimeOuts, with indices defaulting to 0.
+func New(host string) *BMC {
+	glog.V(100).Infof(
+		"Creating new BMC structure with the following params: host: %s", host)
 
-	errMsgs := []string{}
-	if host == "" {
-		errMsgs = append(errMsgs, "host is empty")
-	}
-
-	if redfishUser.Name == "" {
-		errMsgs = append(errMsgs, "redfish user's name is empty")
-	}
-
-	if redfishUser.Password == "" {
-		errMsgs = append(errMsgs, "redfish user's password is empty")
-	}
-
-	if sshUser.Name == "" {
-		errMsgs = append(errMsgs, "ssh user's name is empty")
-	}
-
-	if sshPort == 0 {
-		errMsgs = append(errMsgs, "ssh port is zero")
-	}
-
-	if sshUser.Password == "" {
-		errMsgs = append(errMsgs, "ssh user's password is empty")
-	}
-
-	if timeOuts.Redfish == 0 {
-		errMsgs = append(errMsgs, "redfish timeout is 0")
-	}
-
-	if timeOuts.SSH == 0 {
-		errMsgs = append(errMsgs, "ssh timeout is 0")
-	}
-
-	// Build final error msg in case there were some error/s validating the input params.
-	if len(errMsgs) > 0 {
-		errMsg := ""
-
-		for i, msg := range errMsgs {
-			if i != 0 {
-				errMsg += ", "
-			}
-
-			errMsg += msg
-		}
-
-		glog.V(100).Infof("Failed to initialize BMC: %s", errMsg)
-
-		return nil, errors.New(errMsg)
-	}
-
-	return &BMC{
+	bmc := &BMC{
 		host:              host,
-		redfishUser:       redfishUser,
-		sshUser:           sshUser,
-		sshPort:           sshPort,
-		timeOuts:          timeOuts,
+		sshPort:           defaultSSHPort,
+		timeOuts:          DefaultTimeOuts,
 		systemIndex:       0,
 		powerControlIndex: 0,
-	}, nil
+	}
+
+	if host == "" {
+		glog.V(100).Info("The host of the BMC is empty")
+
+		bmc.errorMsg = "bmc 'host' cannot be empty"
+	}
+
+	return bmc
 }
 
-// SetSystemIndex sets the system index to be used in redfish api requests.
-func (bmc *BMC) SetSystemIndex(index int) error {
-	glog.V(100).Infof("Setting default Redfish System Index to %d", index)
+// WithRedfishUser provides the credentials to access the Redfish API. Neither the username nor password should be
+// empty.
+func (bmc *BMC) WithRedfishUser(username, password string) *BMC {
+	if valid, _ := bmc.validate(); !valid {
+		return bmc
+	}
+
+	glog.V(100).Infof("Setting BMC Redfish username to %s", username)
+
+	if username == "" {
+		glog.V(100).Info("The Redfish username is empty")
+
+		bmc.errorMsg = "redfish 'username' cannot be empty"
+
+		return bmc
+	}
+
+	if password == "" {
+		glog.V(100).Info("The Redfish password is empty")
+
+		bmc.errorMsg = "redfish 'password' cannot be empty"
+
+		return bmc
+	}
+
+	bmc.redfishUser = &User{
+		Name:     username,
+		Password: password,
+	}
+
+	return bmc
+}
+
+// WithRedfishTimeout provides the timeout to use when connecting to the Redfish API. It should not be zero or negative.
+func (bmc *BMC) WithRedfishTimeout(timeout time.Duration) *BMC {
+	if valid, _ := bmc.validate(); !valid {
+		return bmc
+	}
+
+	if timeout <= 0 {
+		glog.V(100).Infof("The Redfish timeout %s is less than or equal to zero", timeout)
+
+		bmc.errorMsg = "redfish 'timeout' cannot be less than or equal to zero"
+
+		return bmc
+	}
+
+	bmc.timeOuts.Redfish = timeout
+
+	return bmc
+}
+
+// WithRedfishSystemIndex provies the index of the system to use in the Redfish API. Note that the order of the systems
+// is nondeterministic.
+func (bmc *BMC) WithRedfishSystemIndex(index int) *BMC {
+	if valid, _ := bmc.validate(); !valid {
+		return bmc
+	}
 
 	if index < 0 {
-		glog.V(100).Infof("Invalid system index %d: must be >= 0", index)
+		glog.V(100).Infof("The Redfish System index is negative: %d", index)
 
-		return fmt.Errorf("invalid index %d", index)
+		bmc.errorMsg = "redfish 'systemIndex' cannot be negative"
+
+		return bmc
 	}
 
 	bmc.systemIndex = index
 
-	return nil
+	return bmc
 }
 
-// SetPowerControlIndex sets the power control index to be used in Redfish API requests.
-func (bmc *BMC) SetPowerControlIndex(index int) error {
-	glog.V(100).Infof("Setting default Redfish Power Control Index to %d", index)
+// WithRedfishPowerControlIndex provides the index of the PowerControl object to use from the Power link on the Chassis
+// service in the Redfish API. The order of the PowerControl objects is deterministic.
+func (bmc *BMC) WithRedfishPowerControlIndex(index int) *BMC {
+	if valid, _ := bmc.validate(); !valid {
+		return bmc
+	}
 
 	if index < 0 {
-		glog.V(100).Infof("Invalid power control index %d: must be >= 0", index)
+		glog.V(100).Infof("The Redfish PowerControl index is negative: %d", index)
 
-		return fmt.Errorf("invalid index %d", index)
+		bmc.errorMsg = "redfish 'powerControlIndex' cannot be negative"
+
+		return bmc
 	}
 
 	bmc.powerControlIndex = index
 
-	return nil
+	return bmc
+}
+
+// WithSSHUser provides the credentials to use when connecting to the BMC over SSH. Neither the username nor the
+// password should be empty.
+func (bmc *BMC) WithSSHUser(username, password string) *BMC {
+	if valid, _ := bmc.validate(); !valid {
+		return bmc
+	}
+
+	glog.V(100).Infof("Setting BMC SSH username to %s", username)
+
+	if username == "" {
+		glog.V(100).Info("The SSH username is empty")
+
+		bmc.errorMsg = "ssh 'username' cannot be empty"
+
+		return bmc
+	}
+
+	if password == "" {
+		glog.V(100).Info("The SSH password is empty")
+
+		bmc.errorMsg = "ssh 'password' cannot be empty"
+
+		return bmc
+	}
+
+	bmc.sshUser = &User{
+		Name:     username,
+		Password: password,
+	}
+
+	return bmc
+}
+
+// WithSSHPort provides the port to use when connecting to the BMC over SSH. It should not be zero.
+func (bmc *BMC) WithSSHPort(port uint16) *BMC {
+	if valid, _ := bmc.validate(); !valid {
+		return bmc
+	}
+
+	glog.V(100).Infof("Setting SSH port to %d", port)
+
+	if port == 0 {
+		glog.V(100).Infof("The SSH port is zero")
+
+		bmc.errorMsg = "ssh 'port' cannot be zero"
+
+		return bmc
+	}
+
+	bmc.sshPort = port
+
+	return bmc
+}
+
+// WithSSHTimeout provides the timeout to use when connecting to the BMC over SSH. It should not be zero or negative.
+func (bmc *BMC) WithSSHTimeout(timeout time.Duration) *BMC {
+	if valid, _ := bmc.validate(); !valid {
+		return bmc
+	}
+
+	if timeout <= 0 {
+		glog.V(100).Infof("The SSH timeout %s is less than or equal to zero", timeout)
+
+		bmc.errorMsg = "ssh 'timeout' cannot be less than or equal to zero"
+
+		return bmc
+	}
+
+	bmc.timeOuts.SSH = timeout
+
+	return bmc
 }
 
 // SystemManufacturer gets system's manufacturer from the BMC's RedFish API endpoint.
 func (bmc *BMC) SystemManufacturer() (string, error) {
+	if valid, err := bmc.validateRedfish(); !valid {
+		return "", err
+	}
+
 	glog.V(100).Infof("Getting SystemManufacturer param from bmc's redfish endpoint")
 
 	redfishClient, cancel, err := redfishConnect(
@@ -193,6 +292,10 @@ func (bmc *BMC) SystemManufacturer() (string, error) {
 
 // IsSecureBootEnabled returns whether the SecureBoot feature is enabled using the BMC's RedFish API endpoint.
 func (bmc *BMC) IsSecureBootEnabled() (bool, error) {
+	if valid, err := bmc.validateRedfish(); !valid {
+		return false, err
+	}
+
 	glog.V(100).Infof("Getting secure boot status from bmc's redfish endpoint")
 
 	redfishClient, cancel, err := redfishConnect(
@@ -222,6 +325,10 @@ func (bmc *BMC) IsSecureBootEnabled() (bool, error) {
 
 // SecureBootEnable enables the SecureBoot feature using the BMC's RedFish API endpoint.
 func (bmc *BMC) SecureBootEnable() error {
+	if valid, err := bmc.validateRedfish(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Enabling secure boot from bmc's redfish endpoint")
 
 	redfishClient, cancel, err := redfishConnect(
@@ -266,6 +373,10 @@ func (bmc *BMC) SecureBootEnable() error {
 
 // SecureBootDisable disables the SecureBoot feature using the BMC's RedFish API endpoint.
 func (bmc *BMC) SecureBootDisable() error {
+	if valid, err := bmc.validateRedfish(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Disabling secure boot from bmc's redfish endpoint")
 
 	redfishClient, cancel, err := redfishConnect(
@@ -310,6 +421,10 @@ func (bmc *BMC) SecureBootDisable() error {
 
 // SystemResetAction performs the specified reset action against the system.
 func (bmc *BMC) SystemResetAction(action redfish.ResetType) error {
+	if valid, err := bmc.validateRedfish(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Performing reset action %s from the bmc's redfish endpoint")
 
 	redfishClient, cancel, err := redfishConnect(
@@ -337,29 +452,33 @@ func (bmc *BMC) SystemResetAction(action redfish.ResetType) error {
 	return system.Reset(action)
 }
 
-// SystemForceReset performs a (non-graceful) forced system reset using redfish API.
+// SystemForceReset performs a (non-graceful) forced system reset using Redfish API.
 func (bmc *BMC) SystemForceReset() error {
 	return bmc.SystemResetAction(redfish.ForceRestartResetType)
 }
 
-// SystemGracefulShutdown performs a graceful shutdown using the redfish API.
+// SystemGracefulShutdown performs a graceful shutdown using the Redfish API.
 func (bmc *BMC) SystemGracefulShutdown() error {
 	return bmc.SystemResetAction(redfish.GracefulShutdownResetType)
 }
 
-// SystemPowerOn powers on the system using the redfish API.
+// SystemPowerOn powers on the system using the Redfish API.
 func (bmc *BMC) SystemPowerOn() error {
 	return bmc.SystemResetAction(redfish.OnResetType)
 }
 
-// SystemPowerCycle power cycles the system using the redfish API.
+// SystemPowerCycle power cycles the system using the Redfish API.
 func (bmc *BMC) SystemPowerCycle() error {
 	return bmc.SystemResetAction(redfish.PowerCycleResetType)
 }
 
-// PowerUsage returns the current power usage of the chassis in watts using the redfish API. This method uses the first
+// PowerUsage returns the current power usage of the chassis in watts using the Redfish API. This method uses the first
 // chassis with a power link and the power control index for the BMC client.
 func (bmc *BMC) PowerUsage() (float32, error) {
+	if valid, err := bmc.validateRedfish(); !valid {
+		return 0.0, err
+	}
+
 	glog.V(100).Info("Collecting current power usage from bmc's redfish endpoint")
 
 	redfishClient, cancel, err := redfishConnect(
@@ -389,6 +508,10 @@ func (bmc *BMC) PowerUsage() (float32, error) {
 
 // CreateCLISSHSession creates a ssh Session to the host.
 func (bmc *BMC) CreateCLISSHSession() (*ssh.Session, error) {
+	if valid, err := bmc.validateSSH(); !valid {
+		return nil, err
+	}
+
 	glog.V(100).Infof("Creating SSH session to run commands in the BMC's CLI.")
 
 	config := &ssh.ClientConfig{
@@ -429,12 +552,16 @@ func (bmc *BMC) CreateCLISSHSession() (*ssh.Session, error) {
 	return session, nil
 }
 
-// RunCLICommand runs a CLI command in the BMC's console. This method will block until the command
-// has finished, and its output is copied to stdout and/or stderr if applicable. If combineOutput is true,
-// stderr content is merged in stdout. The timeout param is used to avoid the caller to be stuck forever
-// in case something goes wrong or the command is stuck.
-func (bmc *BMC) RunCLICommand(cmd string, combineOutput bool, timeout time.Duration) (
-	stdout string, stderr string, err error) {
+// RunCLICommand runs a CLI command in the BMC's console over SSH. This method will block until the command has
+// finished, and its output is copied to stdout and/or stderr if applicable. If combineOutput is true, stderr content is
+// merged in stdout. The timeout param is used to avoid the caller to be stuck forever in case something goes wrong or
+// the command is stuck.
+func (bmc *BMC) RunCLICommand(
+	cmd string, combineOutput bool, timeout time.Duration) (stdout string, stderr string, err error) {
+	if valid, err := bmc.validateSSH(); !valid {
+		return "", "", err
+	}
+
 	glog.V(100).Infof("Running CLI command in BMC's CLI: %s", cmd)
 
 	sshSession, err := bmc.CreateCLISSHSession()
@@ -487,11 +614,20 @@ func (bmc *BMC) RunCLICommand(cmd string, combineOutput bool, timeout time.Durat
 	return stdoutBuffer.String(), stderrBuffer.String(), nil
 }
 
-// OpenSerialConsole opens the serial console port. The console is tunneled in an underlying (CLI)
-// ssh session that is opened in the BMC's ssh server. If openConsoleCliCmd is
-// provided, it will be sent to the BMC's cli. Otherwise, a best effort will
-// be made to run the appropriate cli command based on the system manufacturer.
+// OpenSerialConsole opens the serial console port. The console is tunneled in an underlying (CLI) ssh session that is
+// opened in the BMC's ssh server. If openConsoleCliCmd is provided, it will be sent to the BMC's cli. Otherwise, a best
+// effort will be made to run the appropriate cli command based on the system manufacturer. This method requires both a
+// Redfish and SSH user configured.
 func (bmc *BMC) OpenSerialConsole(openConsoleCliCmd string) (io.Reader, io.WriteCloser, error) {
+	// We use both Redfish and SSH so make sure both are valid before continuing.
+	if valid, err := bmc.validateRedfish(); !valid {
+		return nil, nil, err
+	}
+
+	if valid, err := bmc.validateSSH(); !valid {
+		return nil, nil, err
+	}
+
 	glog.V(100).Infof("Opening serial console on %v.", bmc.host)
 
 	if bmc.sshSessionForSerialConsole != nil {
@@ -501,8 +637,7 @@ func (bmc *BMC) OpenSerialConsole(openConsoleCliCmd string) (io.Reader, io.Write
 		return nil, nil, fmt.Errorf("there is already a serial console opened for %v's BMC", bmc.host)
 	}
 
-	cliCmd := openConsoleCliCmd
-	if cliCmd == "" {
+	if openConsoleCliCmd == "" {
 		// no cli command to get console port was provided, try to guess based on
 		// manufacturer.
 		manufacturer, err := bmc.SystemManufacturer()
@@ -513,7 +648,7 @@ func (bmc *BMC) OpenSerialConsole(openConsoleCliCmd string) (io.Reader, io.Write
 		}
 
 		var found bool
-		if cliCmd, found = cliCmdSerialConsole[manufacturer]; !found {
+		if openConsoleCliCmd, found = cliCmdSerialConsole[manufacturer]; !found {
 			glog.V(100).Infof("CLI command to get serial console not found for manufacturer for %v: %v",
 				bmc.host, manufacturer)
 
@@ -548,13 +683,14 @@ func (bmc *BMC) OpenSerialConsole(openConsoleCliCmd string) (io.Reader, io.Write
 		return nil, nil, fmt.Errorf("failed to get stdin pipe from %v's ssh session: %w", bmc.host, err)
 	}
 
-	err = sshSession.Start(cliCmd)
+	err = sshSession.Start(openConsoleCliCmd)
 	if err != nil {
-		glog.V(100).Infof("Failed to start CLI command %q on %v: %v", cliCmd, bmc.host, err)
+		glog.V(100).Infof("Failed to start CLI command %q on %v: %v", openConsoleCliCmd, bmc.host, err)
 
 		_ = sshSession.Close()
 
-		return nil, nil, fmt.Errorf("failed to start serial console with cli command %q on %v: %w", cliCmd, bmc.host, err)
+		return nil, nil, fmt.Errorf(
+			"failed to start serial console with cli command %q on %v: %w", openConsoleCliCmd, bmc.host, err)
 	}
 
 	go func() { _ = sshSession.Wait() }()
@@ -566,6 +702,10 @@ func (bmc *BMC) OpenSerialConsole(openConsoleCliCmd string) (io.Reader, io.Write
 
 // CloseSerialConsole closes the serial console's underlying ssh session.
 func (bmc *BMC) CloseSerialConsole() error {
+	if valid, err := bmc.validate(); !valid {
+		return err
+	}
+
 	glog.V(100).Infof("Closing serial console for %v.", bmc.host)
 
 	if bmc.sshSessionForSerialConsole == nil {
@@ -586,8 +726,10 @@ func (bmc *BMC) CloseSerialConsole() error {
 	return nil
 }
 
-func redfishConnect(host, user, password string, sessionTimeout time.Duration) (
-	*gofish.APIClient, context.CancelFunc, error) {
+// redfishConnect uses the provided host, credentials, and timeout to produce a gofish APIClient for accessing the
+// Redfish API.
+func redfishConnect(
+	host, user, password string, sessionTimeout time.Duration) (*gofish.APIClient, context.CancelFunc, error) {
 	gofishConfig := gofish.ClientConfig{
 		Endpoint: "https://" + host,
 		Username: user,
@@ -607,6 +749,7 @@ func redfishConnect(host, user, password string, sessionTimeout time.Duration) (
 	return client, cancel, nil
 }
 
+// redfishGetSystem uses the provided gofish APIClient and the system index to get a system from the Redfish API.
 func redfishGetSystem(redfishClient *gofish.APIClient, index int) (*redfish.ComputerSystem, error) {
 	systems, err := redfishClient.GetService().Systems()
 	if err != nil {
@@ -620,6 +763,8 @@ func redfishGetSystem(redfishClient *gofish.APIClient, index int) (*redfish.Comp
 	return systems[index], nil
 }
 
+// redfishGetSystemSecureBoot uses the provided gofish APIClient and the system index to get the SecureBoot resource for
+// a system.
 func redfishGetSystemSecureBoot(redfishClient *gofish.APIClient, systemIndex int) (*redfish.SecureBoot, error) {
 	system, err := redfishGetSystem(redfishClient, systemIndex)
 	if err != nil {
@@ -661,4 +806,50 @@ func redfishGetPowerControl(
 	}
 
 	return nil, fmt.Errorf("failed to get power control: no chassis with power link found")
+}
+
+// validateRedfish performs the same validations as in validate but also checks for a valid redfish user.
+func (bmc *BMC) validateRedfish() (bool, error) {
+	if valid, err := bmc.validate(); !valid {
+		return false, err
+	}
+
+	if bmc.redfishUser == nil {
+		glog.V(100).Info("The BMC's Redfish user is nil")
+
+		return false, fmt.Errorf("cannot access redfish with nil user")
+	}
+
+	return true, nil
+}
+
+func (bmc *BMC) validateSSH() (bool, error) {
+	if valid, err := bmc.validate(); !valid {
+		return false, err
+	}
+
+	if bmc.sshUser == nil {
+		glog.V(100).Info("The BMC's SSH user is nil")
+
+		return false, fmt.Errorf("cannot access ssh with nil user")
+	}
+
+	return true, nil
+}
+
+// validate checks that the BMC is in a valid state with no error message.
+func (bmc *BMC) validate() (bool, error) {
+	if bmc == nil {
+		glog.V(100).Info("The BMC is nil")
+
+		return false, fmt.Errorf("error: received nil bmc")
+	}
+
+	if bmc.errorMsg != "" {
+		glog.V(100).Infof("The BMC has an error message: %s", bmc.errorMsg)
+
+		return false, fmt.Errorf(bmc.errorMsg)
+	}
+
+	return true, nil
 }
