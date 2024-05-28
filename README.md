@@ -97,17 +97,16 @@ exit status 1
 Please refer to the [secret pkg](./pkg/secret/secret.go)'s use of the validate method for more information.
 
 ### BMC Package
-The BMC package can be used to access the BMC's Redfish API, run BMC's CLI commands or getting the systems' serial console. Credentials for both Redfish and SSH user, the SSH port and timeouts need to be passed as parameters of the New() method. E.g.
+The BMC package can be used to access the BMC's Redfish API, run BMC's CLI commands, or get the systems' serial console. Only the host must be provided in `New()` while Redfish and SSH credentials, along with other options, can be configured using separate methods.
 
+```go
+bmc := bmc.New("1.2.3.4").
+    WithRedfishUser("redfishuser1", "redfishpass1").
+    WithSSHUser("sshuser1", "sshpass1").
+    WithSSHPort(1234)
 ```
-redfishUser := bmc.User{Name: "redfishuser1", Password: "redfishpass1"}
-sshUser := bmc.User{Name: "sshuser1", Password: "sshpass1"}
-timeOuts := bmc.TimeOuts{Redfish: 10*time.Second, SSH: 10*time.Second}
 
-bmc, err := bmc.New("1.2.3.4", redfishUser, sshUser, 22, timeOuts)
-```
-
-You can check an example program for the BMC package [here](usage/bmc/bmc.go).
+You can check an example program for the BMC package in [usage](usage/bmc/bmc.go).
 
 #### BMC's Redfish API
 The access to BMC's Redfish API is done by methods that encapsulate the underlaying HTTP calls made by the external gofish library. The redfish system index is defaulted to 0, but it can be changed with `SetSystemIndex()`:
