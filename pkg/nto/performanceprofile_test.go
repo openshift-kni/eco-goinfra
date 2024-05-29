@@ -41,6 +41,11 @@ var (
 			Node:  &defaultHugePagesNodeTwo,
 		},
 	}
+	defaultNetInterfaceNameOne = "ens2f(0|1)"
+	defaultNetInterfaceNameTwo = "ens3f(0|1)"
+	defaultVendorID            = "123456"
+	defaultDeviceID            = "7654321"
+	emptyString                = ""
 )
 
 func TestPullPerformanceProfile(t *testing.T) {
@@ -600,6 +605,154 @@ func TestPerformanceProfileWithWorkloadHints(t *testing.T) {
 			assert.Equal(t, testCase.rtHint, *result.Definition.Spec.WorkloadHints.RealTime)
 			assert.Equal(t, testCase.perPodPowerMgmtHint, *result.Definition.Spec.WorkloadHints.PerPodPowerManagement)
 			assert.Equal(t, testCase.highPowerHint, *result.Definition.Spec.WorkloadHints.HighPowerConsumption)
+		}
+	}
+}
+
+func TestPerformanceProfileWithAnnotations(t *testing.T) {
+	testCases := []struct {
+		testAnnotations   map[string]string
+		expectedErrorText string
+	}{
+		{
+			testAnnotations:   map[string]string{"performance.openshift.io/ignore-cgroups-version": "true"},
+			expectedErrorText: "",
+		},
+		{
+			testAnnotations: map[string]string{
+				"kubeletconfig.experimental": "{'systemReserved':{'cpu':'500m','memory':'28Gi'}}",
+			},
+			expectedErrorText: "",
+		},
+		{
+			testAnnotations: map[string]string{"performance.openshift.io/ignore-cgroups-version": "true",
+				"kubeletconfig.experimental": "{\"systemReserved\":{\"cpu\":\"500m\",\"memory\":\"28Gi\"}}"},
+			expectedErrorText: "",
+		},
+		{
+			testAnnotations:   map[string]string{},
+			expectedErrorText: "'annotations' argument cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidPerformanceProfileBuilder(buildPerformanceProfileWithDummyObject())
+
+		result := testBuilder.WithAnnotations(testCase.testAnnotations)
+
+		if testCase.expectedErrorText != "" {
+			assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
+		} else {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testAnnotations, result.Definition.ObjectMeta.Annotations)
+		}
+	}
+}
+
+//nolint:funlen
+func TestPerformanceProfileWithNet(t *testing.T) {
+	testCases := []struct {
+		testUserLevelNet  bool
+		testDevices       []v2.Device
+		expectedErrorText string
+	}{
+		{
+			testUserLevelNet: true,
+			testDevices: []v2.Device{{
+				InterfaceName: &defaultNetInterfaceNameOne,
+				VendorID:      &defaultVendorID,
+				DeviceID:      &defaultDeviceID,
+			}},
+			expectedErrorText: "",
+		},
+		{
+			testUserLevelNet: false,
+			testDevices: []v2.Device{{
+				InterfaceName: &defaultNetInterfaceNameOne,
+				VendorID:      &defaultVendorID,
+				DeviceID:      &defaultDeviceID,
+			}},
+			expectedErrorText: "",
+		},
+		{
+			testUserLevelNet: true,
+			testDevices: []v2.Device{{
+				InterfaceName: &defaultNetInterfaceNameOne,
+				VendorID:      &defaultVendorID,
+				DeviceID:      &emptyString,
+			}},
+			expectedErrorText: "",
+		},
+		{
+			testUserLevelNet: true,
+			testDevices: []v2.Device{{
+				InterfaceName: &defaultNetInterfaceNameOne,
+				VendorID:      &emptyString,
+				DeviceID:      &defaultDeviceID,
+			}},
+			expectedErrorText: "",
+		},
+		{
+			testUserLevelNet: true,
+			testDevices: []v2.Device{{
+				InterfaceName: &defaultNetInterfaceNameOne,
+			}},
+			expectedErrorText: "",
+		},
+		{
+			testUserLevelNet: true,
+			testDevices: []v2.Device{{
+				InterfaceName: &emptyString,
+				VendorID:      &defaultVendorID,
+				DeviceID:      &emptyString,
+			}},
+			expectedErrorText: "",
+		},
+		{
+			testUserLevelNet: true,
+			testDevices: []v2.Device{{
+				InterfaceName: &emptyString,
+				VendorID:      &emptyString,
+				DeviceID:      &defaultDeviceID,
+			}},
+			expectedErrorText: "",
+		},
+		{
+			testUserLevelNet: true,
+			testDevices: []v2.Device{{
+				InterfaceName: &defaultNetInterfaceNameOne,
+				VendorID:      &emptyString,
+				DeviceID:      &emptyString,
+			}},
+			expectedErrorText: "",
+		},
+		{
+			testUserLevelNet: true,
+			testDevices: []v2.Device{{
+				InterfaceName: &defaultNetInterfaceNameOne,
+			}, {
+				InterfaceName: &defaultNetInterfaceNameTwo,
+			}},
+			expectedErrorText: "",
+		},
+		{
+			testUserLevelNet:  true,
+			testDevices:       []v2.Device{},
+			expectedErrorText: "'devices' argument cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidPerformanceProfileBuilder(buildPerformanceProfileWithDummyObject())
+
+		result := testBuilder.WithNet(testCase.testUserLevelNet, testCase.testDevices)
+
+		if testCase.expectedErrorText != "" {
+			assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
+		} else {
+			assert.NotNil(t, result)
+			assert.Equal(t, &testCase.testUserLevelNet, result.Definition.Spec.Net.UserLevelNetworking)
+			assert.Equal(t, testCase.testDevices, result.Definition.Spec.Net.Devices)
 		}
 	}
 }
