@@ -564,6 +564,21 @@ func TestBMCSystemPowerCycle(t *testing.T) {
 	})
 }
 
+func TestBMCSystemPowerState(t *testing.T) {
+	// Create fake redfish endpoint.
+	redfishServer := createFakeRedfishLocalServer(false, redfishAPIResponseCallbacks{})
+	defer redfishServer.Close()
+
+	host := strings.Split(redfishServer.URL, "//")[1]
+	bmc := New(host).WithRedfishUser(defaultUsername, defaultPassword)
+
+	const expectedPowerState = "On"
+
+	powerState, err := bmc.SystemPowerState()
+	assert.NoError(t, err)
+	assert.Equal(t, expectedPowerState, powerState)
+}
+
 func TestBMCPowerUsage(t *testing.T) {
 	// Create a fake redfish api endpoint with secureBoot "disabled"
 	redfishServer := createFakeRedfishLocalServer(false, redfishAPIResponseCallbacks{})

@@ -267,7 +267,8 @@ func (bmc *BMC) SystemManufacturer() (string, error) {
 
 	redfishClient, cancel, err := redfishConnect(
 		bmc.host,
-		bmc.redfishUser.Name, bmc.redfishUser.Password,
+		bmc.redfishUser.Name,
+		bmc.redfishUser.Password,
 		bmc.timeOuts.Redfish)
 	if err != nil {
 		glog.V(100).Infof("Redfish connection error: %v", err)
@@ -300,7 +301,8 @@ func (bmc *BMC) IsSecureBootEnabled() (bool, error) {
 
 	redfishClient, cancel, err := redfishConnect(
 		bmc.host,
-		bmc.redfishUser.Name, bmc.redfishUser.Password,
+		bmc.redfishUser.Name,
+		bmc.redfishUser.Password,
 		bmc.timeOuts.Redfish)
 	if err != nil {
 		glog.V(100).Infof("Redfish connection error: %v", err)
@@ -333,7 +335,8 @@ func (bmc *BMC) SecureBootEnable() error {
 
 	redfishClient, cancel, err := redfishConnect(
 		bmc.host,
-		bmc.redfishUser.Name, bmc.redfishUser.Password,
+		bmc.redfishUser.Name,
+		bmc.redfishUser.Password,
 		bmc.timeOuts.Redfish)
 	if err != nil {
 		glog.V(100).Infof("Redfish connection error: %v", err)
@@ -381,7 +384,8 @@ func (bmc *BMC) SecureBootDisable() error {
 
 	redfishClient, cancel, err := redfishConnect(
 		bmc.host,
-		bmc.redfishUser.Name, bmc.redfishUser.Password,
+		bmc.redfishUser.Name,
+		bmc.redfishUser.Password,
 		bmc.timeOuts.Redfish)
 	if err != nil {
 		glog.V(100).Infof("Redfish connection error: %v", err)
@@ -429,7 +433,8 @@ func (bmc *BMC) SystemResetAction(action redfish.ResetType) error {
 
 	redfishClient, cancel, err := redfishConnect(
 		bmc.host,
-		bmc.redfishUser.Name, bmc.redfishUser.Password,
+		bmc.redfishUser.Name,
+		bmc.redfishUser.Password,
 		bmc.timeOuts.Redfish)
 	if err != nil {
 		glog.V(100).Infof("Redfish connection error: %v", err)
@@ -472,6 +477,41 @@ func (bmc *BMC) SystemPowerCycle() error {
 	return bmc.SystemResetAction(redfish.PowerCycleResetType)
 }
 
+// SystemPowerState returns the system's current power state using the Redfish API.
+// Returned string can be one of On/Off/Paused/PoweringOn/PoweringOff.
+func (bmc *BMC) SystemPowerState() (string, error) {
+	if valid, err := bmc.validateRedfish(); !valid {
+		return "", err
+	}
+
+	glog.V(100).Info("Collecting current power state from bmc's redfish endpoint")
+
+	redfishClient, cancel, err := redfishConnect(
+		bmc.host,
+		bmc.redfishUser.Name,
+		bmc.redfishUser.Password,
+		bmc.timeOuts.Redfish)
+	if err != nil {
+		glog.V(100).Infof("Redfish connection error: %v", err)
+
+		return "", fmt.Errorf("redfish connection error: %w", err)
+	}
+
+	defer func() {
+		redfishClient.Logout()
+		cancel()
+	}()
+
+	system, err := redfishGetSystem(redfishClient, bmc.systemIndex)
+	if err != nil {
+		glog.V(100).Infof("Failed to get redfish system: %v", err)
+
+		return "", fmt.Errorf("failed to get redfish system: %w", err)
+	}
+
+	return string(system.PowerState), nil
+}
+
 // PowerUsage returns the current power usage of the chassis in watts using the Redfish API. This method uses the first
 // chassis with a power link and the power control index for the BMC client.
 func (bmc *BMC) PowerUsage() (float32, error) {
@@ -483,7 +523,8 @@ func (bmc *BMC) PowerUsage() (float32, error) {
 
 	redfishClient, cancel, err := redfishConnect(
 		bmc.host,
-		bmc.redfishUser.Name, bmc.redfishUser.Password,
+		bmc.redfishUser.Name,
+		bmc.redfishUser.Password,
 		bmc.timeOuts.Redfish)
 	if err != nil {
 		glog.V(100).Infof("Redfish connection error: %v", err)

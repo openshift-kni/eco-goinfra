@@ -123,8 +123,14 @@ func main() {
 		fmt.Printf("Failed to get secure boot status on %v: %v\n", *hostFlag, err)
 	}
 
+	powerState, err := bmcClient.SystemPowerState()
+	if err != nil {
+		fmt.Printf("Failed to get system's power state: %v\n", err)
+	}
+
 	fmt.Printf("System %d Manufacturer       : %v\n", *systemIndexFlag, manufacturer)
 	fmt.Printf("System %d SecureBoot enabled : %v\n", *systemIndexFlag, sbEnabled)
+	fmt.Printf("System %d PowerState         : %v\n", *systemIndexFlag, powerState)
 
 	// Run the help command. We should see all the available CLI commands.
 	runCLICommand(bmcClient, "help", true, 10*time.Second)
