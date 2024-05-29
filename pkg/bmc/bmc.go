@@ -267,7 +267,8 @@ func (bmc *BMC) SystemManufacturer() (string, error) {
 
 	redfishClient, cancel, err := redfishConnect(
 		bmc.host,
-		bmc.redfishUser.Name, bmc.redfishUser.Password,
+		bmc.redfishUser.Name,
+		bmc.redfishUser.Password,
 		bmc.timeOuts.Redfish)
 	if err != nil {
 		glog.V(100).Infof("Redfish connection error: %v", err)
@@ -300,7 +301,8 @@ func (bmc *BMC) IsSecureBootEnabled() (bool, error) {
 
 	redfishClient, cancel, err := redfishConnect(
 		bmc.host,
-		bmc.redfishUser.Name, bmc.redfishUser.Password,
+		bmc.redfishUser.Name,
+		bmc.redfishUser.Password,
 		bmc.timeOuts.Redfish)
 	if err != nil {
 		glog.V(100).Infof("Redfish connection error: %v", err)
@@ -333,7 +335,8 @@ func (bmc *BMC) SecureBootEnable() error {
 
 	redfishClient, cancel, err := redfishConnect(
 		bmc.host,
-		bmc.redfishUser.Name, bmc.redfishUser.Password,
+		bmc.redfishUser.Name,
+		bmc.redfishUser.Password,
 		bmc.timeOuts.Redfish)
 	if err != nil {
 		glog.V(100).Infof("Redfish connection error: %v", err)
@@ -381,7 +384,8 @@ func (bmc *BMC) SecureBootDisable() error {
 
 	redfishClient, cancel, err := redfishConnect(
 		bmc.host,
-		bmc.redfishUser.Name, bmc.redfishUser.Password,
+		bmc.redfishUser.Name,
+		bmc.redfishUser.Password,
 		bmc.timeOuts.Redfish)
 	if err != nil {
 		glog.V(100).Infof("Redfish connection error: %v", err)
@@ -429,7 +433,8 @@ func (bmc *BMC) SystemResetAction(action redfish.ResetType) error {
 
 	redfishClient, cancel, err := redfishConnect(
 		bmc.host,
-		bmc.redfishUser.Name, bmc.redfishUser.Password,
+		bmc.redfishUser.Name,
+		bmc.redfishUser.Password,
 		bmc.timeOuts.Redfish)
 	if err != nil {
 		glog.V(100).Infof("Redfish connection error: %v", err)
@@ -483,7 +488,8 @@ func (bmc *BMC) SystemPowerState() (string, error) {
 
 	redfishClient, cancel, err := redfishConnect(
 		bmc.host,
-		bmc.redfishUser.Name, bmc.redfishUser.Password,
+		bmc.redfishUser.Name,
+		bmc.redfishUser.Password,
 		bmc.timeOuts.Redfish)
 	if err != nil {
 		glog.V(100).Infof("Redfish connection error: %v", err)
@@ -517,7 +523,8 @@ func (bmc *BMC) PowerUsage() (float32, error) {
 
 	redfishClient, cancel, err := redfishConnect(
 		bmc.host,
-		bmc.redfishUser.Name, bmc.redfishUser.Password,
+		bmc.redfishUser.Name,
+		bmc.redfishUser.Password,
 		bmc.timeOuts.Redfish)
 	if err != nil {
 		glog.V(100).Infof("Redfish connection error: %v", err)
