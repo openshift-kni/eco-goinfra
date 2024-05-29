@@ -75,6 +75,8 @@ import (
 	plumbingv1 "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/apis/k8s.cni.cncf.io/v1beta1"
 	fakeMultiNetPolicyClient "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/client/clientset/versioned/fake"
 
+	mceV1 "github.com/stolostron/backplane-operator/api/v1"
+
 	clusterClient "open-cluster-management.io/api/client/cluster/clientset/versioned"
 	clusterClientFake "open-cluster-management.io/api/client/cluster/clientset/versioned/fake"
 	clusterV1Client "open-cluster-management.io/api/client/cluster/clientset/versioned/typed/cluster/v1"
@@ -285,6 +287,10 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
+	if err := mceV1.AddToScheme(crScheme); err != nil {
+		return err
+	}
+
 	if err := lsoV1alpha1.AddToScheme(crScheme); err != nil {
 		return err
 	}
@@ -459,6 +465,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			k8sClientObjects = append(k8sClientObjects, v)
 		// Generic Client Objects
 		case *bmhv1alpha1.BareMetalHost:
+			genericClientObjects = append(genericClientObjects, v)
+		case *mceV1.MultiClusterEngine:
 			genericClientObjects = append(genericClientObjects, v)
 		case *operatorv1.KubeAPIServer:
 			genericClientObjects = append(genericClientObjects, v)

@@ -6,32 +6,32 @@ package redfish
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"reflect"
 
 	"github.com/stmcginnis/gofish/common"
 )
 
 // The type of equipment this resource represents.
-type EquipmentType string
+type PowerEquipmentType string
 
 const (
-	// An automatic power transfer switch.
-	AutomaticTransferSwitchEquipmentType EquipmentType = "AutomaticTransferSwitch"
-	// (v1.3+)	A battery shelf or battery-backed unit (BBU).
-	BatteryShelfEquipmentType EquipmentType = "BatteryShelf"
-	// (v1.2+)	An electrical bus.
-	BusEquipmentType EquipmentType = "Bus"
-	// A power distribution unit providing feeder circuits for further power distribution.
-	FloorPDUEquipmentType EquipmentType = "FloorPDU"
-	// A manual power transfer switch.
-	ManualTransferSwitchEquipmentType EquipmentType = "ManualTransferSwitch"
-	// (v1.1+)	A power shelf.
-	PowerShelfEquipmentType EquipmentType = "PowerShelf"
-	// A power distribution unit providing outlets for a rack or similar quantity of devices.
-	RackPDUEquipmentType EquipmentType = "RackPDU"
-	// Electrical switchgear.
-	SwitchgearEquipmentType EquipmentType = "Switchgear"
+	// RackPDUPowerEquipmentType A power distribution unit providing outlets for a rack or similar quantity of devices.
+	RackPDUPowerEquipmentType PowerEquipmentType = "RackPDU"
+	// FloorPDUPowerEquipmentType A power distribution unit providing feeder circuits for further power distribution.
+	FloorPDUPowerEquipmentType PowerEquipmentType = "FloorPDU"
+	// ManualTransferSwitchPowerEquipmentType A manual power transfer switch.
+	ManualTransferSwitchPowerEquipmentType PowerEquipmentType = "ManualTransferSwitch"
+	// AutomaticTransferSwitchPowerEquipmentType An automatic power transfer switch.
+	AutomaticTransferSwitchPowerEquipmentType PowerEquipmentType = "AutomaticTransferSwitch"
+	// SwitchgearPowerEquipmentType Electrical switchgear.
+	SwitchgearPowerEquipmentType PowerEquipmentType = "Switchgear"
+	// PowerShelfPowerEquipmentType A power shelf.
+	PowerShelfPowerEquipmentType PowerEquipmentType = "PowerShelf"
+	// BusPowerEquipmentType An electrical bus.
+	BusPowerEquipmentType PowerEquipmentType = "Bus"
+	// BatteryShelfPowerEquipmentType A battery shelf or battery-backed unit (BBU).
+	BatteryShelfPowerEquipmentType PowerEquipmentType = "BatteryShelf"
 )
 
 // The sensitivity to voltage waveform quality to satisfy the criterion for initiating a transfer.
@@ -111,7 +111,7 @@ type PowerDistribution struct {
 	// A link to the branch circuits for this equipment.
 	branches string
 	// The type of equipment this resource represents.
-	EquipmentType EquipmentType
+	EquipmentType PowerEquipmentType
 	// A link to the feeder circuits for this equipment.
 	feeders string
 	// The firmware version of this equipment.
@@ -197,10 +197,8 @@ func (powerDistribution *PowerDistribution) UnmarshalJSON(b []byte) error {
 		Oem            json.RawMessage
 	}
 	type actions struct {
-		TransferControl struct {
-			Target string
-		} `json:"#PowerDistribution.TransferControl"`
-		Oem json.RawMessage // OEM actions will be stored here
+		TransferControl common.ActionTarget `json:"#PowerDistribution.TransferControl"`
+		Oem             json.RawMessage     // OEM actions will be stored here
 	}
 	var t struct {
 		temp
@@ -267,6 +265,9 @@ func (powerDistribution *PowerDistribution) Update() error {
 		return err
 	}
 
+	// Note: current definition (2023.3) only includes AssetTag and UserLabel.
+	// May have errors trying to set other values, but keeping in here for backwards
+	// compatibility.
 	readWriteFields := []string{
 		"AssetTag",
 		"UserLabel",
@@ -295,7 +296,7 @@ func (powerDistribution *PowerDistribution) Update() error {
 // This action shall transfer power input from the existing mains circuit to the alternative mains circuit.
 func (powerDistribution *PowerDistribution) TransferControl() error {
 	if powerDistribution.transferControlTarget == "" {
-		return fmt.Errorf("TransferControl is not supported") //nolint:golint
+		return errors.New("TransferControl is not supported") //nolint:golint
 	}
 
 	return powerDistribution.Post(powerDistribution.transferControlTarget, nil)
@@ -303,7 +304,7 @@ func (powerDistribution *PowerDistribution) TransferControl() error {
 
 // ListReferencedPowerDistribution gets the collection of PowerDistribution from
 // a provided reference.
-func ListReferencedPowerDistributionUnits(c common.Client, link string) ([]*PowerDistribution, error) { //nolint:dupl
+func ListReferencedPowerDistributionUnits(c common.Client, link string) ([]*PowerDistribution, error) {
 	var result []*PowerDistribution
 	if link == "" {
 		return result, nil
@@ -418,9 +419,9 @@ func (powerDistribution *PowerDistribution) Subfeeds() ([]*Circuit, error) {
 }
 
 // Facility gets a resource that represents the facility that contains this equipment.
-// func (powerDistribution *PowerDistribution) Facility() (*Facility, error) {
-// 	return GetFacility(powerDistribution.GetClient(), powerDistribution.facility)
-// }
+func (powerDistribution *PowerDistribution) Facility() (*Facility, error) {
+	return GetFacility(powerDistribution.GetClient(), powerDistribution.facility)
+}
 
 // Metrics gets the metrics of a power distribution component or unit.
 func (powerDistribution *PowerDistribution) Metrics() (metrics *PowerDistributionMetrics, err error) {
@@ -431,11 +432,11 @@ func (powerDistribution *PowerDistribution) Metrics() (metrics *PowerDistributio
 }
 
 // OutletGroups gets the collection that contains the outlet groups for this equipment.
-// func (powerDistribution *PowerDistribution) OutletGroups() ([]*OutletGroup, error) {
-// 	return ListReferencedOutletGroups(powerDistribution.GetClient(), powerDistribution.outletGroups)
-// }
+func (powerDistribution *PowerDistribution) OutletGroups() ([]*OutletGroup, error) {
+	return ListReferencedOutletGroups(powerDistribution.GetClient(), powerDistribution.outletGroups)
+}
 
 // Outlets gets the collection that contains the outlets for this equipment.
-// func (powerDistribution *PowerDistribution) Outlets() ([]*Outlets, error) {
-// 	return ListReferencedOutlets(powerDistribution.GetClient(), powerDistribution.outlets)
-// }
+func (powerDistribution *PowerDistribution) Outlets() ([]*Outlet, error) {
+	return ListReferencedOutlets(powerDistribution.GetClient(), powerDistribution.outlets)
+}
