@@ -1,10 +1,10 @@
-package nto //nolint:misspell
+package keda
 
 import (
 	"fmt"
 	"testing"
 
-	tunedv1 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/tuned/v1"
+	kedav1alpha1 "github.com/kedacore/keda-olm-operator/apis/keda/v1alpha1"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
@@ -13,19 +13,13 @@ import (
 )
 
 var (
-	tunedAPIGroup           = "tuned.openshift.io"
-	tunedAPIVersion         = "v1"
-	tunedKind               = "Tuned"
-	defaultTunedName        = "default"
-	defaultTunedNamespace   = "openshift-cluster-node-tuning-operator"
-	defaultTunedProfileName = "openshift"
-	defaultTunedProfileData = "[main]\nsummary=Optimize systems running OpenShift (provider specific parent profile)" +
-		"\ninclude=-provider-${f:exec:cat:/var/lib/ocp-tuned/provider},openshift\n"
+	defaultKedaControllerName      = "keda"
+	defaultKedaControllerNamespace = "openshift-keda"
 )
 
-func TestPullTuned(t *testing.T) {
-	generateTuned := func(name, namespace string) *tunedv1.Tuned {
-		return &tunedv1.Tuned{
+func TestPullKedaController(t *testing.T) {
+	generateKedaController := func(name, namespace string) *kedav1alpha1.KedaController {
+		return &kedav1alpha1.KedaController{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,
@@ -42,38 +36,38 @@ func TestPullTuned(t *testing.T) {
 	}{
 		{
 			name:                "test",
-			namespace:           "openshift-cluster-node-tuning-operator",
+			namespace:           "openshift-keda",
 			addToRuntimeObjects: true,
 			expectedError:       nil,
 			client:              true,
 		},
 		{
 			name:                "",
-			namespace:           "openshift-cluster-node-tuning-operator",
+			namespace:           "openshift-keda",
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("tuned 'name' cannot be empty"),
+			expectedError:       fmt.Errorf("kedaController 'name' cannot be empty"),
 			client:              true,
 		},
 		{
 			name:                "test",
 			namespace:           "",
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("tuned 'nsname' cannot be empty"),
+			expectedError:       fmt.Errorf("kedaController 'nsname' cannot be empty"),
 			client:              true,
 		},
 		{
-			name:                "tunedtest",
-			namespace:           "openshift-cluster-node-tuning-operator",
+			name:                "kedacontrollertest",
+			namespace:           "openshift-keda",
 			addToRuntimeObjects: false,
-			expectedError: fmt.Errorf("tuned object tunedtest does not exist in " +
-				"namespace openshift-cluster-node-tuning-operator"),
+			expectedError: fmt.Errorf("kedaController object kedacontrollertest does not exist " +
+				"in namespace openshift-keda"),
 			client: true,
 		},
 		{
-			name:                "tunedtest",
-			namespace:           "openshift-cluster-node-tuning-operator",
+			name:                "kedacontrollertest",
+			namespace:           "openshift-keda",
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("tuned 'apiClient' cannot be empty"),
+			expectedError:       fmt.Errorf("kedaController 'apiClient' cannot be empty"),
 			client:              false,
 		},
 	}
@@ -84,10 +78,10 @@ func TestPullTuned(t *testing.T) {
 
 		var testSettings *clients.Settings
 
-		testTuned := generateTuned(testCase.name, testCase.namespace)
+		testKedaController := generateKedaController(testCase.name, testCase.namespace)
 
 		if testCase.addToRuntimeObjects {
-			runtimeObjects = append(runtimeObjects, testTuned)
+			runtimeObjects = append(runtimeObjects, testKedaController)
 		}
 
 		if testCase.client {
@@ -96,104 +90,104 @@ func TestPullTuned(t *testing.T) {
 			})
 		}
 
-		builderResult, err := PullTuned(testSettings, testCase.name, testCase.namespace)
+		builderResult, err := PullKedaController(testSettings, testCase.name, testCase.namespace)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError != nil {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		} else {
-			assert.Equal(t, testTuned.Name, builderResult.Object.Name)
+			assert.Equal(t, testKedaController.Name, builderResult.Object.Name)
 			assert.Nil(t, err)
 		}
 	}
 }
 
-func TestNewTunedBuilder(t *testing.T) {
+func TestNewKedaControllerBuilder(t *testing.T) {
 	testCases := []struct {
 		name          string
 		namespace     string
 		expectedError string
 	}{
 		{
-			name:          defaultTunedName,
-			namespace:     defaultTunedNamespace,
+			name:          defaultKedaControllerName,
+			namespace:     defaultKedaControllerNamespace,
 			expectedError: "",
 		},
 		{
 			name:          "",
-			namespace:     defaultTunedNamespace,
-			expectedError: "tuned 'name' cannot be empty",
+			namespace:     defaultKedaControllerNamespace,
+			expectedError: "kedaController 'name' cannot be empty",
 		},
 		{
-			name:          defaultTunedName,
+			name:          defaultKedaControllerName,
 			namespace:     "",
-			expectedError: "tuned 'nsname' cannot be empty",
+			expectedError: "kedaController 'nsname' cannot be empty",
 		},
 	}
 
 	for _, testCase := range testCases {
 		testSettings := clients.GetTestClients(clients.TestClientParams{})
-		testTunedBuilder := NewTunedBuilder(testSettings, testCase.name, testCase.namespace)
-		assert.Equal(t, testCase.expectedError, testTunedBuilder.errorMsg)
-		assert.NotNil(t, testTunedBuilder.Definition)
+		testKedaControllerBuilder := NewKedaControllerBuilder(testSettings, testCase.name, testCase.namespace)
+		assert.Equal(t, testCase.expectedError, testKedaControllerBuilder.errorMsg)
+		assert.NotNil(t, testKedaControllerBuilder.Definition)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testCase.name, testTunedBuilder.Definition.Name)
-			assert.Equal(t, testCase.namespace, testTunedBuilder.Definition.Namespace)
+			assert.Equal(t, testCase.name, testKedaControllerBuilder.Definition.Name)
+			assert.Equal(t, testCase.namespace, testKedaControllerBuilder.Definition.Namespace)
 		}
 	}
 }
 
-func TestTunedExists(t *testing.T) {
+func TestKedaControllerExists(t *testing.T) {
 	testCases := []struct {
-		testTuned      *TunedBuilder
-		expectedStatus bool
+		testKedaController *KedaControllerBuilder
+		expectedStatus     bool
 	}{
 		{
-			testTuned:      buildValidTunedBuilder(buildTunedClientWithDummyObject()),
-			expectedStatus: true,
+			testKedaController: buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			expectedStatus:     true,
 		},
 		{
-			testTuned:      buildInValidTunedBuilder(buildTunedClientWithDummyObject()),
-			expectedStatus: false,
+			testKedaController: buildInValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			expectedStatus:     false,
 		},
 		{
-			testTuned:      buildValidTunedBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedStatus: false,
+			testKedaController: buildValidKedaControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedStatus:     false,
 		},
 	}
 
 	for _, testCase := range testCases {
-		exist := testCase.testTuned.Exists()
+		exist := testCase.testKedaController.Exists()
 		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
-func TestTunedGet(t *testing.T) {
+func TestKedaControllerGet(t *testing.T) {
 	testCases := []struct {
-		testTuned     *TunedBuilder
-		expectedError error
+		testKedaController *KedaControllerBuilder
+		expectedError      error
 	}{
 		{
-			testTuned:     buildValidTunedBuilder(buildTunedClientWithDummyObject()),
-			expectedError: nil,
+			testKedaController: buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			expectedError:      nil,
 		},
 		{
-			testTuned:     buildInValidTunedBuilder(buildTunedClientWithDummyObject()),
-			expectedError: fmt.Errorf("tuneds.tuned.openshift.io \"\" not found"),
+			testKedaController: buildInValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			expectedError:      fmt.Errorf("kedacontrollers.keda.sh \"\" not found"),
 		},
 		{
-			testTuned:     buildValidTunedBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: fmt.Errorf("tuneds.tuned.openshift.io \"default\" not found"),
+			testKedaController: buildValidKedaControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:      fmt.Errorf("kedacontrollers.keda.sh \"keda\" not found"),
 		},
 	}
 
 	for _, testCase := range testCases {
-		tunedObj, err := testCase.testTuned.Get()
+		kedaControllerObj, err := testCase.testKedaController.Get()
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, tunedObj.Name, testCase.testTuned.Definition.Name)
-			assert.Equal(t, tunedObj.Namespace, testCase.testTuned.Definition.Namespace)
+			assert.Equal(t, kedaControllerObj.Name, testCase.testKedaController.Definition.Name)
+			assert.Equal(t, kedaControllerObj.Namespace, testCase.testKedaController.Definition.Namespace)
 			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
@@ -201,31 +195,31 @@ func TestTunedGet(t *testing.T) {
 	}
 }
 
-func TestTunedCreate(t *testing.T) {
+func TestKedaControllerCreate(t *testing.T) {
 	testCases := []struct {
-		testTuned     *TunedBuilder
-		expectedError string
+		testKedaController *KedaControllerBuilder
+		expectedError      string
 	}{
 		{
-			testTuned:     buildValidTunedBuilder(buildTunedClientWithDummyObject()),
-			expectedError: "",
+			testKedaController: buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			expectedError:      "",
 		},
 		{
-			testTuned:     buildInValidTunedBuilder(buildTunedClientWithDummyObject()),
-			expectedError: "Tuned.tuned.openshift.io \"\" is invalid: metadata.name: Required value: name is required",
+			testKedaController: buildInValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			expectedError:      " \"\" is invalid: metadata.name: Required value: name is required",
 		},
 		{
-			testTuned:     buildValidTunedBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: "",
+			testKedaController: buildValidKedaControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:      "",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testTunedBuilder, err := testCase.testTuned.Create()
+		testKedaControllerBuilder, err := testCase.testKedaController.Create()
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testTunedBuilder.Definition.Name, testTunedBuilder.Object.Name)
-			assert.Equal(t, testTunedBuilder.Definition.Namespace, testTunedBuilder.Object.Namespace)
+			assert.Equal(t, testKedaControllerBuilder.Definition.Name, testKedaControllerBuilder.Object.Name)
+			assert.Equal(t, testKedaControllerBuilder.Definition.Namespace, testKedaControllerBuilder.Object.Namespace)
 			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError, err.Error())
@@ -233,30 +227,30 @@ func TestTunedCreate(t *testing.T) {
 	}
 }
 
-func TestTunedDelete(t *testing.T) {
+func TestKedaControllerDelete(t *testing.T) {
 	testCases := []struct {
-		testTuned     *TunedBuilder
-		expectedError error
+		testKedaController *KedaControllerBuilder
+		expectedError      error
 	}{
 		{
-			testTuned:     buildValidTunedBuilder(buildTunedClientWithDummyObject()),
-			expectedError: nil,
+			testKedaController: buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			expectedError:      nil,
 		},
 		{
-			testTuned:     buildInValidTunedBuilder(buildTunedClientWithDummyObject()),
-			expectedError: nil,
+			testKedaController: buildInValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			expectedError:      nil,
 		},
 		{
-			testTuned:     buildValidTunedBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: nil,
+			testKedaController: buildValidKedaControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:      nil,
 		},
 	}
 
 	for _, testCase := range testCases {
-		_, err := testCase.testTuned.Delete()
+		_, err := testCase.testKedaController.Delete()
 
 		if testCase.expectedError == nil {
-			assert.Nil(t, testCase.testTuned.Object)
+			assert.Nil(t, testCase.testKedaController.Object)
 			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
@@ -264,70 +258,63 @@ func TestTunedDelete(t *testing.T) {
 	}
 }
 
-func TestTunedUpdate(t *testing.T) {
+func TestKedaControllerUpdate(t *testing.T) {
 	testCases := []struct {
-		testTuned     *TunedBuilder
-		expectedError string
-		profile       tunedv1.TunedProfile
+		testKedaController *KedaControllerBuilder
+		expectedError      string
+		watchNamespace     string
 	}{
 		{
-			testTuned:     buildValidTunedBuilder(buildTunedClientWithDummyObject()),
-			expectedError: "",
-			profile: tunedv1.TunedProfile{
-				Name: &defaultTunedProfileName,
-				Data: &defaultTunedProfileData,
-			},
+			testKedaController: buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			expectedError:      "",
+			watchNamespace:     "keda",
 		},
 		{
-			testTuned: buildInValidTunedBuilder(buildTunedClientWithDummyObject()),
-			expectedError: "Tuned.tuned.openshift.io \"\" is invalid: metadata.name: " +
-				"Required value: name is required",
-			profile: tunedv1.TunedProfile{
-				Name: &defaultTunedProfileName,
-				Data: &defaultTunedProfileData,
-			},
+			testKedaController: buildInValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			expectedError:      " \"\" is invalid: metadata.name: Required value: name is required",
+			watchNamespace:     "",
 		},
 	}
 
 	for _, testCase := range testCases {
-		assert.Equal(t, []tunedv1.TunedProfile(nil), testCase.testTuned.Definition.Spec.Profile)
-		assert.Nil(t, nil, testCase.testTuned.Object)
-		testCase.testTuned.WithProfile(testCase.profile)
-		_, err := testCase.testTuned.Update()
+		assert.Equal(t, "", testCase.testKedaController.Definition.Spec.WatchNamespace)
+		assert.Nil(t, nil, testCase.testKedaController.Object)
+		testCase.testKedaController.WithWatchNamespace(testCase.watchNamespace)
+		_, err := testCase.testKedaController.Update()
 
 		if testCase.expectedError != "" {
 			assert.Equal(t, testCase.expectedError, err.Error())
 		} else {
-			assert.Equal(t, []tunedv1.TunedProfile{testCase.profile}, testCase.testTuned.Definition.Spec.Profile)
+			assert.Equal(t, testCase.watchNamespace, testCase.testKedaController.Definition.Spec.WatchNamespace)
 		}
 	}
 }
 
-func TestTunedWithProfile(t *testing.T) {
+func TestKedaControllerWithAdmissionWebhooks(t *testing.T) {
 	testCases := []struct {
-		testProfile       tunedv1.TunedProfile
-		expectedError     bool
-		expectedErrorText string
+		testAdmissionWebhooks kedav1alpha1.KedaAdmissionWebhooksSpec
+		expectedError         bool
+		expectedErrorText     string
 	}{
 		{
-			testProfile: tunedv1.TunedProfile{
-				Name: &defaultTunedName,
-				Data: &defaultTunedProfileData,
+			testAdmissionWebhooks: kedav1alpha1.KedaAdmissionWebhooksSpec{
+				LogLevel:   "info",
+				LogEncoder: "console",
 			},
 			expectedError:     false,
 			expectedErrorText: "",
 		},
 		{
-			testProfile:       tunedv1.TunedProfile{},
-			expectedError:     false,
-			expectedErrorText: "'profile' argument cannot be empty",
+			testAdmissionWebhooks: kedav1alpha1.KedaAdmissionWebhooksSpec{},
+			expectedError:         false,
+			expectedErrorText:     "",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidTunedBuilder(buildTunedClientWithDummyObject())
+		testBuilder := buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject())
 
-		result := testBuilder.WithProfile(testCase.testProfile)
+		result := testBuilder.WithAdmissionWebhooks(testCase.testAdmissionWebhooks)
 
 		if testCase.expectedError {
 			if testCase.expectedErrorText != "" {
@@ -335,44 +322,138 @@ func TestTunedWithProfile(t *testing.T) {
 			}
 		} else {
 			assert.NotNil(t, result)
-			assert.Equal(t, []tunedv1.TunedProfile{testCase.testProfile}, result.Definition.Spec.Profile)
+			assert.Equal(t, testCase.testAdmissionWebhooks, result.Definition.Spec.AdmissionWebhooks)
 		}
 	}
 }
 
-func buildValidTunedBuilder(apiClient *clients.Settings) *TunedBuilder {
-	tunedBuilder := NewTunedBuilder(
-		apiClient, defaultTunedName, defaultTunedNamespace)
-	tunedBuilder.Definition.TypeMeta = metav1.TypeMeta{
-		Kind:       tunedKind,
-		APIVersion: fmt.Sprintf("%s/%s", tunedAPIGroup, tunedAPIVersion),
+func TestKedaControllerWithOperator(t *testing.T) {
+	testCases := []struct {
+		testOperator      kedav1alpha1.KedaOperatorSpec
+		expectedError     bool
+		expectedErrorText string
+	}{
+		{
+			testOperator: kedav1alpha1.KedaOperatorSpec{
+				LogLevel:   "info",
+				LogEncoder: "console",
+			},
+			expectedError:     false,
+			expectedErrorText: "",
+		},
+		{
+			testOperator:      kedav1alpha1.KedaOperatorSpec{},
+			expectedError:     false,
+			expectedErrorText: "'operator' argument cannot be empty",
+		},
 	}
 
-	return tunedBuilder
+	for _, testCase := range testCases {
+		testBuilder := buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject())
+
+		result := testBuilder.WithOperator(testCase.testOperator)
+
+		if testCase.expectedError {
+			if testCase.expectedErrorText != "" {
+				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
+			}
+		} else {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testOperator, result.Definition.Spec.Operator)
+		}
+	}
 }
 
-func buildInValidTunedBuilder(apiClient *clients.Settings) *TunedBuilder {
-	tunedBuilder := NewTunedBuilder(
-		apiClient, "", defaultTunedNamespace)
-	tunedBuilder.Definition.TypeMeta = metav1.TypeMeta{
-		Kind:       tunedKind,
-		APIVersion: fmt.Sprintf("%s/%s", tunedAPIGroup, tunedAPIVersion),
+func TestKedaControllerWithMetricsServer(t *testing.T) {
+	testCases := []struct {
+		testMetricsServer kedav1alpha1.KedaMetricsServerSpec
+		expectedError     bool
+		expectedErrorText string
+	}{
+		{
+			testMetricsServer: kedav1alpha1.KedaMetricsServerSpec{
+				LogLevel: "0",
+			},
+			expectedError:     false,
+			expectedErrorText: "",
+		},
+		{
+			testMetricsServer: kedav1alpha1.KedaMetricsServerSpec{},
+			expectedError:     false,
+			expectedErrorText: "'metricsServer' argument cannot be empty",
+		},
 	}
 
-	return tunedBuilder
+	for _, testCase := range testCases {
+		testBuilder := buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject())
+
+		result := testBuilder.WithMetricsServer(testCase.testMetricsServer)
+
+		if testCase.expectedError {
+			if testCase.expectedErrorText != "" {
+				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
+			}
+		} else {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testMetricsServer, result.Definition.Spec.MetricsServer)
+		}
+	}
 }
 
-func buildTunedClientWithDummyObject() *clients.Settings {
+func TestKedaControllerWithWatchNamespace(t *testing.T) {
+	testCases := []struct {
+		testWatchNamespace string
+		expectedErrorText  string
+	}{
+		{
+			testWatchNamespace: "test-app",
+			expectedErrorText:  "",
+		},
+		{
+			testWatchNamespace: "",
+			expectedErrorText:  "'watchNamespace' argument cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildInValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject())
+
+		result := testBuilder.WithWatchNamespace(testCase.testWatchNamespace)
+
+		if testCase.expectedErrorText != "" {
+			assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
+		} else {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testWatchNamespace, result.Definition.Spec.WatchNamespace)
+		}
+	}
+}
+
+func buildValidKedaControllerBuilder(apiClient *clients.Settings) *KedaControllerBuilder {
+	kedaControllerBuilder := NewKedaControllerBuilder(
+		apiClient, defaultKedaControllerName, defaultKedaControllerNamespace)
+
+	return kedaControllerBuilder
+}
+
+func buildInValidKedaControllerBuilder(apiClient *clients.Settings) *KedaControllerBuilder {
+	kedaControllerBuilder := NewKedaControllerBuilder(
+		apiClient, "", defaultKedaControllerNamespace)
+
+	return kedaControllerBuilder
+}
+
+func buildKedaControllerClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyTuned(),
+		K8sMockObjects: buildDummyKedaController(),
 	})
 }
 
-func buildDummyTuned() []runtime.Object {
-	return append([]runtime.Object{}, &tunedv1.Tuned{
+func buildDummyKedaController() []runtime.Object {
+	return append([]runtime.Object{}, &kedav1alpha1.KedaController{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      defaultTunedName,
-			Namespace: defaultTunedNamespace,
+			Name:      defaultKedaControllerName,
+			Namespace: defaultKedaControllerNamespace,
 		},
 	})
 }

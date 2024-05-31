@@ -1,11 +1,8 @@
-package nto //nolint:misspell
+package keda
 
 import (
 	"context"
 	"fmt"
-	"github.com/metal3-io/baremetal-operator/apis/metal3.io/v1alpha1"
-
-	"k8s.io/utils/strings/slices"
 
 	"github.com/golang/glog"
 	kedav1alpha1 "github.com/kedacore/keda-olm-operator/apis/keda/v1alpha1"
@@ -16,72 +13,47 @@ import (
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Builder provides a struct for PerformanceProfile object from the cluster and a PerformanceProfile definition.
-type Builder struct {
-	// PerformanceProfile definition, used to create the PerformanceProfile object.
+// KedaControllerBuilder provides a struct for KedaController object from the cluster and a KedaController definition.
+type KedaControllerBuilder struct {
+	// KedaController definition, used to create the KedaController object.
 	Definition *kedav1alpha1.KedaController
-	// Created PerformanceProfile object.
-	Object *v1alpha1.PerformanceProfile
-	// Used to store latest error message upon defining or mutating PerformanceProfile definition.
+	// Created KedaController object.
+	Object *kedav1alpha1.KedaController
+	// Used to store latest error message upon defining or mutating KedaController definition.
 	errorMsg string
 	// api client to interact with the cluster.
-	apiClient *clients.Settings
+	apiClient goclient.Client
 }
 
-// NewBuilder creates a new instance of Builder.
-func NewBuilder(
-	apiClient *clients.Settings, name, cpuIsolated, cpuReserved string, nodeSelector map[string]string) *Builder {
+// NewKedaControllerBuilder creates a new instance of KedaControllerBuilder.
+func NewKedaControllerBuilder(
+	apiClient *clients.Settings, name, nsname string) *KedaControllerBuilder {
 	glog.V(100).Infof(
-		"Initializing new PerformanceProfile structure with the following params: "+
-			"name: %s, cpu isolated: %s, cpu reserved %s, nodeSelector %v", name, cpuIsolated, cpuReserved, nodeSelector)
+		"Initializing new kedaController structure with the following params: "+
+			"name: %s, namespace: %s", name, nsname)
 
-	isolatedCPUSet := v1alpha1.CPUSet(cpuIsolated)
-	reservedCPUSet := v1alpha1.CPUSet(cpuReserved)
-
-	builder := &Builder{
-		apiClient: apiClient,
-		Definition: &v1alpha1.PerformanceProfile{
+	builder := &KedaControllerBuilder{
+		apiClient: apiClient.Client,
+		Definition: &kedav1alpha1.KedaController{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: name,
-			},
-			Spec: v1alpha1.PerformanceProfileSpec{
-				CPU: &v1alpha1.CPU{
-					Isolated: &isolatedCPUSet,
-					Reserved: &reservedCPUSet,
-				},
-				NodeSelector: nodeSelector,
+				Name:      name,
+				Namespace: nsname,
 			},
 		},
 	}
 
 	if name == "" {
-		glog.V(100).Infof("The name of the PerformanceProfile is empty")
+		glog.V(100).Infof("The name of the KedaController is empty")
 
-		builder.errorMsg = "PerformanceProfile's name is empty"
-
-		return builder
-	}
-
-	if cpuIsolated == "" {
-		glog.V(100).Infof("Isolated CPU of the PerformanceProfile is empty")
-
-		builder.errorMsg = "PerformanceProfile's 'cpuIsolated' is empty"
+		builder.errorMsg = "kedaController 'name' cannot be empty"
 
 		return builder
 	}
 
-	if cpuReserved == "" {
-		glog.V(100).Infof("Reserved CPU of the PerformanceProfile is empty")
+	if nsname == "" {
+		glog.V(100).Infof("The nsname of the KedaController is empty")
 
-		builder.errorMsg = "PerformanceProfile's 'cpuReserved' is empty"
-
-		return builder
-	}
-
-	if len(nodeSelector) == 0 {
-		glog.V(100).Infof("NodeSelector of the PerformanceProfile is empty")
-
-		builder.errorMsg = "PerformanceProfile's 'nodeSelector' is empty"
+		builder.errorMsg = "kedaController 'nsname' cannot be empty"
 
 		return builder
 	}
@@ -89,33 +61,40 @@ func NewBuilder(
 	return builder
 }
 
-// Pull pulls existing PerformanceProfile from cluster.
-func Pull(apiClient *clients.Settings, name string) (*Builder, error) {
-	glog.V(100).Infof("Pulling existing PerformanceProfile name %s from cluster", name)
+// PullKedaController pulls existing kedaController from cluster.
+func PullKedaController(apiClient *clients.Settings, name, nsname string) (*KedaControllerBuilder, error) {
+	glog.V(100).Infof("Pulling existing kedaController name %s in namespace %s from cluster", name, nsname)
 
 	if apiClient == nil {
 		glog.V(100).Infof("The apiClient is empty")
 
-		return nil, fmt.Errorf("performanceProfile 'apiClient' cannot be empty")
+		return nil, fmt.Errorf("kedaController 'apiClient' cannot be empty")
 	}
 
-	builder := Builder{
-		apiClient: apiClient,
-		Definition: &v1alpha1.PerformanceProfile{
+	builder := KedaControllerBuilder{
+		apiClient: apiClient.Client,
+		Definition: &kedav1alpha1.KedaController{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: name,
+				Name:      name,
+				Namespace: nsname,
 			},
 		},
 	}
 
 	if name == "" {
-		glog.V(100).Infof("The name of the PerformanceProfile is empty")
+		glog.V(100).Infof("The name of the kedaController is empty")
 
-		return nil, fmt.Errorf("performanceProfile 'name' cannot be empty")
+		return nil, fmt.Errorf("kedaController 'name' cannot be empty")
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The namespace of the kedaController is empty")
+
+		return nil, fmt.Errorf("kedaController 'nsname' cannot be empty")
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("PerformanceProfile object %s does not exist", name)
+		return nil, fmt.Errorf("kedaController object %s does not exist in namespace %s", name, nsname)
 	}
 
 	builder.Definition = builder.Object
@@ -123,311 +102,60 @@ func Pull(apiClient *clients.Settings, name string) (*Builder, error) {
 	return &builder, nil
 }
 
-// WithHugePages defines the HugePages in the PerformanceProfile. hugePageSize allowed values are 2M, 1G.
-func (builder *Builder) WithHugePages(hugePageSize string, hugePages []v1alpha1.HugePage) *Builder {
-	glog.V(100).Infof("Adding hugePages to PerformanceProfile %s, size %s, hugePages %v",
-		builder.Definition.Name, hugePageSize, hugePages)
-
-	if valid, _ := builder.validate(); !valid {
-		return builder
-	}
-
-	if hugePageSize == "" {
-		glog.V(100).Infof("The hugePageSize is empty")
-
-		builder.errorMsg = "'hugePageSize' argument cannot be empty"
-
-		return builder
-	}
-
-	allowedHugePageSize := []string{"2M", "1G"}
-	if !slices.Contains(allowedHugePageSize, hugePageSize) {
-		glog.V(100).Infof("'hugePageSize' has invalid parameter %s. Allowed parameters %v",
-			hugePageSize, allowedHugePageSize)
-
-		builder.errorMsg = fmt.Sprintf("'hugePageSize' argument is not in allowed list: %v", allowedHugePageSize)
-	}
-
-	if len(hugePages) == 0 {
-		glog.V(100).Infof("'hugePages' argument cannot be empty")
-
-		builder.errorMsg = "'hugePages' argument cannot be empty"
-	}
-
-	if builder.errorMsg != "" {
-		return builder
-	}
-
-	pageSize := v1alpha1.HugePageSize(hugePageSize)
-
-	if builder.Definition.Spec.HugePages != nil {
-		builder.Definition.Spec.HugePages.DefaultHugePagesSize = &pageSize
-		builder.Definition.Spec.HugePages.Pages = hugePages
-
-		return builder
-	}
-
-	builder.Definition.Spec.HugePages = &v1alpha1.HugePages{
-		DefaultHugePagesSize: &pageSize,
-		Pages:                hugePages,
-	}
-
-	return builder
-}
-
-// WithMachineConfigPoolSelector defines the MachineConfigPoolSelector in the PerformanceProfile.
-func (builder *Builder) WithMachineConfigPoolSelector(machineConfigPoolSelector map[string]string) *Builder {
-	glog.V(100).Infof("Adding MachineConfigPoolSelector %v to PerformanceProfile %s",
-		machineConfigPoolSelector, builder.Definition.Name)
-
-	if valid, _ := builder.validate(); !valid {
-		return builder
-	}
-
-	if len(machineConfigPoolSelector) == 0 {
-		glog.V(100).Infof("'machineConfigPoolSelector' argument cannot be empty")
-
-		builder.errorMsg = "'machineConfigPoolSelector' argument cannot be empty"
-	}
-
-	if builder.errorMsg != "" {
-		return builder
-	}
-
-	builder.Definition.Spec.MachineConfigPoolSelector = machineConfigPoolSelector
-
-	return builder
-}
-
-// WithNodeSelector defines the nodeSelector in the PerformanceProfile.
-func (builder *Builder) WithNodeSelector(nodeSelector map[string]string) *Builder {
-	glog.V(100).Infof("Adding nodeSelector %v to PerformanceProfile %s",
-		nodeSelector, builder.Definition.Name)
-
-	if valid, _ := builder.validate(); !valid {
-		return builder
-	}
-
-	if len(nodeSelector) == 0 {
-		glog.V(100).Infof("'nodeSelector' argument cannot be empty")
-
-		builder.errorMsg = "'nodeSelector' argument cannot be empty"
-
-		return builder
-	}
-
-	builder.Definition.Spec.NodeSelector = nodeSelector
-
-	return builder
-}
-
-// WithNumaTopology defines the NumaTopologyPolicy in the PerformanceProfile.
-func (builder *Builder) WithNumaTopology(topologyPolicy string) *Builder {
-	glog.V(100).Infof("Adding NumaTopologyPolicy %s to PerformanceProfile %s",
-		topologyPolicy, builder.Definition.Name)
-
-	if valid, _ := builder.validate(); !valid {
-		return builder
-	}
-
-	if topologyPolicy == "" {
-		glog.V(100).Infof("The topologyPolicy is empty")
-
-		builder.errorMsg = "'topologyPolicy' argument cannot be empty"
-
-		return builder
-	}
-
-	allowedTopologyPolicies := []string{"best-effort", "restricted", "single-numa-node"}
-	if !slices.Contains(allowedTopologyPolicies, topologyPolicy) {
-		glog.V(100).Infof("'allowedTopologyPolicies' has invalid parameter %s. Allowed parameters %v",
-			topologyPolicy, allowedTopologyPolicies)
-
-		builder.errorMsg = fmt.Sprintf("'allowedTopologyPolicies' argument is not in allowed list %v",
-			allowedTopologyPolicies)
-	}
-
-	if builder.errorMsg != "" {
-		return builder
-	}
-
-	builder.Definition.Spec.NUMA = &v1alpha1.NUMA{TopologyPolicy: &topologyPolicy}
-
-	return builder
-}
-
-// WithRTKernel defines the Real Time Kernel in the PerformanceProfile.
-func (builder *Builder) WithRTKernel() *Builder {
-	glog.V(100).Infof("Adding RTKernel flag to PerformanceProfile %s", builder.Definition.Name)
-
-	if valid, _ := builder.validate(); !valid {
-		return builder
-	}
-
-	trueFlag := true
-	builder.Definition.Spec.RealTimeKernel = &v1alpha1.RealTimeKernel{Enabled: &trueFlag}
-
-	return builder
-}
-
-// WithGloballyDisableIrqLoadBalancing defines the globallyDisableIrqLoadBalancing in the PerformanceProfile.
-func (builder *Builder) WithGloballyDisableIrqLoadBalancing() *Builder {
-	glog.V(100).Infof("Adding globallyDisableIrqLoadBalancing flag to PerformanceProfile %s",
-		builder.Definition.Name)
-
-	if valid, _ := builder.validate(); !valid {
-		return builder
-	}
-
-	trueFlag := true
-	builder.Definition.Spec.GloballyDisableIrqLoadBalancing = &trueFlag
-
-	return builder
-}
-
-// WithWorkloadHints defines the Workload Hints in the PerformanceProfile.
-func (builder *Builder) WithWorkloadHints(rtHint, perPodPowerMgmtHint, highPowerHint bool) *Builder {
-	glog.V(100).Infof(
-		"Adding WorkloadHints flags: RealTime=%t, PerPodPowerManagement=%t, HighPowerConsumption=%t to PerformanceProfile %s",
-		rtHint, perPodPowerMgmtHint, highPowerHint, builder.Definition.Name)
-
-	if valid, _ := builder.validate(); !valid {
-		return builder
-	}
-
-	if builder.Definition.Spec.WorkloadHints == nil {
-		builder.Definition.Spec.WorkloadHints = &v1alpha1.WorkloadHints{
-			RealTime:              &rtHint,
-			PerPodPowerManagement: &perPodPowerMgmtHint,
-			HighPowerConsumption:  &highPowerHint,
-		}
-
-		return builder
-	}
-
-	builder.Definition.Spec.WorkloadHints.RealTime = &rtHint
-	builder.Definition.Spec.WorkloadHints.PerPodPowerManagement = &perPodPowerMgmtHint
-	builder.Definition.Spec.WorkloadHints.HighPowerConsumption = &highPowerHint
-
-	return builder
-}
-
-// WithAnnotations defines the annotations in the PerformanceProfile.
-func (builder *Builder) WithAnnotations(annotations map[string]string) *Builder {
-	glog.V(100).Infof("Adding annotations %v to the PerformanceProfile %s",
-		annotations, builder.Definition.Name)
-
-	if valid, _ := builder.validate(); !valid {
-		return builder
-	}
-
-	if len(annotations) == 0 {
-		glog.V(100).Infof("'annotations' argument cannot be empty")
-
-		builder.errorMsg = "'annotations' argument cannot be empty"
-
-		return builder
-	}
-
-	builder.Definition.ObjectMeta.Annotations = annotations
-
-	return builder
-}
-
-// WithNet defines the net in the PerformanceProfile.
-func (builder *Builder) WithNet(userLevelNetworking bool, devices []v1alpha1.Device) *Builder {
-	glog.V(100).Infof("Adding net field to the PerformanceProfile %s", builder.Definition.Name)
-
-	if valid, _ := builder.validate(); !valid {
-		return builder
-	}
-
-	if len(devices) == 0 {
-		glog.V(100).Infof("'devices' argument cannot be empty")
-
-		builder.errorMsg = "'devices' argument cannot be empty"
-
-		return builder
-	}
-
-	netField := v1alpha1.Net{
-		UserLevelNetworking: &userLevelNetworking,
-		Devices:             devices,
-	}
-
-	builder.Definition.Spec.Net = &netField
-
-	return builder
-}
-
-// Create the PerformanceProfile in the cluster and store the created object in Object.
-func (builder *Builder) Create() (*Builder, error) {
-	if valid, err := builder.validate(); !valid {
-		return builder, err
-	}
-
-	glog.V(100).Infof("Creating PerformanceProfile %s ", builder.Definition.Name)
-
-	var err error
-	if !builder.Exists() {
-		err = builder.apiClient.Create(context.TODO(), builder.Definition)
-
-		if err != nil {
-			return nil, err
-		}
-
-		builder.Object, err = builder.Get()
-	}
-
-	return builder, err
-}
-
-// Exists checks whether the given PerformanceProfile exists.
-func (builder *Builder) Exists() bool {
-	if valid, _ := builder.validate(); !valid {
-		return false
-	}
-
-	glog.V(100).Infof("Checking if PerformanceProfile %s exists", builder.Definition.Name)
-
-	var err error
-	builder.Object, err = builder.Get()
-
-	return err == nil || !k8serrors.IsNotFound(err)
-}
-
-// Get fetches the defined PerformanceProfile from the cluster.
-func (builder *Builder) Get() (*v1alpha1.PerformanceProfile, error) {
+// Get fetches the defined kedaController from the cluster.
+func (builder *KedaControllerBuilder) Get() (*kedav1alpha1.KedaController, error) {
 	if valid, err := builder.validate(); !valid {
 		return nil, err
 	}
 
-	glog.V(100).Infof("Getting PerformanceProfile %s", builder.Definition.Name)
+	glog.V(100).Infof("Getting kedaController %s in namespace %s",
+		builder.Definition.Name, builder.Definition.Namespace)
 
-	module := &v1alpha1.PerformanceProfile{}
-
+	kedaObj := &kedav1alpha1.KedaController{}
 	err := builder.apiClient.Get(context.TODO(), goclient.ObjectKey{
-		Name: builder.Definition.Name,
-	}, module)
+		Name:      builder.Definition.Name,
+		Namespace: builder.Definition.Namespace,
+	}, kedaObj)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return module, nil
+	return kedaObj, nil
 }
 
-// Delete removes the PerformanceProfile.
-func (builder *Builder) Delete() (*Builder, error) {
+// Create makes a kedaController in the cluster and stores the created object in struct.
+func (builder *KedaControllerBuilder) Create() (*KedaControllerBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Deleting PerformanceProfile %s", builder.Definition.Name)
+	glog.V(100).Infof("Creating the kedaController %s in namespace %s",
+		builder.Definition.Name, builder.Definition.Namespace)
+
+	var err error
+	if !builder.Exists() {
+		err = builder.apiClient.Create(context.TODO(), builder.Definition)
+		if err == nil {
+			builder.Object = builder.Definition
+		}
+	}
+
+	return builder, err
+}
+
+// Delete removes kedaController from a cluster.
+func (builder *KedaControllerBuilder) Delete() (*KedaControllerBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
+	glog.V(100).Infof("Deleting the kedaController %s in namespace %s",
+		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		glog.V(100).Infof("performanceprofile %s cannot be deleted because it does not exist",
-			builder.Definition.Name)
+		glog.V(100).Infof("kedaController %s in namespace %s cannot be deleted because it does not exist",
+			builder.Definition.Name, builder.Definition.Namespace)
 
 		builder.Object = nil
 
@@ -437,7 +165,7 @@ func (builder *Builder) Delete() (*Builder, error) {
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
 
 	if err != nil {
-		return builder, err
+		return builder, fmt.Errorf("can not delete kedaController: %w", err)
 	}
 
 	builder.Object = nil
@@ -445,47 +173,120 @@ func (builder *Builder) Delete() (*Builder, error) {
 	return builder, nil
 }
 
-// Update renovates the existing PerformanceProfile object with the PerformanceProfile definition in builder.
-func (builder *Builder) Update(force bool) (*Builder, error) {
+// Exists checks whether the given kedaController exists.
+func (builder *KedaControllerBuilder) Exists() bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
+	glog.V(100).Infof("Checking if kedaController %s exists in namespace %s",
+		builder.Definition.Name, builder.Definition.Namespace)
+
+	var err error
+	builder.Object, err = builder.Get()
+
+	return err == nil || !k8serrors.IsNotFound(err)
+}
+
+// Update renovates the existing kedaController object with kedaController definition in builder.
+func (builder *KedaControllerBuilder) Update() (*KedaControllerBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Updating the PerformanceProfile object: %s", builder.Definition.Name)
+	glog.V(100).Infof("Updating kedaController %s in namespace %s",
+		builder.Definition.Name, builder.Definition.Namespace)
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
 
 	if err != nil {
-		if force {
-			glog.V(100).Infof(
-				"Failed to update the PerformanceProfile object %s. "+
-					"Note: Force flag set, executed delete/create methods instead", builder.Definition.Name)
+		glog.V(100).Infof(
+			msg.FailToUpdateError("kedaController", builder.Definition.Name, builder.Definition.Namespace))
 
-			builder, err := builder.Delete()
-
-			if err != nil {
-				glog.V(100).Infof(
-					"Failed to update the PerformanceProfile object %s, "+
-						"due to error in delete function", builder.Definition.Name)
-
-				return nil, err
-			}
-
-			return builder.Create()
-		}
+		return nil, err
 	}
 
-	if err == nil {
-		builder.Object = builder.Definition
+	builder.Object = builder.Definition
+
+	return builder, nil
+}
+
+// WithAdmissionWebhooks sets the kedaController operator's profile.
+func (builder *KedaControllerBuilder) WithAdmissionWebhooks(
+	admissionWebhooks kedav1alpha1.KedaAdmissionWebhooksSpec) *KedaControllerBuilder {
+	glog.V(100).Infof(
+		"Adding admissionWebhooks to kedaController %s in namespace %s; admissionWebhooks %v",
+		builder.Definition.Name, builder.Definition.Namespace, admissionWebhooks)
+
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
 
-	return builder, err
+	builder.Definition.Spec.AdmissionWebhooks = admissionWebhooks
+
+	return builder
+}
+
+// WithOperator sets the kedaController operator's profile.
+func (builder *KedaControllerBuilder) WithOperator(
+	operator kedav1alpha1.KedaOperatorSpec) *KedaControllerBuilder {
+	glog.V(100).Infof(
+		"Adding operator to kedaController %s in namespace %s; operator %v",
+		builder.Definition.Name, builder.Definition.Namespace, operator)
+
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	builder.Definition.Spec.Operator = operator
+
+	return builder
+}
+
+// WithMetricsServer sets the kedaController operator's metricsServer.
+func (builder *KedaControllerBuilder) WithMetricsServer(
+	metricsServer kedav1alpha1.KedaMetricsServerSpec) *KedaControllerBuilder {
+	glog.V(100).Infof(
+		"Adding metricsServer to kedaController %s in namespace %s; metricsServer %v",
+		builder.Definition.Name, builder.Definition.Namespace, metricsServer)
+
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	builder.Definition.Spec.MetricsServer = metricsServer
+
+	return builder
+}
+
+// WithWatchNamespace sets the kedaController operator's watchNamespace.
+func (builder *KedaControllerBuilder) WithWatchNamespace(
+	watchNamespace string) *KedaControllerBuilder {
+	glog.V(100).Infof(
+		"Adding metricsServer to kedaController %s in namespace %s; watchNamespace %v",
+		builder.Definition.Name, builder.Definition.Namespace, watchNamespace)
+
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	if watchNamespace == "" {
+		glog.V(100).Infof("The watchNamespace is empty")
+
+		builder.errorMsg = "'watchNamespace' argument cannot be empty"
+
+		return builder
+	}
+
+	builder.Definition.Spec.WatchNamespace = watchNamespace
+
+	return builder
 }
 
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
-func (builder *Builder) validate() (bool, error) {
-	resourceCRD := "PerformanceProfile"
+func (builder *KedaControllerBuilder) validate() (bool, error) {
+	resourceCRD := "KedaController"
 
 	if builder == nil {
 		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
@@ -496,19 +297,13 @@ func (builder *Builder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
-	}
-
-	if builder.errorMsg != "" {
-		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
-
-		return false, fmt.Errorf(builder.errorMsg)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	return true, nil
