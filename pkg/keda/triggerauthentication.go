@@ -34,6 +34,12 @@ func NewTriggerAuthenticationBuilder(
 		"Initializing new triggerAuthentication structure with the following params: "+
 			"name: %s, namespace: %s", name, nsname)
 
+	if apiClient == nil {
+		glog.V(100).Infof("triggerAuthentication 'apiClient' cannot be empty")
+
+		return nil
+	}
+
 	builder := &TriggerAuthenticationBuilder{
 		apiClient: apiClient.Client,
 		Definition: &kedav2v1alpha1.TriggerAuthentication{
@@ -63,8 +69,9 @@ func NewTriggerAuthenticationBuilder(
 	return builder
 }
 
-// Pull pulls existing triggerAuthentication from cluster.
-func Pull(apiClient *clients.Settings, name, nsname string) (*TriggerAuthenticationBuilder, error) {
+// PullTriggerAuthentication pulls existing triggerAuthentication from cluster.
+func PullTriggerAuthentication(apiClient *clients.Settings,
+	name, nsname string) (*TriggerAuthenticationBuilder, error) {
 	glog.V(100).Infof("Pulling existing triggerAuthentication name %s in namespace %s from cluster",
 		name, nsname)
 

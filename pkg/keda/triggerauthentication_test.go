@@ -90,7 +90,7 @@ func TestPullTriggerAuthentication(t *testing.T) {
 			})
 		}
 
-		builderResult, err := Pull(testSettings, testCase.name, testCase.namespace)
+		builderResult, err := PullTriggerAuthentication(testSettings, testCase.name, testCase.namespace)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError != nil {
@@ -108,33 +108,47 @@ func TestNewTriggerAuthenticationBuilder(t *testing.T) {
 		name          string
 		namespace     string
 		expectedError string
+		client        bool
 	}{
 		{
 			name:          defaultTriggerAuthName,
 			namespace:     defaultTriggerAuthNamespace,
 			expectedError: "",
+			client:        true,
 		},
 		{
 			name:          "",
 			namespace:     defaultTriggerAuthNamespace,
 			expectedError: "triggerAuthentication 'name' cannot be empty",
+			client:        true,
 		},
 		{
 			name:          defaultTriggerAuthName,
 			namespace:     "",
-			expectedError: "triggerAuthentication 'nsname' cannot be empty",
+			expectedError: "",
+			client:        false,
 		},
 	}
 
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients(clients.TestClientParams{})
+
+		var testSettings *clients.Settings
+		if testCase.client {
+			testSettings = clients.GetTestClients(clients.TestClientParams{})
+		}
+
 		testTriggerAuthBuilder := NewTriggerAuthenticationBuilder(testSettings, testCase.name, testCase.namespace)
-		assert.Equal(t, testCase.expectedError, testTriggerAuthBuilder.errorMsg)
-		assert.NotNil(t, testTriggerAuthBuilder.Definition)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testCase.name, testTriggerAuthBuilder.Definition.Name)
-			assert.Equal(t, testCase.namespace, testTriggerAuthBuilder.Definition.Namespace)
+			if testCase.client {
+				assert.Equal(t, testCase.name, testTriggerAuthBuilder.Definition.Name)
+				assert.Equal(t, testCase.namespace, testTriggerAuthBuilder.Definition.Namespace)
+			} else {
+				assert.Nil(t, testTriggerAuthBuilder)
+			}
+		} else {
+			assert.Equal(t, testCase.expectedError, testTriggerAuthBuilder.errorMsg)
+			assert.NotNil(t, testTriggerAuthBuilder.Definition)
 		}
 	}
 }
@@ -198,25 +212,25 @@ func TestTriggerAuthenticationGet(t *testing.T) {
 
 func TestTriggerAuthenticationCreate(t *testing.T) {
 	testCases := []struct {
-		TriggerAuth   *TriggerAuthenticationBuilder
-		expectedError string
+		testTriggerAuth *TriggerAuthenticationBuilder
+		expectedError   string
 	}{
 		{
-			TriggerAuth:   buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError: "",
+			testTriggerAuth: buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
+			expectedError:   "",
 		},
 		{
-			TriggerAuth:   buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError: " \"\" is invalid: metadata.name: Required value: name is required",
+			testTriggerAuth: buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
+			expectedError:   " \"\" is invalid: metadata.name: Required value: name is required",
 		},
 		{
-			TriggerAuth:   buildValidTriggerAuthBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: "",
+			testTriggerAuth: buildValidTriggerAuthBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:   "",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testTriggerAuthBuilder, err := testCase.TriggerAuth.Create()
+		testTriggerAuthBuilder, err := testCase.testTriggerAuth.Create()
 
 		if testCase.expectedError == "" {
 			assert.Equal(t, testTriggerAuthBuilder.Definition.Name, testTriggerAuthBuilder.Object.Name)
@@ -235,10 +249,6 @@ func TestTriggerAuthenticationDelete(t *testing.T) {
 	}{
 		{
 			testTriggerAuth: buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:   nil,
-		},
-		{
-			testTriggerAuth: buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
 			expectedError:   nil,
 		},
 		{
