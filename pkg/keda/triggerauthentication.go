@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	kedav2v1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
+
 	"github.com/golang/glog"
-	kedav1alpha1 "github.com/kedacore/keda-olm-operator/apis/keda/v1alpha1"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -13,28 +14,29 @@ import (
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// KedaControllerBuilder provides a struct for KedaController object from the cluster and a KedaController definition.
-type KedaControllerBuilder struct {
-	// KedaController definition, used to create the PerformanceProfile object.
-	Definition *kedav1alpha1.KedaController
-	// Created KedaController object.
-	Object *kedav1alpha1.KedaController
-	// Used to store latest error message upon defining or mutating KedaController definition.
+// TriggerAuthenticationBuilder provides a struct for TriggerAuthentication object from the cluster
+// and a TriggerAuthentication definition.
+type TriggerAuthenticationBuilder struct {
+	// TriggerAuthentication definition, used to create the TriggerAuthentication object.
+	Definition *kedav2v1alpha1.TriggerAuthentication
+	// Created TriggerAuthentication object.
+	Object *kedav2v1alpha1.TriggerAuthentication
+	// Used to store latest error message upon defining or mutating TriggerAuthentication definition.
 	errorMsg string
 	// api client to interact with the cluster.
 	apiClient goclient.Client
 }
 
-// NewKedaControllerBuilder creates a new instance of KedaControllerBuilder.
-func NewKedaControllerBuilder(
-	apiClient *clients.Settings, name, nsname string) *KedaControllerBuilder {
+// NewTriggerAuthenticationBuilder creates a new instance of TriggerAuthenticationBuilder.
+func NewTriggerAuthenticationBuilder(
+	apiClient *clients.Settings, name, nsname string) *TriggerAuthenticationBuilder {
 	glog.V(100).Infof(
-		"Initializing new kedaController structure with the following params: "+
+		"Initializing new triggerAuthentication structure with the following params: "+
 			"name: %s, namespace: %s", name, nsname)
 
-	builder := &KedaControllerBuilder{
+	builder := &TriggerAuthenticationBuilder{
 		apiClient: apiClient.Client,
-		Definition: &kedav1alpha1.KedaController{
+		Definition: &kedav2v1alpha1.TriggerAuthentication{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: nsname,
@@ -43,17 +45,17 @@ func NewKedaControllerBuilder(
 	}
 
 	if name == "" {
-		glog.V(100).Infof("The name of the KedaController is empty")
+		glog.V(100).Infof("The name of the triggerAuthentication is empty")
 
-		builder.errorMsg = "kedaController 'name' cannot be empty"
+		builder.errorMsg = "triggerAuthentication 'name' cannot be empty"
 
 		return builder
 	}
 
 	if nsname == "" {
-		glog.V(100).Infof("The nsname of the KedaController is empty")
+		glog.V(100).Infof("The nsname of the triggerAuthentication is empty")
 
-		builder.errorMsg = "kedaController 'nsname' cannot be empty"
+		builder.errorMsg = "triggerAuthentication 'nsname' cannot be empty"
 
 		return builder
 	}
@@ -61,19 +63,20 @@ func NewKedaControllerBuilder(
 	return builder
 }
 
-// Pull pulls existing kedaController from cluster.
-func Pull(apiClient *clients.Settings, name, nsname string) (*KedaControllerBuilder, error) {
-	glog.V(100).Infof("Pulling existing kedaController name %s in namespace %s from cluster", name, nsname)
+// Pull pulls existing triggerAuthentication from cluster.
+func Pull(apiClient *clients.Settings, name, nsname string) (*TriggerAuthenticationBuilder, error) {
+	glog.V(100).Infof("Pulling existing triggerAuthentication name %s in namespace %s from cluster",
+		name, nsname)
 
 	if apiClient == nil {
 		glog.V(100).Infof("The apiClient is empty")
 
-		return nil, fmt.Errorf("kedaController 'apiClient' cannot be empty")
+		return nil, fmt.Errorf("triggerAuthentication 'apiClient' cannot be empty")
 	}
 
-	builder := KedaControllerBuilder{
+	builder := TriggerAuthenticationBuilder{
 		apiClient: apiClient.Client,
-		Definition: &kedav1alpha1.KedaController{
+		Definition: &kedav2v1alpha1.TriggerAuthentication{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: nsname,
@@ -82,19 +85,19 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*KedaControllerBuil
 	}
 
 	if name == "" {
-		glog.V(100).Infof("The name of the kedaController is empty")
+		glog.V(100).Infof("The name of the triggerAuthentication is empty")
 
-		return nil, fmt.Errorf("kedaController 'name' cannot be empty")
+		return nil, fmt.Errorf("triggerAuthentication 'name' cannot be empty")
 	}
 
 	if nsname == "" {
-		glog.V(100).Infof("The namespace of the kedaController is empty")
+		glog.V(100).Infof("The namespace of the triggerAuthentication is empty")
 
-		return nil, fmt.Errorf("kedaController 'nsname' cannot be empty")
+		return nil, fmt.Errorf("triggerAuthentication 'nsname' cannot be empty")
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("kedaController object %s does not exist in namespace %s", name, nsname)
+		return nil, fmt.Errorf("triggerAuthentication object %s does not exist in namespace %s", name, nsname)
 	}
 
 	builder.Definition = builder.Object
@@ -102,35 +105,35 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*KedaControllerBuil
 	return &builder, nil
 }
 
-// Get fetches the defined kedaController from the cluster.
-func (builder *KedaControllerBuilder) Get() (*kedav1alpha1.KedaController, error) {
+// Get fetches the defined triggerAuthentication from the cluster.
+func (builder *TriggerAuthenticationBuilder) Get() (*kedav2v1alpha1.TriggerAuthentication, error) {
 	if valid, err := builder.validate(); !valid {
 		return nil, err
 	}
 
-	glog.V(100).Infof("Getting kedaController %s in namespace %s",
+	glog.V(100).Infof("Getting triggerAuthentication %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
-	kedaObj := &kedav1alpha1.KedaController{}
+	triggerAuthenticationObj := &kedav2v1alpha1.TriggerAuthentication{}
 	err := builder.apiClient.Get(context.TODO(), goclient.ObjectKey{
 		Name:      builder.Definition.Name,
 		Namespace: builder.Definition.Namespace,
-	}, kedaObj)
+	}, triggerAuthenticationObj)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return kedaObj, nil
+	return triggerAuthenticationObj, nil
 }
 
-// Create makes a kedaController in the cluster and stores the created object in struct.
-func (builder *KedaControllerBuilder) Create() (*KedaControllerBuilder, error) {
+// Create makes a triggerAuthentication in the cluster and stores the created object in struct.
+func (builder *TriggerAuthenticationBuilder) Create() (*TriggerAuthenticationBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Creating the kedaController %s in namespace %s",
+	glog.V(100).Infof("Creating the triggerAuthentication %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
@@ -144,17 +147,18 @@ func (builder *KedaControllerBuilder) Create() (*KedaControllerBuilder, error) {
 	return builder, err
 }
 
-// Delete removes kedaController from a cluster.
-func (builder *KedaControllerBuilder) Delete() (*KedaControllerBuilder, error) {
+// Delete removes triggerAuthentication from a cluster.
+func (builder *TriggerAuthenticationBuilder) Delete() (*TriggerAuthenticationBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Deleting the kedaController %s in namespace %s",
+	glog.V(100).Infof("Deleting the triggerAuthentication %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		glog.V(100).Infof("kedaController %s in namespace %s cannot be deleted because it does not exist",
+		glog.V(100).Infof("triggerAuthentication %s in namespace %s cannot be deleted"+
+			" because it does not exist",
 			builder.Definition.Name, builder.Definition.Namespace)
 
 		builder.Object = nil
@@ -165,7 +169,7 @@ func (builder *KedaControllerBuilder) Delete() (*KedaControllerBuilder, error) {
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
 
 	if err != nil {
-		return builder, fmt.Errorf("can not delete kedaController: %w", err)
+		return builder, fmt.Errorf("can not delete triggerAuthentication: %w", err)
 	}
 
 	builder.Object = nil
@@ -173,13 +177,13 @@ func (builder *KedaControllerBuilder) Delete() (*KedaControllerBuilder, error) {
 	return builder, nil
 }
 
-// Exists checks whether the given kedaController exists.
-func (builder *KedaControllerBuilder) Exists() bool {
+// Exists checks whether the given triggerAuthentication exists.
+func (builder *TriggerAuthenticationBuilder) Exists() bool {
 	if valid, _ := builder.validate(); !valid {
 		return false
 	}
 
-	glog.V(100).Infof("Checking if kedaController %s exists in namespace %s",
+	glog.V(100).Infof("Checking if triggerAuthentication %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
@@ -188,20 +192,20 @@ func (builder *KedaControllerBuilder) Exists() bool {
 	return err == nil || !k8serrors.IsNotFound(err)
 }
 
-// Update renovates the existing kedaController object with tuned definition in builder.
-func (builder *KedaControllerBuilder) Update() (*KedaControllerBuilder, error) {
+// Update renovates the existing triggerAuthentication object with triggerAuthentication definition in builder.
+func (builder *TriggerAuthenticationBuilder) Update() (*TriggerAuthenticationBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Updating kedaController %s in namespace %s",
+	glog.V(100).Infof("Updating triggerAuthentication %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
 
 	if err != nil {
 		glog.V(100).Infof(
-			msg.FailToUpdateError("kedaController", builder.Definition.Name, builder.Definition.Namespace))
+			msg.FailToUpdateError("triggerAuthentication", builder.Definition.Name, builder.Definition.Namespace))
 
 		return nil, err
 	}
@@ -211,82 +215,34 @@ func (builder *KedaControllerBuilder) Update() (*KedaControllerBuilder, error) {
 	return builder, nil
 }
 
-// WithAdmissionWebhooks sets the kedaController operator's profile.
-func (builder *KedaControllerBuilder) WithAdmissionWebhooks(
-	admissionWebhooks kedav1alpha1.KedaAdmissionWebhooksSpec) *KedaControllerBuilder {
+// WithSecretTargetRef sets the triggerAuthentication operator's secretTargetRef.
+func (builder *TriggerAuthenticationBuilder) WithSecretTargetRef(
+	secretTargetRef []kedav2v1alpha1.AuthSecretTargetRef) *TriggerAuthenticationBuilder {
 	glog.V(100).Infof(
-		"Adding admissionWebhooks to kedaController %s in namespace %s; admissionWebhooks %v",
-		builder.Definition.Name, builder.Definition.Namespace, admissionWebhooks)
+		"Adding secretTargetRef to triggerAuthentication %s in namespace %s; secretTargetRef %v",
+		builder.Definition.Name, builder.Definition.Namespace, secretTargetRef)
 
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
-	builder.Definition.Spec.AdmissionWebhooks = admissionWebhooks
+	if len(secretTargetRef) == 0 {
+		glog.V(100).Infof("'secretTargetRef' argument cannot be empty")
 
-	return builder
-}
-
-// WithOperator sets the kedaController operator's profile.
-func (builder *KedaControllerBuilder) WithOperator(
-	operator kedav1alpha1.KedaOperatorSpec) *KedaControllerBuilder {
-	glog.V(100).Infof(
-		"Adding operator to kedaController %s in namespace %s; operator %v",
-		builder.Definition.Name, builder.Definition.Namespace, operator)
-
-	if valid, _ := builder.validate(); !valid {
-		return builder
-	}
-
-	builder.Definition.Spec.Operator = operator
-
-	return builder
-}
-
-// WithMetricsServer sets the kedaController operator's metricsServer.
-func (builder *KedaControllerBuilder) WithMetricsServer(
-	metricsServer kedav1alpha1.KedaMetricsServerSpec) *KedaControllerBuilder {
-	glog.V(100).Infof(
-		"Adding metricsServer to kedaController %s in namespace %s; metricsServer %v",
-		builder.Definition.Name, builder.Definition.Namespace, metricsServer)
-
-	if valid, _ := builder.validate(); !valid {
-		return builder
-	}
-
-	builder.Definition.Spec.MetricsServer = metricsServer
-
-	return builder
-}
-
-// WithWatchNamespace sets the kedaController operator's watchNamespace.
-func (builder *KedaControllerBuilder) WithWatchNamespace(
-	watchNamespace string) *KedaControllerBuilder {
-	glog.V(100).Infof(
-		"Adding metricsServer to kedaController %s in namespace %s; watchNamespace %v",
-		builder.Definition.Name, builder.Definition.Namespace, watchNamespace)
-
-	if valid, _ := builder.validate(); !valid {
-		return builder
-	}
-
-	if watchNamespace == "" {
-		glog.V(100).Infof("The watchNamespace is empty")
-
-		builder.errorMsg = "'watchNamespace' argument cannot be empty"
+		builder.errorMsg = "'secretTargetRef' argument cannot be empty"
 
 		return builder
 	}
 
-	builder.Definition.Spec.WatchNamespace = watchNamespace
+	builder.Definition.Spec.SecretTargetRef = secretTargetRef
 
 	return builder
 }
 
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
-func (builder *KedaControllerBuilder) validate() (bool, error) {
-	resourceCRD := "KedaController"
+func (builder *TriggerAuthenticationBuilder) validate() (bool, error) {
+	resourceCRD := "TriggerAuthentication"
 
 	if builder == nil {
 		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)

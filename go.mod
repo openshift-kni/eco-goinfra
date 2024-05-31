@@ -129,6 +129,7 @@ require (
 	github.com/jinzhu/now v1.1.4 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/kedacore/keda/v2 v2.7.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/kube-object-storage/lib-bucket-provisioner v0.0.0-20221122204822-d1a8c34382f1 // indirect
 	github.com/lib/pq v1.10.9 // indirect
@@ -159,7 +160,6 @@ require (
 	github.com/openshift/library-go v0.0.0-20240419113445-f1541d628746 // indirect
 	github.com/operator-framework/operator-registry v1.41.0 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
-	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_golang v1.19.1 // indirect
@@ -180,7 +180,6 @@ require (
 	github.com/stoewer/go-strcase v1.3.0 // indirect
 	github.com/stretchr/testify v1.9.0
 	github.com/thoas/go-funk v0.9.2 // indirect
-	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/vincent-petithory/dataurl v1.0.0 // indirect
 	github.com/vmware-tanzu/velero v1.13.2
 	github.com/xlab/treeprint v1.2.0 // indirect
@@ -222,7 +221,10 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-require github.com/vishvananda/netns v0.0.4 // indirect
+require (
+	github.com/vishvananda/netns v0.0.4 // indirect
+	knative.dev/pkg v0.0.0-20220502225657-4fced0164c9a // indirect
+)
 
 replace (
 	github.com/imdario/mergo => github.com/imdario/mergo v0.3.16

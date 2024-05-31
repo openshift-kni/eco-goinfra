@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	kedav1alpha1 "github.com/kedacore/keda-olm-operator/apis/keda/v1alpha1"
+	kedav2v1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
@@ -13,13 +13,13 @@ import (
 )
 
 var (
-	defaultKedaControllerName      = "keda"
-	defaultKedaControllerNamespace = "openshift-keda"
+	defaultTriggerAuthName      = "keda-trigger-auth-prometheus"
+	defaultTriggerAuthNamespace = "test-appspace"
 )
 
-func TestPullKedaController(t *testing.T) {
-	generateKedaController := func(name, namespace string) *kedav1alpha1.KedaController {
-		return &kedav1alpha1.KedaController{
+func TestPullTriggerAuthentication(t *testing.T) {
+	generateTriggerAuth := func(name, namespace string) *kedav2v1alpha1.TriggerAuthentication {
+		return &kedav2v1alpha1.TriggerAuthentication{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,
@@ -35,39 +35,39 @@ func TestPullKedaController(t *testing.T) {
 		client              bool
 	}{
 		{
-			name:                "test",
-			namespace:           "openshift-keda",
+			name:                defaultTriggerAuthName,
+			namespace:           defaultTriggerAuthNamespace,
 			addToRuntimeObjects: true,
 			expectedError:       nil,
 			client:              true,
 		},
 		{
 			name:                "",
-			namespace:           "openshift-keda",
+			namespace:           defaultTriggerAuthNamespace,
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("kedaController 'name' cannot be empty"),
+			expectedError:       fmt.Errorf("triggerAuthentication 'name' cannot be empty"),
 			client:              true,
 		},
 		{
-			name:                "test",
+			name:                defaultTriggerAuthName,
 			namespace:           "",
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("kedaController 'nsname' cannot be empty"),
+			expectedError:       fmt.Errorf("triggerAuthentication 'nsname' cannot be empty"),
 			client:              true,
 		},
 		{
-			name:                "kedacontrollertest",
-			namespace:           "openshift-keda",
+			name:                "triggerauthtest",
+			namespace:           defaultTriggerAuthNamespace,
 			addToRuntimeObjects: false,
-			expectedError: fmt.Errorf("kedaController object kedacontrollertest does not exist " +
-				"in namespace openshift-keda"),
+			expectedError: fmt.Errorf("triggerAuthentication object triggerauthtest does not exist " +
+				"in namespace test-appspace"),
 			client: true,
 		},
 		{
-			name:                "kedacontrollertest",
-			namespace:           "openshift-keda",
+			name:                "triggerauthtest",
+			namespace:           defaultTriggerAuthNamespace,
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("kedaController 'apiClient' cannot be empty"),
+			expectedError:       fmt.Errorf("triggerAuthentication 'apiClient' cannot be empty"),
 			client:              false,
 		},
 	}
@@ -78,10 +78,10 @@ func TestPullKedaController(t *testing.T) {
 
 		var testSettings *clients.Settings
 
-		testKedaController := generateKedaController(testCase.name, testCase.namespace)
+		testTriggerAuth := generateTriggerAuth(testCase.name, testCase.namespace)
 
 		if testCase.addToRuntimeObjects {
-			runtimeObjects = append(runtimeObjects, testKedaController)
+			runtimeObjects = append(runtimeObjects, testTriggerAuth)
 		}
 
 		if testCase.client {
@@ -96,98 +96,99 @@ func TestPullKedaController(t *testing.T) {
 		if testCase.expectedError != nil {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		} else {
-			assert.Equal(t, testKedaController.Name, builderResult.Object.Name)
+			assert.Equal(t, testTriggerAuth.Name, builderResult.Object.Name)
+			assert.Equal(t, testTriggerAuth.Namespace, builderResult.Object.Namespace)
 			assert.Nil(t, err)
 		}
 	}
 }
 
-func TestNewKedaControllerBuilder(t *testing.T) {
+func TestNewTriggerAuthenticationBuilder(t *testing.T) {
 	testCases := []struct {
 		name          string
 		namespace     string
 		expectedError string
 	}{
 		{
-			name:          defaultKedaControllerName,
-			namespace:     defaultKedaControllerNamespace,
+			name:          defaultTriggerAuthName,
+			namespace:     defaultTriggerAuthNamespace,
 			expectedError: "",
 		},
 		{
 			name:          "",
-			namespace:     defaultKedaControllerNamespace,
-			expectedError: "kedaController 'name' cannot be empty",
+			namespace:     defaultTriggerAuthNamespace,
+			expectedError: "triggerAuthentication 'name' cannot be empty",
 		},
 		{
-			name:          defaultKedaControllerName,
+			name:          defaultTriggerAuthName,
 			namespace:     "",
-			expectedError: "kedaController 'nsname' cannot be empty",
+			expectedError: "triggerAuthentication 'nsname' cannot be empty",
 		},
 	}
 
 	for _, testCase := range testCases {
 		testSettings := clients.GetTestClients(clients.TestClientParams{})
-		testKedaControllerBuilder := NewKedaControllerBuilder(testSettings, testCase.name, testCase.namespace)
-		assert.Equal(t, testCase.expectedError, testKedaControllerBuilder.errorMsg)
-		assert.NotNil(t, testKedaControllerBuilder.Definition)
+		testTriggerAuthBuilder := NewTriggerAuthenticationBuilder(testSettings, testCase.name, testCase.namespace)
+		assert.Equal(t, testCase.expectedError, testTriggerAuthBuilder.errorMsg)
+		assert.NotNil(t, testTriggerAuthBuilder.Definition)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testCase.name, testKedaControllerBuilder.Definition.Name)
-			assert.Equal(t, testCase.namespace, testKedaControllerBuilder.Definition.Namespace)
+			assert.Equal(t, testCase.name, testTriggerAuthBuilder.Definition.Name)
+			assert.Equal(t, testCase.namespace, testTriggerAuthBuilder.Definition.Namespace)
 		}
 	}
 }
 
-func TestKedaControllerExists(t *testing.T) {
+func TestTriggerAuthenticationExists(t *testing.T) {
 	testCases := []struct {
-		testKedaController *KedaControllerBuilder
-		expectedStatus     bool
+		testTriggerAuth *TriggerAuthenticationBuilder
+		expectedStatus  bool
 	}{
 		{
-			testKedaController: buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
-			expectedStatus:     true,
+			testTriggerAuth: buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
+			expectedStatus:  true,
 		},
 		{
-			testKedaController: buildInValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
-			expectedStatus:     false,
+			testTriggerAuth: buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
+			expectedStatus:  false,
 		},
 		{
-			testKedaController: buildValidKedaControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedStatus:     false,
+			testTriggerAuth: buildValidTriggerAuthBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedStatus:  false,
 		},
 	}
 
 	for _, testCase := range testCases {
-		exist := testCase.testKedaController.Exists()
+		exist := testCase.testTriggerAuth.Exists()
 		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
-func TestKedaControllerGet(t *testing.T) {
+func TestTriggerAuthenticationGet(t *testing.T) {
 	testCases := []struct {
-		testKedaController *KedaControllerBuilder
-		expectedError      error
+		testTriggerAuth *TriggerAuthenticationBuilder
+		expectedError   error
 	}{
 		{
-			testKedaController: buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
-			expectedError:      nil,
+			testTriggerAuth: buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
+			expectedError:   nil,
 		},
 		{
-			testKedaController: buildInValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
-			expectedError:      fmt.Errorf("kedacontrollers.keda.sh \"\" not found"),
+			testTriggerAuth: buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
+			expectedError:   fmt.Errorf("triggerauthentications.keda.sh \"\" not found"),
 		},
 		{
-			testKedaController: buildValidKedaControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:      fmt.Errorf("kedacontrollers.keda.sh \"keda\" not found"),
+			testTriggerAuth: buildValidTriggerAuthBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:   fmt.Errorf("triggerauthentications.keda.sh \"keda-trigger-auth-prometheus\" not found"),
 		},
 	}
 
 	for _, testCase := range testCases {
-		kedaControllerObj, err := testCase.testKedaController.Get()
+		triggerAuthObj, err := testCase.testTriggerAuth.Get()
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, kedaControllerObj.Name, testCase.testKedaController.Definition.Name)
-			assert.Equal(t, kedaControllerObj.Namespace, testCase.testKedaController.Definition.Namespace)
+			assert.Equal(t, triggerAuthObj.Name, testCase.testTriggerAuth.Definition.Name)
+			assert.Equal(t, triggerAuthObj.Namespace, testCase.testTriggerAuth.Definition.Namespace)
 			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
@@ -195,31 +196,31 @@ func TestKedaControllerGet(t *testing.T) {
 	}
 }
 
-func TestKedaControllerCreate(t *testing.T) {
+func TestTriggerAuthenticationCreate(t *testing.T) {
 	testCases := []struct {
-		testKedaController *KedaControllerBuilder
+		testKedaController *TriggerAuthenticationBuilder
 		expectedError      string
 	}{
 		{
-			testKedaController: buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			testKedaController: buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
 			expectedError:      "",
 		},
 		{
-			testKedaController: buildInValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			testKedaController: buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
 			expectedError:      " \"\" is invalid: metadata.name: Required value: name is required",
 		},
 		{
-			testKedaController: buildValidKedaControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testKedaController: buildValidTriggerAuthBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError:      "",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testKedaControllerBuilder, err := testCase.testKedaController.Create()
+		testTriggerAuthBuilder, err := testCase.testKedaController.Create()
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testKedaControllerBuilder.Definition.Name, testKedaControllerBuilder.Object.Name)
-			assert.Equal(t, testKedaControllerBuilder.Definition.Namespace, testKedaControllerBuilder.Object.Namespace)
+			assert.Equal(t, testTriggerAuthBuilder.Definition.Name, testTriggerAuthBuilder.Object.Name)
+			assert.Equal(t, testTriggerAuthBuilder.Definition.Namespace, testTriggerAuthBuilder.Object.Namespace)
 			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError, err.Error())
@@ -227,30 +228,30 @@ func TestKedaControllerCreate(t *testing.T) {
 	}
 }
 
-func TestKedaControllerDelete(t *testing.T) {
+func TestTriggerAuthenticationDelete(t *testing.T) {
 	testCases := []struct {
-		testKedaController *KedaControllerBuilder
-		expectedError      error
+		testTriggerAuth *TriggerAuthenticationBuilder
+		expectedError   error
 	}{
 		{
-			testKedaController: buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
-			expectedError:      nil,
+			testTriggerAuth: buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
+			expectedError:   nil,
 		},
 		{
-			testKedaController: buildInValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
-			expectedError:      nil,
+			testTriggerAuth: buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
+			expectedError:   nil,
 		},
 		{
-			testKedaController: buildValidKedaControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:      nil,
+			testTriggerAuth: buildValidTriggerAuthBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:   nil,
 		},
 	}
 
 	for _, testCase := range testCases {
-		_, err := testCase.testKedaController.Delete()
+		_, err := testCase.testTriggerAuth.Delete()
 
 		if testCase.expectedError == nil {
-			assert.Nil(t, testCase.testKedaController.Object)
+			assert.Nil(t, testCase.testTriggerAuth.Object)
 			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
@@ -258,63 +259,90 @@ func TestKedaControllerDelete(t *testing.T) {
 	}
 }
 
-func TestKedaControllerUpdate(t *testing.T) {
+func TestTriggerAuthenticationUpdate(t *testing.T) {
 	testCases := []struct {
-		testKedaController *KedaControllerBuilder
-		expectedError      string
-		watchNamespace     string
+		testTriggerAuth     *TriggerAuthenticationBuilder
+		expectedError       string
+		testSecretTargetRef []kedav2v1alpha1.AuthSecretTargetRef
 	}{
 		{
-			testKedaController: buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
-			expectedError:      "",
-			watchNamespace:     "keda",
+			testTriggerAuth: buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
+			expectedError:   "",
+			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{{
+				Name: "token-name",
+				Key:  "token",
+			},
+				{
+					Name: "cert-name",
+					Key:  "ca.crt",
+				}},
 		},
 		{
-			testKedaController: buildInValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
-			expectedError:      " \"\" is invalid: metadata.name: Required value: name is required",
-			watchNamespace:     "",
+			testTriggerAuth:     buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
+			expectedError:       " \"\" is invalid: metadata.name: Required value: name is required",
+			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{},
 		},
 	}
 
 	for _, testCase := range testCases {
-		assert.Equal(t, "", testCase.testKedaController.Definition.Spec.WatchNamespace)
-		assert.Nil(t, nil, testCase.testKedaController.Object)
-		testCase.testKedaController.WithWatchNamespace(testCase.watchNamespace)
-		_, err := testCase.testKedaController.Update()
+		assert.Equal(t, []kedav2v1alpha1.AuthSecretTargetRef(nil), testCase.testTriggerAuth.Definition.Spec.SecretTargetRef)
+		assert.Nil(t, nil, testCase.testTriggerAuth.Object)
+		testCase.testTriggerAuth.WithSecretTargetRef(testCase.testSecretTargetRef)
+		_, err := testCase.testTriggerAuth.Update()
 
 		if testCase.expectedError != "" {
 			assert.Equal(t, testCase.expectedError, err.Error())
 		} else {
-			assert.Equal(t, testCase.watchNamespace, testCase.testKedaController.Definition.Spec.WatchNamespace)
+			assert.Equal(t, testCase.testSecretTargetRef, testCase.testTriggerAuth.Definition.Spec.SecretTargetRef)
 		}
 	}
 }
 
-func TestKedaControllerWithAdmissionWebhooks(t *testing.T) {
+func TestTriggerAuthenticationWithSecretTargetRef(t *testing.T) {
 	testCases := []struct {
-		testAdmissionWebhooks kedav1alpha1.KedaAdmissionWebhooksSpec
-		expectedError         bool
-		expectedErrorText     string
+		testSecretTargetRef []kedav2v1alpha1.AuthSecretTargetRef
+		expectedError       bool
+		expectedErrorText   string
 	}{
 		{
-			testAdmissionWebhooks: kedav1alpha1.KedaAdmissionWebhooksSpec{
-				LogLevel:   "info",
-				LogEncoder: "console",
-			},
+			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{{
+				Name: "token-name",
+				Key:  "token",
+			}},
 			expectedError:     false,
 			expectedErrorText: "",
 		},
 		{
-			testAdmissionWebhooks: kedav1alpha1.KedaAdmissionWebhooksSpec{},
-			expectedError:         false,
-			expectedErrorText:     "'admissionWebhooks' argument cannot be empty",
+			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{{
+				Name: "cert-name",
+				Key:  "ca.crt",
+			}},
+			expectedError:     false,
+			expectedErrorText: "",
+		},
+		{
+			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{{
+				Name: "token-name",
+				Key:  "token",
+			},
+				{
+					Name: "cert-name",
+					Key:  "ca.crt",
+				}},
+			expectedError:     false,
+			expectedErrorText: "",
+		},
+		{
+			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{},
+			expectedError:       true,
+			expectedErrorText:   "'secretTargetRef' argument cannot be empty",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject())
+		testBuilder := buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject())
 
-		result := testBuilder.WithAdmissionWebhooks(testCase.testAdmissionWebhooks)
+		result := testBuilder.WithSecretTargetRef(testCase.testSecretTargetRef)
 
 		if testCase.expectedError {
 			if testCase.expectedErrorText != "" {
@@ -322,138 +350,36 @@ func TestKedaControllerWithAdmissionWebhooks(t *testing.T) {
 			}
 		} else {
 			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testAdmissionWebhooks, result.Definition.Spec.AdmissionWebhooks)
+			assert.Equal(t, testCase.testSecretTargetRef, result.Definition.Spec.SecretTargetRef)
 		}
 	}
 }
 
-func TestKedaControllerWithOperator(t *testing.T) {
-	testCases := []struct {
-		testOperator      kedav1alpha1.KedaOperatorSpec
-		expectedError     bool
-		expectedErrorText string
-	}{
-		{
-			testOperator: kedav1alpha1.KedaOperatorSpec{
-				LogLevel:   "info",
-				LogEncoder: "console",
-			},
-			expectedError:     false,
-			expectedErrorText: "",
-		},
-		{
-			testOperator:      kedav1alpha1.KedaOperatorSpec{},
-			expectedError:     false,
-			expectedErrorText: "'operator' argument cannot be empty",
-		},
-	}
+func buildValidTriggerAuthBuilder(apiClient *clients.Settings) *TriggerAuthenticationBuilder {
+	triggerAuthBuilder := NewTriggerAuthenticationBuilder(
+		apiClient, defaultTriggerAuthName, defaultTriggerAuthNamespace)
 
-	for _, testCase := range testCases {
-		testBuilder := buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject())
-
-		result := testBuilder.WithOperator(testCase.testOperator)
-
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-			}
-		} else {
-			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testOperator, result.Definition.Spec.Operator)
-		}
-	}
+	return triggerAuthBuilder
 }
 
-func TestKedaControllerWithMetricsServer(t *testing.T) {
-	testCases := []struct {
-		testMetricsServer kedav1alpha1.KedaMetricsServerSpec
-		expectedError     bool
-		expectedErrorText string
-	}{
-		{
-			testMetricsServer: kedav1alpha1.KedaMetricsServerSpec{
-				LogLevel: "0",
-			},
-			expectedError:     false,
-			expectedErrorText: "",
-		},
-		{
-			testMetricsServer: kedav1alpha1.KedaMetricsServerSpec{},
-			expectedError:     false,
-			expectedErrorText: "'metricsServer' argument cannot be empty",
-		},
-	}
+func buildInValidTriggerAuthBuilder(apiClient *clients.Settings) *TriggerAuthenticationBuilder {
+	triggerAuthBuilder := NewTriggerAuthenticationBuilder(
+		apiClient, "", defaultTriggerAuthNamespace)
 
-	for _, testCase := range testCases {
-		testBuilder := buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject())
-
-		result := testBuilder.WithMetricsServer(testCase.testMetricsServer)
-
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-			}
-		} else {
-			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testMetricsServer, result.Definition.Spec.MetricsServer)
-		}
-	}
+	return triggerAuthBuilder
 }
 
-func TestKedaControllerWithWatchNamespace(t *testing.T) {
-	testCases := []struct {
-		testWatchNamespace string
-		expectedErrorText  string
-	}{
-		{
-			testWatchNamespace: "test-app",
-			expectedErrorText:  "",
-		},
-		{
-			testWatchNamespace: "",
-			expectedErrorText:  "'watchNamespace' argument cannot be empty",
-		},
-	}
-
-	for _, testCase := range testCases {
-		testBuilder := buildInValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject())
-
-		result := testBuilder.WithWatchNamespace(testCase.testWatchNamespace)
-
-		if testCase.expectedErrorText != "" {
-			assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-		} else {
-			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testWatchNamespace, result.Definition.Spec.WatchNamespace)
-		}
-	}
-}
-
-func buildValidKedaControllerBuilder(apiClient *clients.Settings) *KedaControllerBuilder {
-	kedaControllerBuilder := NewKedaControllerBuilder(
-		apiClient, defaultKedaControllerName, defaultKedaControllerNamespace)
-
-	return kedaControllerBuilder
-}
-
-func buildInValidKedaControllerBuilder(apiClient *clients.Settings) *KedaControllerBuilder {
-	kedaControllerBuilder := NewKedaControllerBuilder(
-		apiClient, "", defaultKedaControllerNamespace)
-
-	return kedaControllerBuilder
-}
-
-func buildKedaControllerClientWithDummyObject() *clients.Settings {
+func buildTriggerAuthClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyKedaController(),
+		K8sMockObjects: buildDummyTriggerAuthentication(),
 	})
 }
 
-func buildDummyKedaController() []runtime.Object {
-	return append([]runtime.Object{}, &kedav1alpha1.KedaController{
+func buildDummyTriggerAuthentication() []runtime.Object {
+	return append([]runtime.Object{}, &kedav2v1alpha1.TriggerAuthentication{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      defaultKedaControllerName,
-			Namespace: defaultKedaControllerNamespace,
+			Name:      defaultTriggerAuthName,
+			Namespace: defaultTriggerAuthNamespace,
 		},
 	})
 }
