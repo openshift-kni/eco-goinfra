@@ -13,13 +13,18 @@ import (
 )
 
 var (
-	defaultTriggerAuthName      = "keda-trigger-auth-prometheus"
-	defaultTriggerAuthNamespace = "test-appspace"
+	defaultScaledObjectName      = "prometheus-scaledobject"
+	defaultScaledObjectNamespace = "test-appspace"
+	pollingInterval              = int32(5)
+	cooldownPeriod               = int32(10)
+	minReplicaCount              = int32(1)
+	maxReplicaCount              = int32(8)
+	zeroValue                    = int32(0)
 )
 
-func TestPullTriggerAuthentication(t *testing.T) {
-	generateTriggerAuth := func(name, namespace string) *kedav2v1alpha1.TriggerAuthentication {
-		return &kedav2v1alpha1.TriggerAuthentication{
+func TestPullScaledObject(t *testing.T) {
+	generateScaleObject := func(name, namespace string) *kedav2v1alpha1.ScaledObject {
+		return &kedav2v1alpha1.ScaledObject{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,
@@ -35,39 +40,39 @@ func TestPullTriggerAuthentication(t *testing.T) {
 		client              bool
 	}{
 		{
-			name:                defaultTriggerAuthName,
-			namespace:           defaultTriggerAuthNamespace,
+			name:                defaultScaledObjectName,
+			namespace:           defaultScaledObjectNamespace,
 			addToRuntimeObjects: true,
 			expectedError:       nil,
 			client:              true,
 		},
 		{
 			name:                "",
-			namespace:           defaultTriggerAuthNamespace,
+			namespace:           defaultScaledObjectNamespace,
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("triggerAuthentication 'name' cannot be empty"),
+			expectedError:       fmt.Errorf("scaledObject 'name' cannot be empty"),
 			client:              true,
 		},
 		{
-			name:                defaultTriggerAuthName,
+			name:                defaultScaledObjectName,
 			namespace:           "",
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("triggerAuthentication 'nsname' cannot be empty"),
+			expectedError:       fmt.Errorf("scaledObject 'nsname' cannot be empty"),
 			client:              true,
 		},
 		{
 			name:                "triggerauthtest",
-			namespace:           defaultTriggerAuthNamespace,
+			namespace:           defaultScaledObjectNamespace,
 			addToRuntimeObjects: false,
-			expectedError: fmt.Errorf("triggerAuthentication object triggerauthtest does not exist " +
+			expectedError: fmt.Errorf("scaledObject object triggerauthtest does not exist " +
 				"in namespace test-appspace"),
 			client: true,
 		},
 		{
 			name:                "triggerauthtest",
-			namespace:           defaultTriggerAuthNamespace,
+			namespace:           defaultScaledObjectNamespace,
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("triggerAuthentication 'apiClient' cannot be empty"),
+			expectedError:       fmt.Errorf("scaledObject 'apiClient' cannot be empty"),
 			client:              false,
 		},
 	}
@@ -78,7 +83,7 @@ func TestPullTriggerAuthentication(t *testing.T) {
 
 		var testSettings *clients.Settings
 
-		testTriggerAuth := generateTriggerAuth(testCase.name, testCase.namespace)
+		testTriggerAuth := generateScaleObject(testCase.name, testCase.namespace)
 
 		if testCase.addToRuntimeObjects {
 			runtimeObjects = append(runtimeObjects, testTriggerAuth)
@@ -90,7 +95,7 @@ func TestPullTriggerAuthentication(t *testing.T) {
 			})
 		}
 
-		builderResult, err := Pull(testSettings, testCase.name, testCase.namespace)
+		builderResult, err := PullScaleObject(testSettings, testCase.name, testCase.namespace)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError != nil {
@@ -103,92 +108,92 @@ func TestPullTriggerAuthentication(t *testing.T) {
 	}
 }
 
-func TestNewTriggerAuthenticationBuilder(t *testing.T) {
+func TestNewScaledObjectBuilder(t *testing.T) {
 	testCases := []struct {
 		name          string
 		namespace     string
 		expectedError string
 	}{
 		{
-			name:          defaultTriggerAuthName,
-			namespace:     defaultTriggerAuthNamespace,
+			name:          defaultScaledObjectName,
+			namespace:     defaultScaledObjectNamespace,
 			expectedError: "",
 		},
 		{
 			name:          "",
-			namespace:     defaultTriggerAuthNamespace,
-			expectedError: "triggerAuthentication 'name' cannot be empty",
+			namespace:     defaultScaledObjectNamespace,
+			expectedError: "scaledObject 'name' cannot be empty",
 		},
 		{
-			name:          defaultTriggerAuthName,
+			name:          defaultScaledObjectName,
 			namespace:     "",
-			expectedError: "triggerAuthentication 'nsname' cannot be empty",
+			expectedError: "scaledObject 'nsname' cannot be empty",
 		},
 	}
 
 	for _, testCase := range testCases {
 		testSettings := clients.GetTestClients(clients.TestClientParams{})
-		testTriggerAuthBuilder := NewTriggerAuthenticationBuilder(testSettings, testCase.name, testCase.namespace)
-		assert.Equal(t, testCase.expectedError, testTriggerAuthBuilder.errorMsg)
-		assert.NotNil(t, testTriggerAuthBuilder.Definition)
+		testScaledObjectBuilder := NewScaledObjectBuilder(testSettings, testCase.name, testCase.namespace)
+		assert.Equal(t, testCase.expectedError, testScaledObjectBuilder.errorMsg)
+		assert.NotNil(t, testScaledObjectBuilder.Definition)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testCase.name, testTriggerAuthBuilder.Definition.Name)
-			assert.Equal(t, testCase.namespace, testTriggerAuthBuilder.Definition.Namespace)
+			assert.Equal(t, testCase.name, testScaledObjectBuilder.Definition.Name)
+			assert.Equal(t, testCase.namespace, testScaledObjectBuilder.Definition.Namespace)
 		}
 	}
 }
 
-func TestTriggerAuthenticationExists(t *testing.T) {
+func TestScaledObjectExists(t *testing.T) {
 	testCases := []struct {
-		testTriggerAuth *TriggerAuthenticationBuilder
-		expectedStatus  bool
+		testScaledObject *ScaleObjectBuilder
+		expectedStatus   bool
 	}{
 		{
-			testTriggerAuth: buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedStatus:  true,
+			testScaledObject: buildValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject()),
+			expectedStatus:   true,
 		},
 		{
-			testTriggerAuth: buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedStatus:  false,
+			testScaledObject: buildInValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject()),
+			expectedStatus:   false,
 		},
 		{
-			testTriggerAuth: buildValidTriggerAuthBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedStatus:  false,
+			testScaledObject: buildValidScaledObjectBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedStatus:   false,
 		},
 	}
 
 	for _, testCase := range testCases {
-		exist := testCase.testTriggerAuth.Exists()
+		exist := testCase.testScaledObject.Exists()
 		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
-func TestTriggerAuthenticationGet(t *testing.T) {
+func TestScaledObjectGet(t *testing.T) {
 	testCases := []struct {
-		testTriggerAuth *TriggerAuthenticationBuilder
-		expectedError   error
+		testScaledObject *ScaleObjectBuilder
+		expectedError    error
 	}{
 		{
-			testTriggerAuth: buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:   nil,
+			testScaledObject: buildValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject()),
+			expectedError:    nil,
 		},
 		{
-			testTriggerAuth: buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:   fmt.Errorf("triggerauthentications.keda.sh \"\" not found"),
+			testScaledObject: buildInValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject()),
+			expectedError:    fmt.Errorf("scaledobjects.keda.sh \"\" not found"),
 		},
 		{
-			testTriggerAuth: buildValidTriggerAuthBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:   fmt.Errorf("triggerauthentications.keda.sh \"keda-trigger-auth-prometheus\" not found"),
+			testScaledObject: buildValidScaledObjectBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:    fmt.Errorf("scaledobjects.keda.sh \"prometheus-scaledobject\" not found"),
 		},
 	}
 
 	for _, testCase := range testCases {
-		triggerAuthObj, err := testCase.testTriggerAuth.Get()
+		scaledObjectObj, err := testCase.testScaledObject.Get()
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, triggerAuthObj.Name, testCase.testTriggerAuth.Definition.Name)
-			assert.Equal(t, triggerAuthObj.Namespace, testCase.testTriggerAuth.Definition.Namespace)
+			assert.Equal(t, scaledObjectObj.Name, testCase.testScaledObject.Definition.Name)
+			assert.Equal(t, scaledObjectObj.Namespace, testCase.testScaledObject.Definition.Namespace)
 			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
@@ -196,31 +201,31 @@ func TestTriggerAuthenticationGet(t *testing.T) {
 	}
 }
 
-func TestTriggerAuthenticationCreate(t *testing.T) {
+func TestScaledObjectCreate(t *testing.T) {
 	testCases := []struct {
-		testKedaController *TriggerAuthenticationBuilder
-		expectedError      string
+		testScaledObject *ScaleObjectBuilder
+		expectedError    string
 	}{
 		{
-			testKedaController: buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:      "",
+			testScaledObject: buildValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject()),
+			expectedError:    "",
 		},
 		{
-			testKedaController: buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:      " \"\" is invalid: metadata.name: Required value: name is required",
+			testScaledObject: buildInValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject()),
+			expectedError:    " \"\" is invalid: metadata.name: Required value: name is required",
 		},
 		{
-			testKedaController: buildValidTriggerAuthBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:      "",
+			testScaledObject: buildValidScaledObjectBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:    "",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testTriggerAuthBuilder, err := testCase.testKedaController.Create()
+		testScaledObjectBuilder, err := testCase.testScaledObject.Create()
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testTriggerAuthBuilder.Definition.Name, testTriggerAuthBuilder.Object.Name)
-			assert.Equal(t, testTriggerAuthBuilder.Definition.Namespace, testTriggerAuthBuilder.Object.Namespace)
+			assert.Equal(t, testScaledObjectBuilder.Definition.Name, testScaledObjectBuilder.Object.Name)
+			assert.Equal(t, testScaledObjectBuilder.Definition.Namespace, testScaledObjectBuilder.Object.Namespace)
 			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError, err.Error())
@@ -228,30 +233,30 @@ func TestTriggerAuthenticationCreate(t *testing.T) {
 	}
 }
 
-func TestTriggerAuthenticationDelete(t *testing.T) {
+func TestScaledObjectDelete(t *testing.T) {
 	testCases := []struct {
-		testTriggerAuth *TriggerAuthenticationBuilder
-		expectedError   error
+		testScaledObject *ScaleObjectBuilder
+		expectedError    error
 	}{
 		{
-			testTriggerAuth: buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:   nil,
+			testScaledObject: buildValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject()),
+			expectedError:    nil,
 		},
 		{
-			testTriggerAuth: buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:   nil,
+			testScaledObject: buildInValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject()),
+			expectedError:    nil,
 		},
 		{
-			testTriggerAuth: buildValidTriggerAuthBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:   nil,
+			testScaledObject: buildValidScaledObjectBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:    nil,
 		},
 	}
 
 	for _, testCase := range testCases {
-		_, err := testCase.testTriggerAuth.Delete()
+		_, err := testCase.testScaledObject.Delete()
 
 		if testCase.expectedError == nil {
-			assert.Nil(t, testCase.testTriggerAuth.Object)
+			assert.Nil(t, testCase.testScaledObject.Object)
 			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
@@ -259,90 +264,59 @@ func TestTriggerAuthenticationDelete(t *testing.T) {
 	}
 }
 
-func TestTriggerAuthenticationUpdate(t *testing.T) {
+func TestScaledObjectUpdate(t *testing.T) {
 	testCases := []struct {
-		testTriggerAuth     *TriggerAuthenticationBuilder
-		expectedError       string
-		testSecretTargetRef []kedav2v1alpha1.AuthSecretTargetRef
+		testScaleObject    *ScaleObjectBuilder
+		expectedError      string
+		testScaleTargetRef kedav2v1alpha1.ScaleTarget
 	}{
 		{
-			testTriggerAuth: buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
+			testScaleObject: buildValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject()),
 			expectedError:   "",
-			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{{
-				Name: "token-name",
-				Key:  "token",
+			testScaleTargetRef: kedav2v1alpha1.ScaleTarget{
+				Name: "test-app",
 			},
-				{
-					Name: "cert-name",
-					Key:  "ca.crt",
-				}},
 		},
 		{
-			testTriggerAuth:     buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:       " \"\" is invalid: metadata.name: Required value: name is required",
-			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{},
+			testScaleObject:    buildInValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject()),
+			expectedError:      " \"\" is invalid: metadata.name: Required value: name is required",
+			testScaleTargetRef: kedav2v1alpha1.ScaleTarget{},
 		},
 	}
 
 	for _, testCase := range testCases {
-		assert.Equal(t, []kedav2v1alpha1.AuthSecretTargetRef(nil), testCase.testTriggerAuth.Definition.Spec.SecretTargetRef)
-		assert.Nil(t, nil, testCase.testTriggerAuth.Object)
-		testCase.testTriggerAuth.WithSecretTargetRef(testCase.testSecretTargetRef)
-		_, err := testCase.testTriggerAuth.Update()
+		assert.Nil(t, nil, testCase.testScaleObject.Object)
+		testCase.testScaleObject.WithScaleTargetRef(testCase.testScaleTargetRef)
+		_, err := testCase.testScaleObject.Update()
 
 		if testCase.expectedError != "" {
 			assert.Equal(t, testCase.expectedError, err.Error())
 		} else {
-			assert.Equal(t, testCase.testSecretTargetRef, testCase.testTriggerAuth.Definition.Spec.SecretTargetRef)
+			assert.Equal(t, testCase.testScaleTargetRef.Name,
+				testCase.testScaleObject.Definition.Spec.ScaleTargetRef.Name)
 		}
 	}
 }
 
-func TestTriggerAuthenticationWithSecretTargetRef(t *testing.T) {
+func TestScaleObjectWithScaleTargetRef(t *testing.T) {
 	testCases := []struct {
-		testSecretTargetRef []kedav2v1alpha1.AuthSecretTargetRef
-		expectedError       bool
-		expectedErrorText   string
+		testScaleTargetRef kedav2v1alpha1.ScaleTarget
+		expectedError      bool
+		expectedErrorText  string
 	}{
 		{
-			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{{
-				Name: "token-name",
-				Key:  "token",
-			}},
-			expectedError:     false,
-			expectedErrorText: "",
-		},
-		{
-			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{{
-				Name: "cert-name",
-				Key:  "ca.crt",
-			}},
-			expectedError:     false,
-			expectedErrorText: "",
-		},
-		{
-			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{{
-				Name: "token-name",
-				Key:  "token",
+			testScaleTargetRef: kedav2v1alpha1.ScaleTarget{
+				Name: "test-app",
 			},
-				{
-					Name: "cert-name",
-					Key:  "ca.crt",
-				}},
 			expectedError:     false,
 			expectedErrorText: "",
-		},
-		{
-			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{},
-			expectedError:       true,
-			expectedErrorText:   "'secretTargetRef' argument cannot be empty",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject())
+		testBuilder := buildValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject())
 
-		result := testBuilder.WithSecretTargetRef(testCase.testSecretTargetRef)
+		result := testBuilder.WithScaleTargetRef(testCase.testScaleTargetRef)
 
 		if testCase.expectedError {
 			if testCase.expectedErrorText != "" {
@@ -350,36 +324,251 @@ func TestTriggerAuthenticationWithSecretTargetRef(t *testing.T) {
 			}
 		} else {
 			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testSecretTargetRef, result.Definition.Spec.SecretTargetRef)
+			assert.Equal(t, testCase.testScaleTargetRef, *result.Definition.Spec.ScaleTargetRef)
 		}
 	}
 }
 
-func buildValidTriggerAuthBuilder(apiClient *clients.Settings) *TriggerAuthenticationBuilder {
-	triggerAuthBuilder := NewTriggerAuthenticationBuilder(
-		apiClient, defaultTriggerAuthName, defaultTriggerAuthNamespace)
+func TestScaleObjectWithPollingInterval(t *testing.T) {
+	testCases := []struct {
+		testPollingInterval int32
+		expectedError       bool
+		expectedErrorText   string
+	}{
+		{
+			testPollingInterval: pollingInterval,
+			expectedError:       false,
+			expectedErrorText:   "",
+		},
+		{
+			testPollingInterval: zeroValue,
+			expectedError:       false,
+			expectedErrorText:   "",
+		},
+	}
 
-	return triggerAuthBuilder
+	for _, testCase := range testCases {
+		testBuilder := buildValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject())
+
+		result := testBuilder.WithPollingInterval(testCase.testPollingInterval)
+
+		if testCase.expectedError {
+			if testCase.expectedErrorText != "" {
+				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
+			}
+		} else {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testPollingInterval, *result.Definition.Spec.PollingInterval)
+		}
+	}
 }
 
-func buildInValidTriggerAuthBuilder(apiClient *clients.Settings) *TriggerAuthenticationBuilder {
-	triggerAuthBuilder := NewTriggerAuthenticationBuilder(
-		apiClient, "", defaultTriggerAuthNamespace)
+func TestScaleObjectWithCooldownPeriod(t *testing.T) {
+	testCases := []struct {
+		testCooldownPeriod int32
+		expectedError      bool
+		expectedErrorText  string
+	}{
+		{
+			testCooldownPeriod: cooldownPeriod,
+			expectedError:      false,
+			expectedErrorText:  "",
+		},
+		{
+			testCooldownPeriod: zeroValue,
+			expectedError:      false,
+			expectedErrorText:  "",
+		},
+	}
 
-	return triggerAuthBuilder
+	for _, testCase := range testCases {
+		testBuilder := buildValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject())
+
+		result := testBuilder.WithCooldownPeriod(testCase.testCooldownPeriod)
+
+		if testCase.expectedError {
+			if testCase.expectedErrorText != "" {
+				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
+			}
+		} else {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testCooldownPeriod, *result.Definition.Spec.CooldownPeriod)
+		}
+	}
 }
 
-func buildTriggerAuthClientWithDummyObject() *clients.Settings {
+func TestScaleObjectWithMinReplicaCount(t *testing.T) {
+	testCases := []struct {
+		testMinReplicaCount int32
+		expectedError       bool
+		expectedErrorText   string
+	}{
+		{
+			testMinReplicaCount: minReplicaCount,
+			expectedError:       false,
+			expectedErrorText:   "",
+		},
+		{
+			testMinReplicaCount: zeroValue,
+			expectedError:       false,
+			expectedErrorText:   "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject())
+
+		result := testBuilder.WithMinReplicaCount(testCase.testMinReplicaCount)
+
+		if testCase.expectedError {
+			if testCase.expectedErrorText != "" {
+				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
+			}
+		} else {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testMinReplicaCount, *result.Definition.Spec.MinReplicaCount)
+		}
+	}
+}
+
+func TestScaleObjectWithMaxReplicaCount(t *testing.T) {
+	testCases := []struct {
+		testMaxReplicaCount int32
+		expectedError       bool
+		expectedErrorText   string
+	}{
+		{
+			testMaxReplicaCount: maxReplicaCount,
+			expectedError:       false,
+			expectedErrorText:   "",
+		},
+		{
+			testMaxReplicaCount: zeroValue,
+			expectedError:       false,
+			expectedErrorText:   "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject())
+
+		result := testBuilder.WithMaxReplicaCount(testCase.testMaxReplicaCount)
+
+		if testCase.expectedError {
+			if testCase.expectedErrorText != "" {
+				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
+			}
+		} else {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testMaxReplicaCount, *result.Definition.Spec.MaxReplicaCount)
+		}
+	}
+}
+
+func TestScaleObjectWithTriggers(t *testing.T) {
+	testCases := []struct {
+		testTriggers      []kedav2v1alpha1.ScaleTriggers
+		expectedError     bool
+		expectedErrorText string
+	}{
+		{
+			testTriggers: []kedav2v1alpha1.ScaleTriggers{{
+				Type: "prometheus",
+				Metadata: map[string]string{
+					"serverAddress": "https://thanos-querier.openshift-monitoring.svc.cluster.local:9092",
+					"namespace":     defaultScaledObjectNamespace,
+					"metricName":    "http_requests_total",
+					"threshold":     "5",
+					"query":         "sum(rate(http_requests_total{job=\"test-app\"}[1m]))",
+					"authModes":     "bearer",
+				},
+				AuthenticationRef: &kedav2v1alpha1.ScaledObjectAuthRef{
+					Name: defaultScaledObjectName,
+				},
+			}},
+			expectedError:     false,
+			expectedErrorText: "",
+		},
+		{
+			testTriggers: []kedav2v1alpha1.ScaleTriggers{{
+				Type: "prometheus",
+				Metadata: map[string]string{
+					"serverAddress": "https://thanos-querier.openshift-monitoring.svc.cluster.local:9092",
+					"namespace":     defaultScaledObjectNamespace,
+					"metricName":    "http_requests_total",
+					"threshold":     "5",
+					"query":         "sum(rate(http_requests_total{job=\"test-app\"}[1m]))",
+					"authModes":     "bearer",
+				},
+			}},
+			expectedError:     false,
+			expectedErrorText: "",
+		},
+		{
+			testTriggers: []kedav2v1alpha1.ScaleTriggers{{
+				Type: "prometheus",
+				AuthenticationRef: &kedav2v1alpha1.ScaledObjectAuthRef{
+					Name: defaultScaledObjectName,
+				},
+			}},
+			expectedError:     false,
+			expectedErrorText: "",
+		},
+		{
+			testTriggers: []kedav2v1alpha1.ScaleTriggers{{
+				Type: "prometheus",
+			}},
+			expectedError:     false,
+			expectedErrorText: "",
+		},
+		{
+			testTriggers:      []kedav2v1alpha1.ScaleTriggers{},
+			expectedError:     true,
+			expectedErrorText: "'triggers' argument cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject())
+
+		result := testBuilder.WithTriggers(testCase.testTriggers)
+
+		if testCase.expectedError {
+			if testCase.expectedErrorText != "" {
+				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
+			}
+		} else {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testTriggers, result.Definition.Spec.Triggers)
+		}
+	}
+}
+
+func buildValidScaledObjectBuilder(apiClient *clients.Settings) *ScaleObjectBuilder {
+	scaleObjectBuilder := NewScaledObjectBuilder(
+		apiClient, defaultScaledObjectName, defaultScaledObjectNamespace)
+
+	return scaleObjectBuilder
+}
+
+func buildInValidScaledObjectBuilder(apiClient *clients.Settings) *ScaleObjectBuilder {
+	scaleObjectBuilder := NewScaledObjectBuilder(
+		apiClient, "", defaultScaledObjectNamespace)
+
+	return scaleObjectBuilder
+}
+
+func buildScaledObjectClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyTriggerAuthentication(),
+		K8sMockObjects: buildDummyScaledObject(),
 	})
 }
 
-func buildDummyTriggerAuthentication() []runtime.Object {
-	return append([]runtime.Object{}, &kedav2v1alpha1.TriggerAuthentication{
+func buildDummyScaledObject() []runtime.Object {
+	return append([]runtime.Object{}, &kedav2v1alpha1.ScaledObject{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      defaultTriggerAuthName,
-			Namespace: defaultTriggerAuthNamespace,
+			Name:      defaultScaledObjectName,
+			Namespace: defaultScaledObjectNamespace,
 		},
 	})
 }
