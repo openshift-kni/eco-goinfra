@@ -159,6 +159,7 @@ require (
 	github.com/openshift/library-go v0.0.0-20240419113445-f1541d628746 // indirect
 	github.com/operator-framework/operator-registry v1.41.0 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
+	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_golang v1.19.1 // indirect
