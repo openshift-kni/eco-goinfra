@@ -429,7 +429,7 @@ func (bmc *BMC) SystemResetAction(action redfish.ResetType) error {
 		return err
 	}
 
-	glog.V(100).Infof("Performing reset action %s from the bmc's redfish endpoint")
+	glog.V(100).Infof("Performing reset action %s from the bmc's redfish endpoint", action)
 
 	redfishClient, cancel, err := redfishConnect(
 		bmc.host,
