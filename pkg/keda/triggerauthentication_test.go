@@ -198,25 +198,25 @@ func TestTriggerAuthenticationGet(t *testing.T) {
 
 func TestTriggerAuthenticationCreate(t *testing.T) {
 	testCases := []struct {
-		testKedaController *TriggerAuthenticationBuilder
-		expectedError      string
+		TriggerAuth   *TriggerAuthenticationBuilder
+		expectedError string
 	}{
 		{
-			testKedaController: buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:      "",
+			TriggerAuth:   buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
+			expectedError: "",
 		},
 		{
-			testKedaController: buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:      " \"\" is invalid: metadata.name: Required value: name is required",
+			TriggerAuth:   buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
+			expectedError: " \"\" is invalid: metadata.name: Required value: name is required",
 		},
 		{
-			testKedaController: buildValidTriggerAuthBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:      "",
+			TriggerAuth:   buildValidTriggerAuthBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: "",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testTriggerAuthBuilder, err := testCase.testKedaController.Create()
+		testTriggerAuthBuilder, err := testCase.TriggerAuth.Create()
 
 		if testCase.expectedError == "" {
 			assert.Equal(t, testTriggerAuthBuilder.Definition.Name, testTriggerAuthBuilder.Object.Name)
