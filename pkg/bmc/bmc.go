@@ -429,7 +429,7 @@ func (bmc *BMC) SystemResetAction(action redfish.ResetType) error {
 		return err
 	}
 
-	glog.V(100).Infof("Performing reset action %s from the bmc's redfish endpoint", action)
+	glog.V(100).Infof("Performing reset action %v from the bmc's redfish endpoint", action)
 
 	redfishClient, cancel, err := redfishConnect(
 		bmc.host,
@@ -472,9 +472,68 @@ func (bmc *BMC) SystemPowerOn() error {
 	return bmc.SystemResetAction(redfish.OnResetType)
 }
 
-// SystemPowerCycle power cycles the system using the Redfish API.
+// SystemPowerOff performs a non-graceful power off of the system using the Redfish API.
+func (bmc *BMC) SystemPowerOff() error {
+	return bmc.SystemResetAction(redfish.ForceOffResetType)
+}
+
+// SystemPowerCycle performs a power cycle in the system using the Redfish API. If PowerCycle reset type
+// is not supported, alternate PowerOff + On reset actions will be performed as fallback mechanism.
+// Use bmc.SystemResetAction(redfish.PowerCycleResetType) if this fallback mechanism is not needed/wanted.
 func (bmc *BMC) SystemPowerCycle() error {
-	return bmc.SystemResetAction(redfish.PowerCycleResetType)
+	if valid, err := bmc.validateRedfish(); !valid {
+		return err
+	}
+
+	glog.V(100).Infof("Performing reset action PowerCycle from the bmc's redfish endpoint")
+
+	suppportedResetTypes, err := bmc.getSupportedResetTypes()
+	if err != nil {
+		glog.V(100).Infof("Failed to get system's supported reset types: %v", err)
+
+		return fmt.Errorf("failed to get system's supported reset types: %w", err)
+	}
+
+	// If supported, perform power cycle reset.
+	if isResetTypeSupported(redfish.PowerCycleResetType, suppportedResetTypes) {
+		return bmc.SystemResetAction(redfish.PowerCycleResetType)
+	}
+
+	glog.V(100).Infof("PowerCycle reset type not supported. Trying with PowerOff and On reset actions.")
+
+	// Workaround for PowerCycle type not supported: ForceOff + On.
+	if !isResetTypeSupported(redfish.ForceOffResetType, suppportedResetTypes) ||
+		!isResetTypeSupported(redfish.OnResetType, suppportedResetTypes) {
+		glog.V(100).Infof("Unable to perform power cycle (supported reset types: %v)", suppportedResetTypes)
+
+		return fmt.Errorf("unable to perform power cycle (supported reset types: %v)", suppportedResetTypes)
+	}
+
+	err = bmc.SystemPowerOff()
+	if err != nil {
+		glog.V(100).Infof("Failed to perform ForceOff system reset: %v", err)
+
+		return fmt.Errorf("failed to perform ForceOff system reset: %w", err)
+	}
+
+	// Wait 5 secs and turn on the system.
+	time.Sleep(5 * time.Second)
+
+	// First, make sure the system is off.
+	powerState, err := bmc.SystemPowerState()
+	if err != nil {
+		glog.V(100).Infof("Failed to system power state: %v", err)
+
+		return fmt.Errorf("failed to system power state: %w", err)
+	}
+
+	if powerState != string(redfish.OffPowerState) {
+		glog.V(100).Infof("System state is not Off - current state: %v", powerState)
+
+		return fmt.Errorf("system state is not Off - current state: %v", powerState)
+	}
+
+	return bmc.SystemPowerOn()
 }
 
 // SystemPowerState returns the system's current power state using the Redfish API.
@@ -641,9 +700,9 @@ func (bmc *BMC) RunCLICommand(
 
 		return stdoutBuffer.String(), stderrBuffer.String(), fmt.Errorf("timeout running command")
 	case err := <-errCh:
-		glog.V(100).Info("Command run error: %v", err)
-
 		if err != nil {
+			glog.V(100).Infof("Command run error: %v", err)
+
 			return stdoutBuffer.String(), stderrBuffer.String(), fmt.Errorf("command run error: %w", err)
 		}
 	}
@@ -893,4 +952,41 @@ func (bmc *BMC) validate() (bool, error) {
 	}
 
 	return true, nil
+}
+
+func isResetTypeSupported(resetType redfish.ResetType, supportedTypes []redfish.ResetType) bool {
+	for _, supportedType := range supportedTypes {
+		if supportedType == resetType {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (bmc *BMC) getSupportedResetTypes() ([]redfish.ResetType, error) {
+	redfishClient, cancel, err := redfishConnect(
+		bmc.host,
+		bmc.redfishUser.Name,
+		bmc.redfishUser.Password,
+		bmc.timeOuts.Redfish)
+	if err != nil {
+		glog.V(100).Infof("Redfish connection error: %v", err)
+
+		return nil, fmt.Errorf("redfish connection error: %w", err)
+	}
+
+	defer func() {
+		redfishClient.Logout()
+		cancel()
+	}()
+
+	system, err := redfishGetSystem(redfishClient, bmc.systemIndex)
+	if err != nil {
+		glog.V(100).Infof("Failed to get redfish system: %v", err)
+
+		return nil, fmt.Errorf("failed to get redfish system: %w", err)
+	}
+
+	return system.SupportedResetTypes, nil
 }
