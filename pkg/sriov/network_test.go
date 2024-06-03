@@ -1,8 +1,10 @@
 package sriov
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	srIovV1 "github.com/k8snetworkplumbingwg/sriov-network-operator/api/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -489,6 +491,64 @@ func TestDelete(t *testing.T) {
 
 	for _, testCase := range testCases {
 		err := testCase.testNetwork.Delete()
+		assert.Equal(t, testCase.expectedError, err)
+
+		if testCase.expectedError == nil {
+			assert.Nil(t, testCase.testNetwork.Object)
+		}
+	}
+}
+
+func TestNetworkDeleteAndWait(t *testing.T) {
+	testCases := []struct {
+		testNetwork   *NetworkBuilder
+		expectedError error
+	}{
+		{
+			testNetwork:   buildValidSriovNetworkTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: nil,
+		},
+		{
+			testNetwork:   buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject()),
+			expectedError: nil,
+		},
+		{
+			testNetwork:   buildInvalidSrIovNetworkTestBuilder(buildTestClientWithDummyObject()),
+			expectedError: fmt.Errorf("SrIovNetwork 'resName' cannot be empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		err := testCase.testNetwork.DeleteAndWait(1 * time.Second)
+		assert.Equal(t, testCase.expectedError, err)
+
+		if testCase.expectedError == nil {
+			assert.Nil(t, testCase.testNetwork.Object)
+		}
+	}
+}
+
+func TestNetworkWaitUntilDeleted(t *testing.T) {
+	testCases := []struct {
+		testNetwork   *NetworkBuilder
+		expectedError error
+	}{
+		{
+			testNetwork:   buildValidSriovNetworkTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: nil,
+		},
+		{
+			testNetwork:   buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject()),
+			expectedError: context.DeadlineExceeded,
+		},
+		{
+			testNetwork:   buildInvalidSrIovNetworkTestBuilder(buildTestClientWithDummyObject()),
+			expectedError: fmt.Errorf("SrIovNetwork 'resName' cannot be empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		err := testCase.testNetwork.WaitUntilDeleted(1 * time.Second)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
