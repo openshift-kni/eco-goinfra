@@ -13,8 +13,8 @@ import (
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// KedaControllerBuilder provides a struct for KedaController object from the cluster and a KedaController definition.
-type KedaControllerBuilder struct {
+// ControllerBuilder provides a struct for KedaController object from the cluster and a KedaController definition.
+type ControllerBuilder struct {
 	// KedaController definition, used to create the KedaController object.
 	Definition *kedav1alpha1.KedaController
 	// Created KedaController object.
@@ -25,14 +25,20 @@ type KedaControllerBuilder struct {
 	apiClient goclient.Client
 }
 
-// NewKedaControllerBuilder creates a new instance of KedaControllerBuilder.
-func NewKedaControllerBuilder(
-	apiClient *clients.Settings, name, nsname string) *KedaControllerBuilder {
+// NewControllerBuilder creates a new instance of ControllerBuilder.
+func NewControllerBuilder(
+	apiClient *clients.Settings, name, nsname string) *ControllerBuilder {
 	glog.V(100).Infof(
 		"Initializing new kedaController structure with the following params: "+
 			"name: %s, namespace: %s", name, nsname)
 
-	builder := &KedaControllerBuilder{
+	if apiClient == nil {
+		glog.V(100).Infof("kedaController 'apiClient' cannot be empty")
+
+		return nil
+	}
+
+	builder := &ControllerBuilder{
 		apiClient: apiClient.Client,
 		Definition: &kedav1alpha1.KedaController{
 			ObjectMeta: metav1.ObjectMeta{
@@ -61,8 +67,8 @@ func NewKedaControllerBuilder(
 	return builder
 }
 
-// PullKedaController pulls existing kedaController from cluster.
-func PullKedaController(apiClient *clients.Settings, name, nsname string) (*KedaControllerBuilder, error) {
+// PullController pulls existing kedaController from cluster.
+func PullController(apiClient *clients.Settings, name, nsname string) (*ControllerBuilder, error) {
 	glog.V(100).Infof("Pulling existing kedaController name %s in namespace %s from cluster", name, nsname)
 
 	if apiClient == nil {
@@ -71,7 +77,7 @@ func PullKedaController(apiClient *clients.Settings, name, nsname string) (*Keda
 		return nil, fmt.Errorf("kedaController 'apiClient' cannot be empty")
 	}
 
-	builder := KedaControllerBuilder{
+	builder := ControllerBuilder{
 		apiClient: apiClient.Client,
 		Definition: &kedav1alpha1.KedaController{
 			ObjectMeta: metav1.ObjectMeta{
@@ -103,7 +109,7 @@ func PullKedaController(apiClient *clients.Settings, name, nsname string) (*Keda
 }
 
 // Get fetches the defined kedaController from the cluster.
-func (builder *KedaControllerBuilder) Get() (*kedav1alpha1.KedaController, error) {
+func (builder *ControllerBuilder) Get() (*kedav1alpha1.KedaController, error) {
 	if valid, err := builder.validate(); !valid {
 		return nil, err
 	}
@@ -125,7 +131,7 @@ func (builder *KedaControllerBuilder) Get() (*kedav1alpha1.KedaController, error
 }
 
 // Create makes a kedaController in the cluster and stores the created object in struct.
-func (builder *KedaControllerBuilder) Create() (*KedaControllerBuilder, error) {
+func (builder *ControllerBuilder) Create() (*ControllerBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
@@ -145,7 +151,7 @@ func (builder *KedaControllerBuilder) Create() (*KedaControllerBuilder, error) {
 }
 
 // Delete removes kedaController from a cluster.
-func (builder *KedaControllerBuilder) Delete() (*KedaControllerBuilder, error) {
+func (builder *ControllerBuilder) Delete() (*ControllerBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
@@ -174,7 +180,7 @@ func (builder *KedaControllerBuilder) Delete() (*KedaControllerBuilder, error) {
 }
 
 // Exists checks whether the given kedaController exists.
-func (builder *KedaControllerBuilder) Exists() bool {
+func (builder *ControllerBuilder) Exists() bool {
 	if valid, _ := builder.validate(); !valid {
 		return false
 	}
@@ -189,7 +195,7 @@ func (builder *KedaControllerBuilder) Exists() bool {
 }
 
 // Update renovates the existing kedaController object with kedaController definition in builder.
-func (builder *KedaControllerBuilder) Update() (*KedaControllerBuilder, error) {
+func (builder *ControllerBuilder) Update() (*ControllerBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
@@ -212,8 +218,8 @@ func (builder *KedaControllerBuilder) Update() (*KedaControllerBuilder, error) {
 }
 
 // WithAdmissionWebhooks sets the kedaController operator's profile.
-func (builder *KedaControllerBuilder) WithAdmissionWebhooks(
-	admissionWebhooks kedav1alpha1.KedaAdmissionWebhooksSpec) *KedaControllerBuilder {
+func (builder *ControllerBuilder) WithAdmissionWebhooks(
+	admissionWebhooks kedav1alpha1.KedaAdmissionWebhooksSpec) *ControllerBuilder {
 	glog.V(100).Infof(
 		"Adding admissionWebhooks to kedaController %s in namespace %s; admissionWebhooks %v",
 		builder.Definition.Name, builder.Definition.Namespace, admissionWebhooks)
@@ -228,8 +234,8 @@ func (builder *KedaControllerBuilder) WithAdmissionWebhooks(
 }
 
 // WithOperator sets the kedaController operator's profile.
-func (builder *KedaControllerBuilder) WithOperator(
-	operator kedav1alpha1.KedaOperatorSpec) *KedaControllerBuilder {
+func (builder *ControllerBuilder) WithOperator(
+	operator kedav1alpha1.KedaOperatorSpec) *ControllerBuilder {
 	glog.V(100).Infof(
 		"Adding operator to kedaController %s in namespace %s; operator %v",
 		builder.Definition.Name, builder.Definition.Namespace, operator)
@@ -244,8 +250,8 @@ func (builder *KedaControllerBuilder) WithOperator(
 }
 
 // WithMetricsServer sets the kedaController operator's metricsServer.
-func (builder *KedaControllerBuilder) WithMetricsServer(
-	metricsServer kedav1alpha1.KedaMetricsServerSpec) *KedaControllerBuilder {
+func (builder *ControllerBuilder) WithMetricsServer(
+	metricsServer kedav1alpha1.KedaMetricsServerSpec) *ControllerBuilder {
 	glog.V(100).Infof(
 		"Adding metricsServer to kedaController %s in namespace %s; metricsServer %v",
 		builder.Definition.Name, builder.Definition.Namespace, metricsServer)
@@ -260,10 +266,10 @@ func (builder *KedaControllerBuilder) WithMetricsServer(
 }
 
 // WithWatchNamespace sets the kedaController operator's watchNamespace.
-func (builder *KedaControllerBuilder) WithWatchNamespace(
-	watchNamespace string) *KedaControllerBuilder {
+func (builder *ControllerBuilder) WithWatchNamespace(
+	watchNamespace string) *ControllerBuilder {
 	glog.V(100).Infof(
-		"Adding metricsServer to kedaController %s in namespace %s; watchNamespace %v",
+		"Adding watchNamespace to kedaController %s in namespace %s; watchNamespace %v",
 		builder.Definition.Name, builder.Definition.Namespace, watchNamespace)
 
 	if valid, _ := builder.validate(); !valid {
@@ -285,7 +291,7 @@ func (builder *KedaControllerBuilder) WithWatchNamespace(
 
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
-func (builder *KedaControllerBuilder) validate() (bool, error) {
+func (builder *ControllerBuilder) validate() (bool, error) {
 	resourceCRD := "KedaController"
 
 	if builder == nil {

@@ -17,7 +17,7 @@ var (
 	defaultKedaControllerNamespace = "openshift-keda"
 )
 
-func TestPullKedaController(t *testing.T) {
+func TestPullController(t *testing.T) {
 	generateKedaController := func(name, namespace string) *kedav1alpha1.KedaController {
 		return &kedav1alpha1.KedaController{
 			ObjectMeta: metav1.ObjectMeta{
@@ -90,7 +90,7 @@ func TestPullKedaController(t *testing.T) {
 			})
 		}
 
-		builderResult, err := PullKedaController(testSettings, testCase.name, testCase.namespace)
+		builderResult, err := PullController(testSettings, testCase.name, testCase.namespace)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError != nil {
@@ -102,7 +102,7 @@ func TestPullKedaController(t *testing.T) {
 	}
 }
 
-func TestNewKedaControllerBuilder(t *testing.T) {
+func TestNewControllerBuilder(t *testing.T) {
 	testCases := []struct {
 		name          string
 		namespace     string
@@ -127,32 +127,34 @@ func TestNewKedaControllerBuilder(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testSettings := clients.GetTestClients(clients.TestClientParams{})
-		testKedaControllerBuilder := NewKedaControllerBuilder(testSettings, testCase.name, testCase.namespace)
-		assert.Equal(t, testCase.expectedError, testKedaControllerBuilder.errorMsg)
+		testKedaControllerBuilder := NewControllerBuilder(testSettings, testCase.name, testCase.namespace)
 		assert.NotNil(t, testKedaControllerBuilder.Definition)
 
 		if testCase.expectedError == "" {
 			assert.Equal(t, testCase.name, testKedaControllerBuilder.Definition.Name)
 			assert.Equal(t, testCase.namespace, testKedaControllerBuilder.Definition.Namespace)
+			assert.Equal(t, "", testKedaControllerBuilder.errorMsg)
+		} else {
+			assert.Equal(t, testCase.expectedError, testKedaControllerBuilder.errorMsg)
 		}
 	}
 }
 
-func TestKedaControllerExists(t *testing.T) {
+func TestControllerExists(t *testing.T) {
 	testCases := []struct {
-		testKedaController *KedaControllerBuilder
+		testKedaController *ControllerBuilder
 		expectedStatus     bool
 	}{
 		{
-			testKedaController: buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			testKedaController: buildValidControllerBuilder(buildControllerClientWithDummyObject()),
 			expectedStatus:     true,
 		},
 		{
-			testKedaController: buildInValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			testKedaController: buildInValidControllerBuilder(buildControllerClientWithDummyObject()),
 			expectedStatus:     false,
 		},
 		{
-			testKedaController: buildValidKedaControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testKedaController: buildValidControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedStatus:     false,
 		},
 	}
@@ -163,21 +165,21 @@ func TestKedaControllerExists(t *testing.T) {
 	}
 }
 
-func TestKedaControllerGet(t *testing.T) {
+func TestControllerGet(t *testing.T) {
 	testCases := []struct {
-		testKedaController *KedaControllerBuilder
+		testKedaController *ControllerBuilder
 		expectedError      error
 	}{
 		{
-			testKedaController: buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			testKedaController: buildValidControllerBuilder(buildControllerClientWithDummyObject()),
 			expectedError:      nil,
 		},
 		{
-			testKedaController: buildInValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			testKedaController: buildInValidControllerBuilder(buildControllerClientWithDummyObject()),
 			expectedError:      fmt.Errorf("kedacontrollers.keda.sh \"\" not found"),
 		},
 		{
-			testKedaController: buildValidKedaControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testKedaController: buildValidControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError:      fmt.Errorf("kedacontrollers.keda.sh \"keda\" not found"),
 		},
 	}
@@ -195,21 +197,21 @@ func TestKedaControllerGet(t *testing.T) {
 	}
 }
 
-func TestKedaControllerCreate(t *testing.T) {
+func TestControllerCreate(t *testing.T) {
 	testCases := []struct {
-		testKedaController *KedaControllerBuilder
+		testKedaController *ControllerBuilder
 		expectedError      string
 	}{
 		{
-			testKedaController: buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			testKedaController: buildValidControllerBuilder(buildControllerClientWithDummyObject()),
 			expectedError:      "",
 		},
 		{
-			testKedaController: buildInValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			testKedaController: buildInValidControllerBuilder(buildControllerClientWithDummyObject()),
 			expectedError:      " \"\" is invalid: metadata.name: Required value: name is required",
 		},
 		{
-			testKedaController: buildValidKedaControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testKedaController: buildValidControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError:      "",
 		},
 	}
@@ -227,21 +229,21 @@ func TestKedaControllerCreate(t *testing.T) {
 	}
 }
 
-func TestKedaControllerDelete(t *testing.T) {
+func TestControllerDelete(t *testing.T) {
 	testCases := []struct {
-		testKedaController *KedaControllerBuilder
+		testKedaController *ControllerBuilder
 		expectedError      error
 	}{
 		{
-			testKedaController: buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			testKedaController: buildValidControllerBuilder(buildControllerClientWithDummyObject()),
 			expectedError:      nil,
 		},
 		{
-			testKedaController: buildInValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			testKedaController: buildInValidControllerBuilder(buildControllerClientWithDummyObject()),
 			expectedError:      nil,
 		},
 		{
-			testKedaController: buildValidKedaControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testKedaController: buildValidControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError:      nil,
 		},
 	}
@@ -258,19 +260,19 @@ func TestKedaControllerDelete(t *testing.T) {
 	}
 }
 
-func TestKedaControllerUpdate(t *testing.T) {
+func TestControllerUpdate(t *testing.T) {
 	testCases := []struct {
-		testKedaController *KedaControllerBuilder
+		testKedaController *ControllerBuilder
 		expectedError      string
 		watchNamespace     string
 	}{
 		{
-			testKedaController: buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			testKedaController: buildValidControllerBuilder(buildControllerClientWithDummyObject()),
 			expectedError:      "",
 			watchNamespace:     "keda",
 		},
 		{
-			testKedaController: buildInValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject()),
+			testKedaController: buildInValidControllerBuilder(buildControllerClientWithDummyObject()),
 			expectedError:      " \"\" is invalid: metadata.name: Required value: name is required",
 			watchNamespace:     "",
 		},
@@ -290,7 +292,7 @@ func TestKedaControllerUpdate(t *testing.T) {
 	}
 }
 
-func TestKedaControllerWithAdmissionWebhooks(t *testing.T) {
+func TestControllerWithAdmissionWebhooks(t *testing.T) {
 	testCases := []struct {
 		testAdmissionWebhooks kedav1alpha1.KedaAdmissionWebhooksSpec
 		expectedError         bool
@@ -312,7 +314,7 @@ func TestKedaControllerWithAdmissionWebhooks(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject())
+		testBuilder := buildValidControllerBuilder(buildControllerClientWithDummyObject())
 
 		result := testBuilder.WithAdmissionWebhooks(testCase.testAdmissionWebhooks)
 
@@ -327,7 +329,7 @@ func TestKedaControllerWithAdmissionWebhooks(t *testing.T) {
 	}
 }
 
-func TestKedaControllerWithOperator(t *testing.T) {
+func TestControllerWithOperator(t *testing.T) {
 	testCases := []struct {
 		testOperator      kedav1alpha1.KedaOperatorSpec
 		expectedError     bool
@@ -349,7 +351,7 @@ func TestKedaControllerWithOperator(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject())
+		testBuilder := buildValidControllerBuilder(buildControllerClientWithDummyObject())
 
 		result := testBuilder.WithOperator(testCase.testOperator)
 
@@ -364,7 +366,7 @@ func TestKedaControllerWithOperator(t *testing.T) {
 	}
 }
 
-func TestKedaControllerWithMetricsServer(t *testing.T) {
+func TestControllerWithMetricsServer(t *testing.T) {
 	testCases := []struct {
 		testMetricsServer kedav1alpha1.KedaMetricsServerSpec
 		expectedError     bool
@@ -385,7 +387,7 @@ func TestKedaControllerWithMetricsServer(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject())
+		testBuilder := buildValidControllerBuilder(buildControllerClientWithDummyObject())
 
 		result := testBuilder.WithMetricsServer(testCase.testMetricsServer)
 
@@ -400,7 +402,7 @@ func TestKedaControllerWithMetricsServer(t *testing.T) {
 	}
 }
 
-func TestKedaControllerWithWatchNamespace(t *testing.T) {
+func TestControllerWithWatchNamespace(t *testing.T) {
 	testCases := []struct {
 		testWatchNamespace string
 		expectedErrorText  string
@@ -416,7 +418,7 @@ func TestKedaControllerWithWatchNamespace(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildInValidKedaControllerBuilder(buildKedaControllerClientWithDummyObject())
+		testBuilder := buildInValidControllerBuilder(buildControllerClientWithDummyObject())
 
 		result := testBuilder.WithWatchNamespace(testCase.testWatchNamespace)
 
@@ -429,27 +431,27 @@ func TestKedaControllerWithWatchNamespace(t *testing.T) {
 	}
 }
 
-func buildValidKedaControllerBuilder(apiClient *clients.Settings) *KedaControllerBuilder {
-	kedaControllerBuilder := NewKedaControllerBuilder(
+func buildValidControllerBuilder(apiClient *clients.Settings) *ControllerBuilder {
+	kedaControllerBuilder := NewControllerBuilder(
 		apiClient, defaultKedaControllerName, defaultKedaControllerNamespace)
 
 	return kedaControllerBuilder
 }
 
-func buildInValidKedaControllerBuilder(apiClient *clients.Settings) *KedaControllerBuilder {
-	kedaControllerBuilder := NewKedaControllerBuilder(
+func buildInValidControllerBuilder(apiClient *clients.Settings) *ControllerBuilder {
+	kedaControllerBuilder := NewControllerBuilder(
 		apiClient, "", defaultKedaControllerNamespace)
 
 	return kedaControllerBuilder
 }
 
-func buildKedaControllerClientWithDummyObject() *clients.Settings {
+func buildControllerClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyKedaController(),
+		K8sMockObjects: buildDummyController(),
 	})
 }
 
-func buildDummyKedaController() []runtime.Object {
+func buildDummyController() []runtime.Object {
 	return append([]runtime.Object{}, &kedav1alpha1.KedaController{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      defaultKedaControllerName,
