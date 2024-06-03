@@ -53,15 +53,6 @@ func (p *HelmChartInflationGeneratorPlugin) Config(
 	if h.GeneralConfig().HelmConfig.Command == "" {
 		return fmt.Errorf("must specify --helm-command")
 	}
-
-	// CLI args takes precedence
-	if h.GeneralConfig().HelmConfig.KubeVersion != "" {
-		p.HelmChart.KubeVersion = h.GeneralConfig().HelmConfig.KubeVersion
-	}
-	if len(h.GeneralConfig().HelmConfig.ApiVersions) != 0 {
-		p.HelmChart.ApiVersions = h.GeneralConfig().HelmConfig.ApiVersions
-	}
-
 	p.h = h
 	if err = yaml.Unmarshal(config, p); err != nil {
 		return
@@ -100,7 +91,7 @@ func (p *HelmChartInflationGeneratorPlugin) validateArgs() (err error) {
 	// be under the loader root (unless root restrictions are
 	// disabled).
 	if p.ValuesFile == "" {
-		p.ValuesFile = filepath.Join(p.absChartHome(), p.Name, "values.yaml")
+		p.ValuesFile = filepath.Join(p.ChartHome, p.Name, "values.yaml")
 	}
 	for i, file := range p.AdditionalValuesFiles {
 		// use Load() to enforce root restrictions
@@ -141,17 +132,10 @@ func (p *HelmChartInflationGeneratorPlugin) errIfIllegalValuesMerge() error {
 }
 
 func (p *HelmChartInflationGeneratorPlugin) absChartHome() string {
-	var chartHome string
 	if filepath.IsAbs(p.ChartHome) {
-		chartHome = p.ChartHome
-	} else {
-		chartHome = filepath.Join(p.h.Loader().Root(), p.ChartHome)
+		return p.ChartHome
 	}
-
-	if p.Version != "" && p.Repo != "" {
-		return filepath.Join(chartHome, fmt.Sprintf("%s-%s", p.Name, p.Version))
-	}
-	return chartHome
+	return filepath.Join(p.h.Loader().Root(), p.ChartHome)
 }
 
 func (p *HelmChartInflationGeneratorPlugin) runHelmCommand(
