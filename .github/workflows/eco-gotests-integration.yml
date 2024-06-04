@@ -5,6 +5,7 @@ on:
   pull_request:
     branches:
       - main
+      - 'release-\d.\d\d'
 
 jobs:
   build:
@@ -13,7 +14,6 @@ jobs:
       SHELL: /bin/bash
       ECO_GOTESTS_PATH: gotests
       ECO_GOTESTS_REPO: openshift-kni/eco-gotests
-      ECO_GOTESTS_BRANCH: main
 
     steps:
       - name: Set up Go 1.22
@@ -28,7 +28,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ env.ECO_GOTESTS_REPO }}
-          ref: ${{ env.ECO_GOTESTS_BRANCH }}
+          # check out the branch name that is targeted by the PR
+          ref:  ${{ github.base_ref }}
           path: ${{ env.ECO_GOTESTS_PATH }}
 
       # Update the go.mod file in eco-gotests to include the current eco-goinfra code
