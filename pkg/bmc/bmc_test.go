@@ -526,7 +526,6 @@ func TestBMCSystemResetAction(t *testing.T) {
 		redfish.GracefulRestartResetType,
 		redfish.GracefulShutdownResetType,
 		redfish.PushPowerButtonResetType,
-		redfish.PowerCycleResetType,
 		redfish.NmiResetType,
 		redfish.PauseResetType,
 		redfish.ResumeResetType,
@@ -555,6 +554,12 @@ func TestBMCSystemGracefulShutdown(t *testing.T) {
 func TestBMCSystemPowerOn(t *testing.T) {
 	testResetAction(t, "PowerOn", func(bmc *BMC) error {
 		return bmc.SystemPowerOn()
+	})
+}
+
+func TestBMCSystemPowerOff(t *testing.T) {
+	testResetAction(t, "PowerOff", func(bmc *BMC) error {
+		return bmc.SystemPowerOff()
 	})
 }
 
@@ -795,9 +800,17 @@ func testResetAction(t *testing.T, name string, resetFunction func(bmc *BMC) err
 		t.Run(testCase.name, func(t *testing.T) {
 			bmc := New(host).WithRedfishUser(defaultUsername, defaultPassword).WithRedfishSystemIndex(testCase.systemIndex)
 
+			expectedErrorTest := testCase.expectedErrorText
+
 			err := resetFunction(bmc)
+
 			if testCase.expectedErrorText != "" {
-				assert.EqualError(t, err, testCase.expectedErrorText)
+				if name == "PowerCycle" {
+					// PowerCycle is special as it needs to get the supported reset types first and it will also fail.
+					expectedErrorTest = "failed to get system's supported reset types: " + testCase.expectedErrorText
+				}
+
+				assert.EqualError(t, err, expectedErrorTest)
 			}
 		})
 	}
