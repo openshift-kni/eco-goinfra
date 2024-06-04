@@ -70,6 +70,7 @@ import (
 	agentInstallV1Beta1 "github.com/openshift/assisted-service/api/v1beta1"
 	hiveV1 "github.com/openshift/hive/apis/hive/v1"
 	moduleV1Beta1 "github.com/rh-ecosystem-edge/kernel-module-management/api/v1beta1"
+	mchv1 "github.com/stolostron/multiclusterhub-operator/api/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	coreV1Client "k8s.io/client-go/kubernetes/typed/core/v1"
 	storageV1Client "k8s.io/client-go/kubernetes/typed/storage/v1"
@@ -269,6 +270,10 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	}
 
 	if err := imageregistryV1.Install(crScheme); err != nil {
+		return err
+	}
+
+	if err := mchv1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
@@ -528,6 +533,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *hiveextV1Beta1.AgentClusterInstall:
 			genericClientObjects = append(genericClientObjects, v)
 		case *performanceV2.PerformanceProfile:
+			genericClientObjects = append(genericClientObjects, v)
+		case *mchv1.MultiClusterHub:
 			genericClientObjects = append(genericClientObjects, v)
 		case *tunedv1.Tuned:
 			genericClientObjects = append(genericClientObjects, v)

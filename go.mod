@@ -44,6 +44,24 @@ require (
 	open-cluster-management.io/governance-policy-propagator v0.13.0
 	open-cluster-management.io/multicloud-operators-subscription v0.13.0
 	sigs.k8s.io/controller-runtime v0.17.5
+	open-cluster-management.io/governance-policy-propagator v0.12.0
+	open-cluster-management.io/multicloud-operators-subscription v0.11.0
+	sigs.k8s.io/controller-runtime v0.16.3
+)
+
+require (
+	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/openshift/assisted-service/api v0.0.0
+	github.com/openshift/assisted-service/models v0.0.0
+	github.com/openshift/custom-resource-status v1.1.3-0.20220503160415-f2fdb4999d87
+	github.com/openshift/elasticsearch-operator v0.0.0-20220613183908-e1648e67c298
+	github.com/red-hat-storage/ocs-operator v0.4.13
+	github.com/stmcginnis/gofish v0.15.0
+	github.com/stolostron/multiclusterhub-operator v0.0.0-20220516144733-74b7bd46ac55
+	github.com/stretchr/testify v1.9.0
+	github.com/vmware-tanzu/velero v1.12.1
+	golang.org/x/crypto v0.23.0
+	open-cluster-management.io/api v0.12.0
 )
 
 require (
@@ -58,6 +76,9 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
+	github.com/bshuster-repo/logrus-logstash-hook v1.0.2 // indirect
+	github.com/bugsnag/bugsnag-go v2.1.2+incompatible // indirect
+	github.com/bugsnag/panicwrap v1.3.4 // indirect
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
@@ -92,6 +113,7 @@ require (
 	github.com/go-openapi/validate v0.22.0 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/go-test/deep v1.1.0 // indirect
+	github.com/gofrs/uuid v4.2.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-collections/collections v0.0.0-20130729185459-604e922904d3 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
