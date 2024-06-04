@@ -538,6 +538,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			veleroClientObjects = append(veleroClientObjects, v)
 		case *velerov1.Restore:
 			veleroClientObjects = append(veleroClientObjects, v)
+		case *velerov1.BackupStorageLocation:
+			veleroClientObjects = append(veleroClientObjects, v)
 		// SrIov Client Objects
 		case *srIovV1.SriovNetwork:
 			srIovObjects = append(srIovObjects, v)
