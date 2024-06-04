@@ -11,6 +11,7 @@ import (
 	"github.com/stmcginnis/gofish"
 	"github.com/stmcginnis/gofish/redfish"
 	"golang.org/x/crypto/ssh"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 const (
@@ -485,7 +486,7 @@ func (bmc *BMC) SystemPowerCycle() error {
 		return err
 	}
 
-	glog.V(100).Infof("Performing reset action PowerCycle from the bmc's redfish endpoint")
+	glog.V(100).Infof("Checking whether PowerCycle reset type can be performed from the bmc's redfish endpoint")
 
 	suppportedResetTypes, err := bmc.getSupportedResetTypes()
 	if err != nil {
@@ -499,7 +500,7 @@ func (bmc *BMC) SystemPowerCycle() error {
 		return bmc.SystemResetAction(redfish.PowerCycleResetType)
 	}
 
-	glog.V(100).Infof("PowerCycle reset type not supported. Trying with PowerOff and On reset actions.")
+	glog.V(100).Infof("PowerCycle reset type not supported. Trying with PowerOff and On reset actions")
 
 	// Workaround for PowerCycle type not supported: ForceOff + On.
 	if !isResetTypeSupported(redfish.ForceOffResetType, suppportedResetTypes) ||
@@ -516,21 +517,35 @@ func (bmc *BMC) SystemPowerCycle() error {
 		return fmt.Errorf("failed to perform ForceOff system reset: %w", err)
 	}
 
-	// Wait 5 secs and turn on the system.
-	time.Sleep(5 * time.Second)
+	glog.V(100).Infof("Waiting for system to be in power state %v", redfish.OffPowerState)
 
 	// First, make sure the system is off.
-	powerState, err := bmc.SystemPowerState()
+	err = wait.PollUntilContextTimeout(context.TODO(),
+		1*time.Second,
+		5*time.Second,
+		true,
+		func(ctx context.Context) (bool, error) {
+			powerState, err := bmc.SystemPowerState()
+			if err != nil {
+				glog.V(100).Infof("Failed to get system's power state: %v", err)
+
+				return false, fmt.Errorf("failed to get system's power state: %w", err)
+			}
+
+			glog.V(100).Infof("System's current power state: %v", powerState)
+
+			if powerState == string(redfish.OffPowerState) {
+				return true, nil
+			}
+
+			// Wait and get power state again.
+			return false, nil
+		})
+
 	if err != nil {
-		glog.V(100).Infof("Failed to system power state: %v", err)
+		glog.V(100).Infof("Failure waiting for system's power state to be %v: %v", redfish.OffPowerState, err)
 
-		return fmt.Errorf("failed to system power state: %w", err)
-	}
-
-	if powerState != string(redfish.OffPowerState) {
-		glog.V(100).Infof("System state is not Off - current state: %v", powerState)
-
-		return fmt.Errorf("system state is not Off - current state: %v", powerState)
+		return fmt.Errorf("failure waiting for system's power state to be %v: %w", redfish.OffPowerState, err)
 	}
 
 	return bmc.SystemPowerOn()
