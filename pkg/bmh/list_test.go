@@ -73,6 +73,55 @@ func TestBareMetalHostList(t *testing.T) {
 	}
 }
 
+func TestBareMetalHostListInAllNamespaces(t *testing.T) {
+	testCases := []struct {
+		bareMetalHosts []*BmhBuilder
+		listOptions    []goclient.ListOptions
+		expectedError  error
+		client         bool
+	}{
+		{
+			bareMetalHosts: []*BmhBuilder{buildValidBmHostBuilder(buildBareMetalHostTestClientWithDummyObject())},
+			listOptions:    nil,
+			expectedError:  nil,
+			client:         true,
+		},
+		{
+			bareMetalHosts: []*BmhBuilder{buildValidBmHostBuilder(buildBareMetalHostTestClientWithDummyObject())},
+			listOptions:    []goclient.ListOptions{{LabelSelector: labels.NewSelector()}},
+			expectedError:  nil,
+			client:         true,
+		},
+		{
+			bareMetalHosts: []*BmhBuilder{buildValidBmHostBuilder(buildBareMetalHostTestClientWithDummyObject())},
+			listOptions:    []goclient.ListOptions{{LabelSelector: labels.NewSelector()}, {LabelSelector: labels.NewSelector()}},
+			expectedError:  fmt.Errorf("error: more than one ListOptions was passed"),
+			client:         true,
+		},
+		{
+			bareMetalHosts: []*BmhBuilder{buildValidBmHostBuilder(buildBareMetalHostTestClientWithDummyObject())},
+			listOptions:    []goclient.ListOptions{{LabelSelector: labels.NewSelector()}},
+			expectedError:  fmt.Errorf("failed to list bareMetalHosts, 'apiClient' parameter is empty"),
+			client:         false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		var testSettings *clients.Settings
+
+		if testCase.client {
+			testSettings = buildBareMetalHostTestClientWithDummyObject()
+		}
+
+		bmhBuilders, err := ListInAllNamespaces(testSettings, testCase.listOptions...)
+		assert.Equal(t, err, testCase.expectedError)
+
+		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
+			assert.Equal(t, len(testCase.bareMetalHosts), len(bmhBuilders))
+		}
+	}
+}
+
 func TestBareMetalWaitForAllBareMetalHostsInGoodOperationalState(t *testing.T) {
 	testCases := []struct {
 		BareMetalHosts   []*BmhBuilder
