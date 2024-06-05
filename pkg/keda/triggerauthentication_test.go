@@ -125,13 +125,18 @@ func TestNewTriggerAuthenticationBuilder(t *testing.T) {
 		{
 			name:          defaultTriggerAuthName,
 			namespace:     "",
+			expectedError: "triggerAuthentication 'nsname' cannot be empty",
+			client:        true,
+		},
+		{
+			name:          defaultTriggerAuthName,
+			namespace:     defaultTriggerAuthNamespace,
 			expectedError: "",
 			client:        false,
 		},
 	}
 
 	for _, testCase := range testCases {
-
 		var testSettings *clients.Settings
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{})
@@ -189,7 +194,7 @@ func TestTriggerAuthenticationGet(t *testing.T) {
 		},
 		{
 			testTriggerAuth: buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:   fmt.Errorf("triggerauthentications.keda.sh \"\" not found"),
+			expectedError:   fmt.Errorf("triggerAuthentication 'name' cannot be empty"),
 		},
 		{
 			testTriggerAuth: buildValidTriggerAuthBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -221,7 +226,7 @@ func TestTriggerAuthenticationCreate(t *testing.T) {
 		},
 		{
 			testTriggerAuth: buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:   " \"\" is invalid: metadata.name: Required value: name is required",
+			expectedError:   "triggerAuthentication 'name' cannot be empty",
 		},
 		{
 			testTriggerAuth: buildValidTriggerAuthBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -289,7 +294,7 @@ func TestTriggerAuthenticationUpdate(t *testing.T) {
 		},
 		{
 			testTriggerAuth:     buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:       " \"\" is invalid: metadata.name: Required value: name is required",
+			expectedError:       "triggerAuthentication 'name' cannot be empty",
 			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{},
 		},
 	}

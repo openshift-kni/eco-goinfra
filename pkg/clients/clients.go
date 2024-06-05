@@ -383,11 +383,11 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
-<<<<<<< HEAD
 	if err := kedav1alpha1.AddToScheme(crScheme); err != nil {
-=======
+		return err
+	}
+
 	if err := kedav2v1alpha1.AddToScheme(crScheme); err != nil {
->>>>>>> cf6d9f22 (keda pkg: TriggerAuthentication object handler added)
 		return err
 	}
 
@@ -530,11 +530,9 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *tunedv1.Tuned:
 			genericClientObjects = append(genericClientObjects, v)
-<<<<<<< HEAD
 		case *kedav1alpha1.KedaController:
-=======
+			genericClientObjects = append(genericClientObjects, v)
 		case *kedav2v1alpha1.TriggerAuthentication:
->>>>>>> cf6d9f22 (keda pkg: TriggerAuthentication object handler added)
 			genericClientObjects = append(genericClientObjects, v)
 		case *agentInstallV1Beta1.AgentServiceConfig:
 			genericClientObjects = append(genericClientObjects, v)
