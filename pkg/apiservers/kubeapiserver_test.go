@@ -230,6 +230,81 @@ func TestKubeAPIServerWaitAllNodesAtTheLatestRevision(t *testing.T) {
 	}
 }
 
+func TestKubeAPIServerBuilderValidate(t *testing.T) {
+	testCases := []struct {
+		builderNil    bool
+		definitionNil bool
+		apiClientNil  bool
+		expectedError string
+		builderErrMsg string
+	}{
+		{
+			builderNil:    true,
+			definitionNil: false,
+			apiClientNil:  false,
+			expectedError: "error: received nil KubeAPIServer builder",
+			builderErrMsg: "",
+		},
+		{
+			builderNil:    false,
+			definitionNil: true,
+			apiClientNil:  false,
+			expectedError: "can not redefine the undefined KubeAPIServer",
+			builderErrMsg: "",
+		},
+		{
+			builderNil:    false,
+			definitionNil: false,
+			apiClientNil:  true,
+			expectedError: "KubeAPIServer builder cannot have nil apiClient",
+			builderErrMsg: "",
+		},
+		{
+			builderNil:    false,
+			definitionNil: false,
+			apiClientNil:  false,
+			expectedError: "",
+			builderErrMsg: "",
+		},
+		{
+			builderNil:    false,
+			definitionNil: false,
+			apiClientNil:  false,
+			expectedError: "test error",
+			builderErrMsg: "test error",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidKubeAPIServerBuilder(clients.GetTestClients(clients.TestClientParams{}))
+
+		if testCase.builderNil {
+			testBuilder = nil
+		}
+
+		if testCase.definitionNil {
+			testBuilder.Definition = nil
+		}
+
+		if testCase.apiClientNil {
+			testBuilder.apiClient = nil
+		}
+
+		if testCase.builderErrMsg != "" {
+			testBuilder.errorMsg = testCase.builderErrMsg
+		}
+
+		valid, err := testBuilder.validate()
+		if testCase.expectedError != "" {
+			assert.False(t, valid)
+			assert.Equal(t, testCase.expectedError, err.Error())
+		} else {
+			assert.True(t, valid)
+			assert.Nil(t, err)
+		}
+	}
+}
+
 func buildValidKubeAPIServerBuilder(apiClient *clients.Settings) *KubeAPIServerBuilder {
 	return &KubeAPIServerBuilder{
 		apiClient: apiClient.Client,
