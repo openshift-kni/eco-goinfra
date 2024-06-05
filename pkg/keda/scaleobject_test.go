@@ -61,15 +61,15 @@ func TestPullScaledObject(t *testing.T) {
 			client:              true,
 		},
 		{
-			name:                "triggerauthtest",
+			name:                "sotest",
 			namespace:           defaultScaledObjectNamespace,
 			addToRuntimeObjects: false,
-			expectedError: fmt.Errorf("scaledObject object triggerauthtest does not exist " +
+			expectedError: fmt.Errorf("scaledObject object sotest does not exist " +
 				"in namespace test-appspace"),
 			client: true,
 		},
 		{
-			name:                "triggerauthtest",
+			name:                "sotest",
 			namespace:           defaultScaledObjectNamespace,
 			addToRuntimeObjects: true,
 			expectedError:       fmt.Errorf("scaledObject 'apiClient' cannot be empty"),
@@ -95,7 +95,7 @@ func TestPullScaledObject(t *testing.T) {
 			})
 		}
 
-		builderResult, err := PullScaleObject(testSettings, testCase.name, testCase.namespace)
+		builderResult, err := PullScaledObject(testSettings, testCase.name, testCase.namespace)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError != nil {
@@ -113,40 +113,59 @@ func TestNewScaledObjectBuilder(t *testing.T) {
 		name          string
 		namespace     string
 		expectedError string
+		client        bool
 	}{
 		{
 			name:          defaultScaledObjectName,
 			namespace:     defaultScaledObjectNamespace,
 			expectedError: "",
+			client:        true,
 		},
 		{
 			name:          "",
 			namespace:     defaultScaledObjectNamespace,
 			expectedError: "scaledObject 'name' cannot be empty",
+			client:        true,
 		},
 		{
 			name:          defaultScaledObjectName,
 			namespace:     "",
 			expectedError: "scaledObject 'nsname' cannot be empty",
+			client:        true,
+		},
+		{
+			name:          defaultScaledObjectName,
+			namespace:     defaultScaledObjectNamespace,
+			expectedError: "",
+			client:        false,
 		},
 	}
 
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients(clients.TestClientParams{})
+		var testSettings *clients.Settings
+		if testCase.client {
+			testSettings = clients.GetTestClients(clients.TestClientParams{})
+		}
+
 		testScaledObjectBuilder := NewScaledObjectBuilder(testSettings, testCase.name, testCase.namespace)
-		assert.Equal(t, testCase.expectedError, testScaledObjectBuilder.errorMsg)
-		assert.NotNil(t, testScaledObjectBuilder.Definition)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testCase.name, testScaledObjectBuilder.Definition.Name)
-			assert.Equal(t, testCase.namespace, testScaledObjectBuilder.Definition.Namespace)
+			if testCase.client {
+				assert.Equal(t, testCase.name, testScaledObjectBuilder.Definition.Name)
+				assert.Equal(t, testCase.namespace, testScaledObjectBuilder.Definition.Namespace)
+			} else {
+				assert.Nil(t, testScaledObjectBuilder)
+			}
+		} else {
+			assert.Equal(t, testCase.expectedError, testScaledObjectBuilder.errorMsg)
+			assert.NotNil(t, testScaledObjectBuilder.Definition)
 		}
 	}
 }
 
 func TestScaledObjectExists(t *testing.T) {
 	testCases := []struct {
-		testScaledObject *ScaleObjectBuilder
+		testScaledObject *ScaledObjectBuilder
 		expectedStatus   bool
 	}{
 		{
@@ -171,7 +190,7 @@ func TestScaledObjectExists(t *testing.T) {
 
 func TestScaledObjectGet(t *testing.T) {
 	testCases := []struct {
-		testScaledObject *ScaleObjectBuilder
+		testScaledObject *ScaledObjectBuilder
 		expectedError    error
 	}{
 		{
@@ -180,7 +199,7 @@ func TestScaledObjectGet(t *testing.T) {
 		},
 		{
 			testScaledObject: buildInValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject()),
-			expectedError:    fmt.Errorf("scaledobjects.keda.sh \"\" not found"),
+			expectedError:    fmt.Errorf("scaledObject 'name' cannot be empty"),
 		},
 		{
 			testScaledObject: buildValidScaledObjectBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -203,7 +222,7 @@ func TestScaledObjectGet(t *testing.T) {
 
 func TestScaledObjectCreate(t *testing.T) {
 	testCases := []struct {
-		testScaledObject *ScaleObjectBuilder
+		testScaledObject *ScaledObjectBuilder
 		expectedError    string
 	}{
 		{
@@ -212,7 +231,7 @@ func TestScaledObjectCreate(t *testing.T) {
 		},
 		{
 			testScaledObject: buildInValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject()),
-			expectedError:    " \"\" is invalid: metadata.name: Required value: name is required",
+			expectedError:    "scaledObject 'name' cannot be empty",
 		},
 		{
 			testScaledObject: buildValidScaledObjectBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -235,7 +254,7 @@ func TestScaledObjectCreate(t *testing.T) {
 
 func TestScaledObjectDelete(t *testing.T) {
 	testCases := []struct {
-		testScaledObject *ScaleObjectBuilder
+		testScaledObject *ScaledObjectBuilder
 		expectedError    error
 	}{
 		{
@@ -244,7 +263,7 @@ func TestScaledObjectDelete(t *testing.T) {
 		},
 		{
 			testScaledObject: buildInValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject()),
-			expectedError:    nil,
+			expectedError:    fmt.Errorf("scaledObject 'name' cannot be empty"),
 		},
 		{
 			testScaledObject: buildValidScaledObjectBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -266,7 +285,7 @@ func TestScaledObjectDelete(t *testing.T) {
 
 func TestScaledObjectUpdate(t *testing.T) {
 	testCases := []struct {
-		testScaleObject    *ScaleObjectBuilder
+		testScaleObject    *ScaledObjectBuilder
 		expectedError      string
 		testScaleTargetRef kedav2v1alpha1.ScaleTarget
 	}{
@@ -279,7 +298,7 @@ func TestScaledObjectUpdate(t *testing.T) {
 		},
 		{
 			testScaleObject:    buildInValidScaledObjectBuilder(buildScaledObjectClientWithDummyObject()),
-			expectedError:      " \"\" is invalid: metadata.name: Required value: name is required",
+			expectedError:      "scaledObject 'name' cannot be empty",
 			testScaleTargetRef: kedav2v1alpha1.ScaleTarget{},
 		},
 	}
@@ -400,17 +419,14 @@ func TestScaleObjectWithCooldownPeriod(t *testing.T) {
 func TestScaleObjectWithMinReplicaCount(t *testing.T) {
 	testCases := []struct {
 		testMinReplicaCount int32
-		expectedError       bool
 		expectedErrorText   string
 	}{
 		{
 			testMinReplicaCount: minReplicaCount,
-			expectedError:       false,
 			expectedErrorText:   "",
 		},
 		{
 			testMinReplicaCount: zeroValue,
-			expectedError:       false,
 			expectedErrorText:   "",
 		},
 	}
@@ -420,10 +436,8 @@ func TestScaleObjectWithMinReplicaCount(t *testing.T) {
 
 		result := testBuilder.WithMinReplicaCount(testCase.testMinReplicaCount)
 
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-			}
+		if testCase.expectedErrorText != "" {
+			assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
 		} else {
 			assert.NotNil(t, result)
 			assert.Equal(t, testCase.testMinReplicaCount, *result.Definition.Spec.MinReplicaCount)
@@ -434,17 +448,14 @@ func TestScaleObjectWithMinReplicaCount(t *testing.T) {
 func TestScaleObjectWithMaxReplicaCount(t *testing.T) {
 	testCases := []struct {
 		testMaxReplicaCount int32
-		expectedError       bool
 		expectedErrorText   string
 	}{
 		{
 			testMaxReplicaCount: maxReplicaCount,
-			expectedError:       false,
 			expectedErrorText:   "",
 		},
 		{
 			testMaxReplicaCount: zeroValue,
-			expectedError:       false,
 			expectedErrorText:   "",
 		},
 	}
@@ -454,10 +465,8 @@ func TestScaleObjectWithMaxReplicaCount(t *testing.T) {
 
 		result := testBuilder.WithMaxReplicaCount(testCase.testMaxReplicaCount)
 
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-			}
+		if testCase.expectedErrorText != "" {
+			assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
 		} else {
 			assert.NotNil(t, result)
 			assert.Equal(t, testCase.testMaxReplicaCount, *result.Definition.Spec.MaxReplicaCount)
@@ -482,7 +491,7 @@ func TestScaleObjectWithTriggers(t *testing.T) {
 					"query":         "sum(rate(http_requests_total{job=\"test-app\"}[1m]))",
 					"authModes":     "bearer",
 				},
-				AuthenticationRef: &kedav2v1alpha1.ScaledObjectAuthRef{
+				AuthenticationRef: &kedav2v1alpha1.AuthenticationRef{
 					Name: defaultScaledObjectName,
 				},
 			}},
@@ -507,7 +516,7 @@ func TestScaleObjectWithTriggers(t *testing.T) {
 		{
 			testTriggers: []kedav2v1alpha1.ScaleTriggers{{
 				Type: "prometheus",
-				AuthenticationRef: &kedav2v1alpha1.ScaledObjectAuthRef{
+				AuthenticationRef: &kedav2v1alpha1.AuthenticationRef{
 					Name: defaultScaledObjectName,
 				},
 			}},
@@ -544,14 +553,14 @@ func TestScaleObjectWithTriggers(t *testing.T) {
 	}
 }
 
-func buildValidScaledObjectBuilder(apiClient *clients.Settings) *ScaleObjectBuilder {
+func buildValidScaledObjectBuilder(apiClient *clients.Settings) *ScaledObjectBuilder {
 	scaleObjectBuilder := NewScaledObjectBuilder(
 		apiClient, defaultScaledObjectName, defaultScaledObjectNamespace)
 
 	return scaleObjectBuilder
 }
 
-func buildInValidScaledObjectBuilder(apiClient *clients.Settings) *ScaleObjectBuilder {
+func buildInValidScaledObjectBuilder(apiClient *clients.Settings) *ScaledObjectBuilder {
 	scaleObjectBuilder := NewScaledObjectBuilder(
 		apiClient, "", defaultScaledObjectNamespace)
 

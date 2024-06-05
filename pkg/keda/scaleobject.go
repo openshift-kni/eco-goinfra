@@ -14,12 +14,12 @@ import (
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// ScaleObjectBuilder provides a struct for ScaledObject object from the cluster
+// ScaledObjectBuilder provides a struct for ScaledObject object from the cluster
 // and a ScaledObject definition.
-type ScaleObjectBuilder struct {
+type ScaledObjectBuilder struct {
 	// ScaledObject definition, used to create the ScaledObject object.
 	Definition *kedav2v1alpha1.ScaledObject
-	// Created TriggerAuthentication object.
+	// Created ScaledObject object.
 	Object *kedav2v1alpha1.ScaledObject
 	// Used to store latest error message upon defining or mutating ScaledObject definition.
 	errorMsg string
@@ -27,9 +27,9 @@ type ScaleObjectBuilder struct {
 	apiClient goclient.Client
 }
 
-// NewScaledObjectBuilder creates a new instance of ScaleObjectBuilder.
+// NewScaledObjectBuilder creates a new instance of ScaledObjectBuilder.
 func NewScaledObjectBuilder(
-	apiClient *clients.Settings, name, nsname string) *ScaleObjectBuilder {
+	apiClient *clients.Settings, name, nsname string) *ScaledObjectBuilder {
 	glog.V(100).Infof(
 		"Initializing new scaledObject structure with the following params: "+
 			"name: %s, namespace: %s", name, nsname)
@@ -40,7 +40,7 @@ func NewScaledObjectBuilder(
 		return nil
 	}
 
-	builder := &ScaleObjectBuilder{
+	builder := &ScaledObjectBuilder{
 		apiClient: apiClient.Client,
 		Definition: &kedav2v1alpha1.ScaledObject{
 			ObjectMeta: metav1.ObjectMeta{
@@ -69,8 +69,8 @@ func NewScaledObjectBuilder(
 	return builder
 }
 
-// PullScaleObject pulls existing scaledObject from cluster.
-func PullScaleObject(apiClient *clients.Settings, name, nsname string) (*ScaleObjectBuilder, error) {
+// PullScaledObject pulls existing scaledObject from cluster.
+func PullScaledObject(apiClient *clients.Settings, name, nsname string) (*ScaledObjectBuilder, error) {
 	glog.V(100).Infof("Pulling existing scaledObject name %s in namespace %s from cluster",
 		name, nsname)
 
@@ -80,7 +80,7 @@ func PullScaleObject(apiClient *clients.Settings, name, nsname string) (*ScaleOb
 		return nil, fmt.Errorf("scaledObject 'apiClient' cannot be empty")
 	}
 
-	builder := ScaleObjectBuilder{
+	builder := ScaledObjectBuilder{
 		apiClient: apiClient.Client,
 		Definition: &kedav2v1alpha1.ScaledObject{
 			ObjectMeta: metav1.ObjectMeta{
@@ -112,7 +112,7 @@ func PullScaleObject(apiClient *clients.Settings, name, nsname string) (*ScaleOb
 }
 
 // Get fetches the defined scaledObject from the cluster.
-func (builder *ScaleObjectBuilder) Get() (*kedav2v1alpha1.ScaledObject, error) {
+func (builder *ScaledObjectBuilder) Get() (*kedav2v1alpha1.ScaledObject, error) {
 	if valid, err := builder.validate(); !valid {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func (builder *ScaleObjectBuilder) Get() (*kedav2v1alpha1.ScaledObject, error) {
 }
 
 // Create makes a scaledObject in the cluster and stores the created object in struct.
-func (builder *ScaleObjectBuilder) Create() (*ScaleObjectBuilder, error) {
+func (builder *ScaledObjectBuilder) Create() (*ScaledObjectBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
@@ -154,7 +154,7 @@ func (builder *ScaleObjectBuilder) Create() (*ScaleObjectBuilder, error) {
 }
 
 // Delete removes scaledObject from a cluster.
-func (builder *ScaleObjectBuilder) Delete() (*ScaleObjectBuilder, error) {
+func (builder *ScaledObjectBuilder) Delete() (*ScaledObjectBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
@@ -184,7 +184,7 @@ func (builder *ScaleObjectBuilder) Delete() (*ScaleObjectBuilder, error) {
 }
 
 // Exists checks whether the given scaledObject exists.
-func (builder *ScaleObjectBuilder) Exists() bool {
+func (builder *ScaledObjectBuilder) Exists() bool {
 	if valid, _ := builder.validate(); !valid {
 		return false
 	}
@@ -199,7 +199,7 @@ func (builder *ScaleObjectBuilder) Exists() bool {
 }
 
 // Update renovates the existing scaledObject object with scaledObject definition in builder.
-func (builder *ScaleObjectBuilder) Update() (*ScaleObjectBuilder, error) {
+func (builder *ScaledObjectBuilder) Update() (*ScaledObjectBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
@@ -222,8 +222,8 @@ func (builder *ScaleObjectBuilder) Update() (*ScaleObjectBuilder, error) {
 }
 
 // WithTriggers sets the scaledObject operator's maxReplicaCount.
-func (builder *ScaleObjectBuilder) WithTriggers(
-	triggers []kedav2v1alpha1.ScaleTriggers) *ScaleObjectBuilder {
+func (builder *ScaledObjectBuilder) WithTriggers(
+	triggers []kedav2v1alpha1.ScaleTriggers) *ScaledObjectBuilder {
 	glog.V(100).Infof(
 		"Adding triggers to scaledObject %s in namespace %s; triggers %v",
 		builder.Definition.Name, builder.Definition.Namespace, triggers)
@@ -246,8 +246,8 @@ func (builder *ScaleObjectBuilder) WithTriggers(
 }
 
 // WithMaxReplicaCount sets the scaledObject operator's maxReplicaCount.
-func (builder *ScaleObjectBuilder) WithMaxReplicaCount(
-	maxReplicaCount int32) *ScaleObjectBuilder {
+func (builder *ScaledObjectBuilder) WithMaxReplicaCount(
+	maxReplicaCount int32) *ScaledObjectBuilder {
 	glog.V(100).Infof(
 		"Adding maxReplicaCount to scaledObject %s in namespace %s; maxReplicaCount %v",
 		builder.Definition.Name, builder.Definition.Namespace, maxReplicaCount)
@@ -262,8 +262,8 @@ func (builder *ScaleObjectBuilder) WithMaxReplicaCount(
 }
 
 // WithMinReplicaCount sets the scaledObject operator's minReplicaCount.
-func (builder *ScaleObjectBuilder) WithMinReplicaCount(
-	minReplicaCount int32) *ScaleObjectBuilder {
+func (builder *ScaledObjectBuilder) WithMinReplicaCount(
+	minReplicaCount int32) *ScaledObjectBuilder {
 	glog.V(100).Infof(
 		"Adding minReplicaCount to scaledObject %s in namespace %s; minReplicaCount %v",
 		builder.Definition.Name, builder.Definition.Namespace, minReplicaCount)
@@ -278,8 +278,8 @@ func (builder *ScaleObjectBuilder) WithMinReplicaCount(
 }
 
 // WithCooldownPeriod sets the scaledObject operator's cooldownPeriod.
-func (builder *ScaleObjectBuilder) WithCooldownPeriod(
-	cooldownPeriod int32) *ScaleObjectBuilder {
+func (builder *ScaledObjectBuilder) WithCooldownPeriod(
+	cooldownPeriod int32) *ScaledObjectBuilder {
 	glog.V(100).Infof(
 		"Adding cooldownPeriod to scaledObject %s in namespace %s; cooldownPeriod %v",
 		builder.Definition.Name, builder.Definition.Namespace, cooldownPeriod)
@@ -294,8 +294,8 @@ func (builder *ScaleObjectBuilder) WithCooldownPeriod(
 }
 
 // WithPollingInterval sets the scaledObject operator's pollingInterval.
-func (builder *ScaleObjectBuilder) WithPollingInterval(
-	pollingInterval int32) *ScaleObjectBuilder {
+func (builder *ScaledObjectBuilder) WithPollingInterval(
+	pollingInterval int32) *ScaledObjectBuilder {
 	glog.V(100).Infof(
 		"Adding pollingInterval to scaledObject %s in namespace %s; pollingInterval %v",
 		builder.Definition.Name, builder.Definition.Namespace, pollingInterval)
@@ -310,8 +310,8 @@ func (builder *ScaleObjectBuilder) WithPollingInterval(
 }
 
 // WithScaleTargetRef sets the scaledObject operator's scaleTargetRef.
-func (builder *ScaleObjectBuilder) WithScaleTargetRef(
-	scaleTargetRef kedav2v1alpha1.ScaleTarget) *ScaleObjectBuilder {
+func (builder *ScaledObjectBuilder) WithScaleTargetRef(
+	scaleTargetRef kedav2v1alpha1.ScaleTarget) *ScaledObjectBuilder {
 	glog.V(100).Infof(
 		"Adding scaleTargetRef to scaledObject %s in namespace %s; scaleTargetRef %v",
 		builder.Definition.Name, builder.Definition.Namespace, scaleTargetRef)
@@ -327,7 +327,7 @@ func (builder *ScaleObjectBuilder) WithScaleTargetRef(
 
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
-func (builder *ScaleObjectBuilder) validate() (bool, error) {
+func (builder *ScaledObjectBuilder) validate() (bool, error) {
 	resourceCRD := "ScaledObject"
 
 	if builder == nil {
@@ -346,6 +346,12 @@ func (builder *ScaleObjectBuilder) validate() (bool, error) {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
 		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
 	}
 
 	return true, nil
