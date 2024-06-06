@@ -27,7 +27,6 @@ import (
 	cl "sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
-	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // log is for logging in this package.
@@ -43,6 +42,8 @@ func (r *MultiClusterHub) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		For(r).Complete()
 }
 
+// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
+
 var _ webhook.Defaulter = &MultiClusterHub{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
@@ -55,33 +56,33 @@ func (r *MultiClusterHub) Default() {
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
 //+kubebuilder:webhook:name=multiclusterhub-operator-validating-webhook,path=/validate-v1-multiclusterhub,mutating=false,failurePolicy=fail,sideEffects=None,groups=operator.open-cluster-management.io,resources=multiclusterhubs,verbs=create;update;delete,versions=v1,name=multiclusterhub.validating-webhook.open-cluster-management.io,admissionReviewVersions={v1,v1beta1}
 
-//var _ webhook.Validator = &MultiClusterHub{}
+var _ webhook.Validator = &MultiClusterHub{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *MultiClusterHub) ValidateCreate() (admission.Warnings, error) {
+func (r *MultiClusterHub) ValidateCreate() error {
 	multiclusterhublog.Info("validate create", "name", r.Name)
 	// TODO(user): fill in your validation logic upon object creation.
 	multiClusterHubList := &MultiClusterHubList{}
 	if err := Client.List(context.TODO(), multiClusterHubList); err != nil {
-		return nil, fmt.Errorf("unable to list MultiClusterHubs: %s", err)
+		return fmt.Errorf("unable to list MultiClusterHubs: %s", err)
 	}
 	if len(multiClusterHubList.Items) == 0 {
-		return nil, nil
+		return nil
 	}
-	return nil, fmt.Errorf("the MultiClusterHub CR already exists")
+	return fmt.Errorf("the MultiClusterHub CR already exists")
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *MultiClusterHub) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
+func (r *MultiClusterHub) ValidateUpdate(old runtime.Object) error {
 	multiclusterhublog.Info("validate update", "name", r.Name)
 	// TODO(user): fill in your validation logic upon object update.
-	return nil, nil
+	return nil
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *MultiClusterHub) ValidateDelete() (admission.Warnings, error) {
+func (r *MultiClusterHub) ValidateDelete() error {
 	multiclusterhublog.Info("validate delete", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object deletion.
-	return nil, nil
+	return nil
 }
