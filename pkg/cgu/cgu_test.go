@@ -432,6 +432,81 @@ func TestWaitUntilBackupStarts(t *testing.T) {
 	assert.Equal(t, cguBuilder.Object.Namespace, defaultCguNsName)
 }
 
+func TestCguBuilderValidate(t *testing.T) {
+	testCases := []struct {
+		builderNil    bool
+		definitionNil bool
+		apiClientNil  bool
+		expectedError error
+		builderErrMsg string
+	}{
+		{
+			builderNil:    false,
+			definitionNil: false,
+			apiClientNil:  false,
+			expectedError: nil,
+			builderErrMsg: "",
+		},
+		{
+			builderNil:    true,
+			definitionNil: false,
+			apiClientNil:  false,
+			expectedError: fmt.Errorf("error: received nil cgu builder"),
+			builderErrMsg: "",
+		},
+		{
+			builderNil:    false,
+			definitionNil: true,
+			apiClientNil:  false,
+			expectedError: fmt.Errorf("can not redefine the undefined cgu"),
+			builderErrMsg: "",
+		},
+		{
+			builderNil:    false,
+			definitionNil: false,
+			apiClientNil:  true,
+			expectedError: fmt.Errorf("cgu builder cannot have nil apiClient"),
+			builderErrMsg: "",
+		},
+		{
+			builderNil:    false,
+			definitionNil: false,
+			apiClientNil:  false,
+			builderErrMsg: "test error",
+			expectedError: fmt.Errorf("test error"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidCguTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+
+		if testCase.builderNil {
+			testBuilder = nil
+		}
+
+		if testCase.definitionNil {
+			testBuilder.Definition = nil
+		}
+
+		if testCase.apiClientNil {
+			testBuilder.apiClient = nil
+		}
+
+		if testCase.builderErrMsg != "" {
+			testBuilder.errorMsg = testCase.builderErrMsg
+		}
+
+		valid, err := testBuilder.validate()
+		if testCase.expectedError != nil {
+			assert.False(t, valid)
+			assert.Equal(t, testCase.expectedError, err)
+		} else {
+			assert.True(t, valid)
+			assert.Nil(t, err)
+		}
+	}
+}
+
 func buildTestClientWithDummyCguObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
 		K8sMockObjects: buildDummyCguObject(),

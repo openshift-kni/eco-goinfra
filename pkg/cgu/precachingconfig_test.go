@@ -282,6 +282,82 @@ func TestPreCachingConfigUpdate(t *testing.T) {
 	}
 }
 
+func TestPreCachingConfigValidate(t *testing.T) {
+	testCases := []struct {
+		builderNil    bool
+		definitionNil bool
+		apiClientNil  bool
+		expectedError error
+		builderErrMsg string
+	}{
+		{
+			builderNil:    false,
+			definitionNil: false,
+			apiClientNil:  false,
+			expectedError: nil,
+			builderErrMsg: "",
+		},
+		{
+			builderNil:    true,
+			definitionNil: false,
+			apiClientNil:  false,
+			expectedError: fmt.Errorf("error received nil preCachingConfig builder"),
+			builderErrMsg: "",
+		},
+		{
+			builderNil:    false,
+			definitionNil: true,
+			apiClientNil:  false,
+			expectedError: fmt.Errorf("can not redefine the undefined preCachingConfig"),
+			builderErrMsg: "",
+		},
+		{
+			builderNil:    false,
+			definitionNil: false,
+			apiClientNil:  true,
+			expectedError: fmt.Errorf("preCachingConfig builder cannot have nil apiClient"),
+			builderErrMsg: "",
+		},
+		{
+			builderNil:    false,
+			definitionNil: false,
+			apiClientNil:  false,
+			builderErrMsg: "test error",
+			expectedError: fmt.Errorf("test error"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidPreCachingConfigTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+
+		if testCase.builderNil {
+			testBuilder = nil
+		}
+
+		if testCase.definitionNil {
+			testBuilder.Definition = nil
+		}
+
+		if testCase.apiClientNil {
+			testBuilder.apiClient = nil
+		}
+
+		if testCase.builderErrMsg != "" {
+			testBuilder.errorMsg = testCase.builderErrMsg
+		}
+
+		valid, err := testBuilder.validate()
+
+		if testCase.expectedError != nil {
+			assert.False(t, valid)
+			assert.Equal(t, testCase.expectedError, err)
+		} else {
+			assert.True(t, valid)
+			assert.Nil(t, err)
+		}
+	}
+}
+
 // buildDummyPreCachingConfig returns a PreCachingConfig with the provided name and namespace.
 func buildDummyPreCachingConfig(name, nsname string) *v1alpha1.PreCachingConfig {
 	return &v1alpha1.PreCachingConfig{
