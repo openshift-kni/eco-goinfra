@@ -259,10 +259,6 @@ func newBuilder(apiClient *clients.Settings, name string, cgroupMode configV1.Cg
 	builder := &Builder{
 		apiClient: apiClient.Client,
 		Definition: &configV1.Node{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       APIKind,
-				APIVersion: fmt.Sprintf("%s/%s", APIGroup, APIVersion),
-			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name:            name,
 				ResourceVersion: "999",

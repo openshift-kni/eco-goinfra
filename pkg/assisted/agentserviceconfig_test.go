@@ -32,7 +32,7 @@ func TestNewAgentServiceConfigBuilder(t *testing.T) {
 				AccessModes: []corev1.PersistentVolumeAccessMode{
 					"ReadWriteOnce",
 				},
-				Resources: corev1.ResourceRequirements{
+				Resources: corev1.VolumeResourceRequirements{
 					Requests: corev1.ResourceList{
 						corev1.ResourceStorage: resource.MustParse("50Gi"),
 					},
@@ -42,7 +42,7 @@ func TestNewAgentServiceConfigBuilder(t *testing.T) {
 				AccessModes: []corev1.PersistentVolumeAccessMode{
 					"ReadWriteOnce",
 				},
-				Resources: corev1.ResourceRequirements{
+				Resources: corev1.VolumeResourceRequirements{
 					Requests: corev1.ResourceList{
 						corev1.ResourceStorage: resource.MustParse("10Gi"),
 					},
@@ -57,7 +57,7 @@ func TestNewAgentServiceConfigBuilder(t *testing.T) {
 				AccessModes: []corev1.PersistentVolumeAccessMode{
 					"ReadWriteOnce",
 				},
-				Resources: corev1.ResourceRequirements{
+				Resources: corev1.VolumeResourceRequirements{
 					Requests: corev1.ResourceList{
 						corev1.ResourceStorage: resource.MustParse("50Gi"),
 					},
@@ -67,7 +67,7 @@ func TestNewAgentServiceConfigBuilder(t *testing.T) {
 				AccessModes: []corev1.PersistentVolumeAccessMode{
 					"ReadWriteOnce",
 				},
-				Resources: corev1.ResourceRequirements{
+				Resources: corev1.VolumeResourceRequirements{
 					Requests: corev1.ResourceList{
 						corev1.ResourceStorage: resource.MustParse("10Gi"),
 					},
@@ -394,7 +394,7 @@ func TestAgentServiceConfigWithImageStorage(t *testing.T) {
 				AccessModes: []corev1.PersistentVolumeAccessMode{
 					"ReadWriteOnce",
 				},
-				Resources: corev1.ResourceRequirements{
+				Resources: corev1.VolumeResourceRequirements{
 					Requests: corev1.ResourceList{
 						corev1.ResourceStorage: resource.MustParse("30Gi"),
 					},
@@ -407,7 +407,7 @@ func TestAgentServiceConfigWithImageStorage(t *testing.T) {
 				AccessModes: []corev1.PersistentVolumeAccessMode{
 					"ReadWriteMany",
 				},
-				Resources: corev1.ResourceRequirements{
+				Resources: corev1.VolumeResourceRequirements{
 					Requests: corev1.ResourceList{
 						corev1.ResourceStorage: resource.MustParse("50Gi"),
 					},
@@ -781,7 +781,7 @@ func generateAgentServiceConfig() *agentInstallV1Beta1.AgentServiceConfig {
 				AccessModes: []corev1.PersistentVolumeAccessMode{
 					"ReadWriteOnce",
 				},
-				Resources: corev1.ResourceRequirements{
+				Resources: corev1.VolumeResourceRequirements{
 					Requests: corev1.ResourceList{
 						corev1.ResourceStorage: resource.MustParse(defaultDatabaseStorageSize),
 					},
@@ -791,7 +791,7 @@ func generateAgentServiceConfig() *agentInstallV1Beta1.AgentServiceConfig {
 				AccessModes: []corev1.PersistentVolumeAccessMode{
 					"ReadWriteOnce",
 				},
-				Resources: corev1.ResourceRequirements{
+				Resources: corev1.VolumeResourceRequirements{
 					Requests: corev1.ResourceList{
 						corev1.ResourceStorage: resource.MustParse(defaultFilesystemStorageSize),
 					},

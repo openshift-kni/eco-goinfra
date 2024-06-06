@@ -390,6 +390,10 @@ func buildDummyElasticsearch() []runtime.Object {
 			Name:      defaultElasticsearchName,
 			Namespace: defaultElasticsearchNamespace,
 		},
+		TypeMeta: metav1.TypeMeta{
+			Kind:       eskKind,
+			APIVersion: fmt.Sprintf("%s/%s", eskAPIGroup, eskAPIVersion),
+		},
 		Spec: eskv1.ElasticsearchSpec{
 			ManagementState: "",
 		},

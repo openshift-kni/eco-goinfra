@@ -15,7 +15,7 @@ import (
 	argocdOperatorv1alpha1 "github.com/argoproj-labs/argocd-operator/api/v1alpha1"
 	kedav1alpha1 "github.com/kedacore/keda-olm-operator/apis/keda/v1alpha1"
 	bmhv1alpha1 "github.com/metal3-io/baremetal-operator/apis/metal3.io/v1alpha1"
-	clov1 "github.com/openshift/cluster-logging-operator/apis/logging/v1"
+	clov1 "github.com/openshift/cluster-logging-operator/api/logging/v1"
 	performanceV2 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/performanceprofile/v2"
 	tunedv1 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/tuned/v1"
 	eskv1 "github.com/openshift/elasticsearch-operator/apis/logging/v1"

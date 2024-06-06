@@ -129,7 +129,7 @@ func TestConsoleOperatorGet(t *testing.T) {
 		},
 		{
 			testConsoleOperator: buildInValidConsoleOperatorBuilder(buildConsoleOperatorClientWithDummyObject()),
-			expectedError:       fmt.Errorf("consoles.operator.openshift.io \"\" not found"),
+			expectedError:       fmt.Errorf("the consoleOperator 'name' cannot be empty"),
 		},
 		{
 			testConsoleOperator: buildValidConsoleOperatorBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -166,9 +166,8 @@ func TestConsoleOperatorUpdate(t *testing.T) {
 		},
 		{
 			testConsoleOperator: buildInValidConsoleOperatorBuilder(buildConsoleOperatorClientWithDummyObject()),
-			expectedError: fmt.Sprintf("Console.operator.openshift.io \"\" is invalid: metadata.name: " +
-				"Required value: name is required"),
-			plugins: defaultPluginsList,
+			expectedError:       "the consoleOperator 'name' cannot be empty",
+			plugins:             defaultPluginsList,
 		},
 	}
 
@@ -273,10 +272,6 @@ func newConsoleOperatorBuilder(apiClient *clients.Settings, name string, plugins
 	builder := &ConsoleOperatorBuilder{
 		apiClient: apiClient.Client,
 		Definition: &operatorv1.Console{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "Console",
-				APIVersion: "operator.openshift.io/v1",
-			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name:            name,
 				ResourceVersion: "999",

@@ -350,10 +350,6 @@ func newBuilder(apiClient *clients.Settings, name string, managementState operat
 	builder := &Builder{
 		apiClient: apiClient.Client,
 		Definition: &imageregistryV1.Config{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       APIKind,
-				APIVersion: fmt.Sprintf("%s/%s", APIGroup, APIVersion),
-			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name:            name,
 				ResourceVersion: "999",

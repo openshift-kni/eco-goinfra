@@ -35,6 +35,7 @@ const (
 	ServiceAccount                     = "ServiceAccount"
 	DPConfigFileName                   = "config.json"
 	OVSHWOLMachineConfigNameSuffix     = "ovs-hw-offload"
+	LeaderElectionID                   = "a56def2a.openshift.io"
 
 	LinkTypeEthernet   = "ether"
 	LinkTypeInfiniband = "infiniband"
@@ -93,9 +94,13 @@ const (
 	BusVdpa               = "vdpa"
 
 	UdevFolder          = "/etc/udev"
+	HostUdevFolder      = Host + UdevFolder
 	UdevRulesFolder     = UdevFolder + "/rules.d"
 	HostUdevRulesFolder = Host + UdevRulesFolder
 	UdevDisableNM       = "/bindata/scripts/udev-find-sriov-pf.sh"
+	UdevRepName         = "/bindata/scripts/switchdev-vf-link-name.sh"
+	// nolint:goconst
+	PFNameUdevRule = `SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", KERNELS=="%s", NAME="%s"`
 	// nolint:goconst
 	NMUdevRule = `SUBSYSTEM=="net", ` +
 		`ACTION=="add|change|move", ` +

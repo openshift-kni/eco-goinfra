@@ -179,10 +179,6 @@ func newBuilder(apiClient *clients.Settings, name string) *Builder {
 	builder := &Builder{
 		apiClient: apiClient.Client,
 		Definition: &configV1.ClusterOperator{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       APIKind,
-				APIVersion: fmt.Sprintf("%s/%s", APIGroup, APIVersion),
-			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name:            name,
 				ResourceVersion: "999",
