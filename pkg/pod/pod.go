@@ -470,7 +470,7 @@ func (builder *Builder) Copy(path, containerName string, tar bool) (bytes.Buffer
 	if err != nil {
 		return bytes.Buffer{}, err
 	}
-
+	// test
 	wrapper, err := rest.HTTPWrappersForConfig(builder.apiClient.Config, upgradeRoundTripper)
 	if err != nil {
 		return bytes.Buffer{}, err
