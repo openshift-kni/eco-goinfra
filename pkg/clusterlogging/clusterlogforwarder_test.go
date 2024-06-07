@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	clov1 "github.com/openshift/cluster-logging-operator/apis/logging/v1"
+	clov1 "github.com/openshift/cluster-logging-operator/api/logging/v1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -421,6 +421,10 @@ func buildDummyClusterLogForwarder() []runtime.Object {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      defaultClusterLogForwarderName,
 			Namespace: defaultClusterLogForwarderNamespace,
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind:       kind,
+			APIVersion: fmt.Sprintf("%s/%s", apiGroup, apiVersion),
 		},
 		Spec: clov1.ClusterLogForwarderSpec{
 			Outputs:   []clov1.OutputSpec{},

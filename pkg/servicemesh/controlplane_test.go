@@ -13,8 +13,6 @@ import (
 )
 
 var (
-	controlPlaneAPIVersion  = "v2"
-	controlPlaneKind        = "ServiceMeshControlPlane"
 	defaultControlPlaneName = "basic"
 	dummyIPAddress          = "10.22.22.1"
 	emptyIPAddress          = ""
@@ -775,10 +773,6 @@ func TestControlPlaneWithGatewaysEnablement(t *testing.T) {
 func buildValidControlPlaneBuilder(apiClient *clients.Settings) *ControlPlaneBuilder {
 	controlPlaneBuilder := NewControlPlaneBuilder(
 		apiClient, defaultControlPlaneName, defaultServiceMeshNamespace)
-	controlPlaneBuilder.Definition.TypeMeta = metav1.TypeMeta{
-		Kind:       controlPlaneKind,
-		APIVersion: fmt.Sprintf("%s/%s", serviceMeshAPIGroup, controlPlaneAPIVersion),
-	}
 	controlPlaneBuilder.Definition.ResourceVersion = "999"
 
 	return controlPlaneBuilder
@@ -787,10 +781,6 @@ func buildValidControlPlaneBuilder(apiClient *clients.Settings) *ControlPlaneBui
 func buildInValidControlPlaneBuilder(apiClient *clients.Settings) *ControlPlaneBuilder {
 	controlPlaneBuilder := NewControlPlaneBuilder(
 		apiClient, "", defaultServiceMeshNamespace)
-	controlPlaneBuilder.Definition.TypeMeta = metav1.TypeMeta{
-		Kind:       controlPlaneKind,
-		APIVersion: fmt.Sprintf("%s/%s", serviceMeshAPIGroup, controlPlaneAPIVersion),
-	}
 	controlPlaneBuilder.Definition.ResourceVersion = "999"
 
 	return controlPlaneBuilder

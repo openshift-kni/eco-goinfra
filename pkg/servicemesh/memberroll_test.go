@@ -13,9 +13,6 @@ import (
 )
 
 var (
-	serviceMeshAPIGroup         = "maistra.io"
-	memberRollAPIVersion        = "v1"
-	memberRollKind              = "ServiceMeshMemberRoll"
 	defaultMemberRollName       = "default"
 	defaultServiceMeshNamespace = "istio-system"
 	defaultMembersList          = []string(nil)
@@ -414,10 +411,6 @@ func buildValidMemberRollBuilderWithCondition(apiClient *clients.Settings,
 func buildValidMemberRollBuilder(apiClient *clients.Settings) *MemberRollBuilder {
 	memberRollBuilder := NewMemberRollBuilder(
 		apiClient, defaultMemberRollName, defaultServiceMeshNamespace)
-	memberRollBuilder.Definition.TypeMeta = metav1.TypeMeta{
-		Kind:       memberRollKind,
-		APIVersion: fmt.Sprintf("%s/%s", serviceMeshAPIGroup, memberRollAPIVersion),
-	}
 	memberRollBuilder.Definition.ResourceVersion = "999"
 
 	return memberRollBuilder
@@ -426,10 +419,6 @@ func buildValidMemberRollBuilder(apiClient *clients.Settings) *MemberRollBuilder
 func buildInValidMemberRollBuilder(apiClient *clients.Settings) *MemberRollBuilder {
 	memberRollBuilder := NewMemberRollBuilder(
 		apiClient, "", defaultServiceMeshNamespace)
-	memberRollBuilder.Definition.TypeMeta = metav1.TypeMeta{
-		Kind:       memberRollKind,
-		APIVersion: fmt.Sprintf("%s/%s", serviceMeshAPIGroup, memberRollAPIVersion),
-	}
 	memberRollBuilder.Definition.ResourceVersion = "999"
 
 	return memberRollBuilder

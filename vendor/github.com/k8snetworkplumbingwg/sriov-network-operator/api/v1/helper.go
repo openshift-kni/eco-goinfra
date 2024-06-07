@@ -214,7 +214,13 @@ func GetVfDeviceID(deviceID string) string {
 }
 
 func IsSwitchdevModeSpec(spec SriovNetworkNodeStateSpec) bool {
-	for _, iface := range spec.Interfaces {
+	return ContainsSwitchdevInterface(spec.Interfaces)
+}
+
+// ContainsSwitchdevInterface returns true if provided interface list contains interface
+// with switchdev configuration
+func ContainsSwitchdevInterface(interfaces []Interface) bool {
+	for _, iface := range interfaces {
 		if iface.EswitchMode == ESwithModeSwitchDev {
 			return true
 		}
@@ -255,7 +261,12 @@ func NeedToUpdateSriov(ifaceSpec *Interface, ifaceStatus *InterfaceExt) bool {
 			return true
 		}
 	}
-
+	currentEswitchMode := GetEswitchModeFromStatus(ifaceStatus)
+	desiredEswitchMode := GetEswitchModeFromSpec(ifaceSpec)
+	if currentEswitchMode != desiredEswitchMode {
+		log.V(2).Info("NeedToUpdateSriov(): EswitchMode needs update", "desired", desiredEswitchMode, "current", currentEswitchMode)
+		return true
+	}
 	if ifaceSpec.NumVfs != ifaceStatus.NumVfs {
 		log.V(2).Info("NeedToUpdateSriov(): NumVfs needs update", "desired", ifaceSpec.NumVfs, "current", ifaceStatus.NumVfs)
 		return true
@@ -296,11 +307,18 @@ func NeedToUpdateSriov(ifaceSpec *Interface, ifaceStatus *InterfaceExt) bool {
 							return true
 						}
 					}
+					if groupSpec.VdpaType != vfStatus.VdpaType {
+						log.V(2).Info("NeedToUpdateSriov(): VF VdpaType mismatch",
+							"desired", groupSpec.VdpaType, "current", vfStatus.VdpaType)
+						return true
+					}
 					break
 				}
 			}
-			if !ingroup && StringInArray(vfStatus.Driver, vars.DpdkDrivers) {
-				// VF which has DPDK driver loaded but not in any group, needs to be reset to default driver.
+			if !ingroup && (StringInArray(vfStatus.Driver, vars.DpdkDrivers) || vfStatus.VdpaType != "") {
+				// need to reset VF if it is not a part of a group and:
+				// a. has DPDK driver loaded
+				// b. has VDPA device
 				return true
 			}
 		}
@@ -388,7 +406,7 @@ func (p *SriovNetworkNodePolicy) Apply(state *SriovNetworkNodeState, equalPriori
 				ExternallyManaged: p.Spec.ExternallyManaged,
 			}
 			if p.Spec.NumVfs > 0 {
-				group, err := p.generateVfGroup(&iface)
+				group, err := p.generatePfNameVfGroup(&iface)
 				if err != nil {
 					return err
 				}
@@ -457,13 +475,13 @@ func (gr VfGroup) isVFRangeOverlapping(group VfGroup) bool {
 	return IndexInRange(rngSt, group.VfRange) || IndexInRange(rngEnd, group.VfRange)
 }
 
-func (p *SriovNetworkNodePolicy) generateVfGroup(iface *InterfaceExt) (*VfGroup, error) {
+func (p *SriovNetworkNodePolicy) generatePfNameVfGroup(iface *InterfaceExt) (*VfGroup, error) {
 	var err error
 	pfName := ""
 	var rngStart, rngEnd int
 	found := false
 	for _, selector := range p.Spec.NicSelector.PfNames {
-		pfName, rngStart, rngEnd, err = ParsePFName(selector)
+		pfName, rngStart, rngEnd, err = ParseVfRange(selector)
 		if err != nil {
 			log.Error(err, "Unable to parse PF Name.")
 			return nil, err
@@ -516,15 +534,27 @@ func parseRange(r string) (rngSt, rngEnd int, err error) {
 	return
 }
 
-// Parse PF name with VF range
-func ParsePFName(name string) (ifName string, rngSt, rngEnd int, err error) {
+// SplitDeviceFromRange return the device name and the range.
+// the split is base on #
+func SplitDeviceFromRange(device string) (string, string) {
+	if strings.Contains(device, "#") {
+		fields := strings.Split(device, "#")
+		return fields[0], fields[1]
+	}
+
+	return device, ""
+}
+
+// ParseVfRange: parse a device with VF range
+// this can be rootDevices or PFName
+// if no range detect we just return the device name
+func ParseVfRange(device string) (rootDeviceName string, rngSt, rngEnd int, err error) {
 	rngSt, rngEnd = invalidVfIndex, invalidVfIndex
-	if strings.Contains(name, "#") {
-		fields := strings.Split(name, "#")
-		ifName = fields[0]
-		rngSt, rngEnd, err = parseRange(fields[1])
+	rootDeviceName, splitRange := SplitDeviceFromRange(device)
+	if splitRange != "" {
+		rngSt, rngEnd, err = parseRange(splitRange)
 	} else {
-		ifName = name
+		rootDeviceName = device
 	}
 	return
 }

@@ -589,7 +589,7 @@ func TestStorageClusterWithStorageDeviceSets(t *testing.T) {
 				DataPVCTemplate: corev1.PersistentVolumeClaim{
 					Spec: corev1.PersistentVolumeClaimSpec{
 						AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-						Resources: corev1.ResourceRequirements{
+						Resources: corev1.VolumeResourceRequirements{
 							Requests: resourceListMap,
 						},
 						StorageClassName: &defaultStorageClassName,
@@ -679,6 +679,10 @@ func buildDummyStorageCluster() []runtime.Object {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      defaultStorageClusterName,
 			Namespace: defaultStorageClusterNamespace,
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "StorageCluster",
+			APIVersion: fmt.Sprintf("%s/%s", APIGroup, APIVersion),
 		},
 		Spec: ocsoperatorv1.StorageClusterSpec{
 			ManageNodes:        false,
