@@ -579,6 +579,7 @@ func GetTestClients(tcp TestClientParams) *Settings {
 	clientSet.AppsV1Interface = clientSet.K8sClient.AppsV1()
 	clientSet.NetworkingV1Interface = clientSet.K8sClient.NetworkingV1()
 	clientSet.RbacV1Interface = clientSet.K8sClient.RbacV1()
+	clientSet.StorageV1Interface = clientSet.K8sClient.StorageV1()
 	clientSet.ClientSrIov = clientSrIovFake.NewSimpleClientset(srIovObjects...)
 	clientSet.ClusterClient = clusterClientFake.NewSimpleClientset(ocmObjects...)
 	clientSet.ClusterV1Interface = clientSet.ClusterClient.ClusterV1()
