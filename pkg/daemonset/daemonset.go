@@ -100,6 +100,12 @@ func NewBuilder(
 func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	glog.V(100).Infof("Pulling existing daemonset name:%s under namespace:%s", name, nsname)
 
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is nil")
+
+		return nil, fmt.Errorf("apiClient cannot be nil")
+	}
+
 	builder := &Builder{
 		apiClient: apiClient.DaemonSets(nsname),
 		Definition: &appsv1.DaemonSet{

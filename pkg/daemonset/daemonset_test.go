@@ -12,20 +12,6 @@ import (
 	k8sfake "k8s.io/client-go/kubernetes/fake"
 )
 
-func buildValidTestBuilderWithClient(objects []runtime.Object) *Builder {
-	fakeClient := k8sfake.NewSimpleClientset(objects...)
-
-	return NewBuilder(&clients.Settings{
-		K8sClient:       fakeClient,
-		CoreV1Interface: fakeClient.CoreV1(),
-		AppsV1Interface: fakeClient.AppsV1(),
-	}, "test-name", "test-namespace", map[string]string{
-		"test-key": "test-value",
-	}, corev1.Container{
-		Name: "test-container",
-	})
-}
-
 func TestWithNodeSelector(t *testing.T) {
 	testBuilder := buildValidTestBuilderWithClient([]runtime.Object{})
 	testBuilder.WithNodeSelector(map[string]string{
@@ -166,37 +152,44 @@ func TestDaemonsetPull(t *testing.T) {
 	testCases := []struct {
 		name                string
 		namespace           string
-		expectedError       bool
 		addToRuntimeObjects bool
 		expectedErrorText   string
+		apiClientNil        bool
 	}{
 		{ // Test Case 1 - happy path
 			name:                "test-name",
 			namespace:           "test-namespace",
-			expectedError:       false,
 			addToRuntimeObjects: true,
 			expectedErrorText:   "",
+			apiClientNil:        false,
 		},
 		{ // Test Case 2 - daemonset not found
 			name:                "test-name",
 			namespace:           "test-namespace",
-			expectedError:       true,
 			addToRuntimeObjects: false,
 			expectedErrorText:   "daemonset object test-name does not exist in namespace test-namespace",
+			apiClientNil:        false,
 		},
 		{ // Test Case 3 - daemonset name is empty
 			name:                "",
 			namespace:           "test-namespace",
-			expectedError:       true,
 			addToRuntimeObjects: false,
 			expectedErrorText:   "daemonset name cannot be empty",
+			apiClientNil:        false,
 		},
 		{ // Test Case 4 - daemonset namespace is empty
 			name:                "test-name",
 			namespace:           "",
-			expectedError:       true,
 			addToRuntimeObjects: false,
 			expectedErrorText:   "daemonset namespace cannot be empty",
+			apiClientNil:        false,
+		},
+		{ // Test Case 5 - API client is nil
+			name:                "test-name",
+			namespace:           "test-namespace",
+			addToRuntimeObjects: false,
+			expectedErrorText:   "apiClient cannot be nil",
+			apiClientNil:        true,
 		},
 	}
 
@@ -216,14 +209,14 @@ func TestDaemonsetPull(t *testing.T) {
 			K8sMockObjects: runtimeObjects,
 		})
 
+		if testCase.apiClientNil {
+			testSettings = nil
+		}
+
 		builderResult, err := Pull(testSettings, testCase.name, testCase.namespace)
 
-		if testCase.expectedError {
-			assert.NotNil(t, err)
-
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, err.Error())
-			}
+		if testCase.expectedErrorText != "" {
+			assert.Equal(t, testCase.expectedErrorText, err.Error())
 		} else {
 			assert.Nil(t, err)
 			assert.NotNil(t, builderResult)
@@ -452,4 +445,18 @@ func TestDaemonsetValidate(t *testing.T) {
 			}
 		}
 	}
+}
+
+func buildValidTestBuilderWithClient(objects []runtime.Object) *Builder {
+	fakeClient := k8sfake.NewSimpleClientset(objects...)
+
+	return NewBuilder(&clients.Settings{
+		K8sClient:       fakeClient,
+		CoreV1Interface: fakeClient.CoreV1(),
+		AppsV1Interface: fakeClient.AppsV1(),
+	}, "test-name", "test-namespace", map[string]string{
+		"test-key": "test-value",
+	}, corev1.Container{
+		Name: "test-container",
+	})
 }
