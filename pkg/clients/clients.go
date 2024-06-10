@@ -54,6 +54,7 @@ import (
 	clientCguFake "github.com/openshift-kni/cluster-group-upgrades-operator/pkg/generated/clientset/versioned/fake"
 	clientCguV1 "github.com/openshift-kni/cluster-group-upgrades-operator/pkg/generated/clientset/versioned/typed/clustergroupupgrades/v1alpha1"
 
+	clientMachineConfigFake "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/fake"
 	clientMachineConfigV1 "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/typed/machineconfiguration.openshift.io/v1"
 
 	nmstatev1 "github.com/nmstate/kubernetes-nmstate/api/v1"
@@ -415,7 +416,7 @@ func GetTestClients(tcp TestClientParams) *Settings {
 	clientSet := &Settings{}
 
 	var k8sClientObjects, genericClientObjects, plumbingObjects, srIovObjects,
-		veleroClientObjects, cguObjects, ocmObjects []runtime.Object
+		veleroClientObjects, cguObjects, ocmObjects, mcoObjects []runtime.Object
 
 	//nolint:varnamelen
 	for _, v := range tcp.K8sMockObjects {
@@ -568,6 +569,9 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		// OCM Cluster Client Objects
 		case *clusterv1.ManagedCluster:
 			ocmObjects = append(ocmObjects, v)
+		// MCO Client Objects
+		case *mcv1.MachineConfig:
+			mcoObjects = append(mcoObjects, v)
 		}
 	}
 
@@ -580,6 +584,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 	clientSet.ClientSrIov = clientSrIovFake.NewSimpleClientset(srIovObjects...)
 	clientSet.ClusterClient = clusterClientFake.NewSimpleClientset(ocmObjects...)
 	clientSet.ClusterV1Interface = clientSet.ClusterClient.ClusterV1()
+	clientSet.MachineconfigurationV1Interface = clientMachineConfigFake.NewSimpleClientset(
+		mcoObjects...).MachineconfigurationV1()
 
 	// Assign the fake multi-networkpolicy clientset to the clientSet
 	// Note: We are not entirely sure that these functions actually work as expected.
