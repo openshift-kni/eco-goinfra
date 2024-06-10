@@ -7,6 +7,7 @@ import (
 
 	"github.com/openshift-kni/eco-goinfra/pkg/argocd/argocdtypes"
 	"github.com/openshift-kni/eco-goinfra/pkg/metallb/mlbtypes"
+	"github.com/openshift-kni/eco-goinfra/pkg/oadp/oadptypes"
 
 	"github.com/golang/glog"
 	"k8s.io/client-go/dynamic"
@@ -536,6 +537,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *kedav2v1alpha1.TriggerAuthentication:
 			genericClientObjects = append(genericClientObjects, v)
 		case *agentInstallV1Beta1.AgentServiceConfig:
+			genericClientObjects = append(genericClientObjects, v)
+		case *oadptypes.DataProtectionApplication:
 			genericClientObjects = append(genericClientObjects, v)
 		// ArgoCD Client Objects
 		case *argocdOperatorv1alpha1.ArgoCD:
