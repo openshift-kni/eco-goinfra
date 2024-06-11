@@ -731,8 +731,10 @@ github.com/openshift/machine-config-operator/pkg/apis/machineconfiguration.opens
 github.com/openshift/machine-config-operator/pkg/controller/common
 github.com/openshift/machine-config-operator/pkg/daemon/constants
 github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned
+github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/fake
 github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/scheme
 github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/typed/machineconfiguration.openshift.io/v1
+github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/typed/machineconfiguration.openshift.io/v1/fake
 github.com/openshift/machine-config-operator/pkg/generated/informers/externalversions
 github.com/openshift/machine-config-operator/pkg/generated/informers/externalversions/internalinterfaces
 github.com/openshift/machine-config-operator/pkg/generated/informers/externalversions/machineconfiguration.openshift.io
