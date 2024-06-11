@@ -216,6 +216,43 @@ func TestOperatorConfigWithOperatorWebhook(t *testing.T) {
 	}
 }
 
+func TestOperatorConfigWithConfigDaemonNodeSelector(t *testing.T) {
+	testCases := []struct {
+		configDaemonNodeSelector map[string]string
+		expectedErrorText        string
+	}{
+		{
+			configDaemonNodeSelector: map[string]string{"test-node-selector-key": "test-node-selector-value"},
+			expectedErrorText:        "",
+		},
+		{
+			configDaemonNodeSelector: map[string]string{"test-node-selector-key": ""},
+			expectedErrorText:        "",
+		},
+		{
+			configDaemonNodeSelector: map[string]string{"": "test-node-selector-value"},
+			expectedErrorText:        "can not apply configDaemonNodeSelector with an empty selectorKey value",
+		},
+		{
+			configDaemonNodeSelector: map[string]string{},
+			expectedErrorText:        "can not apply empty configDaemonNodeSelector",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyPolicyObject()
+		operatorConfigBuilder := NewOperatorConfigBuilder(testSettings, "testnamespace").
+			WithConfigDaemonNodeSelector(testCase.configDaemonNodeSelector)
+
+		assert.Equal(t, testCase.expectedErrorText, operatorConfigBuilder.errorMsg)
+
+		if testCase.expectedErrorText == "" {
+			assert.Equal(t, testCase.configDaemonNodeSelector,
+				operatorConfigBuilder.Definition.Spec.ConfigDaemonNodeSelector)
+		}
+	}
+}
+
 func TestOperatorConfigUpdate(t *testing.T) {
 	testCases := []struct {
 		testOperatorConfig *OperatorConfigBuilder
