@@ -552,6 +552,9 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *hiveV1.ClusterImageSet:
 			genericClientObjects = append(genericClientObjects, v)
+		// KMM Client Objects
+		case *moduleV1Beta1.PreflightValidationOCP:
+			genericClientObjects = append(genericClientObjects, v)
 		// Velero Client Objects
 		case *velerov1.Backup:
 			veleroClientObjects = append(veleroClientObjects, v)
