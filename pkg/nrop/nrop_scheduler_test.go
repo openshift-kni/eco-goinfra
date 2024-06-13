@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	nropv1alpha1 "github.com/openshift-kni/numaresources-operator/api/numaresourcesoperator/v1alpha1"
+	nropv1 "github.com/openshift-kni/numaresources-operator/api/numaresourcesoperator/v1"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
@@ -13,46 +13,61 @@ import (
 )
 
 var (
-	defaultNROPName = "numaresourcesoperator"
+	defaultNROSchedulerName      = "numaresourcesscheduler"
+	defaultNROSchedulerNamespace = "openshift-numaresources"
+	defaultImageSpec             = "test-registry.redhat.io/openshift4/noderesourcetopology-scheduler-rhel9:v4.14.0"
 )
 
 func TestPull(t *testing.T) {
-	generateNROP := func(name string) *nropv1alpha1.NUMAResourcesOperator {
-		return &nropv1alpha1.NUMAResourcesOperator{
+	generateNROScheduler := func(name, nsname string) *nropv1.NUMAResourcesScheduler {
+		return &nropv1.NUMAResourcesScheduler{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: name,
+				Name:      name,
+				Namespace: nsname,
 			},
 		}
 	}
 
 	testCases := []struct {
 		name                string
+		nsname              string
 		addToRuntimeObjects bool
 		expectedError       error
 		client              bool
 	}{
 		{
-			name:                defaultNROPName,
+			name:                defaultNROSchedulerName,
+			nsname:              defaultNROSchedulerNamespace,
 			addToRuntimeObjects: true,
 			expectedError:       nil,
 			client:              true,
 		},
 		{
 			name:                "",
+			nsname:              defaultNROSchedulerNamespace,
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("NUMAResourcesOperator 'name' cannot be empty"),
+			expectedError:       fmt.Errorf("NUMAResourcesScheduler 'name' cannot be empty"),
 			client:              true,
 		},
 		{
-			name:                "nroptest",
+			name:                defaultNROSchedulerName,
+			nsname:              "",
+			addToRuntimeObjects: true,
+			expectedError:       fmt.Errorf("NUMAResourcesScheduler 'nsname' cannot be empty"),
+			client:              true,
+		},
+		{
+			name:                "nrostest",
+			nsname:              defaultNROSchedulerNamespace,
 			addToRuntimeObjects: false,
-			expectedError:       fmt.Errorf("NUMAResourcesOperator object nroptest does not exist"),
+			expectedError:       fmt.Errorf("NUMAResourcesScheduler object nrostest does not exist"),
 			client:              true,
 		},
 		{
-			name:                "nroptest",
+			name:                "nrostest",
+			nsname:              defaultNROSchedulerNamespace,
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("NUMAResourcesOperator 'apiClient' cannot be empty"),
+			expectedError:       fmt.Errorf("NUMAResourcesScheduler 'apiClient' cannot be empty"),
 			client:              false,
 		},
 	}
@@ -63,10 +78,10 @@ func TestPull(t *testing.T) {
 
 		var testSettings *clients.Settings
 
-		testNROP := generateNROP(testCase.name)
+		testNROS := generateNROScheduler(testCase.name, testCase.nsname)
 
 		if testCase.addToRuntimeObjects {
-			runtimeObjects = append(runtimeObjects, testNROP)
+			runtimeObjects = append(runtimeObjects, testNROS)
 		}
 
 		if testCase.client {
@@ -75,97 +90,108 @@ func TestPull(t *testing.T) {
 			})
 		}
 
-		builderResult, err := Pull(testSettings, testCase.name)
+		builderResult, err := PullScheduler(testSettings, testCase.name, testCase.nsname)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError != nil {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		} else {
-			assert.Equal(t, testNROP.Name, builderResult.Object.Name)
+			assert.Equal(t, testNROS.Name, builderResult.Object.Name)
+			assert.Equal(t, testNROS.Namespace, builderResult.Object.Namespace)
 			assert.Nil(t, err)
 		}
 	}
 }
 
-func TestNewNROPBuilder(t *testing.T) {
+func TestNewNROSchedulerBuilder(t *testing.T) {
 	testCases := []struct {
 		name          string
+		nsname        string
 		expectedError string
 	}{
 		{
-			name:          defaultNROPName,
+			name:          defaultNROSchedulerName,
+			nsname:        defaultNROSchedulerNamespace,
 			expectedError: "",
 		},
 		{
 			name:          "",
-			expectedError: "NUMAResourcesOperator 'name' cannot be empty",
+			nsname:        defaultNROSchedulerNamespace,
+			expectedError: "NUMAResourcesScheduler 'name' cannot be empty",
+		},
+		{
+			name:          defaultNROSchedulerName,
+			nsname:        "",
+			expectedError: "NUMAResourcesScheduler 'nsname' cannot be empty",
 		},
 	}
 
 	for _, testCase := range testCases {
 		testSettings := clients.GetTestClients(clients.TestClientParams{})
-		testNROPBuilder := NewBuilder(testSettings, testCase.name)
-		assert.NotNil(t, testNROPBuilder.Definition)
+		testNROSBuilder := NewSchedulerBuilder(testSettings, testCase.name, testCase.nsname)
+		assert.NotNil(t, testNROSBuilder.Definition)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testCase.name, testNROPBuilder.Definition.Name)
-			assert.Equal(t, "", testNROPBuilder.errorMsg)
+			assert.Equal(t, testCase.name, testNROSBuilder.Definition.Name)
+			assert.Equal(t, testCase.nsname, testNROSBuilder.Definition.Namespace)
+			assert.Equal(t, "", testNROSBuilder.errorMsg)
 		} else {
-			assert.Equal(t, testCase.expectedError, testNROPBuilder.errorMsg)
+			assert.Equal(t, testCase.expectedError, testNROSBuilder.errorMsg)
 		}
 	}
 }
 
-func TestNROPExists(t *testing.T) {
+func TestNROSchedulerExists(t *testing.T) {
 	testCases := []struct {
-		testNROP       *Builder
+		testNROS       *SchedulerBuilder
 		expectedStatus bool
 	}{
 		{
-			testNROP:       buildValidNROPBuilder(buildNROPClientWithDummyObject()),
+			testNROS:       buildValidNROSchedulerBuilder(buildNROSchedulerClientWithDummyObject()),
 			expectedStatus: true,
 		},
 		{
-			testNROP:       buildInValidNROPBuilder(buildNROPClientWithDummyObject()),
+			testNROS:       buildInValidNROSchedulerBuilder(buildNROSchedulerClientWithDummyObject()),
 			expectedStatus: false,
 		},
 		{
-			testNROP:       buildValidNROPBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testNROS:       buildValidNROSchedulerBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedStatus: false,
 		},
 	}
 
 	for _, testCase := range testCases {
-		exist := testCase.testNROP.Exists()
+		exist := testCase.testNROS.Exists()
 		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
-func TestNROPGet(t *testing.T) {
+func TestNROSchedulerGet(t *testing.T) {
 	testCases := []struct {
-		testNROP      *Builder
+		testNROS      *SchedulerBuilder
 		expectedError error
 	}{
 		{
-			testNROP:      buildValidNROPBuilder(buildNROPClientWithDummyObject()),
+			testNROS:      buildValidNROSchedulerBuilder(buildNROSchedulerClientWithDummyObject()),
 			expectedError: nil,
 		},
 		{
-			testNROP:      buildInValidNROPBuilder(buildNROPClientWithDummyObject()),
-			expectedError: fmt.Errorf("numaresourcesoperators.nodetopology.openshift.io \"\" not found"),
+			testNROS:      buildInValidNROSchedulerBuilder(buildNROSchedulerClientWithDummyObject()),
+			expectedError: fmt.Errorf("numaresourcesschedulers.nodetopology.openshift.io \"\" not found"),
 		},
 		{
-			testNROP: buildValidNROPBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: fmt.Errorf("numaresourcesoperators.nodetopology.openshift.io \"numaresourcesoperator\" " +
-				"not found"),
+			testNROS: buildValidNROSchedulerBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: fmt.Errorf("numaresourcesschedulers.nodetopology.openshift.io " +
+				"\"numaresourcesscheduler\" not found"),
 		},
 	}
 
 	for _, testCase := range testCases {
-		nropObj, err := testCase.testNROP.Get()
+		nrosObj, err := testCase.testNROS.Get()
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, nropObj.Name, testCase.testNROP.Definition.Name)
+			assert.Equal(t, nrosObj.Name, testCase.testNROS.Definition.Name)
+			assert.Equal(t, nrosObj.Namespace, testCase.testNROS.Definition.Namespace)
 			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
@@ -173,30 +199,31 @@ func TestNROPGet(t *testing.T) {
 	}
 }
 
-func TestNROPCreate(t *testing.T) {
+func TestNROSchedulerCreate(t *testing.T) {
 	testCases := []struct {
-		testNROP      *Builder
+		testNROS      *SchedulerBuilder
 		expectedError string
 	}{
 		{
-			testNROP:      buildValidNROPBuilder(buildNROPClientWithDummyObject()),
+			testNROS:      buildValidNROSchedulerBuilder(buildNROSchedulerClientWithDummyObject()),
 			expectedError: "",
 		},
 		{
-			testNROP:      buildInValidNROPBuilder(buildNROPClientWithDummyObject()),
+			testNROS:      buildInValidNROSchedulerBuilder(buildNROSchedulerClientWithDummyObject()),
 			expectedError: " \"\" is invalid: metadata.name: Required value: name is required",
 		},
 		{
-			testNROP:      buildValidNROPBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testNROS:      buildValidNROSchedulerBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError: "",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testNROPBuilder, err := testCase.testNROP.Create()
+		testNROSBuilder, err := testCase.testNROS.Create()
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testNROPBuilder.Definition.Name, testNROPBuilder.Object.Name)
+			assert.Equal(t, testNROSBuilder.Definition.Name, testNROSBuilder.Object.Name)
+			assert.Equal(t, testNROSBuilder.Definition.Namespace, testNROSBuilder.Object.Namespace)
 			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError, err.Error())
@@ -204,30 +231,30 @@ func TestNROPCreate(t *testing.T) {
 	}
 }
 
-func TestNROPDelete(t *testing.T) {
+func TestNROSchedulerDelete(t *testing.T) {
 	testCases := []struct {
-		testNROP      *Builder
+		testNROS      *SchedulerBuilder
 		expectedError error
 	}{
 		{
-			testNROP:      buildValidNROPBuilder(buildNROPClientWithDummyObject()),
+			testNROS:      buildValidNROSchedulerBuilder(buildNROSchedulerClientWithDummyObject()),
 			expectedError: nil,
 		},
 		{
-			testNROP:      buildInValidNROPBuilder(buildNROPClientWithDummyObject()),
+			testNROS:      buildInValidNROSchedulerBuilder(buildNROSchedulerClientWithDummyObject()),
 			expectedError: nil,
 		},
 		{
-			testNROP:      buildValidNROPBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testNROS:      buildValidNROSchedulerBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError: nil,
 		},
 	}
 
 	for _, testCase := range testCases {
-		_, err := testCase.testNROP.Delete()
+		_, err := testCase.testNROS.Delete()
 
 		if testCase.expectedError == nil {
-			assert.Nil(t, testCase.testNROP.Object)
+			assert.Nil(t, testCase.testNROS.Object)
 			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
@@ -235,175 +262,89 @@ func TestNROPDelete(t *testing.T) {
 	}
 }
 
-func TestNROPUpdate(t *testing.T) {
+func TestNROSchedulerUpdate(t *testing.T) {
 	testCases := []struct {
-		testNROP      *Builder
+		testNROS      *SchedulerBuilder
 		expectedError string
-		mcpSelector   map[string]string
+		imageSpec     string
 	}{
 		{
-			testNROP:      buildValidNROPBuilder(buildNROPClientWithDummyObject()),
+			testNROS:      buildValidNROSchedulerBuilder(buildNROSchedulerClientWithDummyObject()),
 			expectedError: "",
-			mcpSelector:   map[string]string{"machineconfiguration.openshift.io/role": "mcp-name"},
+			imageSpec:     defaultImageSpec,
 		},
 		{
-			testNROP:      buildValidNROPBuilder(buildNROPWithMCPSelectorClientWithDummyObject()),
-			expectedError: "",
-			mcpSelector:   map[string]string{"machineconfiguration.openshift.io/role": "mcp-name"},
-		},
-		{
-			testNROP:      buildInValidNROPBuilder(buildNROPClientWithDummyObject()),
+			testNROS:      buildInValidNROSchedulerBuilder(buildNROSchedulerClientWithDummyObject()),
 			expectedError: " \"\" is invalid: metadata.name: Required value: name is required",
-			mcpSelector:   map[string]string{},
+			imageSpec:     "",
 		},
 	}
 
 	for _, testCase := range testCases {
-		assert.Equal(t, []nropv1alpha1.NodeGroup(nil), testCase.testNROP.Definition.Spec.NodeGroups)
-		assert.Nil(t, nil, testCase.testNROP.Object)
-		testCase.testNROP.WithMCPSelector(testCase.mcpSelector)
-		_, err := testCase.testNROP.Update()
+		assert.Equal(t, "", testCase.testNROS.Definition.Spec.SchedulerImage)
+		assert.Nil(t, nil, testCase.testNROS.Object)
+		testCase.testNROS.WithImageSpec(testCase.imageSpec)
+		_, err := testCase.testNROS.Update()
 
 		if testCase.expectedError != "" {
 			assert.Equal(t, testCase.expectedError, err.Error())
 		} else {
-			assert.Equal(t, testCase.mcpSelector,
-				testCase.testNROP.Definition.Spec.NodeGroups[0].MachineConfigPoolSelector.MatchLabels)
+			assert.Equal(t, testCase.imageSpec, testCase.testNROS.Definition.Spec.SchedulerImage)
 		}
 	}
 }
 
-func TestNROPWithMCPSelector(t *testing.T) {
+func TestNROSchedulerWithImageSpec(t *testing.T) {
 	testCases := []struct {
-		mcpSelector           map[string]string
-		expectedErrMsg        string
-		predefinedMCPSelector bool
-		originalNodeSelector  map[string]string
+		imageSpec      string
+		expectedErrMsg string
 	}{
 		{
-			mcpSelector:           map[string]string{"test-mcp-selector-key": "test-mcp-selector-value"},
-			expectedErrMsg:        "",
-			predefinedMCPSelector: false,
-			originalNodeSelector:  map[string]string(nil),
+			imageSpec:      defaultImageSpec,
+			expectedErrMsg: "",
 		},
 		{
-			mcpSelector:           map[string]string{"test-mcp-selector-key": ""},
-			expectedErrMsg:        "can not apply a machineConfigPoolSelector with an empty value",
-			predefinedMCPSelector: false,
-			originalNodeSelector:  map[string]string(nil),
-		},
-		{
-			mcpSelector:           map[string]string{"": "test-mcp-selector-value"},
-			expectedErrMsg:        "can not apply a machineConfigPoolSelector with an empty key",
-			predefinedMCPSelector: false,
-			originalNodeSelector:  map[string]string(nil),
-		},
-		{
-			mcpSelector:           map[string]string{},
-			expectedErrMsg:        "NUMAResourcesOperator 'machineConfigPoolSelector' cannot be empty",
-			predefinedMCPSelector: false,
-			originalNodeSelector:  map[string]string(nil),
-		},
-		{
-			mcpSelector:           map[string]string{"test-mcp-selector-key": "test-mcp-selector-value"},
-			expectedErrMsg:        "",
-			predefinedMCPSelector: true,
-			originalNodeSelector:  map[string]string{"other-mcp-selector-key": "other-mcp-selector-value"},
-		},
-		{
-			mcpSelector:           map[string]string{"test-mcp-selector-key": ""},
-			expectedErrMsg:        "can not apply a machineConfigPoolSelector with an empty value",
-			predefinedMCPSelector: true,
-			originalNodeSelector: map[string]string{"test-node-selector-key": "test-node-selector-value",
-				"other-node-selector-key": "other-node-selector-value"},
-		},
-		{
-			mcpSelector:           map[string]string{"test-node-selector-key": "test-node-selector-value"},
-			expectedErrMsg:        "",
-			predefinedMCPSelector: true,
-			originalNodeSelector: map[string]string{"test-node-selector-key": "test-node-selector-value",
-				"other-node-selector-key": "other-node-selector-value"},
+			imageSpec:      "",
+			expectedErrMsg: "can not apply a NUMAResourcesScheduler with an empty imageSpec",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidNROPBuilder(buildNROPClientWithDummyObject())
+		testBuilder := buildValidNROSchedulerBuilder(buildNROSchedulerClientWithDummyObject())
 
-		if testCase.predefinedMCPSelector {
-			testBuilder.Definition.Spec.NodeGroups = []nropv1alpha1.NodeGroup{{
-				MachineConfigPoolSelector: &metav1.LabelSelector{
-					MatchLabels: testCase.originalNodeSelector,
-				},
-			}}
-		}
-
-		testBuilder.WithMCPSelector(testCase.mcpSelector)
+		testBuilder.WithImageSpec(testCase.imageSpec)
 
 		assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
 
 		if testCase.expectedErrMsg == "" {
-			if testCase.predefinedMCPSelector {
-				assert.Equal(t, []nropv1alpha1.NodeGroup{{
-					MachineConfigPoolSelector: &metav1.LabelSelector{
-						MatchLabels: testCase.originalNodeSelector,
-					}},
-					{
-						MachineConfigPoolSelector: &metav1.LabelSelector{
-							MatchLabels: testCase.mcpSelector,
-						}}}, testBuilder.Definition.Spec.NodeGroups)
-			} else {
-				assert.Equal(t, []nropv1alpha1.NodeGroup{{
-					MachineConfigPoolSelector: &metav1.LabelSelector{
-						MatchLabels: testCase.mcpSelector,
-					}}}, testBuilder.Definition.Spec.NodeGroups)
-			}
+			assert.Equal(t, testCase.imageSpec, testBuilder.Definition.Spec.SchedulerImage)
 		}
 	}
 }
 
-func buildValidNROPBuilder(apiClient *clients.Settings) *Builder {
-	nropBuilder := NewBuilder(apiClient, defaultNROPName)
+func buildValidNROSchedulerBuilder(apiClient *clients.Settings) *SchedulerBuilder {
+	nrosBuilder := NewSchedulerBuilder(apiClient, defaultNROSchedulerName, defaultNROSchedulerNamespace)
 
-	return nropBuilder
+	return nrosBuilder
 }
 
-func buildInValidNROPBuilder(apiClient *clients.Settings) *Builder {
-	nropBuilder := NewBuilder(apiClient, "")
+func buildInValidNROSchedulerBuilder(apiClient *clients.Settings) *SchedulerBuilder {
+	nrosBuilder := NewSchedulerBuilder(apiClient, "", defaultNROSchedulerNamespace)
 
-	return nropBuilder
+	return nrosBuilder
 }
 
-func buildNROPClientWithDummyObject() *clients.Settings {
+func buildNROSchedulerClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyNROP(),
+		K8sMockObjects: buildDummyNROScheduler(),
 	})
 }
 
-func buildNROPWithMCPSelectorClientWithDummyObject() *clients.Settings {
-	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyNROPWithMCPSelector(),
-	})
-}
-
-func buildDummyNROP() []runtime.Object {
-	return append([]runtime.Object{}, &nropv1alpha1.NUMAResourcesOperator{
+func buildDummyNROScheduler() []runtime.Object {
+	return append([]runtime.Object{}, &nropv1.NUMAResourcesScheduler{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: defaultNROPName,
-		},
-	})
-}
-
-func buildDummyNROPWithMCPSelector() []runtime.Object {
-	return append([]runtime.Object{}, &nropv1alpha1.NUMAResourcesOperator{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: defaultNROPName,
-		},
-		Spec: nropv1alpha1.NUMAResourcesOperatorSpec{
-			NodeGroups: []nropv1alpha1.NodeGroup{{
-				MachineConfigPoolSelector: &metav1.LabelSelector{
-					MatchLabels: map[string]string{
-						"mcpSelectorKey": "mcpSelectorValue",
-					}}}},
+			Name:      defaultNROSchedulerName,
+			Namespace: defaultNROSchedulerNamespace,
 		},
 	})
 }

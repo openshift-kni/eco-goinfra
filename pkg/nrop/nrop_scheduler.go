@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	nropv1alpha1 "github.com/openshift-kni/numaresources-operator/api/numaresourcesoperator/v1alpha1"
+	nropv1 "github.com/openshift-kni/numaresources-operator/api/numaresourcesoperator/v1"
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
@@ -14,43 +14,54 @@ import (
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Builder provides a struct for NUMAResourcesOperator object from the cluster and a NUMAResourcesOperator definition.
-type Builder struct {
-	// NUMAResourcesOperator definition, used to create the NUMAResourcesOperator object.
-	Definition *nropv1alpha1.NUMAResourcesOperator
-	// Created NUMAResourcesOperator object.
-	Object *nropv1alpha1.NUMAResourcesOperator
-	// Used to store latest error message upon defining or mutating NUMAResourcesOperator definition.
+// SchedulerBuilder provides a struct for NUMAResourcesScheduler object from the cluster
+// and a NUMAResourcesScheduler definition.
+type SchedulerBuilder struct {
+	// NUMAResourcesScheduler definition, used to create the NUMAResourcesScheduler object.
+	Definition *nropv1.NUMAResourcesScheduler
+	// Created NUMAResourcesScheduler object.
+	Object *nropv1.NUMAResourcesScheduler
+	// Used to store latest error message upon defining or mutating NUMAResourcesScheduler definition.
 	errorMsg string
 	// api client to interact with the cluster.
 	apiClient goclient.Client
 }
 
-// NewBuilder creates a new instance of NUMAResourcesOperator.
-func NewBuilder(
-	apiClient *clients.Settings, name string) *Builder {
+// NewSchedulerBuilder creates a new instance of NUMAResourcesScheduler.
+func NewSchedulerBuilder(
+	apiClient *clients.Settings, name, nsname string) *SchedulerBuilder {
 	glog.V(100).Infof(
-		"Initializing new NUMAResourcesOperator structure with the following name: %s", name)
+		"Initializing new NUMAResourcesScheduler structure with the following name: %s in namespace %s",
+		name, nsname)
 
 	if apiClient == nil {
-		glog.V(100).Infof("NUMAResourcesOperator 'apiClient' cannot be empty")
+		glog.V(100).Infof("NUMAResourcesScheduler 'apiClient' cannot be empty")
 
 		return nil
 	}
 
-	builder := &Builder{
+	builder := &SchedulerBuilder{
 		apiClient: apiClient.Client,
-		Definition: &nropv1alpha1.NUMAResourcesOperator{
+		Definition: &nropv1.NUMAResourcesScheduler{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: name,
+				Name:      name,
+				Namespace: nsname,
 			},
 		},
 	}
 
 	if name == "" {
-		glog.V(100).Infof("The name of the NUMAResourcesOperator is empty")
+		glog.V(100).Infof("The name of the NUMAResourcesScheduler is empty")
 
-		builder.errorMsg = "NUMAResourcesOperator 'name' cannot be empty"
+		builder.errorMsg = "NUMAResourcesScheduler 'name' cannot be empty"
+
+		return builder
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The nsname of the NUMAResourcesScheduler is empty")
+
+		builder.errorMsg = "NUMAResourcesScheduler 'nsname' cannot be empty"
 
 		return builder
 	}
@@ -58,33 +69,41 @@ func NewBuilder(
 	return builder
 }
 
-// Pull pulls existing NUMAResourcesOperator from cluster.
-func Pull(apiClient *clients.Settings, name string) (*Builder, error) {
-	glog.V(100).Infof("Pulling existing NUMAResourcesOperator %s from the cluster", name)
+// PullScheduler pulls existing NUMAResourcesScheduler from cluster.
+func PullScheduler(apiClient *clients.Settings, name, nsname string) (*SchedulerBuilder, error) {
+	glog.V(100).Infof("Pulling existing NUMAResourcesScheduler %s in namespace %s from the cluster",
+		name, nsname)
 
 	if apiClient == nil {
 		glog.V(100).Infof("The apiClient is empty")
 
-		return nil, fmt.Errorf("NUMAResourcesOperator 'apiClient' cannot be empty")
+		return nil, fmt.Errorf("NUMAResourcesScheduler 'apiClient' cannot be empty")
 	}
 
-	builder := Builder{
+	builder := SchedulerBuilder{
 		apiClient: apiClient.Client,
-		Definition: &nropv1alpha1.NUMAResourcesOperator{
+		Definition: &nropv1.NUMAResourcesScheduler{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: name,
+				Name:      name,
+				Namespace: nsname,
 			},
 		},
 	}
 
 	if name == "" {
-		glog.V(100).Infof("The name of the NUMAResourcesOperator is empty")
+		glog.V(100).Infof("The name of the NUMAResourcesScheduler is empty")
 
-		return nil, fmt.Errorf("NUMAResourcesOperator 'name' cannot be empty")
+		return nil, fmt.Errorf("NUMAResourcesScheduler 'name' cannot be empty")
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The nsname of the NUMAResourcesScheduler is empty")
+
+		return nil, fmt.Errorf("NUMAResourcesScheduler 'nsname' cannot be empty")
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("NUMAResourcesOperator object %s does not exist", name)
+		return nil, fmt.Errorf("NUMAResourcesScheduler object %s does not exist", name)
 	}
 
 	builder.Definition = builder.Object
@@ -92,33 +111,36 @@ func Pull(apiClient *clients.Settings, name string) (*Builder, error) {
 	return &builder, nil
 }
 
-// Get fetches the defined NUMAResourcesOperator from the cluster.
-func (builder *Builder) Get() (*nropv1alpha1.NUMAResourcesOperator, error) {
+// Get fetches the defined NUMAResourcesScheduler from the cluster.
+func (builder *SchedulerBuilder) Get() (*nropv1.NUMAResourcesScheduler, error) {
 	if valid, err := builder.validate(); !valid {
 		return nil, err
 	}
 
-	glog.V(100).Infof("Getting NUMAResourcesOperator %s", builder.Definition.Name)
+	glog.V(100).Infof("Getting NUMAResourcesScheduler %s in namespace %s",
+		builder.Definition.Name, builder.Definition.Namespace)
 
-	nropObj := &nropv1alpha1.NUMAResourcesOperator{}
+	nrosObj := &nropv1.NUMAResourcesScheduler{}
 	err := builder.apiClient.Get(context.TODO(), goclient.ObjectKey{
-		Name: builder.Definition.Name,
-	}, nropObj)
+		Name:      builder.Definition.Name,
+		Namespace: builder.Definition.Namespace,
+	}, nrosObj)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return nropObj, nil
+	return nrosObj, nil
 }
 
-// Create makes a NUMAResourcesOperator in the cluster and stores the created object in struct.
-func (builder *Builder) Create() (*Builder, error) {
+// Create makes a NUMAResourcesScheduler in the cluster and stores the created object in struct.
+func (builder *SchedulerBuilder) Create() (*SchedulerBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Creating the NUMAResourcesOperator %s", builder.Definition.Name)
+	glog.V(100).Infof("Creating the NUMAResourcesScheduler %s in namespace %s",
+		builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
 	if !builder.Exists() {
@@ -131,17 +153,19 @@ func (builder *Builder) Create() (*Builder, error) {
 	return builder, err
 }
 
-// Delete removes NUMAResourcesOperator from a cluster.
-func (builder *Builder) Delete() (*Builder, error) {
+// Delete removes NUMAResourcesScheduler from a cluster.
+func (builder *SchedulerBuilder) Delete() (*SchedulerBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Deleting the NUMAResourcesOperator %s", builder.Definition.Name)
+	glog.V(100).Infof("Deleting the NUMAResourcesScheduler %s from namespace %s",
+		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		glog.V(100).Infof("NUMAResourcesOperator %s cannot be deleted because it does not exist",
-			builder.Definition.Name)
+		glog.V(100).Infof("NUMAResourcesScheduler %s cannot be deleted because "+
+			"it does not exist in namespace %s",
+			builder.Definition.Name, builder.Definition.Namespace)
 
 		builder.Object = nil
 
@@ -151,7 +175,8 @@ func (builder *Builder) Delete() (*Builder, error) {
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
 
 	if err != nil {
-		return builder, fmt.Errorf("can not delete NUMAResourcesOperator: %w", err)
+		return builder, fmt.Errorf("can not delete NUMAResourcesScheduler %s from namespace %s due to %w",
+			builder.Definition.Name, builder.Definition.Namespace, err)
 	}
 
 	builder.Object = nil
@@ -159,13 +184,14 @@ func (builder *Builder) Delete() (*Builder, error) {
 	return builder, nil
 }
 
-// Exists checks whether the given NUMAResourcesOperator exists.
-func (builder *Builder) Exists() bool {
+// Exists checks whether the given NUMAResourcesScheduler exists.
+func (builder *SchedulerBuilder) Exists() bool {
 	if valid, _ := builder.validate(); !valid {
 		return false
 	}
 
-	glog.V(100).Infof("Checking if NUMAResourcesOperator %s exists", builder.Definition.Name)
+	glog.V(100).Infof("Checking if NUMAResourcesScheduler %s exists in namespace %s",
+		builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
 	builder.Object, err = builder.Get()
@@ -173,19 +199,20 @@ func (builder *Builder) Exists() bool {
 	return err == nil || !k8serrors.IsNotFound(err)
 }
 
-// Update renovates the existing NUMAResourcesOperator object with NUMAResourcesOperator definition in builder.
-func (builder *Builder) Update() (*Builder, error) {
+// Update renovates the existing NUMAResourcesScheduler object with NUMAResourcesScheduler definition in builder.
+func (builder *SchedulerBuilder) Update() (*SchedulerBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Updating NUMAResourcesOperator %s", builder.Definition.Name)
+	glog.V(100).Infof("Updating NUMAResourcesScheduler %s in namespace %s",
+		builder.Definition.Name, builder.Definition.Namespace)
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
 
 	if err != nil {
 		glog.V(100).Infof(
-			msg.FailToUpdateError("NUMAResourcesOperator", builder.Definition.Name))
+			msg.FailToUpdateError("NUMAResourcesScheduler", builder.Definition.Name))
 
 		return nil, err
 	}
@@ -195,57 +222,32 @@ func (builder *Builder) Update() (*Builder, error) {
 	return builder, nil
 }
 
-// WithMCPSelector sets the NUMAResourcesOperator operator's profile.
-func (builder *Builder) WithMCPSelector(mcpSelector map[string]string) *Builder {
-	glog.V(100).Infof(
-		"Adding machineConfigPoolSelector to the NUMAResourcesOperator %s; machineConfigPoolSelector %v",
-		builder.Definition.Name, mcpSelector)
+// WithImageSpec sets the NUMAResourcesScheduler operator's imageSpec.
+func (builder *SchedulerBuilder) WithImageSpec(imageSpec string) *SchedulerBuilder {
+	glog.V(100).Infof("Adding imageSpec to the NUMAResourcesScheduler %s in namespace %s; imageSpec: %s",
+		builder.Definition.Name, builder.Definition.Namespace, imageSpec)
 
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
-	nodeGroup := nropv1alpha1.NodeGroup{
-		MachineConfigPoolSelector: &metav1.LabelSelector{
-			MatchLabels: mcpSelector,
-		},
-	}
+	if imageSpec == "" {
+		glog.V(100).Infof("The 'NUMAResourcesScheduler' imageSpec cannot be empty")
 
-	if len(mcpSelector) == 0 {
-		glog.V(100).Infof("There are no labels for the machineConfigPoolSelector")
-
-		builder.errorMsg = "NUMAResourcesOperator 'machineConfigPoolSelector' cannot be empty"
+		builder.errorMsg = "can not apply a NUMAResourcesScheduler with an empty imageSpec"
 
 		return builder
 	}
 
-	for key, value := range mcpSelector {
-		if key == "" {
-			glog.V(100).Infof("The 'machineConfigPoolSelector' key cannot be empty")
-
-			builder.errorMsg = "can not apply a machineConfigPoolSelector with an empty key"
-
-			return builder
-		}
-
-		if value == "" {
-			glog.V(100).Infof("The 'machineConfigPoolSelector' value cannot be empty")
-
-			builder.errorMsg = "can not apply a machineConfigPoolSelector with an empty value"
-
-			return builder
-		}
-	}
-
-	builder.Definition.Spec.NodeGroups = append(builder.Definition.Spec.NodeGroups, nodeGroup)
+	builder.Definition.Spec.SchedulerImage = imageSpec
 
 	return builder
 }
 
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
-func (builder *Builder) validate() (bool, error) {
-	resourceCRD := "NUMAResourcesOperator"
+func (builder *SchedulerBuilder) validate() (bool, error) {
+	resourceCRD := "NUMAResourcesScheduler"
 
 	if builder == nil {
 		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)

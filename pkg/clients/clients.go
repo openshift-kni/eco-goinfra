@@ -517,6 +517,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *nropv1.NUMAResourcesOperator:
 			genericClientObjects = append(genericClientObjects, v)
+		case *nropv1.NUMAResourcesScheduler:
+			genericClientObjects = append(genericClientObjects, v)
 		case *configV1.ClusterOperator:
 			genericClientObjects = append(genericClientObjects, v)
 		case *cguapiv1alpha1.PreCachingConfig:
