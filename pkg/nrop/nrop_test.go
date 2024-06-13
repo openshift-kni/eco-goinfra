@@ -1,10 +1,10 @@
-package keda
+package nrop
 
 import (
 	"fmt"
 	"testing"
 
-	kedav1alpha1 "github.com/kedacore/keda-olm-operator/apis/keda/v1alpha1"
+	nropv1 "github.com/openshift-kni/numaresources-operator/api/numaresourcesoperator/v1"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
@@ -13,61 +13,46 @@ import (
 )
 
 var (
-	defaultKedaControllerName      = "keda"
-	defaultKedaControllerNamespace = "openshift-keda"
+	defaultNROPName = "numaresourcesoperator"
 )
 
-func TestPullController(t *testing.T) {
-	generateKedaController := func(name, namespace string) *kedav1alpha1.KedaController {
-		return &kedav1alpha1.KedaController{
+func TestPull(t *testing.T) {
+	generateNROP := func(name string) *nropv1.NUMAResourcesOperator {
+		return &nropv1.NUMAResourcesOperator{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: namespace,
+				Name: name,
 			},
 		}
 	}
 
 	testCases := []struct {
 		name                string
-		namespace           string
 		addToRuntimeObjects bool
 		expectedError       error
 		client              bool
 	}{
 		{
-			name:                "test",
-			namespace:           "openshift-keda",
+			name:                defaultNROPName,
 			addToRuntimeObjects: true,
 			expectedError:       nil,
 			client:              true,
 		},
 		{
 			name:                "",
-			namespace:           "openshift-keda",
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("kedaController 'name' cannot be empty"),
+			expectedError:       fmt.Errorf("NUMAResourcesOperator 'name' cannot be empty"),
 			client:              true,
 		},
 		{
-			name:                "test",
-			namespace:           "",
-			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("kedaController 'nsname' cannot be empty"),
-			client:              true,
-		},
-		{
-			name:                "kedacontrollertest",
-			namespace:           "openshift-keda",
+			name:                "nroptest",
 			addToRuntimeObjects: false,
-			expectedError: fmt.Errorf("kedaController object kedacontrollertest does not exist " +
-				"in namespace openshift-keda"),
-			client: true,
+			expectedError:       fmt.Errorf("NUMAResourcesOperator object nroptest does not exist"),
+			client:              true,
 		},
 		{
-			name:                "kedacontrollertest",
-			namespace:           "openshift-keda",
+			name:                "nroptest",
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("kedaController 'apiClient' cannot be empty"),
+			expectedError:       fmt.Errorf("NUMAResourcesOperator 'apiClient' cannot be empty"),
 			client:              false,
 		},
 	}
@@ -78,10 +63,10 @@ func TestPullController(t *testing.T) {
 
 		var testSettings *clients.Settings
 
-		testKedaController := generateKedaController(testCase.name, testCase.namespace)
+		testNROP := generateNROP(testCase.name)
 
 		if testCase.addToRuntimeObjects {
-			runtimeObjects = append(runtimeObjects, testKedaController)
+			runtimeObjects = append(runtimeObjects, testNROP)
 		}
 
 		if testCase.client {
@@ -90,106 +75,97 @@ func TestPullController(t *testing.T) {
 			})
 		}
 
-		builderResult, err := PullController(testSettings, testCase.name, testCase.namespace)
+		builderResult, err := Pull(testSettings, testCase.name)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError != nil {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		} else {
-			assert.Equal(t, testKedaController.Name, builderResult.Object.Name)
+			assert.Equal(t, testNROP.Name, builderResult.Object.Name)
 			assert.Nil(t, err)
 		}
 	}
 }
 
-func TestNewControllerBuilder(t *testing.T) {
+func TestNewNROPBuilder(t *testing.T) {
 	testCases := []struct {
 		name          string
-		namespace     string
 		expectedError string
 	}{
 		{
-			name:          defaultKedaControllerName,
-			namespace:     defaultKedaControllerNamespace,
+			name:          defaultNROPName,
 			expectedError: "",
 		},
 		{
 			name:          "",
-			namespace:     defaultKedaControllerNamespace,
-			expectedError: "kedaController 'name' cannot be empty",
-		},
-		{
-			name:          defaultKedaControllerName,
-			namespace:     "",
-			expectedError: "kedaController 'nsname' cannot be empty",
+			expectedError: "NUMAResourcesOperator 'name' cannot be empty",
 		},
 	}
 
 	for _, testCase := range testCases {
 		testSettings := clients.GetTestClients(clients.TestClientParams{})
-		testKedaControllerBuilder := NewControllerBuilder(testSettings, testCase.name, testCase.namespace)
-		assert.NotNil(t, testKedaControllerBuilder.Definition)
+		testNROPBuilder := NewBuilder(testSettings, testCase.name)
+		assert.NotNil(t, testNROPBuilder.Definition)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testCase.name, testKedaControllerBuilder.Definition.Name)
-			assert.Equal(t, testCase.namespace, testKedaControllerBuilder.Definition.Namespace)
-			assert.Equal(t, "", testKedaControllerBuilder.errorMsg)
+			assert.Equal(t, testCase.name, testNROPBuilder.Definition.Name)
+			assert.Equal(t, "", testNROPBuilder.errorMsg)
 		} else {
-			assert.Equal(t, testCase.expectedError, testKedaControllerBuilder.errorMsg)
+			assert.Equal(t, testCase.expectedError, testNROPBuilder.errorMsg)
 		}
 	}
 }
 
-func TestControllerExists(t *testing.T) {
+func TestNROPExists(t *testing.T) {
 	testCases := []struct {
-		testKedaController *ControllerBuilder
-		expectedStatus     bool
+		testNROP       *Builder
+		expectedStatus bool
 	}{
 		{
-			testKedaController: buildValidControllerBuilder(buildControllerClientWithDummyObject()),
-			expectedStatus:     true,
+			testNROP:       buildValidNROPBuilder(buildNROPClientWithDummyObject()),
+			expectedStatus: true,
 		},
 		{
-			testKedaController: buildInValidControllerBuilder(buildControllerClientWithDummyObject()),
-			expectedStatus:     false,
+			testNROP:       buildInValidNROPBuilder(buildNROPClientWithDummyObject()),
+			expectedStatus: false,
 		},
 		{
-			testKedaController: buildValidControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedStatus:     false,
+			testNROP:       buildValidNROPBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedStatus: false,
 		},
 	}
 
 	for _, testCase := range testCases {
-		exist := testCase.testKedaController.Exists()
+		exist := testCase.testNROP.Exists()
 		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
-func TestControllerGet(t *testing.T) {
+func TestNROPGet(t *testing.T) {
 	testCases := []struct {
-		testKedaController *ControllerBuilder
-		expectedError      error
+		testNROP      *Builder
+		expectedError error
 	}{
 		{
-			testKedaController: buildValidControllerBuilder(buildControllerClientWithDummyObject()),
-			expectedError:      nil,
+			testNROP:      buildValidNROPBuilder(buildNROPClientWithDummyObject()),
+			expectedError: nil,
 		},
 		{
-			testKedaController: buildInValidControllerBuilder(buildControllerClientWithDummyObject()),
-			expectedError:      fmt.Errorf("kedacontrollers.keda.sh \"\" not found"),
+			testNROP:      buildInValidNROPBuilder(buildNROPClientWithDummyObject()),
+			expectedError: fmt.Errorf("numaresourcesoperators.nodetopology.openshift.io \"\" not found"),
 		},
 		{
-			testKedaController: buildValidControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:      fmt.Errorf("kedacontrollers.keda.sh \"keda\" not found"),
+			testNROP: buildValidNROPBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: fmt.Errorf("numaresourcesoperators.nodetopology.openshift.io \"numaresourcesoperator\" " +
+				"not found"),
 		},
 	}
 
 	for _, testCase := range testCases {
-		kedaControllerObj, err := testCase.testKedaController.Get()
+		nropObj, err := testCase.testNROP.Get()
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, kedaControllerObj.Name, testCase.testKedaController.Definition.Name)
-			assert.Equal(t, kedaControllerObj.Namespace, testCase.testKedaController.Definition.Namespace)
+			assert.Equal(t, nropObj.Name, testCase.testNROP.Definition.Name)
 			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
@@ -197,31 +173,30 @@ func TestControllerGet(t *testing.T) {
 	}
 }
 
-func TestControllerCreate(t *testing.T) {
+func TestNROPCreate(t *testing.T) {
 	testCases := []struct {
-		testKedaController *ControllerBuilder
-		expectedError      string
+		testNROP      *Builder
+		expectedError string
 	}{
 		{
-			testKedaController: buildValidControllerBuilder(buildControllerClientWithDummyObject()),
-			expectedError:      "",
+			testNROP:      buildValidNROPBuilder(buildNROPClientWithDummyObject()),
+			expectedError: "",
 		},
 		{
-			testKedaController: buildInValidControllerBuilder(buildControllerClientWithDummyObject()),
-			expectedError:      " \"\" is invalid: metadata.name: Required value: name is required",
+			testNROP:      buildInValidNROPBuilder(buildNROPClientWithDummyObject()),
+			expectedError: " \"\" is invalid: metadata.name: Required value: name is required",
 		},
 		{
-			testKedaController: buildValidControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:      "",
+			testNROP:      buildValidNROPBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: "",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testKedaControllerBuilder, err := testCase.testKedaController.Create()
+		testNROPBuilder, err := testCase.testNROP.Create()
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testKedaControllerBuilder.Definition.Name, testKedaControllerBuilder.Object.Name)
-			assert.Equal(t, testKedaControllerBuilder.Definition.Namespace, testKedaControllerBuilder.Object.Namespace)
+			assert.Equal(t, testNROPBuilder.Definition.Name, testNROPBuilder.Object.Name)
 			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError, err.Error())
@@ -229,30 +204,30 @@ func TestControllerCreate(t *testing.T) {
 	}
 }
 
-func TestControllerDelete(t *testing.T) {
+func TestNROPDelete(t *testing.T) {
 	testCases := []struct {
-		testKedaController *ControllerBuilder
-		expectedError      error
+		testNROP      *Builder
+		expectedError error
 	}{
 		{
-			testKedaController: buildValidControllerBuilder(buildControllerClientWithDummyObject()),
-			expectedError:      nil,
+			testNROP:      buildValidNROPBuilder(buildNROPClientWithDummyObject()),
+			expectedError: nil,
 		},
 		{
-			testKedaController: buildInValidControllerBuilder(buildControllerClientWithDummyObject()),
-			expectedError:      nil,
+			testNROP:      buildInValidNROPBuilder(buildNROPClientWithDummyObject()),
+			expectedError: nil,
 		},
 		{
-			testKedaController: buildValidControllerBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:      nil,
+			testNROP:      buildValidNROPBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: nil,
 		},
 	}
 
 	for _, testCase := range testCases {
-		_, err := testCase.testKedaController.Delete()
+		_, err := testCase.testNROP.Delete()
 
 		if testCase.expectedError == nil {
-			assert.Nil(t, testCase.testKedaController.Object)
+			assert.Nil(t, testCase.testNROP.Object)
 			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
@@ -260,202 +235,175 @@ func TestControllerDelete(t *testing.T) {
 	}
 }
 
-func TestControllerUpdate(t *testing.T) {
+func TestNROPUpdate(t *testing.T) {
 	testCases := []struct {
-		testKedaController *ControllerBuilder
-		expectedError      string
-		watchNamespace     string
+		testNROP      *Builder
+		expectedError string
+		mcpSelector   map[string]string
 	}{
 		{
-			testKedaController: buildValidControllerBuilder(buildControllerClientWithDummyObject()),
-			expectedError:      "",
-			watchNamespace:     "keda",
+			testNROP:      buildValidNROPBuilder(buildNROPClientWithDummyObject()),
+			expectedError: "",
+			mcpSelector:   map[string]string{"machineconfiguration.openshift.io/role": "mcp-name"},
 		},
 		{
-			testKedaController: buildInValidControllerBuilder(buildControllerClientWithDummyObject()),
-			expectedError:      " \"\" is invalid: metadata.name: Required value: name is required",
-			watchNamespace:     "",
+			testNROP:      buildValidNROPBuilder(buildNROPWithMCPSelectorClientWithDummyObject()),
+			expectedError: "",
+			mcpSelector:   map[string]string{"machineconfiguration.openshift.io/role": "mcp-name"},
+		},
+		{
+			testNROP:      buildInValidNROPBuilder(buildNROPClientWithDummyObject()),
+			expectedError: " \"\" is invalid: metadata.name: Required value: name is required",
+			mcpSelector:   map[string]string{},
 		},
 	}
 
 	for _, testCase := range testCases {
-		assert.Equal(t, "", testCase.testKedaController.Definition.Spec.WatchNamespace)
-		assert.Nil(t, nil, testCase.testKedaController.Object)
-		testCase.testKedaController.WithWatchNamespace(testCase.watchNamespace)
-		_, err := testCase.testKedaController.Update()
+		assert.Equal(t, []nropv1.NodeGroup(nil), testCase.testNROP.Definition.Spec.NodeGroups)
+		assert.Nil(t, nil, testCase.testNROP.Object)
+		testCase.testNROP.WithMCPSelector(testCase.mcpSelector)
+		_, err := testCase.testNROP.Update()
 
 		if testCase.expectedError != "" {
 			assert.Equal(t, testCase.expectedError, err.Error())
 		} else {
-			assert.Equal(t, testCase.watchNamespace, testCase.testKedaController.Definition.Spec.WatchNamespace)
+			assert.Equal(t, testCase.mcpSelector,
+				testCase.testNROP.Definition.Spec.NodeGroups[0].MachineConfigPoolSelector.MatchLabels)
 		}
 	}
 }
 
-func TestControllerWithAdmissionWebhooks(t *testing.T) {
+func TestNROPWithMCPSelector(t *testing.T) {
 	testCases := []struct {
-		testAdmissionWebhooks kedav1alpha1.KedaAdmissionWebhooksSpec
-		expectedError         bool
-		expectedErrorText     string
+		mcpSelector           map[string]string
+		expectedErrMsg        string
+		predefinedMCPSelector bool
+		originalNodeSelector  map[string]string
 	}{
 		{
-			testAdmissionWebhooks: kedav1alpha1.KedaAdmissionWebhooksSpec{
-				LogLevel:   "info",
-				LogEncoder: "console",
-			},
-			expectedError:     false,
-			expectedErrorText: "",
+			mcpSelector:           map[string]string{"test-mcp-selector-key": "test-mcp-selector-value"},
+			expectedErrMsg:        "",
+			predefinedMCPSelector: false,
+			originalNodeSelector:  map[string]string(nil),
 		},
 		{
-			testAdmissionWebhooks: kedav1alpha1.KedaAdmissionWebhooksSpec{},
-			expectedError:         false,
-			expectedErrorText:     "",
+			mcpSelector:           map[string]string{"test-mcp-selector-key": ""},
+			expectedErrMsg:        "can not apply a machineConfigPoolSelector with an empty value",
+			predefinedMCPSelector: false,
+			originalNodeSelector:  map[string]string(nil),
+		},
+		{
+			mcpSelector:           map[string]string{"": "test-mcp-selector-value"},
+			expectedErrMsg:        "can not apply a machineConfigPoolSelector with an empty key",
+			predefinedMCPSelector: false,
+			originalNodeSelector:  map[string]string(nil),
+		},
+		{
+			mcpSelector:           map[string]string{},
+			expectedErrMsg:        "NUMAResourcesOperator 'machineConfigPoolSelector' cannot be empty",
+			predefinedMCPSelector: false,
+			originalNodeSelector:  map[string]string(nil),
+		},
+		{
+			mcpSelector:           map[string]string{"test-mcp-selector-key": "test-mcp-selector-value"},
+			expectedErrMsg:        "",
+			predefinedMCPSelector: true,
+			originalNodeSelector:  map[string]string{"other-mcp-selector-key": "other-mcp-selector-value"},
+		},
+		{
+			mcpSelector:           map[string]string{"test-mcp-selector-key": ""},
+			expectedErrMsg:        "can not apply a machineConfigPoolSelector with an empty value",
+			predefinedMCPSelector: true,
+			originalNodeSelector: map[string]string{"test-node-selector-key": "test-node-selector-value",
+				"other-node-selector-key": "other-node-selector-value"},
+		},
+		{
+			mcpSelector:           map[string]string{"test-node-selector-key": "test-node-selector-value"},
+			expectedErrMsg:        "",
+			predefinedMCPSelector: true,
+			originalNodeSelector: map[string]string{"test-node-selector-key": "test-node-selector-value",
+				"other-node-selector-key": "other-node-selector-value"},
 		},
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidControllerBuilder(buildControllerClientWithDummyObject())
+		testBuilder := buildValidNROPBuilder(buildNROPClientWithDummyObject())
 
-		result := testBuilder.WithAdmissionWebhooks(testCase.testAdmissionWebhooks)
+		if testCase.predefinedMCPSelector {
+			testBuilder.Definition.Spec.NodeGroups = []nropv1.NodeGroup{{
+				MachineConfigPoolSelector: &metav1.LabelSelector{
+					MatchLabels: testCase.originalNodeSelector,
+				},
+			}}
+		}
 
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
+		testBuilder.WithMCPSelector(testCase.mcpSelector)
+
+		assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrMsg == "" {
+			if testCase.predefinedMCPSelector {
+				assert.Equal(t, []nropv1.NodeGroup{{
+					MachineConfigPoolSelector: &metav1.LabelSelector{
+						MatchLabels: testCase.originalNodeSelector,
+					}},
+					{
+						MachineConfigPoolSelector: &metav1.LabelSelector{
+							MatchLabels: testCase.mcpSelector,
+						}}}, testBuilder.Definition.Spec.NodeGroups)
+			} else {
+				assert.Equal(t, []nropv1.NodeGroup{{
+					MachineConfigPoolSelector: &metav1.LabelSelector{
+						MatchLabels: testCase.mcpSelector,
+					}}}, testBuilder.Definition.Spec.NodeGroups)
 			}
-		} else {
-			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testAdmissionWebhooks, result.Definition.Spec.AdmissionWebhooks)
 		}
 	}
 }
 
-func TestControllerWithOperator(t *testing.T) {
-	testCases := []struct {
-		testOperator      kedav1alpha1.KedaOperatorSpec
-		expectedError     bool
-		expectedErrorText string
-	}{
-		{
-			testOperator: kedav1alpha1.KedaOperatorSpec{
-				LogLevel:   "info",
-				LogEncoder: "console",
-			},
-			expectedError:     false,
-			expectedErrorText: "",
-		},
-		{
-			testOperator:      kedav1alpha1.KedaOperatorSpec{},
-			expectedError:     false,
-			expectedErrorText: "'operator' argument cannot be empty",
-		},
-	}
+func buildValidNROPBuilder(apiClient *clients.Settings) *Builder {
+	nropBuilder := NewBuilder(apiClient, defaultNROPName)
 
-	for _, testCase := range testCases {
-		testBuilder := buildValidControllerBuilder(buildControllerClientWithDummyObject())
-
-		result := testBuilder.WithOperator(testCase.testOperator)
-
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-			}
-		} else {
-			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testOperator, result.Definition.Spec.Operator)
-		}
-	}
+	return nropBuilder
 }
 
-func TestControllerWithMetricsServer(t *testing.T) {
-	testCases := []struct {
-		testMetricsServer kedav1alpha1.KedaMetricsServerSpec
-		expectedError     bool
-		expectedErrorText string
-	}{
-		{
-			testMetricsServer: kedav1alpha1.KedaMetricsServerSpec{
-				LogLevel: "0",
-			},
-			expectedError:     false,
-			expectedErrorText: "",
-		},
-		{
-			testMetricsServer: kedav1alpha1.KedaMetricsServerSpec{},
-			expectedError:     false,
-			expectedErrorText: "'metricsServer' argument cannot be empty",
-		},
-	}
+func buildInValidNROPBuilder(apiClient *clients.Settings) *Builder {
+	nropBuilder := NewBuilder(apiClient, "")
 
-	for _, testCase := range testCases {
-		testBuilder := buildValidControllerBuilder(buildControllerClientWithDummyObject())
-
-		result := testBuilder.WithMetricsServer(testCase.testMetricsServer)
-
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-			}
-		} else {
-			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testMetricsServer, result.Definition.Spec.MetricsServer)
-		}
-	}
+	return nropBuilder
 }
 
-func TestControllerWithWatchNamespace(t *testing.T) {
-	testCases := []struct {
-		testWatchNamespace string
-		expectedErrorText  string
-	}{
-		{
-			testWatchNamespace: "test-app",
-			expectedErrorText:  "",
-		},
-		{
-			testWatchNamespace: "",
-			expectedErrorText:  "'watchNamespace' argument cannot be empty",
-		},
-	}
-
-	for _, testCase := range testCases {
-		testBuilder := buildInValidControllerBuilder(buildControllerClientWithDummyObject())
-
-		result := testBuilder.WithWatchNamespace(testCase.testWatchNamespace)
-
-		if testCase.expectedErrorText != "" {
-			assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-		} else {
-			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testWatchNamespace, result.Definition.Spec.WatchNamespace)
-		}
-	}
-}
-
-func buildValidControllerBuilder(apiClient *clients.Settings) *ControllerBuilder {
-	kedaControllerBuilder := NewControllerBuilder(
-		apiClient, defaultKedaControllerName, defaultKedaControllerNamespace)
-
-	return kedaControllerBuilder
-}
-
-func buildInValidControllerBuilder(apiClient *clients.Settings) *ControllerBuilder {
-	kedaControllerBuilder := NewControllerBuilder(
-		apiClient, "", defaultKedaControllerNamespace)
-
-	return kedaControllerBuilder
-}
-
-func buildControllerClientWithDummyObject() *clients.Settings {
+func buildNROPClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyController(),
+		K8sMockObjects: buildDummyNROP(),
 	})
 }
 
-func buildDummyController() []runtime.Object {
-	return append([]runtime.Object{}, &kedav1alpha1.KedaController{
+func buildNROPWithMCPSelectorClientWithDummyObject() *clients.Settings {
+	return clients.GetTestClients(clients.TestClientParams{
+		K8sMockObjects: buildDummyNROPWithMCPSelector(),
+	})
+}
+
+func buildDummyNROP() []runtime.Object {
+	return append([]runtime.Object{}, &nropv1.NUMAResourcesOperator{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      defaultKedaControllerName,
-			Namespace: defaultKedaControllerNamespace,
+			Name: defaultNROPName,
+		},
+	})
+}
+
+func buildDummyNROPWithMCPSelector() []runtime.Object {
+	return append([]runtime.Object{}, &nropv1.NUMAResourcesOperator{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: defaultNROPName,
+		},
+		Spec: nropv1.NUMAResourcesOperatorSpec{
+			NodeGroups: []nropv1.NodeGroup{{
+				MachineConfigPoolSelector: &metav1.LabelSelector{
+					MatchLabels: map[string]string{
+						"mcpSelectorKey": "mcpSelectorValue",
+					}}}},
 		},
 	})
 }
