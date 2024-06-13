@@ -20,6 +20,9 @@ type ClusterDeprovisionSpec struct {
 	// cluster is useful.
 	ClusterName string `json:"clusterName,omitempty"`
 
+	// BaseDomain is the DNS base domain.
+	BaseDomain string `json:"baseDomain,omitempty"`
+
 	// Platform contains platform-specific configuration for a ClusterDeprovision
 	Platform ClusterDeprovisionPlatform `json:"platform,omitempty"`
 }
@@ -37,8 +40,6 @@ type ClusterDeprovisionStatus struct {
 // ClusterDeprovisionPlatform contains platform-specific configuration for the
 // deprovision
 type ClusterDeprovisionPlatform struct {
-	// AlibabaCloud contains Alibaba Cloud specific deprovision settings
-	AlibabaCloud *AlibabaCloudClusterDeprovision `json:"alibabacloud,omitempty"`
 	// AWS contains AWS-specific deprovision settings
 	AWS *AWSClusterDeprovision `json:"aws,omitempty"`
 	// Azure contains Azure-specific deprovision settings
@@ -55,16 +56,6 @@ type ClusterDeprovisionPlatform struct {
 	IBMCloud *IBMClusterDeprovision `json:"ibmcloud,omitempty"`
 }
 
-// AlibabaCloudClusterDeprovision contains AlibabaCloud-specific configuration for a ClusterDeprovision
-type AlibabaCloudClusterDeprovision struct {
-	// Region is the Alibaba region for this deprovision
-	Region string `json:"region"`
-	// BaseDomain is the DNS base domain
-	BaseDomain string `json:"baseDomain"`
-	// CredentialsSecretRef is the Alibaba account credentials to use for deprovisioning the cluster
-	CredentialsSecretRef corev1.LocalObjectReference `json:"credentialsSecretRef"`
-}
-
 // AWSClusterDeprovision contains AWS-specific configuration for a ClusterDeprovision
 type AWSClusterDeprovision struct {
 	// Region is the AWS region for this deprovisioning
@@ -78,6 +69,11 @@ type AWSClusterDeprovision struct {
 	// AWS account access for deprovisioning the cluster.
 	// +optional
 	CredentialsAssumeRole *aws.AssumeRole `json:"credentialsAssumeRole,omitempty"`
+
+	// HostedZoneRole is the role to assume when performing operations
+	// on a hosted zone owned by another account.
+	// +optional
+	HostedZoneRole *string `json:"hostedZoneRole,omitempty"`
 }
 
 // AzureClusterDeprovision contains Azure-specific configuration for a ClusterDeprovision
@@ -89,6 +85,10 @@ type AzureClusterDeprovision struct {
 	// If empty, the value is equal to "AzurePublicCloud".
 	// +optional
 	CloudName *azure.CloudEnvironment `json:"cloudName,omitempty"`
+	// ResourceGroupName is the name of the resource group where the cluster was installed.
+	// Required for new deprovisions (schema notwithstanding).
+	// +optional
+	ResourceGroupName *string `json:"resourceGroupName,omitempty"`
 }
 
 // GCPClusterDeprovision contains GCP-specific configuration for a ClusterDeprovision
@@ -97,6 +97,10 @@ type GCPClusterDeprovision struct {
 	Region string `json:"region"`
 	// CredentialsSecretRef is the GCP account credentials to use for deprovisioning the cluster
 	CredentialsSecretRef *corev1.LocalObjectReference `json:"credentialsSecretRef,omitempty"`
+
+	// NetworkProjectID is used for shared VPC setups
+	// +optional
+	NetworkProjectID *string `json:"networkProjectID,omitempty"`
 }
 
 // OpenStackClusterDeprovision contains OpenStack-specific configuration for a ClusterDeprovision
@@ -141,7 +145,8 @@ type IBMClusterDeprovision struct {
 	CredentialsSecretRef corev1.LocalObjectReference `json:"credentialsSecretRef"`
 	// Region specifies the IBM Cloud region
 	Region string `json:"region"`
-	// BaseDomain is the DNS base domain
+	// BaseDomain is the DNS base domain.
+	// TODO: Use the non-platform-specific BaseDomain field.
 	BaseDomain string `json:"baseDomain"`
 }
 
@@ -186,6 +191,16 @@ type ClusterDeprovisionCondition struct {
 
 // ClusterDeprovisionConditionType is a valid value for ClusterDeprovisionCondition.Type
 type ClusterDeprovisionConditionType string
+
+// ConditionType satisfies the conditions.Condition interface
+func (c ClusterDeprovisionCondition) ConditionType() ConditionType {
+	return c.Type
+}
+
+// String satisfies the conditions.ConditionType interface
+func (t ClusterDeprovisionConditionType) String() string {
+	return string(t)
+}
 
 const (
 	// AuthenticationFailureClusterDeprovisionCondition is true when credentials cannot be used because of authentication failure

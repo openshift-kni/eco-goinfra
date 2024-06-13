@@ -705,7 +705,7 @@ func (builder *AgentClusterInstallBuilder) getCondition(conditionType string) (*
 	}
 
 	for _, condition := range builder.Object.Status.Conditions {
-		if condition.Type == conditionType {
+		if string(condition.Type) == conditionType {
 			return &condition, nil
 		}
 	}
