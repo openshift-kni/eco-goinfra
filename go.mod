@@ -218,6 +218,8 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
+require github.com/openshift-kni/numaresources-operator v0.1.1
+
 require (
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
 	github.com/expr-lang/expr v1.16.5 // indirect
