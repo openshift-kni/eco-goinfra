@@ -15,10 +15,10 @@ import (
 var (
 	defaultNROSchedulerName      = "numaresourcesscheduler"
 	defaultNROSchedulerNamespace = "openshift-numaresources"
-	defaultImageSpec             = "test-registry.redhat.io/openshift4/noderesourcetopology-scheduler-rhel9:v4.14.0"
+	defaultImageSpec             = "test-registry.com/noderesourcetopology-scheduler-image:latest"
 )
 
-func TestPull(t *testing.T) {
+func TestNROSchedulerPull(t *testing.T) {
 	generateNROScheduler := func(name, nsname string) *nropv1.NUMAResourcesScheduler {
 		return &nropv1.NUMAResourcesScheduler{
 			ObjectMeta: metav1.ObjectMeta{
@@ -177,7 +177,7 @@ func TestNROSchedulerGet(t *testing.T) {
 		},
 		{
 			testNROS:      buildInValidNROSchedulerBuilder(buildNROSchedulerClientWithDummyObject()),
-			expectedError: fmt.Errorf("numaresourcesschedulers.nodetopology.openshift.io \"\" not found"),
+			expectedError: fmt.Errorf("NUMAResourcesScheduler 'name' cannot be empty"),
 		},
 		{
 			testNROS: buildValidNROSchedulerBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -210,7 +210,7 @@ func TestNROSchedulerCreate(t *testing.T) {
 		},
 		{
 			testNROS:      buildInValidNROSchedulerBuilder(buildNROSchedulerClientWithDummyObject()),
-			expectedError: " \"\" is invalid: metadata.name: Required value: name is required",
+			expectedError: "NUMAResourcesScheduler 'name' cannot be empty",
 		},
 		{
 			testNROS:      buildValidNROSchedulerBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -242,7 +242,7 @@ func TestNROSchedulerDelete(t *testing.T) {
 		},
 		{
 			testNROS:      buildInValidNROSchedulerBuilder(buildNROSchedulerClientWithDummyObject()),
-			expectedError: nil,
+			expectedError: fmt.Errorf("NUMAResourcesScheduler 'name' cannot be empty"),
 		},
 		{
 			testNROS:      buildValidNROSchedulerBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -275,7 +275,7 @@ func TestNROSchedulerUpdate(t *testing.T) {
 		},
 		{
 			testNROS:      buildInValidNROSchedulerBuilder(buildNROSchedulerClientWithDummyObject()),
-			expectedError: " \"\" is invalid: metadata.name: Required value: name is required",
+			expectedError: "NUMAResourcesScheduler 'name' cannot be empty",
 			imageSpec:     "",
 		},
 	}

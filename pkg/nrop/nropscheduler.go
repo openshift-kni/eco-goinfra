@@ -127,6 +127,9 @@ func (builder *SchedulerBuilder) Get() (*nropv1.NUMAResourcesScheduler, error) {
 	}, nrosObj)
 
 	if err != nil {
+		glog.V(100).Infof("NUMAResourcesScheduler object %s not found in namespace %s: %v",
+			builder.Definition.Name, builder.Definition.Namespace, err)
+
 		return nil, err
 	}
 
@@ -265,6 +268,12 @@ func (builder *SchedulerBuilder) validate() (bool, error) {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
 		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
 	}
 
 	return true, nil
