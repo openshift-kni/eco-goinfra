@@ -265,5 +265,11 @@ func (builder *Builder) validate() (bool, error) {
 		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
 	return true, nil
 }

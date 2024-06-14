@@ -1653,8 +1653,8 @@ github.com/openshift-kni/k8sreporter v1.0.5 h1:1GYBc/BTZyVoXilHef43v9A8BSzw700zA
 github.com/openshift-kni/k8sreporter v1.0.5/go.mod h1:fg8HI9yxiKAi6UzR6NTtrmQmA2WKzUqmkRUHwQ1+Bj8=
 github.com/openshift-kni/lifecycle-agent v0.0.0-20240606123201-0c45cd13c2f1 h1:y+0Ecc+MSZA/GNS3VOpKq+XK9x8qoNA7TlyHvqbVbpw=
 github.com/openshift-kni/lifecycle-agent v0.0.0-20240606123201-0c45cd13c2f1/go.mod h1:soE3/Yhuf+96658+mGYxqiNLy9wxoY/dcxI5uUaWLJs=
-github.com/openshift-kni/numaresources-operator v0.1.1 h1:a5P9opIpMzeEa90JqkaI5pejoeOFWvnmX45YzUOu1us=
-github.com/openshift-kni/numaresources-operator v0.1.1/go.mod h1:PjlLD9Io31toiYdDa/z/jZtWwOLyGbvS/8B2HlBT2o4=
+github.com/openshift-kni/numaresources-operator v0.4.16-0rc0 h1:blszgrWuZlcOsIvYmjhL0fvaqu7IiRCeIUqWmteDrsU=
+github.com/openshift-kni/numaresources-operator v0.4.16-0rc0/go.mod h1:JmjHLLggRGxGQp2MaLipnb1qOV4GK/rkHaJmSGray5E=
 github.com/openshift/api v0.0.0-20240605153344-636e2c17106f h1:aFNLB50DeMCvanvstdGZvasJKh6vKw3pDbwoinFFuGk=
 github.com/openshift/api v0.0.0-20240605153344-636e2c17106f/go.mod h1:CxgbWAlvu2iQB0UmKTtRu1YfepRg1/vJ64n2DlIEVz4=
 github.com/openshift/assisted-service v1.0.10-0.20230830164851-6573b5d7021d h1:CKw2Y4EdaFsMoqAdr2Tq0nlYTaaXmCRdP0gOu7pN64U=

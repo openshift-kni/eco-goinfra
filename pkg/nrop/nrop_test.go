@@ -152,7 +152,7 @@ func TestNROPGet(t *testing.T) {
 		},
 		{
 			testNROP:      buildInValidNROPBuilder(buildNROPClientWithDummyObject()),
-			expectedError: fmt.Errorf("numaresourcesoperators.nodetopology.openshift.io \"\" not found"),
+			expectedError: fmt.Errorf("NUMAResourcesOperator 'name' cannot be empty"),
 		},
 		{
 			testNROP: buildValidNROPBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -184,7 +184,7 @@ func TestNROPCreate(t *testing.T) {
 		},
 		{
 			testNROP:      buildInValidNROPBuilder(buildNROPClientWithDummyObject()),
-			expectedError: " \"\" is invalid: metadata.name: Required value: name is required",
+			expectedError: "NUMAResourcesOperator 'name' cannot be empty",
 		},
 		{
 			testNROP:      buildValidNROPBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -215,7 +215,7 @@ func TestNROPDelete(t *testing.T) {
 		},
 		{
 			testNROP:      buildInValidNROPBuilder(buildNROPClientWithDummyObject()),
-			expectedError: nil,
+			expectedError: fmt.Errorf("NUMAResourcesOperator 'name' cannot be empty"),
 		},
 		{
 			testNROP:      buildValidNROPBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -253,7 +253,7 @@ func TestNROPUpdate(t *testing.T) {
 		},
 		{
 			testNROP:      buildInValidNROPBuilder(buildNROPClientWithDummyObject()),
-			expectedError: " \"\" is invalid: metadata.name: Required value: name is required",
+			expectedError: "NUMAResourcesOperator 'name' cannot be empty",
 			mcpSelector:   map[string]string{},
 		},
 	}
