@@ -1862,6 +1862,10 @@ github.com/stmcginnis/gofish v0.15.0/go.mod h1:BLDSFTp8pDlf/xDbLZa+F7f7eW0E/CHCb
 github.com/stoewer/go-strcase v1.2.0/go.mod h1:IBiWB2sKIp3wVVQ3Y035++gc+knqhUQag1KpM8ahLw8=
 github.com/stoewer/go-strcase v1.3.0 h1:g0eASXYtp+yvN9fK8sH94oCIk0fau9uV1/ZdJ0AVEzs=
 github.com/stoewer/go-strcase v1.3.0/go.mod h1:fAH5hQ5pehh+j3nZfvwdk2RgEgQjAoM8wodgtPmh1xo=
+github.com/stolostron/cluster-lifecycle-api v0.0.0-20240109072430-f5fe6043d1f8 h1:DRFh4ML+WuDovJsrdgszqMQ4+qGznlYlX9/pItxWwQ8=
+github.com/stolostron/cluster-lifecycle-api v0.0.0-20240109072430-f5fe6043d1f8/go.mod h1:ZNQ3Rttgk4HEreCHfocrhXavLDaUgHbZaUqk5dP8/As=
+github.com/stolostron/klusterlet-addon-controller v0.0.0-20240606130554-01338045271a h1:eBHb7E/A7Ev2CnggwCKfGpV7nTltmQhK+QYiMEls+AY=
+github.com/stolostron/klusterlet-addon-controller v0.0.0-20240606130554-01338045271a/go.mod h1:ptR774KOKeg3AW4G4jkf0d+Hn5iTyLMLWc6n5UcP+zw=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.4.0/go.mod h1:YvHI0jy2hoMjB+UWwv71VJQ9isScKT/TqJzVSSt89Yw=
