@@ -1,10 +1,9 @@
-package keda
+package monitoring
 
 import (
 	"fmt"
+	monv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"testing"
-
-	kedav2v1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
@@ -13,13 +12,13 @@ import (
 )
 
 var (
-	defaultTriggerAuthName      = "keda-trigger-auth-prometheus"
-	defaultTriggerAuthNamespace = "test-appspace"
+	defaultServiceMonitorName      = "test-monitor-name"
+	defaultServiceMonitorNamespace = "test-monitor-namespace"
 )
 
-func TestPullTriggerAuthentication(t *testing.T) {
-	generateTriggerAuth := func(name, namespace string) *kedav2v1alpha1.TriggerAuthentication {
-		return &kedav2v1alpha1.TriggerAuthentication{
+func TestPullServiceMonitor(t *testing.T) {
+	generateServiceMonitor := func(name, namespace string) *monv1.ServiceMonitor {
+		return &monv1.ServiceMonitor{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,
@@ -35,39 +34,39 @@ func TestPullTriggerAuthentication(t *testing.T) {
 		client              bool
 	}{
 		{
-			name:                defaultTriggerAuthName,
-			namespace:           defaultTriggerAuthNamespace,
+			name:                defaultServiceMonitorName,
+			namespace:           defaultServiceMonitorNamespace,
 			addToRuntimeObjects: true,
 			expectedError:       nil,
 			client:              true,
 		},
 		{
 			name:                "",
-			namespace:           defaultTriggerAuthNamespace,
+			namespace:           defaultServiceMonitorNamespace,
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("triggerAuthentication 'name' cannot be empty"),
+			expectedError:       fmt.Errorf("serviceMonitor 'name' cannot be empty"),
 			client:              true,
 		},
 		{
-			name:                defaultTriggerAuthName,
+			name:                defaultServiceMonitorName,
 			namespace:           "",
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("triggerAuthentication 'nsname' cannot be empty"),
+			expectedError:       fmt.Errorf("serviceMonitor 'nsname' cannot be empty"),
 			client:              true,
 		},
 		{
-			name:                "triggerauthtest",
-			namespace:           defaultTriggerAuthNamespace,
+			name:                "mon-test",
+			namespace:           defaultServiceMonitorNamespace,
 			addToRuntimeObjects: false,
-			expectedError: fmt.Errorf("triggerAuthentication object triggerauthtest does not exist " +
-				"in namespace test-appspace"),
+			expectedError: fmt.Errorf("serviceMonitor object mon-test does not exist " +
+				"in namespace test-monitor-namespace"),
 			client: true,
 		},
 		{
-			name:                "triggerauthtest",
-			namespace:           defaultTriggerAuthNamespace,
+			name:                "mon-test",
+			namespace:           defaultServiceMonitorNamespace,
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("triggerAuthentication 'apiClient' cannot be empty"),
+			expectedError:       fmt.Errorf("serviceMonitor 'apiClient' cannot be empty"),
 			client:              false,
 		},
 	}
@@ -78,10 +77,10 @@ func TestPullTriggerAuthentication(t *testing.T) {
 
 		var testSettings *clients.Settings
 
-		testTriggerAuth := generateTriggerAuth(testCase.name, testCase.namespace)
+		testServiceMonitor := generateServiceMonitor(testCase.name, testCase.namespace)
 
 		if testCase.addToRuntimeObjects {
-			runtimeObjects = append(runtimeObjects, testTriggerAuth)
+			runtimeObjects = append(runtimeObjects, testServiceMonitor)
 		}
 
 		if testCase.client {
@@ -90,20 +89,20 @@ func TestPullTriggerAuthentication(t *testing.T) {
 			})
 		}
 
-		builderResult, err := PullTriggerAuthentication(testSettings, testCase.name, testCase.namespace)
+		builderResult, err := Pull(testSettings, testCase.name, testCase.namespace)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError != nil {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		} else {
-			assert.Equal(t, testTriggerAuth.Name, builderResult.Object.Name)
-			assert.Equal(t, testTriggerAuth.Namespace, builderResult.Object.Namespace)
+			assert.Equal(t, testServiceMonitor.Name, builderResult.Object.Name)
+			assert.Equal(t, testServiceMonitor.Namespace, builderResult.Object.Namespace)
 			assert.Nil(t, err)
 		}
 	}
 }
 
-func TestNewTriggerAuthenticationBuilder(t *testing.T) {
+func TestNewServiceMonitorBuilder(t *testing.T) {
 	testCases := []struct {
 		name          string
 		namespace     string
@@ -111,26 +110,26 @@ func TestNewTriggerAuthenticationBuilder(t *testing.T) {
 		client        bool
 	}{
 		{
-			name:          defaultTriggerAuthName,
-			namespace:     defaultTriggerAuthNamespace,
+			name:          defaultServiceMonitorName,
+			namespace:     defaultServiceMonitorNamespace,
 			expectedError: "",
 			client:        true,
 		},
 		{
 			name:          "",
-			namespace:     defaultTriggerAuthNamespace,
-			expectedError: "triggerAuthentication 'name' cannot be empty",
+			namespace:     defaultServiceMonitorNamespace,
+			expectedError: "serviceMonitor 'name' cannot be empty",
 			client:        true,
 		},
 		{
-			name:          defaultTriggerAuthName,
+			name:          defaultServiceMonitorName,
 			namespace:     "",
-			expectedError: "triggerAuthentication 'nsname' cannot be empty",
+			expectedError: "serviceMonitor 'nsname' cannot be empty",
 			client:        true,
 		},
 		{
-			name:          defaultTriggerAuthName,
-			namespace:     defaultTriggerAuthNamespace,
+			name:          defaultServiceMonitorName,
+			namespace:     defaultServiceMonitorNamespace,
 			expectedError: "",
 			client:        false,
 		},
@@ -142,72 +141,72 @@ func TestNewTriggerAuthenticationBuilder(t *testing.T) {
 			testSettings = clients.GetTestClients(clients.TestClientParams{})
 		}
 
-		testTriggerAuthBuilder := NewTriggerAuthenticationBuilder(testSettings, testCase.name, testCase.namespace)
+		testServiceMonitorBuilder := NewBuilder(testSettings, testCase.name, testCase.namespace)
 
 		if testCase.expectedError == "" {
 			if testCase.client {
-				assert.Equal(t, testCase.name, testTriggerAuthBuilder.Definition.Name)
-				assert.Equal(t, testCase.namespace, testTriggerAuthBuilder.Definition.Namespace)
+				assert.Equal(t, testCase.name, testServiceMonitorBuilder.Definition.Name)
+				assert.Equal(t, testCase.namespace, testServiceMonitorBuilder.Definition.Namespace)
 			} else {
-				assert.Nil(t, testTriggerAuthBuilder)
+				assert.Nil(t, testServiceMonitorBuilder)
 			}
 		} else {
-			assert.Equal(t, testCase.expectedError, testTriggerAuthBuilder.errorMsg)
-			assert.NotNil(t, testTriggerAuthBuilder.Definition)
+			assert.Equal(t, testCase.expectedError, testServiceMonitorBuilder.errorMsg)
+			assert.NotNil(t, testServiceMonitorBuilder.Definition)
 		}
 	}
 }
 
-func TestTriggerAuthenticationExists(t *testing.T) {
+func TestServiceMonitorExists(t *testing.T) {
 	testCases := []struct {
-		testTriggerAuth *TriggerAuthenticationBuilder
-		expectedStatus  bool
+		testServiceMonitor *Builder
+		expectedStatus     bool
 	}{
 		{
-			testTriggerAuth: buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedStatus:  true,
+			testServiceMonitor: buildValidServiceMonitorBuilder(buildServiceMonitorClientWithDummyObject()),
+			expectedStatus:     true,
 		},
 		{
-			testTriggerAuth: buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedStatus:  false,
+			testServiceMonitor: buildInValidServiceMonitorBuilder(buildServiceMonitorClientWithDummyObject()),
+			expectedStatus:     false,
 		},
 		{
-			testTriggerAuth: buildValidTriggerAuthBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedStatus:  false,
+			testServiceMonitor: buildValidServiceMonitorBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedStatus:     false,
 		},
 	}
 
 	for _, testCase := range testCases {
-		exist := testCase.testTriggerAuth.Exists()
+		exist := testCase.testServiceMonitor.Exists()
 		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
-func TestTriggerAuthenticationGet(t *testing.T) {
+func TestServiceMonitorGet(t *testing.T) {
 	testCases := []struct {
-		testTriggerAuth *TriggerAuthenticationBuilder
-		expectedError   error
+		testServiceMonitor *Builder
+		expectedError      error
 	}{
 		{
-			testTriggerAuth: buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:   nil,
+			testServiceMonitor: buildValidServiceMonitorBuilder(buildServiceMonitorClientWithDummyObject()),
+			expectedError:      nil,
 		},
 		{
-			testTriggerAuth: buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:   fmt.Errorf("triggerAuthentication 'name' cannot be empty"),
+			testServiceMonitor: buildInValidServiceMonitorBuilder(buildServiceMonitorClientWithDummyObject()),
+			expectedError:      fmt.Errorf("serviceMonitor 'name' cannot be empty"),
 		},
 		{
-			testTriggerAuth: buildValidTriggerAuthBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:   fmt.Errorf("triggerauthentications.keda.sh \"keda-trigger-auth-prometheus\" not found"),
+			testServiceMonitor: buildValidServiceMonitorBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:      fmt.Errorf("servicemonitors.monitoring.coreos.com \"test-monitor-name\" not found"),
 		},
 	}
 
 	for _, testCase := range testCases {
-		triggerAuthObj, err := testCase.testTriggerAuth.Get()
+		serviceMonitorObj, err := testCase.testServiceMonitor.Get()
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, triggerAuthObj.Name, testCase.testTriggerAuth.Definition.Name)
-			assert.Equal(t, triggerAuthObj.Namespace, testCase.testTriggerAuth.Definition.Namespace)
+			assert.Equal(t, serviceMonitorObj.Name, testCase.testServiceMonitor.Definition.Name)
+			assert.Equal(t, serviceMonitorObj.Namespace, testCase.testServiceMonitor.Definition.Namespace)
 			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
@@ -215,31 +214,31 @@ func TestTriggerAuthenticationGet(t *testing.T) {
 	}
 }
 
-func TestTriggerAuthenticationCreate(t *testing.T) {
+func TestServiceMonitorCreate(t *testing.T) {
 	testCases := []struct {
-		testTriggerAuth *TriggerAuthenticationBuilder
-		expectedError   string
+		testServiceMonitor *Builder
+		expectedError      string
 	}{
 		{
-			testTriggerAuth: buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:   "",
+			testServiceMonitor: buildValidServiceMonitorBuilder(buildServiceMonitorClientWithDummyObject()),
+			expectedError:      "",
 		},
 		{
-			testTriggerAuth: buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:   "triggerAuthentication 'name' cannot be empty",
+			testServiceMonitor: buildInValidServiceMonitorBuilder(buildServiceMonitorClientWithDummyObject()),
+			expectedError:      "serviceMonitor 'name' cannot be empty",
 		},
 		{
-			testTriggerAuth: buildValidTriggerAuthBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:   "",
+			testServiceMonitor: buildValidServiceMonitorBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:      "",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testTriggerAuthBuilder, err := testCase.testTriggerAuth.Create()
+		serviceMonitorObj, err := testCase.testServiceMonitor.Create()
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testTriggerAuthBuilder.Definition.Name, testTriggerAuthBuilder.Object.Name)
-			assert.Equal(t, testTriggerAuthBuilder.Definition.Namespace, testTriggerAuthBuilder.Object.Namespace)
+			assert.Equal(t, serviceMonitorObj.Definition.Name, serviceMonitorObj.Object.Name)
+			assert.Equal(t, serviceMonitorObj.Definition.Namespace, serviceMonitorObj.Object.Namespace)
 			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError, err.Error())
@@ -247,26 +246,26 @@ func TestTriggerAuthenticationCreate(t *testing.T) {
 	}
 }
 
-func TestTriggerAuthenticationDelete(t *testing.T) {
+func TestServiceMonitorDelete(t *testing.T) {
 	testCases := []struct {
-		testTriggerAuth *TriggerAuthenticationBuilder
-		expectedError   error
+		testServiceMonitor *Builder
+		expectedError      error
 	}{
 		{
-			testTriggerAuth: buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:   nil,
+			testServiceMonitor: buildValidServiceMonitorBuilder(buildServiceMonitorClientWithDummyObject()),
+			expectedError:      nil,
 		},
 		{
-			testTriggerAuth: buildValidTriggerAuthBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:   nil,
+			testServiceMonitor: buildValidServiceMonitorBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:      nil,
 		},
 	}
 
 	for _, testCase := range testCases {
-		_, err := testCase.testTriggerAuth.Delete()
+		_, err := testCase.testServiceMonitor.Delete()
 
 		if testCase.expectedError == nil {
-			assert.Nil(t, testCase.testTriggerAuth.Object)
+			assert.Nil(t, testCase.testServiceMonitor.Object)
 			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
@@ -274,127 +273,220 @@ func TestTriggerAuthenticationDelete(t *testing.T) {
 	}
 }
 
-func TestTriggerAuthenticationUpdate(t *testing.T) {
+func TestServiceMonitorUpdate(t *testing.T) {
 	testCases := []struct {
-		testTriggerAuth     *TriggerAuthenticationBuilder
-		expectedError       string
-		testSecretTargetRef []kedav2v1alpha1.AuthSecretTargetRef
+		testServiceMonitor *Builder
+		expectedError      string
+		testLabels         map[string]string
 	}{
 		{
-			testTriggerAuth: buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:   "",
-			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{{
-				Name: "token-name",
-				Key:  "token",
-			},
-				{
-					Name: "cert-name",
-					Key:  "ca.crt",
-				}},
+			testServiceMonitor: buildValidServiceMonitorBuilder(buildServiceMonitorClientWithDummyObject()),
+			testLabels: map[string]string{"first-test-label-key": "first-test-label-value",
+				"second-test-label-key": ""},
+			expectedError: "",
 		},
 		{
-			testTriggerAuth:     buildInValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject()),
-			expectedError:       "triggerAuthentication 'name' cannot be empty",
-			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{},
+			testServiceMonitor: buildValidServiceMonitorBuilder(buildServiceMonitorClientWithDummyObject()),
+			testLabels:         map[string]string{},
+			expectedError:      "labels can not be empty",
 		},
 	}
 
 	for _, testCase := range testCases {
-		assert.Equal(t, []kedav2v1alpha1.AuthSecretTargetRef(nil), testCase.testTriggerAuth.Definition.Spec.SecretTargetRef)
-		assert.Nil(t, nil, testCase.testTriggerAuth.Object)
-		testCase.testTriggerAuth.WithSecretTargetRef(testCase.testSecretTargetRef)
-		_, err := testCase.testTriggerAuth.Update()
+		assert.Equal(t, map[string]string(nil), testCase.testServiceMonitor.Definition.Labels)
+		testCase.testServiceMonitor.WithLabels(testCase.testLabels)
+		_, err := testCase.testServiceMonitor.Update()
 
 		if testCase.expectedError != "" {
 			assert.Equal(t, testCase.expectedError, err.Error())
 		} else {
-			assert.Equal(t, testCase.testSecretTargetRef, testCase.testTriggerAuth.Definition.Spec.SecretTargetRef)
+			assert.Equal(t, testCase.testLabels,
+				testCase.testServiceMonitor.Definition.Labels)
 		}
 	}
 }
 
-func TestTriggerAuthenticationWithSecretTargetRef(t *testing.T) {
+func TestServiceMonitorWithEndpoints(t *testing.T) {
 	testCases := []struct {
-		testSecretTargetRef []kedav2v1alpha1.AuthSecretTargetRef
-		expectedError       bool
-		expectedErrorText   string
+		testEndpoints     []monv1.Endpoint
+		expectedErrorText string
 	}{
 		{
-			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{{
-				Name: "token-name",
-				Key:  "token",
+			testEndpoints: []monv1.Endpoint{{
+				Port:   "http",
+				Scheme: "http",
 			}},
-			expectedError:     false,
 			expectedErrorText: "",
 		},
 		{
-			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{{
-				Name: "cert-name",
-				Key:  "ca.crt",
-			}},
-			expectedError:     false,
-			expectedErrorText: "",
-		},
-		{
-			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{{
-				Name: "token-name",
-				Key:  "token",
+			testEndpoints: []monv1.Endpoint{{
+				Port:   "http",
+				Scheme: "http",
 			},
 				{
-					Name: "cert-name",
-					Key:  "ca.crt",
+					Port:   "sctp",
+					Scheme: "sctp",
 				}},
-			expectedError:     false,
 			expectedErrorText: "",
 		},
 		{
-			testSecretTargetRef: []kedav2v1alpha1.AuthSecretTargetRef{},
-			expectedError:       true,
-			expectedErrorText:   "'secretTargetRef' argument cannot be empty",
+			testEndpoints:     []monv1.Endpoint{},
+			expectedErrorText: "'endpoints' argument cannot be empty",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidTriggerAuthBuilder(buildTriggerAuthClientWithDummyObject())
+		testBuilder := buildValidServiceMonitorBuilder(buildServiceMonitorClientWithDummyObject())
 
-		result := testBuilder.WithSecretTargetRef(testCase.testSecretTargetRef)
+		result := testBuilder.WithEndpoints(testCase.testEndpoints)
 
-		if testCase.expectedError {
+		if testCase.expectedErrorText != "" {
 			if testCase.expectedErrorText != "" {
 				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
 			}
 		} else {
 			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testSecretTargetRef, result.Definition.Spec.SecretTargetRef)
+			assert.Equal(t, testCase.testEndpoints, result.Definition.Spec.Endpoints)
 		}
 	}
 }
 
-func buildValidTriggerAuthBuilder(apiClient *clients.Settings) *TriggerAuthenticationBuilder {
-	triggerAuthBuilder := NewTriggerAuthenticationBuilder(
-		apiClient, defaultTriggerAuthName, defaultTriggerAuthNamespace)
+func TestServiceMonitorWithLabel(t *testing.T) {
+	testCases := []struct {
+		testLabel      map[string]string
+		expectedErrMsg string
+	}{
+		{
+			testLabel:      map[string]string{"test-label-key": "test-label-value"},
+			expectedErrMsg: "",
+		},
+		{
+			testLabel: map[string]string{"test-label1-key": "test-label1-value",
+				"test-label2-key": "test-label2-value",
+				"test-label3-key": "test-label3-value",
+			},
+			expectedErrMsg: "",
+		},
+		{
+			testLabel:      map[string]string{"test-label-key": ""},
+			expectedErrMsg: "",
+		},
+		{
+			testLabel:      map[string]string{"": "test-label-value"},
+			expectedErrMsg: "can not apply a labels with an empty key",
+		},
+		{
+			testLabel:      map[string]string{},
+			expectedErrMsg: "labels can not be empty",
+		},
+	}
 
-	return triggerAuthBuilder
+	for _, testCase := range testCases {
+		testBuilder := buildValidServiceMonitorBuilder(buildServiceMonitorClientWithDummyObject())
+
+		testBuilder.WithLabels(testCase.testLabel)
+
+		assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrMsg == "" {
+			assert.Equal(t, testCase.testLabel, testBuilder.Definition.Labels)
+		}
+	}
 }
 
-func buildInValidTriggerAuthBuilder(apiClient *clients.Settings) *TriggerAuthenticationBuilder {
-	triggerAuthBuilder := NewTriggerAuthenticationBuilder(
-		apiClient, "", defaultTriggerAuthNamespace)
+func TestServiceMonitorWithSelector(t *testing.T) {
+	testCases := []struct {
+		testSelector   map[string]string
+		expectedErrMsg string
+	}{
+		{
+			testSelector:   map[string]string{"test-selector-key": "test-selector-value"},
+			expectedErrMsg: "",
+		},
+		{
+			testSelector:   map[string]string{"test-selector-key": ""},
+			expectedErrMsg: "",
+		},
+		{
+			testSelector:   map[string]string{"": "test-selector-value"},
+			expectedErrMsg: "can not apply a selector with an empty key",
+		},
+		{
+			testSelector:   map[string]string{},
+			expectedErrMsg: "selector can not be empty",
+		},
+	}
 
-	return triggerAuthBuilder
+	for _, testCase := range testCases {
+		testBuilder := buildValidServiceMonitorBuilder(buildServiceMonitorClientWithDummyObject())
+
+		testBuilder.WithSelector(testCase.testSelector)
+
+		assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrMsg == "" {
+			assert.Equal(t, testCase.testSelector, testBuilder.Definition.Spec.Selector.MatchLabels)
+		}
+	}
 }
 
-func buildTriggerAuthClientWithDummyObject() *clients.Settings {
+func TestServiceMonitorWithNamespaceSelector(t *testing.T) {
+	testCases := []struct {
+		testNamespaceSelector []string
+		expectedErrMsg        string
+	}{
+		{
+			testNamespaceSelector: []string{"test-ns-selector"},
+			expectedErrMsg:        "",
+		},
+		{
+			testNamespaceSelector: []string{"test-ns-selector1", "test-ns-selector2"},
+			expectedErrMsg:        "",
+		},
+		{
+			testNamespaceSelector: []string{},
+			expectedErrMsg:        "namespaceSelector can not be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidServiceMonitorBuilder(buildServiceMonitorClientWithDummyObject())
+
+		testBuilder.WithNamespaceSelector(testCase.testNamespaceSelector)
+
+		assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrMsg == "" {
+			assert.Equal(t, testCase.testNamespaceSelector, testBuilder.Definition.Spec.NamespaceSelector.MatchNames)
+		}
+	}
+}
+
+func buildValidServiceMonitorBuilder(apiClient *clients.Settings) *Builder {
+	serviceMonitorBuilder := NewBuilder(
+		apiClient, defaultServiceMonitorName, defaultServiceMonitorNamespace)
+
+	return serviceMonitorBuilder
+}
+
+func buildInValidServiceMonitorBuilder(apiClient *clients.Settings) *Builder {
+	serviceMonitorBuilder := NewBuilder(
+		apiClient, "", defaultServiceMonitorNamespace)
+
+	return serviceMonitorBuilder
+}
+
+func buildServiceMonitorClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyTriggerAuthentication(),
+		K8sMockObjects: buildDummyServiceMonitor(),
 	})
 }
 
-func buildDummyTriggerAuthentication() []runtime.Object {
-	return append([]runtime.Object{}, &kedav2v1alpha1.TriggerAuthentication{
+func buildDummyServiceMonitor() []runtime.Object {
+	return append([]runtime.Object{}, &monv1.ServiceMonitor{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      defaultTriggerAuthName,
-			Namespace: defaultTriggerAuthNamespace,
+			Name:      defaultServiceMonitorName,
+			Namespace: defaultServiceMonitorNamespace,
 		},
 	})
 }
