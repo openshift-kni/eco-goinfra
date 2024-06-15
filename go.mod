@@ -1,6 +1,6 @@
 module github.com/openshift-kni/eco-goinfra
 
-go 1.22
+go 1.22.0
 
 require (
 	github.com/NVIDIA/gpu-operator v1.11.1
@@ -29,14 +29,16 @@ require (
 	github.com/openshift/ptp-operator v0.0.0-20240404165119-29a3d7b3d60b
 	github.com/operator-framework/api v0.23.0
 	github.com/operator-framework/operator-lifecycle-manager v0.28.0
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.73.2
 	github.com/rh-ecosystem-edge/kernel-module-management v0.0.0-20240605101434-e1de2798b3c4
+	github.com/stolostron/klusterlet-addon-controller v0.0.0-20240606130554-01338045271a
 	golang.org/x/exp v0.0.0-20240604190554-fc45aab8b7f8
 	golang.org/x/net v0.26.0
 	gopkg.in/k8snetworkplumbingwg/multus-cni.v4 v4.0.2
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.29.5
-	k8s.io/apiextensions-apiserver v0.29.4
-	k8s.io/apimachinery v0.29.5
+	k8s.io/api v0.30.1
+	k8s.io/apiextensions-apiserver v0.30.1
+	k8s.io/apimachinery v0.30.1
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/kubectl v0.29.3
 	k8s.io/kubelet v0.29.4
@@ -44,7 +46,7 @@ require (
 	maistra.io/api v0.0.0-20230704084350-dfc96815fb16
 	open-cluster-management.io/governance-policy-propagator v0.13.0
 	open-cluster-management.io/multicloud-operators-subscription v0.13.0
-	sigs.k8s.io/controller-runtime v0.17.5
+	sigs.k8s.io/controller-runtime v0.18.2
 )
 
 require (
@@ -55,7 +57,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
 	github.com/ajeddeloh/go-json v0.0.0-20200220154158-5ae607161559 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
-	github.com/aws/aws-sdk-go v1.50.25 // indirect
+	github.com/aws/aws-sdk-go v1.51.25 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
@@ -82,15 +84,15 @@ require (
 	github.com/ghodss/yaml v1.0.1-0.20220118164431-d8423dcdf344 // indirect
 	github.com/go-errors/errors v1.5.1 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
-	github.com/go-openapi/analysis v0.21.4 // indirect
-	github.com/go-openapi/errors v0.20.3 // indirect
+	github.com/go-openapi/analysis v0.22.2 // indirect
+	github.com/go-openapi/errors v0.22.0 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
-	github.com/go-openapi/loads v0.21.2 // indirect
-	github.com/go-openapi/spec v0.20.7 // indirect
-	github.com/go-openapi/strfmt v0.21.3 // indirect
+	github.com/go-openapi/loads v0.21.5 // indirect
+	github.com/go-openapi/spec v0.20.14 // indirect
+	github.com/go-openapi/strfmt v0.23.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
-	github.com/go-openapi/validate v0.22.0 // indirect
+	github.com/go-openapi/validate v0.23.0 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/go-test/deep v1.1.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -202,9 +204,9 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/gorm v1.24.5 // indirect
-	k8s.io/apiserver v0.29.4 // indirect
+	k8s.io/apiserver v0.30.1 // indirect
 	k8s.io/cli-runtime v0.29.4 // indirect
-	k8s.io/component-base v0.29.4 // indirect
+	k8s.io/component-base v0.30.1 // indirect
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
 	k8s.io/kube-aggregator v0.29.4 // indirect
@@ -218,8 +220,6 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
-
-require github.com/stolostron/klusterlet-addon-controller v0.0.0-20240606130554-01338045271a
 
 require (
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
