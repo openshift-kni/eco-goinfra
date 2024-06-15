@@ -2,8 +2,9 @@ package monitoring
 
 import (
 	"fmt"
-	monv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"testing"
+
+	monv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
