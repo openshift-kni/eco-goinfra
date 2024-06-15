@@ -21,7 +21,7 @@ import (
 	"net/url"
 )
 
-// validateSubscription validates BMCEventSubscription resource for creation.
+// validateSubscription validates BMCEventSubscription resource for creation
 func (s *BMCEventSubscription) validateSubscription() []error {
 	var errs []error
 
@@ -32,13 +32,16 @@ func (s *BMCEventSubscription) validateSubscription() []error {
 	if s.Spec.Destination == "" {
 		errs = append(errs, errors.New("destination cannot be empty"))
 	} else {
-		destinationURL, err := url.ParseRequestURI(s.Spec.Destination)
+		destinationUrl, err := url.ParseRequestURI(s.Spec.Destination)
 
 		if err != nil {
 			errs = append(errs, fmt.Errorf("destination is invalid: %w", err))
-		} else if destinationURL.Path == "" {
-			errs = append(errs, errors.New("hostname-only destination must have a trailing slash"))
+		} else {
+			if destinationUrl.Path == "" {
+				errs = append(errs, errors.New("hostname-only destination must have a trailing slash"))
+			}
 		}
 	}
+
 	return errs
 }

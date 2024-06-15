@@ -1,6 +1,6 @@
 module github.com/openshift-kni/eco-goinfra
 
-go 1.22.0
+go 1.22
 
 require (
 	github.com/NVIDIA/gpu-operator v1.11.1
@@ -11,7 +11,7 @@ require (
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v1.7.0
 	github.com/k8snetworkplumbingwg/sriov-network-operator v1.2.0
 	github.com/kedacore/keda-olm-operator v0.0.0-20240501182040-762f6be5a942
-	github.com/metal3-io/baremetal-operator/apis v0.6.1
+	github.com/metal3-io/baremetal-operator/apis v0.5.1
 	github.com/nmstate/kubernetes-nmstate/api v0.0.0-20240605150941-df565dd7bf35
 	github.com/onsi/ginkgo/v2 v2.19.0
 	github.com/openshift-kni/cluster-group-upgrades-operator v0.0.0-20240423171335-f07cdbf8af2c
@@ -46,7 +46,7 @@ require (
 	maistra.io/api v0.0.0-20230704084350-dfc96815fb16
 	open-cluster-management.io/governance-policy-propagator v0.13.0
 	open-cluster-management.io/multicloud-operators-subscription v0.13.0
-	sigs.k8s.io/controller-runtime v0.18.2
+	sigs.k8s.io/controller-runtime v0.17.5
 )
 
 require (
@@ -264,7 +264,6 @@ replace (
 	k8s.io/mount-utils => k8s.io/mount-utils v0.29.4
 	k8s.io/pod-security-admission => k8s.io/pod-security-admission v0.29.4
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.29.4
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.17.5
 )
 
 exclude github.com/kubernetes-incubator/external-storage v0.20.4-openstorage-rc2
