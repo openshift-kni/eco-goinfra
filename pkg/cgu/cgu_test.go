@@ -1,6 +1,7 @@
 package cgu
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -16,6 +17,7 @@ var (
 	defaultCguName           = "cgu-test"
 	defaultCguNsName         = "test-ns"
 	defaultCguMaxConcurrency = 1
+	defaultCguCondition      = conditionComplete
 )
 
 //nolint:funlen
@@ -416,6 +418,108 @@ func TestCguWaitUntilDeleted(t *testing.T) {
 	err := cguBuilder.WaitUntilDeleted(5 * time.Second)
 
 	assert.Nil(t, err)
+}
+
+func TestCguWaitForCondition(t *testing.T) {
+	testCases := []struct {
+		condition     metav1.Condition
+		exists        bool
+		conditionMet  bool
+		valid         bool
+		expectedError error
+	}{
+		{
+			condition:     defaultCguCondition,
+			exists:        true,
+			conditionMet:  true,
+			valid:         true,
+			expectedError: nil,
+		},
+		{
+			condition:     defaultCguCondition,
+			exists:        false,
+			conditionMet:  true,
+			valid:         true,
+			expectedError: fmt.Errorf("cgu object %s does not exist in namespace %s", defaultCguName, defaultCguNsName),
+		},
+		{
+			condition:     defaultCguCondition,
+			exists:        true,
+			conditionMet:  false,
+			valid:         true,
+			expectedError: context.DeadlineExceeded,
+		},
+		{
+			condition:     defaultCguCondition,
+			exists:        true,
+			conditionMet:  true,
+			valid:         false,
+			expectedError: fmt.Errorf("CGU 'nsname' cannot be empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		var (
+			runtimeObjects []runtime.Object
+			cguBuilder     *CguBuilder
+		)
+
+		if testCase.exists {
+			cgu := buildDummyCgu(defaultCguName, defaultCguNsName, defaultCguMaxConcurrency)
+
+			if testCase.conditionMet {
+				cgu.Status.Conditions = append(cgu.Status.Conditions, testCase.condition)
+			}
+
+			runtimeObjects = append(runtimeObjects, cgu)
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: runtimeObjects,
+		})
+
+		if testCase.valid {
+			cguBuilder = buildValidCguTestBuilder(testSettings)
+		} else {
+			cguBuilder = buildInvalidCguTestBuilder(testSettings)
+		}
+
+		_, err := cguBuilder.WaitForCondition(testCase.condition, time.Second)
+		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
+func TestCguWaitUntilComplete(t *testing.T) {
+	testCases := []struct {
+		complete      bool
+		expectedError error
+	}{
+		{
+			complete:      true,
+			expectedError: nil,
+		},
+		{
+			complete:      false,
+			expectedError: context.DeadlineExceeded,
+		},
+	}
+
+	for _, testCase := range testCases {
+		cgu := buildDummyCgu(defaultCguName, defaultCguNsName, defaultCguMaxConcurrency)
+
+		if testCase.complete {
+			cgu.Status.Conditions = append(cgu.Status.Conditions, conditionComplete)
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: []runtime.Object{cgu},
+		})
+
+		cguBuilder := buildValidCguTestBuilder(testSettings)
+		_, err := cguBuilder.WaitUntilComplete(time.Second)
+
+		assert.Equal(t, testCase.expectedError, err)
+	}
 }
 
 func TestWaitUntilBackupStarts(t *testing.T) {
