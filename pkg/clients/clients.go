@@ -61,6 +61,8 @@ import (
 	nmstatev1 "github.com/nmstate/kubernetes-nmstate/api/v1"
 	nmstateV1alpha1 "github.com/nmstate/kubernetes-nmstate/api/v1alpha1"
 
+	nropv1 "github.com/openshift-kni/numaresources-operator/api/numaresourcesoperator/v1"
+
 	lcav1 "github.com/openshift-kni/lifecycle-agent/api/imagebasedupgrade/v1"
 	lcasgv1 "github.com/openshift-kni/lifecycle-agent/api/seedgenerator/v1"
 	configV1 "github.com/openshift/api/config/v1"
@@ -336,6 +338,10 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
+	if err := nropv1.AddToScheme(crScheme); err != nil {
+		return err
+	}
+
 	if err := argocdOperatorv1alpha1.AddToScheme(crScheme); err != nil {
 		return err
 	}
@@ -508,6 +514,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *operatorv1.Console:
 			genericClientObjects = append(genericClientObjects, v)
 		case *imageregistryV1.Config:
+			genericClientObjects = append(genericClientObjects, v)
+		case *nropv1.NUMAResourcesOperator:
 			genericClientObjects = append(genericClientObjects, v)
 		case *configV1.ClusterOperator:
 			genericClientObjects = append(genericClientObjects, v)

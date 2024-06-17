@@ -555,6 +555,9 @@ github.com/openshift-kni/k8sreporter
 ## explicit; go 1.21
 github.com/openshift-kni/lifecycle-agent/api/imagebasedupgrade/v1
 github.com/openshift-kni/lifecycle-agent/api/seedgenerator/v1
+# github.com/openshift-kni/numaresources-operator v0.4.16-0rc0
+## explicit; go 1.21
+github.com/openshift-kni/numaresources-operator/api/numaresourcesoperator/v1
 # github.com/openshift/api v3.9.1-0.20191111211345-a27ff30ebf09+incompatible => github.com/openshift/api v0.0.0-20240605153344-636e2c17106f
 ## explicit; go 1.21
 github.com/openshift/api
