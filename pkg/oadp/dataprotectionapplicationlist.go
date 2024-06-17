@@ -6,18 +6,22 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	"github.com/openshift-kni/eco-goinfra/pkg/oadp/oadptypes"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	oadpv1alpha1 "github.com/openshift-kni/eco-goinfra/pkg/oadp/api/v1alpha1"
+	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // ListDataProtectionApplication returns dataprotectionapplication inventory in the given namespace.
 func ListDataProtectionApplication(
-	apiClient *clients.Settings, nsname string, options ...metav1.ListOptions) ([]*DPABuilder, error) {
+	apiClient *clients.Settings, nsname string, options ...goclient.ListOptions) ([]*DPABuilder, error) {
 	if apiClient == nil {
 		glog.V(100).Infof("The apiClient cannot be nil")
 
 		return nil, fmt.Errorf("the apiClient is nil")
+	}
+
+	err := apiClient.AddToScheme(oadpv1alpha1.AddToScheme)
+	if err != nil {
+		return nil, err
 	}
 
 	if nsname == "" {
@@ -27,7 +31,7 @@ func ListDataProtectionApplication(
 	}
 
 	logMessage := fmt.Sprintf("Listing dataprotectionapplications in the nsname %s", nsname)
-	passedOptions := metav1.ListOptions{}
+	passedOptions := goclient.ListOptions{}
 
 	if len(options) == 1 {
 		passedOptions = options[0]
@@ -40,37 +44,26 @@ func ListDataProtectionApplication(
 
 	glog.V(100).Infof(logMessage)
 
-	unstructObjList, err := apiClient.Resource(GetDataProtectionApplicationGVR()).
-		Namespace(nsname).List(context.TODO(), passedOptions)
+	dataprotectionapplications := new(oadpv1alpha1.DataProtectionApplicationList)
+	err = apiClient.List(context.TODO(), dataprotectionapplications, &passedOptions)
+
 	if err != nil {
-		glog.V(100).Infof("Failed to list dataprotectionapplications in the nsname %s due to %s", nsname, err.Error())
+		glog.V(100).Infof("Failed to list all dataprotectionapplications due to %s", err.Error())
 
 		return nil, err
 	}
 
-	fmt.Println(unstructObjList)
-
 	var dpaObjects []*DPABuilder
 
-	for _, runningDPA := range unstructObjList.Items {
-		dataprotectionapplication := &oadptypes.DataProtectionApplication{}
-
-		err = runtime.DefaultUnstructuredConverter.FromUnstructured(runningDPA.Object, dataprotectionapplication)
-		if err != nil {
-			glog.V(100).Infof(
-				"Failed to convert from unstructured list to DataProtectionApplicationList object in namespace %s",
-				nsname)
-
-			return nil, err
+	for _, dataprotectionapplication := range dataprotectionapplications.Items {
+		copiedDPA := dataprotectionapplication
+		builder := &DPABuilder{
+			apiClient:  apiClient.Client,
+			Object:     &copiedDPA,
+			Definition: &copiedDPA,
 		}
 
-		dpaBuilder := &DPABuilder{
-			apiClient:  apiClient,
-			Object:     dataprotectionapplication,
-			Definition: dataprotectionapplication,
-		}
-
-		dpaObjects = append(dpaObjects, dpaBuilder)
+		dpaObjects = append(dpaObjects, builder)
 	}
 
 	return dpaObjects, nil

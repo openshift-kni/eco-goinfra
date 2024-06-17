@@ -7,7 +7,6 @@ import (
 
 	"github.com/openshift-kni/eco-goinfra/pkg/argocd/argocdtypes"
 	"github.com/openshift-kni/eco-goinfra/pkg/metallb/mlbtypes"
-	"github.com/openshift-kni/eco-goinfra/pkg/oadp/oadptypes"
 
 	"github.com/golang/glog"
 	"k8s.io/client-go/dynamic"
@@ -17,6 +16,7 @@ import (
 	kedav1alpha1 "github.com/kedacore/keda-olm-operator/apis/keda/v1alpha1"
 	kedav2v1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	bmhv1alpha1 "github.com/metal3-io/baremetal-operator/apis/metal3.io/v1alpha1"
+	oadpv1alpha1 "github.com/openshift-kni/eco-goinfra/pkg/oadp/api/v1alpha1"
 	clov1 "github.com/openshift/cluster-logging-operator/api/logging/v1"
 	performanceV2 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/performanceprofile/v2"
 	tunedv1 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/tuned/v1"
@@ -151,6 +151,7 @@ type Settings struct {
 	clientCguV1.RanV1alpha1Interface
 	ClusterClient clusterClient.Interface
 	clusterV1Client.ClusterV1Interface
+	scheme *runtime.Scheme
 }
 
 // New returns a *Settings with the given kubeconfig.
@@ -209,8 +210,8 @@ func New(kubeconfig string) *Settings {
 	clientSet.ClusterV1Interface = clusterV1Client.NewForConfigOrDie(config)
 	clientSet.Config = config
 
-	crScheme := runtime.NewScheme()
-	err = SetScheme(crScheme)
+	clientSet.scheme = runtime.NewScheme()
+	err = SetScheme(clientSet.scheme)
 
 	if err != nil {
 		log.Print("Error to load apiClient scheme")
@@ -219,7 +220,7 @@ func New(kubeconfig string) *Settings {
 	}
 
 	clientSet.Client, err = runtimeClient.New(config, runtimeClient.Options{
-		Scheme: crScheme,
+		Scheme: clientSet.scheme,
 	})
 
 	if err != nil {
@@ -407,10 +408,30 @@ func (settings *Settings) GetAPIClient() (*Settings, error) {
 	return settings, nil
 }
 
+// AddToScheme adds the clients current scehem to current.
+func (settings *Settings) AddToScheme(attacher SchemeAttacher) error {
+	if settings == nil {
+		glog.V(100).Infof("APIClient is nil")
+
+		return fmt.Errorf("cannot add scheme to nil client")
+	}
+
+	err := attacher(settings.scheme)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// SchemeAttacher represents a function that can modify the clients current schemes.
+type SchemeAttacher func(*runtime.Scheme) error
+
 // TestClientParams provides the struct to store the parameters for the test client.
 type TestClientParams struct {
 	K8sMockObjects []runtime.Object
 	GVK            []schema.GroupVersionKind
+	Schemes        []SchemeAttacher
 
 	// Note: Add more fields below if/when needed.
 }
@@ -538,7 +559,7 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *agentInstallV1Beta1.AgentServiceConfig:
 			genericClientObjects = append(genericClientObjects, v)
-		case *oadptypes.DataProtectionApplication:
+		case *oadpv1alpha1.DataProtectionApplication:
 			genericClientObjects = append(genericClientObjects, v)
 		// ArgoCD Client Objects
 		case *argocdOperatorv1alpha1.ArgoCD:
@@ -616,21 +637,29 @@ func GetTestClients(tcp TestClientParams) *Settings {
 	clientSet.ClientCgu = clientCguFake.NewSimpleClientset(cguObjects...)
 
 	// Update the generic client with schemes of generic resources
-	fakeClientScheme := runtime.NewScheme()
+	clientSet.scheme = runtime.NewScheme()
 
-	err := SetScheme(fakeClientScheme)
+	err := SetScheme(clientSet.scheme)
 	if err != nil {
 		return nil
 	}
 
 	if len(tcp.GVK) > 0 && len(genericClientObjects) > 0 {
-		fakeClientScheme.AddKnownTypeWithName(
+		clientSet.scheme.AddKnownTypeWithName(
 			tcp.GVK[0], genericClientObjects[0])
 	}
 
-	clientSet.Interface = dynamicFake.NewSimpleDynamicClient(fakeClientScheme, genericClientObjects...)
+	for _, attacher := range tcp.Schemes {
+		err := clientSet.AddToScheme(attacher)
+		if err != nil {
+			return nil
+		}
+	}
+
+	clientSet.Interface = dynamicFake.NewSimpleDynamicClient(clientSet.scheme, genericClientObjects...)
+
 	// Add fake runtime client to clientSet runtime client
-	clientSet.Client = fakeRuntimeClient.NewClientBuilder().WithScheme(fakeClientScheme).
+	clientSet.Client = fakeRuntimeClient.NewClientBuilder().WithScheme(clientSet.scheme).
 		WithRuntimeObjects(genericClientObjects...).Build()
 
 	return clientSet

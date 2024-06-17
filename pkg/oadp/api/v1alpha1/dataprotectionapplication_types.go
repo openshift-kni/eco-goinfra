@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package oadptypes
+package v1alpha1
 
 import (
 	velero "github.com/vmware-tanzu/velero/pkg/apis/velero/v1"
@@ -25,15 +25,22 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
 
+const (
+	// Group contains oadp api group content.
+	Group string = "oadp.openshift.io"
+	// Version contains oadp v1alpha1.
+	Version string = "v1alpha1"
+)
+
 var (
-	// DPAGroupVersion is group version used to register these objects.
-	DPAGroupVersion = schema.GroupVersion{Group: "oadp.openshift.io", Version: "v1alpha1"}
+	// GroupVersion is group version used to register these objects.
+	GroupVersion = schema.GroupVersion{Group: Group, Version: Version}
 
-	// DPASchemeBuilder is used to add go types to the GroupVersionKind scheme.
-	DPASchemeBuilder = &scheme.Builder{GroupVersion: DPAGroupVersion}
+	// SchemeBuilder is used to add go types to the GroupVersionKind scheme.
+	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}
 
-	// DPAAddToScheme adds the types in this group-version to the given scheme.
-	DPAAddToScheme = DPASchemeBuilder.AddToScheme
+	// AddToScheme adds the types in this group-version to the given scheme.
+	AddToScheme = SchemeBuilder.AddToScheme
 )
 
 // ConditionReconciled represents Reconciled condition.
@@ -1038,4 +1045,9 @@ func (in *DataProtectionApplicationList) DeepCopyObject() runtime.Object {
 	}
 
 	return nil
+}
+
+//nolint:gochecknoinits
+func init() {
+	SchemeBuilder.Register(&DataProtectionApplication{}, &DataProtectionApplicationList{})
 }
