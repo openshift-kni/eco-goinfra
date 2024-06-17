@@ -10,9 +10,9 @@ import (
 const (
 	ClusterSpecSyncedCondition string = "SpecSynced"
 
-	ClusterCompletedCondition string = hivev1.ClusterInstallCompleted
+	ClusterCompletedCondition string = string(hivev1.ClusterInstallCompleted)
 
-	ClusterRequirementsMetCondition  string = hivev1.ClusterInstallRequirementsMet
+	ClusterRequirementsMetCondition  string = string(hivev1.ClusterInstallRequirementsMet)
 	ClusterReadyReason               string = "ClusterIsReady"
 	ClusterReadyMsg                  string = "The cluster is ready to begin the installation"
 	ClusterNotReadyReason            string = "ClusterNotReady"
@@ -36,13 +36,13 @@ const (
 	ClusterValidationsFailingMsg     string = "The cluster's validations are failing:"
 	ClusterValidationsUserPendingMsg string = "The cluster's validations are pending for user:"
 
-	ClusterFailedCondition string = hivev1.ClusterInstallFailed
+	ClusterFailedCondition string = string(hivev1.ClusterInstallFailed)
 	ClusterFailedReason    string = "InstallationFailed"
 	ClusterFailedMsg       string = "The installation failed:"
 	ClusterNotFailedReason string = "InstallationNotFailed"
 	ClusterNotFailedMsg    string = "The installation has not failed"
 
-	ClusterStoppedCondition       string = hivev1.ClusterInstallStopped
+	ClusterStoppedCondition       string = string(hivev1.ClusterInstallStopped)
 	ClusterStoppedFailedReason    string = "InstallationFailed"
 	ClusterStoppedFailedMsg       string = "The installation has stopped due to error"
 	ClusterStoppedCanceledReason  string = "InstallationCancelled"
