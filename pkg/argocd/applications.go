@@ -140,6 +140,7 @@ func (builder *ApplicationBuilder) Update(force bool) (*ApplicationBuilder, erro
 				msg.FailToUpdateNotification("Application", builder.Definition.Name, builder.Definition.Namespace))
 
 			builder, err := builder.Delete()
+			builder.Definition.ResourceVersion = ""
 
 			if err != nil {
 				glog.V(100).Infof(
