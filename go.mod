@@ -219,10 +219,13 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
+require github.com/stolostron/klusterlet-addon-controller v0.0.0-20240606130554-01338045271a
+
 require (
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
 	github.com/expr-lang/expr v1.16.5 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.1 // indirect
+	github.com/stolostron/cluster-lifecycle-api v0.0.0-20240109072430-f5fe6043d1f8 // indirect
 	github.com/vishvananda/netns v0.0.4 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	knative.dev/pkg v0.0.0-20240423132823-3c6badc82748 // indirect

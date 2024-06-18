@@ -109,6 +109,7 @@ import (
 	lsoV1alpha1 "github.com/openshift/local-storage-operator/api/v1alpha1"
 	ocsoperatorv1 "github.com/red-hat-storage/ocs-operator/api/v1"
 	mcmV1Beta1 "github.com/rh-ecosystem-edge/kernel-module-management/api-hub/v1beta1"
+	kacv1 "github.com/stolostron/klusterlet-addon-controller/pkg/apis/agent/v1"
 	velerov1 "github.com/vmware-tanzu/velero/pkg/apis/velero/v1"
 	veleroClient "github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned"
 	veleroFakeClient "github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned/fake"
@@ -398,6 +399,10 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
+	if err := kacv1.SchemeBuilder.AddToScheme(crScheme); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -546,6 +551,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *kedav2v1alpha1.ScaledObject:
 			genericClientObjects = append(genericClientObjects, v)
 		case *agentInstallV1Beta1.AgentServiceConfig:
+			genericClientObjects = append(genericClientObjects, v)
+		case *kacv1.KlusterletAddonConfig:
 			genericClientObjects = append(genericClientObjects, v)
 		// ArgoCD Client Objects
 		case *argocdOperatorv1alpha1.ArgoCD:
