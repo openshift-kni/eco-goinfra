@@ -560,11 +560,9 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *agentInstallV1Beta1.AgentServiceConfig:
 			genericClientObjects = append(genericClientObjects, v)
-<<<<<<< HEAD
 		case *kacv1.KlusterletAddonConfig:
-=======
+			genericClientObjects = append(genericClientObjects, v)
 		case *monv1.ServiceMonitor:
->>>>>>> 6ade07e5 (fix dependency)
 			genericClientObjects = append(genericClientObjects, v)
 		case *oadptypes.DataProtectionApplication:
 			genericClientObjects = append(genericClientObjects, v)
