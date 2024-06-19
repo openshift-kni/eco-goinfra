@@ -106,26 +106,6 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	return &builder, nil
 }
 
-// Get fetches the defined secret from the cluster.
-func (builder *Builder) Get() (*corev1.Secret, error) {
-	if valid, err := builder.validate(); !valid {
-		return nil, err
-	}
-
-	glog.V(100).Infof("Getting secret %s in namespace %s",
-		builder.Definition.Name, builder.Definition.Namespace)
-
-	var err error
-	secretObj, err := builder.apiClient.Secrets(builder.Definition.Namespace).Get(
-		context.TODO(), builder.Definition.Name, metav1.GetOptions{})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return secretObj, nil
-}
-
 // Create makes a secret in the cluster and stores the created object in struct.
 func (builder *Builder) Create() (*Builder, error) {
 	if valid, err := builder.validate(); !valid {
