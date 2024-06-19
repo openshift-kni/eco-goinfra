@@ -70,8 +70,7 @@ func NewBuilder(
 }
 
 // Pull pulls existing serviceMonitor from cluster.
-func Pull(apiClient *clients.Settings,
-	name, nsname string) (*Builder, error) {
+func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	glog.V(100).Infof("Pulling existing serviceMonitor name %s in namespace %s from cluster",
 		name, nsname)
 
