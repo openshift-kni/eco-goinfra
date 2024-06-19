@@ -452,8 +452,6 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		// Add more items below if/when needed.
 		switch v.(type) {
 		// K8s Client Objects
-		case *corev1.Secret:
-			k8sClientObjects = append(k8sClientObjects, v)
 		case *corev1.ServiceAccount:
 			k8sClientObjects = append(k8sClientObjects, v)
 		case *rbacv1.ClusterRole:
