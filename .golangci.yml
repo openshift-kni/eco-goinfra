@@ -45,6 +45,7 @@ linters-settings:
           - "github.com/kelseyhightower/envconfig"
           - "github.com/red-hat-storage/ocs-operator"
           - "github.com/stmcginnis/gofish"
+          - "github.com/prometheus-operator/prometheus-operator"
   revive:
     rules:
       - name: indent-error-flow

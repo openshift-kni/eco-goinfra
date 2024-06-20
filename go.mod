@@ -29,6 +29,7 @@ require (
 	github.com/openshift/ptp-operator v0.0.0-20240404165119-29a3d7b3d60b
 	github.com/operator-framework/api v0.23.0
 	github.com/operator-framework/operator-lifecycle-manager v0.28.0
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.73.2
 	github.com/rh-ecosystem-edge/kernel-module-management v0.0.0-20240605101434-e1de2798b3c4
 	golang.org/x/exp v0.0.0-20240604190554-fc45aab8b7f8
 	golang.org/x/net v0.26.0

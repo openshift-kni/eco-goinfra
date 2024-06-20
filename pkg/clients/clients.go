@@ -21,6 +21,7 @@ import (
 	performanceV2 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/performanceprofile/v2"
 	tunedv1 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/tuned/v1"
 	eskv1 "github.com/openshift/elasticsearch-operator/apis/logging/v1"
+	monv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 
 	clientConfigV1 "github.com/openshift/client-go/config/clientset/versioned/typed/config/v1"
 	v1security "github.com/openshift/client-go/security/clientset/versioned/typed/security/v1"
@@ -404,6 +405,10 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
+	if err := monv1.AddToScheme(crScheme); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -556,6 +561,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *agentInstallV1Beta1.AgentServiceConfig:
 			genericClientObjects = append(genericClientObjects, v)
 		case *kacv1.KlusterletAddonConfig:
+			genericClientObjects = append(genericClientObjects, v)
+		case *monv1.ServiceMonitor:
 			genericClientObjects = append(genericClientObjects, v)
 		case *oadptypes.DataProtectionApplication:
 			genericClientObjects = append(genericClientObjects, v)
