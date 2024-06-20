@@ -1,6 +1,7 @@
 package ocm
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -222,6 +223,10 @@ func TestPolicyDelete(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			testBuilder:   buildValidPolicyTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: fmt.Errorf("policy cannot be deleted because it does not exist"),
+		},
+		{
 			testBuilder:   buildInvalidPolicyTestBuilder(buildTestClientWithDummyPolicy()),
 			expectedError: fmt.Errorf("policy 'nsname' cannot be empty"),
 		},
@@ -357,13 +362,32 @@ func TestWithAdditionalPolicyTemplate(t *testing.T) {
 }
 
 func TestPolicyWaitUntilDeleted(t *testing.T) {
-	// simulate deleted policy using client with no policy object
-	testSettings := clients.GetTestClients(clients.TestClientParams{})
-	policyBuilder := buildValidPolicyTestBuilder(testSettings)
+	testCases := []struct {
+		testBuilder   *PolicyBuilder
+		expectedError error
+	}{
+		{
+			testBuilder:   buildValidPolicyTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: nil,
+		},
+		{
+			testBuilder:   buildValidPolicyTestBuilder(buildTestClientWithDummyPolicy()),
+			expectedError: context.DeadlineExceeded,
+		},
+		{
+			testBuilder:   buildInvalidPolicyTestBuilder(buildTestClientWithDummyPolicy()),
+			expectedError: fmt.Errorf("policy 'nsname' cannot be empty"),
+		},
+	}
 
-	err := policyBuilder.WaitUntilDeleted(5 * time.Second)
+	for _, testCase := range testCases {
+		err := testCase.testBuilder.WaitUntilDeleted(time.Second)
+		assert.Equal(t, testCase.expectedError, err)
 
-	assert.Nil(t, err)
+		if testCase.expectedError == nil {
+			assert.Nil(t, testCase.testBuilder.Object)
+		}
+	}
 }
 
 func TestPolicyWaitUntilComplianceState(t *testing.T) {
