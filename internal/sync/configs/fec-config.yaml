@@ -1,0 +1,8 @@
+---
+- name: fec
+  sync: true
+  repo_link: "https://github.com/intel/sriov-fec-operator"
+  branch: main
+  remote_api_directory: api/sriovfec/v1
+  local_api_directory: schemes/fec/fectypes
+...

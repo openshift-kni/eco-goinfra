@@ -1,0 +1,35 @@
+---
+- name: metallb
+  sync: true
+  repo_link: "https://github.com/metallb/metallb"
+  branch: main
+  remote_api_directory: api/v1beta1
+  local_api_directory: schemes/metallb/mlbtypes
+  replace_imports:
+    - old: "go.universe.tf/metallb/api/v1beta2"
+      new: v1beta2 "github.com/openshift-kni/eco-goinfra/pkg/schemes/metallb/mlbtypesv1beta2"
+
+- name: metallb
+  sync: true
+  repo_link: "https://github.com/metallb/metallb"
+  branch: main
+  remote_api_directory: api/v1beta2
+  local_api_directory: schemes/metallb/mlbtypesv1beta2
+
+- name: metallb-operator
+  sync: true
+  repo_link: "https://github.com/metallb/metallb-operator"
+  branch: main
+  remote_api_directory: api/v1beta1
+  local_api_directory: schemes/metallb/mlboperator
+  replace_imports:
+    - old: "github.com/metallb/metallb-operator/pkg/params"
+      new: params "github.com/openshift-kni/eco-goinfra/pkg/schemes/metallb/mlboperatorparams"
+
+- name: metallb-operator
+  sync: true
+  repo_link: "https://github.com/metallb/metallb-operator"
+  branch: main
+  remote_api_directory: pkg/params
+  local_api_directory: schemes/metallb/mlboperatorparams
+...

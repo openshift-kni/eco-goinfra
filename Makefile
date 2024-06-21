@@ -13,6 +13,10 @@ deps-update:
 	go mod tidy && \
 	go mod vendor
 
+lib-sync:
+	export FLAGS_v=100;
+	go run ./internal/sync
+
 install: deps-update
 	@echo "Installing needed dependencies"
 
