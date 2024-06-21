@@ -115,6 +115,10 @@ func TestPersistentVolumeDelete(t *testing.T) {
 			testBuilder:       buildValidPersistentVolumeTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedErrorText: "",
 		},
+		{
+			testBuilder:       buildInvalidPersistentVolumeTestBuilder(buildTestClientWithDummyPersistentVolume()),
+			expectedErrorText: "can not redefine the undefined PersistentVolume",
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -123,6 +127,8 @@ func TestPersistentVolumeDelete(t *testing.T) {
 		if testCase.expectedErrorText == "" {
 			assert.Nil(t, err)
 			assert.Nil(t, testCase.testBuilder.Object)
+		} else {
+			assert.EqualError(t, err, testCase.expectedErrorText)
 		}
 	}
 }
@@ -140,6 +146,10 @@ func TestPersistentVolumeDeleteAndWait(t *testing.T) {
 			testBuilder:       buildValidPersistentVolumeTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedErrorText: "",
 		},
+		{
+			testBuilder:       buildInvalidPersistentVolumeTestBuilder(buildTestClientWithDummyPersistentVolume()),
+			expectedErrorText: "can not redefine the undefined PersistentVolume",
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -148,6 +158,8 @@ func TestPersistentVolumeDeleteAndWait(t *testing.T) {
 		if testCase.expectedErrorText == "" {
 			assert.Nil(t, err)
 			assert.Nil(t, testCase.testBuilder.Object)
+		} else {
+			assert.EqualError(t, err, testCase.expectedErrorText)
 		}
 	}
 }
@@ -164,6 +176,10 @@ func TestPersistentVolumeWaitUntilDeleted(t *testing.T) {
 		{
 			testBuilder:   buildValidPersistentVolumeTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError: nil,
+		},
+		{
+			testBuilder:   buildInvalidPersistentVolumeTestBuilder(buildTestClientWithDummyPersistentVolume()),
+			expectedError: fmt.Errorf("can not redefine the undefined PersistentVolume"),
 		},
 	}
 

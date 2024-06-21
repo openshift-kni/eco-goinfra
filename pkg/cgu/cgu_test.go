@@ -295,6 +295,10 @@ func TestCguDelete(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			testCgu:       buildValidCguTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: fmt.Errorf("cgu cannot be deleted because it does not exist"),
+		},
+		{
 			testCgu:       buildInvalidCguTestBuilder(buildTestClientWithDummyCguObject()),
 			expectedError: fmt.Errorf("CGU 'nsname' cannot be empty"),
 		},
@@ -305,6 +309,7 @@ func TestCguDelete(t *testing.T) {
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
+			assert.Nil(t, testCase.testCgu.Object)
 			assert.Nil(t, testCase.testCgu.Object)
 		}
 	}
@@ -395,29 +400,53 @@ func TestCguDeleteAndWait(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			testCgu:       buildValidCguTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: fmt.Errorf("cgu cannot be deleted because it does not exist"),
+		},
+		{
 			testCgu:       buildInvalidCguTestBuilder(buildTestClientWithDummyCguObject()),
 			expectedError: fmt.Errorf("CGU 'nsname' cannot be empty"),
 		},
 	}
 
 	for _, testCase := range testCases {
-		_, err := testCase.testCgu.DeleteAndWait(5 * time.Second)
+		_, err := testCase.testCgu.DeleteAndWait(time.Second)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
+			assert.Nil(t, testCase.testCgu.Object)
 			assert.Nil(t, testCase.testCgu.Object)
 		}
 	}
 }
 
 func TestCguWaitUntilDeleted(t *testing.T) {
-	// simulate deleted cgu using client with no cgu object
-	testSettings := clients.GetTestClients(clients.TestClientParams{})
-	cguBuilder := buildValidCguTestBuilder(testSettings)
+	testCases := []struct {
+		testCgu       *CguBuilder
+		expectedError error
+	}{
+		{
+			testCgu:       buildValidCguTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: nil,
+		},
+		{
+			testCgu:       buildValidCguTestBuilder(buildTestClientWithDummyCguObject()),
+			expectedError: context.DeadlineExceeded,
+		},
+		{
+			testCgu:       buildInvalidCguTestBuilder(buildTestClientWithDummyCguObject()),
+			expectedError: fmt.Errorf("CGU 'nsname' cannot be empty"),
+		},
+	}
 
-	err := cguBuilder.WaitUntilDeleted(5 * time.Second)
+	for _, testCase := range testCases {
+		err := testCase.testCgu.WaitUntilDeleted(time.Second)
+		assert.Equal(t, testCase.expectedError, err)
 
-	assert.Nil(t, err)
+		if testCase.expectedError == nil {
+			assert.Nil(t, testCase.testCgu.Object)
+		}
+	}
 }
 
 func TestCguWaitForCondition(t *testing.T) {
