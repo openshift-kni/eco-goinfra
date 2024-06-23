@@ -488,6 +488,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			k8sClientObjects = append(k8sClientObjects, v)
 		case *rbacv1.Role:
 			k8sClientObjects = append(k8sClientObjects, v)
+                case *corev1.ClusterVersion:
+                        k8sClientObjects = append(k8sClientObjects, v)
 		case *rbacv1.RoleBinding:
 			k8sClientObjects = append(k8sClientObjects, v)
 		case *corev1.Pod:
