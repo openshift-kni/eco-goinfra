@@ -738,7 +738,7 @@ func TestPerformanceProfileWithNet(t *testing.T) {
 		{
 			testUserLevelNet:  true,
 			testDevices:       []v2.Device{},
-			expectedErrorText: "'devices' argument cannot be empty",
+			expectedErrorText: "'net' argument cannot be empty",
 		},
 	}
 
@@ -753,6 +753,39 @@ func TestPerformanceProfileWithNet(t *testing.T) {
 			assert.NotNil(t, result)
 			assert.Equal(t, &testCase.testUserLevelNet, result.Definition.Spec.Net.UserLevelNetworking)
 			assert.Equal(t, testCase.testDevices, result.Definition.Spec.Net.Devices)
+		}
+	}
+}
+
+func TestPerformanceProfileWithAdditionalKernelArgs(t *testing.T) {
+	testCases := []struct {
+		testAdditionalKernelArgs []string
+		expectedErrorText        string
+	}{
+		{
+			testAdditionalKernelArgs: []string{"nohz_full=2-27,30-55"},
+			expectedErrorText:        "",
+		},
+		{
+			testAdditionalKernelArgs: []string{"nohz_full=2-27,30-55", "intel_idle.max_cstate=0", "audit=0"},
+			expectedErrorText:        "",
+		},
+		{
+			testAdditionalKernelArgs: []string{},
+			expectedErrorText:        "'additionalKernelArgs' argument cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidPerformanceProfileBuilder(buildPerformanceProfileWithDummyObject())
+
+		result := testBuilder.WithAdditionalKernelArgs(testCase.testAdditionalKernelArgs)
+
+		if testCase.expectedErrorText != "" {
+			assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
+		} else {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testAdditionalKernelArgs, result.Definition.Spec.AdditionalKernelArgs)
 		}
 	}
 }
