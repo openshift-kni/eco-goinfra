@@ -219,19 +219,11 @@ func (builder *Builder) WithMCPSelector(mcpSelector map[string]string) *Builder 
 		return builder
 	}
 
-	for key, value := range mcpSelector {
+	for key := range mcpSelector {
 		if key == "" {
 			glog.V(100).Infof("The 'machineConfigPoolSelector' key cannot be empty")
 
 			builder.errorMsg = "can not apply a machineConfigPoolSelector with an empty key"
-
-			return builder
-		}
-
-		if value == "" {
-			glog.V(100).Infof("The 'machineConfigPoolSelector' value cannot be empty")
-
-			builder.errorMsg = "can not apply a machineConfigPoolSelector with an empty value"
 
 			return builder
 		}

@@ -288,7 +288,7 @@ func TestNROPWithMCPSelector(t *testing.T) {
 		},
 		{
 			mcpSelector:           map[string]string{"test-mcp-selector-key": ""},
-			expectedErrMsg:        "can not apply a machineConfigPoolSelector with an empty value",
+			expectedErrMsg:        "",
 			predefinedMCPSelector: false,
 			originalNodeSelector:  map[string]string(nil),
 		},
@@ -312,7 +312,7 @@ func TestNROPWithMCPSelector(t *testing.T) {
 		},
 		{
 			mcpSelector:           map[string]string{"test-mcp-selector-key": ""},
-			expectedErrMsg:        "can not apply a machineConfigPoolSelector with an empty value",
+			expectedErrMsg:        "",
 			predefinedMCPSelector: true,
 			originalNodeSelector: map[string]string{"test-node-selector-key": "test-node-selector-value",
 				"other-node-selector-key": "other-node-selector-value"},
