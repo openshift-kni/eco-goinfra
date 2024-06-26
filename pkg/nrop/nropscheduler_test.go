@@ -16,6 +16,7 @@ var (
 	defaultNROSchedulerName      = "numaresourcesscheduler"
 	defaultNROSchedulerNamespace = "openshift-numaresources"
 	defaultImageSpec             = "test-registry.com/noderesourcetopology-scheduler-image:latest"
+	defaultSchedulerName         = "topo-aware-scheduler"
 )
 
 func TestNROSchedulerPull(t *testing.T) {
@@ -318,6 +319,34 @@ func TestNROSchedulerWithImageSpec(t *testing.T) {
 
 		if testCase.expectedErrMsg == "" {
 			assert.Equal(t, testCase.imageSpec, testBuilder.Definition.Spec.SchedulerImage)
+		}
+	}
+}
+
+func TestNROSchedulerWithSchedulerName(t *testing.T) {
+	testCases := []struct {
+		schedulerName  string
+		expectedErrMsg string
+	}{
+		{
+			schedulerName:  defaultSchedulerName,
+			expectedErrMsg: "",
+		},
+		{
+			schedulerName:  "",
+			expectedErrMsg: "can not apply a NUMAResourcesScheduler with an empty schedulerName",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidNROSchedulerBuilder(buildNROSchedulerClientWithDummyObject())
+
+		testBuilder.WithSchedulerName(testCase.schedulerName)
+
+		assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrMsg == "" {
+			assert.Equal(t, testCase.schedulerName, testBuilder.Definition.Spec.SchedulerName)
 		}
 	}
 }
