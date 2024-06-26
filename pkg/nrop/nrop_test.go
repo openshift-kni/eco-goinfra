@@ -13,7 +13,10 @@ import (
 )
 
 var (
-	defaultNROPName = "numaresourcesoperator"
+	defaultNROPName              = "numaresourcesoperator"
+	infoRefreshPeriodic          = nropv1.InfoRefreshPeriodic
+	infoRefreshEvents            = nropv1.InfoRefreshEvents
+	infoRefreshPeriodicAndEvents = nropv1.InfoRefreshPeriodicAndEvents
 )
 
 func TestPull(t *testing.T) {
@@ -239,90 +242,133 @@ func TestNROPUpdate(t *testing.T) {
 	testCases := []struct {
 		testNROP      *Builder
 		expectedError string
-		mcpSelector   map[string]string
+		mcpSelector   metav1.LabelSelector
 	}{
 		{
 			testNROP:      buildValidNROPBuilder(buildNROPClientWithDummyObject()),
 			expectedError: "",
-			mcpSelector:   map[string]string{"machineconfiguration.openshift.io/role": "mcp-name"},
+			mcpSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"machineconfiguration.openshift.io/role": "mcp-name"}},
 		},
 		{
 			testNROP:      buildValidNROPBuilder(buildNROPWithMCPSelectorClientWithDummyObject()),
 			expectedError: "",
-			mcpSelector:   map[string]string{"machineconfiguration.openshift.io/role": "mcp-name"},
+			mcpSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"machineconfiguration.openshift.io/role": "mcp-name"}},
 		},
 		{
 			testNROP:      buildInValidNROPBuilder(buildNROPClientWithDummyObject()),
 			expectedError: "NUMAResourcesOperator 'name' cannot be empty",
-			mcpSelector:   map[string]string{},
+			mcpSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"machineconfiguration.openshift.io/role": "mcp-name"}},
 		},
 	}
 
 	for _, testCase := range testCases {
 		assert.Equal(t, []nropv1.NodeGroup(nil), testCase.testNROP.Definition.Spec.NodeGroups)
 		assert.Nil(t, nil, testCase.testNROP.Object)
-		testCase.testNROP.WithMCPSelector(testCase.mcpSelector)
+		testCase.testNROP.WithMCPSelector(nropv1.NodeGroupConfig{}, testCase.mcpSelector)
 		_, err := testCase.testNROP.Update()
 
 		if testCase.expectedError != "" {
 			assert.Equal(t, testCase.expectedError, err.Error())
 		} else {
-			assert.Equal(t, testCase.mcpSelector,
+			assert.Equal(t, testCase.mcpSelector.MatchLabels,
 				testCase.testNROP.Definition.Spec.NodeGroups[0].MachineConfigPoolSelector.MatchLabels)
 		}
 	}
 }
 
+//nolint:funlen
 func TestNROPWithMCPSelector(t *testing.T) {
 	testCases := []struct {
-		mcpSelector           map[string]string
+		config                nropv1.NodeGroupConfig
+		mcpSelector           metav1.LabelSelector
 		expectedErrMsg        string
 		predefinedMCPSelector bool
-		originalNodeSelector  map[string]string
+		originalNodeSelector  metav1.LabelSelector
 	}{
 		{
-			mcpSelector:           map[string]string{"test-mcp-selector-key": "test-mcp-selector-value"},
+			config: nropv1.NodeGroupConfig{
+				InfoRefreshMode: &infoRefreshPeriodic,
+			},
+			mcpSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"test-mcp-selector-key": "test-mcp-selector-value"}},
 			expectedErrMsg:        "",
 			predefinedMCPSelector: false,
-			originalNodeSelector:  map[string]string(nil),
+			originalNodeSelector:  metav1.LabelSelector{},
 		},
 		{
-			mcpSelector:           map[string]string{"test-mcp-selector-key": ""},
-			expectedErrMsg:        "can not apply a machineConfigPoolSelector with an empty value",
+			config: nropv1.NodeGroupConfig{
+				InfoRefreshMode: &infoRefreshEvents,
+			},
+			mcpSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"test-mcp-selector-key": "test-mcp-selector-value"}},
+			expectedErrMsg:        "",
 			predefinedMCPSelector: false,
-			originalNodeSelector:  map[string]string(nil),
+			originalNodeSelector:  metav1.LabelSelector{},
 		},
 		{
-			mcpSelector:           map[string]string{"": "test-mcp-selector-value"},
-			expectedErrMsg:        "can not apply a machineConfigPoolSelector with an empty key",
+			config: nropv1.NodeGroupConfig{
+				InfoRefreshMode: &infoRefreshPeriodicAndEvents,
+			},
+			mcpSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"test-mcp-selector-key": "test-mcp-selector-value"}},
+			expectedErrMsg:        "",
 			predefinedMCPSelector: false,
-			originalNodeSelector:  map[string]string(nil),
+			originalNodeSelector:  metav1.LabelSelector{},
 		},
 		{
-			mcpSelector:           map[string]string{},
+			config: nropv1.NodeGroupConfig{},
+			mcpSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"test-mcp-selector-key": "test-mcp-selector-value"}},
+			expectedErrMsg:        "",
+			predefinedMCPSelector: false,
+			originalNodeSelector:  metav1.LabelSelector{},
+		},
+		{
+			config: nropv1.NodeGroupConfig{
+				InfoRefreshMode: &infoRefreshPeriodic,
+			},
+			mcpSelector:           metav1.LabelSelector{},
 			expectedErrMsg:        "NUMAResourcesOperator 'machineConfigPoolSelector' cannot be empty",
 			predefinedMCPSelector: false,
-			originalNodeSelector:  map[string]string(nil),
+			originalNodeSelector:  metav1.LabelSelector{},
 		},
 		{
-			mcpSelector:           map[string]string{"test-mcp-selector-key": "test-mcp-selector-value"},
+			config: nropv1.NodeGroupConfig{
+				InfoRefreshMode: &infoRefreshPeriodic,
+			},
+			mcpSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"test-mcp-selector-key": "test-mcp-selector-value"}},
 			expectedErrMsg:        "",
 			predefinedMCPSelector: true,
-			originalNodeSelector:  map[string]string{"other-mcp-selector-key": "other-mcp-selector-value"},
+			originalNodeSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"other-mcp-selector-key": "other-mcp-selector-value"}},
 		},
 		{
-			mcpSelector:           map[string]string{"test-mcp-selector-key": ""},
-			expectedErrMsg:        "can not apply a machineConfigPoolSelector with an empty value",
-			predefinedMCPSelector: true,
-			originalNodeSelector: map[string]string{"test-node-selector-key": "test-node-selector-value",
-				"other-node-selector-key": "other-node-selector-value"},
-		},
-		{
-			mcpSelector:           map[string]string{"test-node-selector-key": "test-node-selector-value"},
+			config: nropv1.NodeGroupConfig{
+				InfoRefreshMode: &infoRefreshPeriodic,
+			},
+			mcpSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"test-mcp-selector-key": "test-mcp-selector-value"}},
 			expectedErrMsg:        "",
 			predefinedMCPSelector: true,
-			originalNodeSelector: map[string]string{"test-node-selector-key": "test-node-selector-value",
-				"other-node-selector-key": "other-node-selector-value"},
+			originalNodeSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"test-node-selector-key": "test-node-selector-value",
+					"other-node-selector-key": "other-node-selector-value"}},
+		},
+		{
+			config: nropv1.NodeGroupConfig{
+				InfoRefreshMode: &infoRefreshPeriodic,
+			},
+			mcpSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"test-mcp-selector-key": "test-mcp-selector-value"}},
+			expectedErrMsg:        "",
+			predefinedMCPSelector: true,
+			originalNodeSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"test-node-selector-key": "test-node-selector-value",
+					"other-node-selector-key": "other-node-selector-value"}},
 		},
 	}
 
@@ -331,32 +377,29 @@ func TestNROPWithMCPSelector(t *testing.T) {
 
 		if testCase.predefinedMCPSelector {
 			testBuilder.Definition.Spec.NodeGroups = []nropv1.NodeGroup{{
-				MachineConfigPoolSelector: &metav1.LabelSelector{
-					MatchLabels: testCase.originalNodeSelector,
+				Config: &nropv1.NodeGroupConfig{
+					InfoRefreshMode: &infoRefreshPeriodic,
 				},
+				MachineConfigPoolSelector: &testCase.originalNodeSelector,
 			}}
 		}
 
-		testBuilder.WithMCPSelector(testCase.mcpSelector)
-
-		assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
+		testBuilder.WithMCPSelector(testCase.config, testCase.mcpSelector)
 
 		if testCase.expectedErrMsg == "" {
 			if testCase.predefinedMCPSelector {
-				assert.Equal(t, []nropv1.NodeGroup{{
-					MachineConfigPoolSelector: &metav1.LabelSelector{
-						MatchLabels: testCase.originalNodeSelector,
-					}},
-					{
-						MachineConfigPoolSelector: &metav1.LabelSelector{
-							MatchLabels: testCase.mcpSelector,
-						}}}, testBuilder.Definition.Spec.NodeGroups)
+				assert.Equal(t, testCase.config.InfoRefreshMode,
+					testBuilder.Definition.Spec.NodeGroups[1].Config.InfoRefreshMode)
+				assert.Equal(t, testCase.mcpSelector.MatchLabels,
+					testBuilder.Definition.Spec.NodeGroups[1].MachineConfigPoolSelector.MatchLabels)
 			} else {
-				assert.Equal(t, []nropv1.NodeGroup{{
-					MachineConfigPoolSelector: &metav1.LabelSelector{
-						MatchLabels: testCase.mcpSelector,
-					}}}, testBuilder.Definition.Spec.NodeGroups)
+				assert.Equal(t, testCase.config.InfoRefreshMode,
+					testBuilder.Definition.Spec.NodeGroups[0].Config.InfoRefreshMode)
+				assert.Equal(t, testCase.mcpSelector.MatchLabels,
+					testBuilder.Definition.Spec.NodeGroups[0].MachineConfigPoolSelector.MatchLabels)
 			}
+		} else {
+			assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
 		}
 	}
 }
