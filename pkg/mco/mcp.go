@@ -130,6 +130,21 @@ func (builder *MCPBuilder) Delete() error {
 	return err
 }
 
+// Update renovates the existing MachineConfigPool object with MachineConfigPool definition in builder.
+func (builder *MCPBuilder) Update() (*MCPBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
+	glog.V(100).Infof("Updating MachineConfigPool %s", builder.Definition.Name)
+
+	var err error
+	builder.Object, err = builder.apiClient.MachineConfigPools().Update(
+		context.TODO(), builder.Definition, metav1.UpdateOptions{})
+
+	return builder, err
+}
+
 // Exists checks whether the given MachineConfigPool exists.
 func (builder *MCPBuilder) Exists() bool {
 	if valid, _ := builder.validate(); !valid {
@@ -164,6 +179,28 @@ func (builder *MCPBuilder) WithMcSelector(mcSelector map[string]string) *MCPBuil
 	}
 
 	builder.Definition.Spec.MachineConfigSelector.MatchLabels = mcSelector
+
+	return builder
+}
+
+// WithMatchExpressions defines the machineConfigSelector with matchExpressions format in the machine config pool.
+func (builder *MCPBuilder) WithMatchExpressions(matchExpressions []metav1.LabelSelectorRequirement) *MCPBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("WithMatchExpressions updates builder object with "+
+		"machineConfigSelector with the matchExpressions: %v", matchExpressions)
+
+	if len(matchExpressions) == 0 {
+		builder.errorMsg = "'machineConfigSelector matchExpressions' field cannot be empty"
+	}
+
+	if builder.errorMsg != "" {
+		return builder
+	}
+
+	builder.Definition.Spec.MachineConfigSelector.MatchExpressions = matchExpressions
 
 	return builder
 }
