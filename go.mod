@@ -52,7 +52,7 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/Masterminds/semver/v3 v3.2.1 // indirect
+	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
 	github.com/ajeddeloh/go-json v0.0.0-20200220154158-5ae607161559 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
@@ -220,7 +220,10 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-require github.com/stolostron/klusterlet-addon-controller v0.0.0-20240606130554-01338045271a
+require (
+	github.com/grafana/loki/operator/apis/loki v0.0.0-20240627192641-91a34868db61
+	github.com/stolostron/klusterlet-addon-controller v0.0.0-20240606130554-01338045271a
+)
 
 require (
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
