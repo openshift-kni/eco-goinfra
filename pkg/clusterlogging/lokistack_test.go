@@ -2,12 +2,13 @@ package clusterlogging
 
 import (
 	"fmt"
+	"testing"
+
 	lokiv1 "github.com/grafana/loki/operator/apis/loki/v1"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"testing"
 )
 
 var (
@@ -487,6 +488,7 @@ func TestLokiStackWithRules(t *testing.T) {
 		} else {
 			assert.NotNil(t, result)
 			assert.Equal(t, testCase.testRules.Enabled, result.Definition.Spec.Rules.Enabled)
+
 			if testCase.testRules.Enabled {
 				assert.Equal(t, testCase.testRules.Selector, result.Definition.Spec.Rules.Selector)
 				assert.Equal(t, testCase.testRules.NamespaceSelector, result.Definition.Spec.Rules.NamespaceSelector)

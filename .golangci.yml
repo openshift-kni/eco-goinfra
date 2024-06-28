@@ -26,6 +26,7 @@ linters-settings:
           - "github.com/grafana-operator/grafana-operator"
           - "github.com/kedacore/keda-olm-operator/apis/keda/v1alpha1"
           - "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
+          - "github.com/grafana/loki/operator/apis/loki/v1"
           - "github.com/NVIDIA/gpu-operator/"
           - "github.com/operator-framework/api"
           - "github.com/argoproj-labs/argocd-operator/api"

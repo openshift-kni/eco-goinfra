@@ -3,6 +3,7 @@ package clusterlogging
 import (
 	"context"
 	"fmt"
+
 	lokiv1 "github.com/grafana/loki/operator/apis/loki/v1"
 
 	"github.com/golang/glog"
