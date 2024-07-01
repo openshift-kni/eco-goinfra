@@ -37,7 +37,7 @@ func NewPoolConfigBuilder(apiClient *clients.Settings, name, nsname string) *Poo
 	glog.V(100).Infof(
 		"Initializing new SriovNetworkPoolConfig structure with the name %s in the namespace %s", name, nsname)
 
-	builder := PoolConfigBuilder{
+	builder := &PoolConfigBuilder{
 		apiClient: apiClient,
 		Definition: &srIovV1.SriovNetworkPoolConfig{
 			ObjectMeta: metav1.ObjectMeta{
@@ -49,16 +49,16 @@ func NewPoolConfigBuilder(apiClient *clients.Settings, name, nsname string) *Poo
 	if name == "" {
 		builder.errorMsg = "SriovNetworkPoolConfig 'name' cannot be empty"
 
-		return &builder
+		return builder
 	}
 
 	if nsname == "" {
 		builder.errorMsg = "SriovNetworkPoolConfig 'nsname' cannot be empty"
 
-		return &builder
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // Create generates an SriovNetworkPoolConfig in the cluster and stores the created object in struct.
@@ -292,13 +292,13 @@ func (builder *PoolConfigBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

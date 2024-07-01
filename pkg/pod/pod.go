@@ -59,18 +59,24 @@ func NewBuilder(apiClient *clients.Settings, name, nsname, image string) *Builde
 		glog.V(100).Infof("The name of the pod is empty")
 
 		builder.errorMsg = "pod's name is empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the pod is empty")
 
 		builder.errorMsg = "namespace's name is empty"
+
+		return builder
 	}
 
 	if image == "" {
 		glog.V(100).Infof("The image of the pod is empty")
 
 		builder.errorMsg = "pod's image is empty"
+
+		return builder
 	}
 
 	defaultContainer, err := NewContainerBuilder("test", image, []string{"/bin/bash", "-c", "sleep INF"}).GetContainerCfg()
@@ -79,6 +85,8 @@ func NewBuilder(apiClient *clients.Settings, name, nsname, image string) *Builde
 		glog.V(100).Infof("Failed to define the default container settings")
 
 		builder.errorMsg = err.Error()
+
+		return builder
 	}
 
 	builder.Definition.Spec.Containers = append(builder.Definition.Spec.Containers, *defaultContainer)
@@ -90,7 +98,7 @@ func NewBuilder(apiClient *clients.Settings, name, nsname, image string) *Builde
 func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	glog.V(100).Infof("Pulling existing pod name: %s namespace:%s", name, nsname)
 
-	builder := Builder{
+	builder := &Builder{
 		apiClient: apiClient,
 		Definition: &corev1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
@@ -103,17 +111,13 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	if name == "" {
 		glog.V(100).Infof("The name of the pod is empty")
 
-		builder.errorMsg = "pod 'name' cannot be empty"
+		return nil, fmt.Errorf("pod 'name' cannot be empty")
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the pod is empty")
 
-		builder.errorMsg = "pod 'namespace' cannot be empty"
-	}
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf("faield to pull pod object due to the following error: %s", builder.errorMsg)
+		return nil, fmt.Errorf("pod 'namespace' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -125,7 +129,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // DefineOnNode adds nodeName to the pod's definition.
@@ -142,17 +146,19 @@ func (builder *Builder) DefineOnNode(nodeName string) *Builder {
 
 		builder.errorMsg = fmt.Sprintf(
 			"can not redefine running pod. pod already running on node %s", builder.Object.Spec.NodeName)
+
+		return builder
 	}
 
 	if nodeName == "" {
 		glog.V(100).Infof("The node name is empty")
 
 		builder.errorMsg = "can not define pod on empty node"
+
+		return builder
 	}
 
-	if builder.errorMsg == "" {
-		builder.Definition.Spec.NodeName = nodeName
-	}
+	builder.Definition.Spec.NodeName = nodeName
 
 	return builder
 }
@@ -572,9 +578,7 @@ func (builder *Builder) WithRestartPolicy(restartPolicy corev1.RestartPolicy) *B
 			builder.Definition.Name, builder.Definition.Namespace)
 
 		builder.errorMsg = "can not define pod with empty restart policy"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -667,9 +671,7 @@ func (builder *Builder) WithNodeSelector(nodeSelector map[string]string) *Builde
 			builder.Definition.Name, builder.Definition.Namespace)
 
 		builder.errorMsg = "can not define pod with empty nodeSelector"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -711,9 +713,7 @@ func (builder *Builder) WithVolume(volume corev1.Volume) *Builder {
 		glog.V(100).Infof("The volume's Name cannot be empty")
 
 		builder.errorMsg = "The volume's Name cannot be empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -740,12 +740,16 @@ func (builder *Builder) WithLocalVolume(volumeName, mountPath string) *Builder {
 		glog.V(100).Infof("The 'volumeName' of the pod is empty")
 
 		builder.errorMsg = "'volumeName' parameter is empty"
+
+		return builder
 	}
 
 	if mountPath == "" {
 		glog.V(100).Infof("The 'mountPath' of the pod is empty")
 
 		builder.errorMsg = "'mountPath' parameter is empty"
+
+		return builder
 	}
 
 	mountConfig := corev1.VolumeMount{Name: volumeName, MountPath: mountPath, ReadOnly: false}
@@ -816,6 +820,8 @@ func (builder *Builder) WithAdditionalInitContainer(container *corev1.Container)
 		glog.V(100).Infof("The 'container' parameter of the pod is empty")
 
 		builder.errorMsg = "'container' parameter cannot be empty"
+
+		return builder
 	}
 
 	if builder.errorMsg != "" {
@@ -845,9 +851,7 @@ func (builder *Builder) WithSecondaryNetwork(network []*multus.NetworkSelectionE
 
 	if err != nil {
 		builder.errorMsg = fmt.Sprintf("error to unmarshal network annotation due to: %s", err.Error())
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -963,13 +967,15 @@ func (builder *Builder) WithSecurityContext(securityContext *corev1.PodSecurityC
 		glog.V(100).Infof("The 'securityContext' of the pod is empty")
 
 		builder.errorMsg = "'securityContext' parameter is empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
 	builder.isMutationAllowed("SecurityContext")
+
+	if builder.errorMsg != "" {
+		return builder
+	}
 
 	builder.Definition.Spec.SecurityContext = securityContext
 
@@ -1038,9 +1044,7 @@ func (builder *Builder) WithLabel(labelKey, labelValue string) *Builder {
 
 	if labelKey == "" {
 		builder.errorMsg = "can not apply empty labelKey"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -1241,13 +1245,13 @@ func (builder *Builder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

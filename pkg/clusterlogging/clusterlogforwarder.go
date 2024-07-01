@@ -46,12 +46,16 @@ func NewClusterLogForwarderBuilder(
 		glog.V(100).Infof("The name of the clusterlogforwarder is empty")
 
 		builder.errorMsg = "clusterlogforwarder 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the clusterlogforwarder is empty")
 
 		builder.errorMsg = "clusterlogforwarder 'nsname' cannot be empty"
+
+		return builder
 	}
 
 	return builder
@@ -70,9 +74,7 @@ func (builder *ClusterLogForwarderBuilder) WithOutput(outputSpec *clov1.OutputSp
 		glog.V(100).Infof("The 'outputSpec' of the deployment is empty")
 
 		builder.errorMsg = "'outputSpec' parameter is empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -98,9 +100,7 @@ func (builder *ClusterLogForwarderBuilder) WithPipeline(pipelineSpec *clov1.Pipe
 		glog.V(100).Infof("The 'pipelineSpec' of the deployment is empty")
 
 		builder.errorMsg = "'pipelineSpec' parameter is empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 

@@ -37,7 +37,7 @@ func NewClusterImageSetBuilder(apiClient *clients.Settings, name, releaseImage s
 		return nil
 	}
 
-	builder := ClusterImageSetBuilder{
+	builder := &ClusterImageSetBuilder{
 		apiClient: apiClient,
 		Definition: &hiveV1.ClusterImageSet{
 			ObjectMeta: metav1.ObjectMeta{
@@ -53,15 +53,19 @@ func NewClusterImageSetBuilder(apiClient *clients.Settings, name, releaseImage s
 		glog.V(100).Infof("The name of the clusterimageset is empty")
 
 		builder.errorMsg = "clusterimageset 'name' cannot be empty"
+
+		return builder
 	}
 
 	if releaseImage == "" {
 		glog.V(100).Infof("The releaseImage of the clusterimageset is empty")
 
 		builder.errorMsg = "clusterimageset 'releaseImage' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // PullClusterImageSet loads an existing clusterimageset into ClusterImageSetBuilder struct.
@@ -74,7 +78,7 @@ func PullClusterImageSet(apiClient *clients.Settings, name string) (*ClusterImag
 		return nil, fmt.Errorf("clusterImageSet 'apiClient' cannot be empty")
 	}
 
-	builder := ClusterImageSetBuilder{
+	builder := &ClusterImageSetBuilder{
 		apiClient: apiClient,
 		Definition: &hiveV1.ClusterImageSet{
 			ObjectMeta: metav1.ObjectMeta{
@@ -95,7 +99,7 @@ func PullClusterImageSet(apiClient *clients.Settings, name string) (*ClusterImag
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Get fetches the defined clusterimageset from the cluster.
@@ -279,13 +283,13 @@ func (builder *ClusterImageSetBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

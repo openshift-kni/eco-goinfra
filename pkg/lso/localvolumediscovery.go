@@ -33,7 +33,7 @@ func NewLocalVolumeDiscoveryBuilder(apiClient *clients.Settings, name, nsname st
 	glog.V(100).Infof("Initializing new localVolumeDiscovery structure with the following params: name: "+
 		"%s, namespace: %s", name, nsname)
 
-	builder := LocalVolumeDiscoveryBuilder{
+	builder := &LocalVolumeDiscoveryBuilder{
 		apiClient: apiClient,
 		Definition: &lsoV1alpha1.LocalVolumeDiscovery{
 			ObjectMeta: metav1.ObjectMeta{
@@ -47,15 +47,19 @@ func NewLocalVolumeDiscoveryBuilder(apiClient *clients.Settings, name, nsname st
 		glog.V(100).Infof("The name of the localVolumeDiscovery is empty")
 
 		builder.errorMsg = "localVolumeDiscovery 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The nsname of the localVolumeDiscovery is empty")
 
 		builder.errorMsg = "localVolumeDiscovery 'nsname' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // PullLocalVolumeDiscovery retrieves an existing localVolumeDiscovery object from the cluster.
@@ -76,13 +80,13 @@ func PullLocalVolumeDiscovery(apiClient *clients.Settings, name, nsname string) 
 	if name == "" {
 		glog.V(100).Infof("The name of the localVolumeDiscovery is empty")
 
-		builder.errorMsg = "localVolumeDiscovery 'name' cannot be empty"
+		return nil, fmt.Errorf("localVolumeDiscovery 'name' cannot be empty")
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the localVolumeDiscovery is empty")
 
-		builder.errorMsg = "localVolumeDiscovery 'nsname' cannot be empty"
+		return nil, fmt.Errorf("localVolumeDiscovery 'nsname' cannot be empty")
 	}
 
 	if !builder.Exists() {

@@ -43,13 +43,13 @@ func PullPackageManifest(apiClient *clients.Settings, name, nsname string) (*Pac
 	if name == "" {
 		glog.V(100).Infof("The Name of the PackageManifest is empty")
 
-		builder.errorMsg = "PackageManifest 'name' cannot be empty"
+		return nil, fmt.Errorf("PackageManifest 'name' cannot be empty")
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The Namespace of the PackageManifest is empty")
 
-		builder.errorMsg = "PackageManifest 'nsname' cannot be empty"
+		return builder, fmt.Errorf("PackageManifest 'nsname' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -132,7 +132,7 @@ func (builder *PackageManifestBuilder) Delete() error {
 
 	builder.Object = nil
 
-	return err
+	return nil
 }
 
 // validate will check that the builder and builder definition are properly initialized before
@@ -149,13 +149,13 @@ func (builder *PackageManifestBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

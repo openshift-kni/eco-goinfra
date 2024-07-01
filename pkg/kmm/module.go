@@ -36,7 +36,7 @@ func NewModuleBuilder(
 	glog.V(100).Infof(
 		"Initializing new Module structure with following params: %s, %s", name, nsname)
 
-	builder := ModuleBuilder{
+	builder := &ModuleBuilder{
 		apiClient: apiClient,
 		Definition: &moduleV1Beta1.Module{
 			ObjectMeta: metav1.ObjectMeta{
@@ -50,15 +50,19 @@ func NewModuleBuilder(
 		glog.V(100).Infof("The name of the Module is empty")
 
 		builder.errorMsg = "Module 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the module is empty")
 
 		builder.errorMsg = "Module 'namespace' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // WithNodeSelector adds the specified NodeSelector to the Module.
@@ -75,9 +79,7 @@ func (builder *ModuleBuilder) WithNodeSelector(nodeSelector map[string]string) *
 		glog.V(100).Infof("Can not redefine Module with empty nodeSelector map")
 
 		builder.errorMsg = "Module 'nodeSelector' cannot be empty map"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -120,9 +122,7 @@ func (builder *ModuleBuilder) WithImageRepoSecret(imageRepoSecret string) *Modul
 
 	if imageRepoSecret == "" {
 		builder.errorMsg = "can not redefine module with empty imageRepoSecret"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -139,13 +139,13 @@ func (builder *ModuleBuilder) WithDevicePluginVolume(name string, configMapName 
 
 	if name == "" {
 		builder.errorMsg = "cannot redefine with empty volume 'name'"
+
+		return builder
 	}
 
 	if configMapName == "" {
 		builder.errorMsg = "cannot redefine with empty 'configMapName'"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -175,9 +175,7 @@ func (builder *ModuleBuilder) WithModuleLoaderContainer(
 
 	if container == nil {
 		builder.errorMsg = "invalid 'container' argument can not be nil"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -195,9 +193,7 @@ func (builder *ModuleBuilder) WithDevicePluginContainer(
 
 	if container == nil {
 		builder.errorMsg = "invalid 'container' argument can not be nil"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -251,7 +247,7 @@ func (builder *ModuleBuilder) WithOptions(options ...ModuleAdditionalOptions) *M
 func Pull(apiClient *clients.Settings, name, nsname string) (*ModuleBuilder, error) {
 	glog.V(100).Infof("Pulling existing module name %s under namespace %s from cluster", name, nsname)
 
-	builder := ModuleBuilder{
+	builder := &ModuleBuilder{
 		apiClient: apiClient,
 		Definition: &moduleV1Beta1.Module{
 			ObjectMeta: metav1.ObjectMeta{
@@ -264,13 +260,13 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*ModuleBuilder, err
 	if name == "" {
 		glog.V(100).Infof("The name of the module is empty")
 
-		builder.errorMsg = "module 'name' cannot be empty"
+		return nil, fmt.Errorf("module 'name' cannot be empty")
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the module is empty")
 
-		builder.errorMsg = "module 'namespace' cannot be empty"
+		return nil, fmt.Errorf("module 'namespace' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -279,7 +275,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*ModuleBuilder, err
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Create builds module in the cluster and stores object in struct.
@@ -384,9 +380,7 @@ func (builder *ModuleBuilder) withServiceAccount(srvAccountName string, accountT
 
 	if srvAccountName == "" {
 		builder.errorMsg = "can not redefine module with empty ServiceAccount"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -401,6 +395,8 @@ func (builder *ModuleBuilder) withServiceAccount(srvAccountName string, accountT
 		builder.Definition.Spec.DevicePlugin.ServiceAccountName = srvAccountName
 	default:
 		builder.errorMsg = "invalid account type parameter. Supported parameters are: 'module', 'device'"
+
+		return builder
 	}
 
 	return builder
@@ -420,13 +416,13 @@ func (builder *ModuleBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

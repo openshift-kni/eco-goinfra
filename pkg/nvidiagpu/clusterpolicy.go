@@ -39,7 +39,7 @@ func NewBuilderFromObjectString(apiClient *clients.Settings, almExample string) 
 		"Initializing new Builder structure from almExample string with clusterPolicy name: %s",
 		clusterPolicy.Name)
 
-	builder := Builder{
+	builder := &Builder{
 		apiClient:  apiClient,
 		Definition: clusterPolicy,
 	}
@@ -49,15 +49,19 @@ func NewBuilderFromObjectString(apiClient *clients.Settings, almExample string) 
 			"Error initializing ClusterPolicy from alm-examples: %s", err.Error())
 
 		builder.errorMsg = fmt.Sprintf("Error initializing ClusterPolicy from alm-examples: %s", err.Error())
+
+		return builder
 	}
 
 	if builder.Definition == nil {
 		glog.V(100).Infof("The ClusterPolicy object definition is nil")
 
 		builder.errorMsg = "ClusterPolicy 'Object.Definition' is nil"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // Get returns clusterPolicy object if found.
@@ -88,7 +92,7 @@ func (builder *Builder) Get() (*nvidiagpuv1.ClusterPolicy, error) {
 func Pull(apiClient *clients.Settings, name string) (*Builder, error) {
 	glog.V(100).Infof("Pulling existing clusterPolicy name: %s", name)
 
-	builder := Builder{
+	builder := &Builder{
 		apiClient: apiClient,
 		Definition: &nvidiagpuv1.ClusterPolicy{
 			ObjectMeta: metav1.ObjectMeta{
@@ -100,7 +104,7 @@ func Pull(apiClient *clients.Settings, name string) (*Builder, error) {
 	if name == "" {
 		glog.V(100).Infof("ClusterPolicy name is empty")
 
-		builder.errorMsg = "ClusterPolicy 'name' cannot be empty"
+		return nil, fmt.Errorf("ClusterPolicy 'name' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -109,7 +113,7 @@ func Pull(apiClient *clients.Settings, name string) (*Builder, error) {
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Exists checks whether the given ClusterPolicy exists.
@@ -239,13 +243,13 @@ func (builder *Builder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

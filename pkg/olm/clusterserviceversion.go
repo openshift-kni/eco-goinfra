@@ -32,7 +32,7 @@ func PullClusterServiceVersion(apiClient *clients.Settings, name, namespace stri
 	error) {
 	glog.V(100).Infof("Pulling existing clusterserviceversion name %s in namespace %s", name, namespace)
 
-	builder := ClusterServiceVersionBuilder{
+	builder := &ClusterServiceVersionBuilder{
 		apiClient: apiClient,
 		Definition: &oplmV1alpha1.ClusterServiceVersion{
 			ObjectMeta: metav1.ObjectMeta{
@@ -43,11 +43,15 @@ func PullClusterServiceVersion(apiClient *clients.Settings, name, namespace stri
 	}
 
 	if name == "" {
-		builder.errorMsg = "clusterserviceversion 'name' cannot be empty"
+		glog.V(100).Infof("The name of the clusterserviceversion is empty")
+
+		return nil, fmt.Errorf("clusterserviceversion 'name' cannot be empty")
 	}
 
 	if namespace == "" {
-		builder.errorMsg = "clusterserviceversion 'namespace' cannot be empty"
+		glog.V(100).Infof("The namespace of the clusterserviceversion is empty")
+
+		return nil, fmt.Errorf("clusterserviceversion 'namespace' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -56,7 +60,7 @@ func PullClusterServiceVersion(apiClient *clients.Settings, name, namespace stri
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Exists checks whether the given clusterserviceversion exists.
@@ -99,7 +103,7 @@ func (builder *ClusterServiceVersionBuilder) Delete() error {
 
 	builder.Object = nil
 
-	return err
+	return nil
 }
 
 // GetAlmExamples extracts and returns the alm-examples block from the clusterserviceversion.
@@ -175,13 +179,13 @@ func (builder *ClusterServiceVersionBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

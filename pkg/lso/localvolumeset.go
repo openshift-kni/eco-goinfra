@@ -31,7 +31,7 @@ type LocalVolumeSetBuilder struct {
 func NewLocalVolumeSetBuilder(apiClient *clients.Settings, name, nsname string) *LocalVolumeSetBuilder {
 	glog.V(100).Infof("Initializing new %s localVolumeSet structure in %s namespace", name, nsname)
 
-	builder := LocalVolumeSetBuilder{
+	builder := &LocalVolumeSetBuilder{
 		apiClient: apiClient,
 		Definition: &lsoV1alpha1.LocalVolumeSet{
 			ObjectMeta: metav1.ObjectMeta{
@@ -45,15 +45,19 @@ func NewLocalVolumeSetBuilder(apiClient *clients.Settings, name, nsname string) 
 		glog.V(100).Infof("The name of the localVolumeSet is empty")
 
 		builder.errorMsg = "localVolumeSet 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The nsname of the localVolumeSet is empty")
 
 		builder.errorMsg = "localVolumeSet 'nsname' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // PullLocalVolumeSet retrieves an existing localVolumeSet object from the cluster.
@@ -61,7 +65,7 @@ func PullLocalVolumeSet(apiClient *clients.Settings, name, nsname string) (*Loca
 	glog.V(100).Infof(
 		"Pulling localVolumeSet object name: %s in namespace: %s", name, nsname)
 
-	builder := LocalVolumeSetBuilder{
+	builder := &LocalVolumeSetBuilder{
 		apiClient: apiClient,
 		Definition: &lsoV1alpha1.LocalVolumeSet{
 			ObjectMeta: metav1.ObjectMeta{
@@ -74,13 +78,13 @@ func PullLocalVolumeSet(apiClient *clients.Settings, name, nsname string) (*Loca
 	if name == "" {
 		glog.V(100).Infof("The name of the localVolumeSet is empty")
 
-		builder.errorMsg = "localVolumeSet 'name' cannot be empty"
+		return nil, fmt.Errorf("localVolumeSet 'name' cannot be empty")
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the localVolumeSet is empty")
 
-		builder.errorMsg = "localVolumeSet 'nsname' cannot be empty"
+		return nil, fmt.Errorf("localVolumeSet 'nsname' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -89,7 +93,7 @@ func PullLocalVolumeSet(apiClient *clients.Settings, name, nsname string) (*Loca
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Get fetches existing localVolumeSet from cluster.

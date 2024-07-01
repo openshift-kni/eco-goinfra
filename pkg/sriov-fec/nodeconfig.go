@@ -46,7 +46,7 @@ func NewNodeConfigBuilder(
 		"Initializing new SriovFecNodeConfig structure with the following params: %s, %s, %v",
 		name, nsname, label)
 
-	builder := NodeConfigBuilder{
+	builder := &NodeConfigBuilder{
 		apiClient: apiClient,
 		Definition: &sriovfectypes.SriovFecNodeConfig{
 			TypeMeta: metaV1.TypeMeta{
@@ -64,15 +64,19 @@ func NewNodeConfigBuilder(
 		glog.V(100).Infof("The name of the SriovFecNodeConfig is empty")
 
 		builder.errorMsg = "SriovFecNodeConfig 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the SriovFecNodeConfig is empty")
 
 		builder.errorMsg = "SriovFecNodeConfig 'nsname' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // Pull retrieves an existing SriovFecNodeConfig.io object from the cluster.
@@ -80,7 +84,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*NodeConfigBuilder,
 	glog.V(100).Infof(
 		"Pulling SriovFecNodeConfig.io object name: %s in namespace: %s", name, nsname)
 
-	builder := NodeConfigBuilder{
+	builder := &NodeConfigBuilder{
 		apiClient: apiClient,
 		Definition: &sriovfectypes.SriovFecNodeConfig{
 			ObjectMeta: metaV1.ObjectMeta{
@@ -91,10 +95,14 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*NodeConfigBuilder,
 	}
 
 	if name == "" {
+		glog.V(100).Infof("The name of the SriovFecNodeConfig is empty")
+
 		return nil, fmt.Errorf("the name of the SriovFecNodeConfig is empty")
 	}
 
 	if nsname == "" {
+		glog.V(100).Infof("The namespace of the SriovFecNodeConfig is empty")
+
 		return nil, fmt.Errorf("the namespace of the SriovFecNodeConfig is empty")
 	}
 
@@ -104,7 +112,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*NodeConfigBuilder,
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Exists checks whether the given SriovFecNodeConfig exists.
@@ -232,10 +240,6 @@ func (builder *NodeConfigBuilder) Update(force bool) (*NodeConfigBuilder, error)
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
 
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
-	}
-
 	builder.Definition.ResourceVersion = builder.Object.ResourceVersion
 	builder.Definition.ObjectMeta.ResourceVersion = builder.Object.ObjectMeta.ResourceVersion
 
@@ -317,13 +321,13 @@ func (builder *NodeConfigBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

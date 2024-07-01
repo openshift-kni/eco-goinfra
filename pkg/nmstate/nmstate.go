@@ -33,7 +33,7 @@ type Builder struct {
 func NewBuilder(apiClient *clients.Settings, name string) *Builder {
 	glog.V(100).Infof("Initializing new NMState structure with the name: %s", name)
 
-	builder := Builder{
+	builder := &Builder{
 		apiClient: apiClient,
 		Definition: &nmstateV1.NMState{
 			ObjectMeta: metav1.ObjectMeta{
@@ -46,9 +46,11 @@ func NewBuilder(apiClient *clients.Settings, name string) *Builder {
 		glog.V(100).Infof("The name of the NMState is empty")
 
 		builder.errorMsg = "NMState 'name' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // Exists checks whether the given NMState exists.
@@ -86,7 +88,7 @@ func (builder *Builder) Get() (*nmstateV1.NMState, error) {
 		return nil, err
 	}
 
-	return nmstate, err
+	return nmstate, nil
 }
 
 // Create makes a NMState in the cluster and stores the created object in struct.
@@ -162,7 +164,7 @@ func (builder *Builder) Update(force bool) (*Builder, error) {
 func PullNMstate(apiClient *clients.Settings, name string) (*Builder, error) {
 	glog.V(100).Infof("Pulling NMState object name: %s", name)
 
-	builder := Builder{
+	builder := &Builder{
 		apiClient: apiClient,
 		Definition: &nmstateV1.NMState{
 			ObjectMeta: metav1.ObjectMeta{
@@ -174,7 +176,7 @@ func PullNMstate(apiClient *clients.Settings, name string) (*Builder, error) {
 	if name == "" {
 		glog.V(100).Infof("The name of the NMState is empty")
 
-		builder.errorMsg = "NMState 'name' cannot be empty"
+		return nil, fmt.Errorf("NMState 'name' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -183,7 +185,7 @@ func PullNMstate(apiClient *clients.Settings, name string) (*Builder, error) {
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // validate will check that the builder and builder definition are properly initialized before
@@ -200,13 +202,13 @@ func (builder *Builder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

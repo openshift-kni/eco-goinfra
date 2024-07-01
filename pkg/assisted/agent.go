@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	nonExistentMsg = "Cannot update non-existent agent"
+	nonExistentMsg = "cannot update non-existent agent"
 )
 
 // agentBuilder provides struct for the agent object containing connection to
@@ -74,13 +74,13 @@ func PullAgent(apiClient *clients.Settings, name, nsname string) (*agentBuilder,
 	if name == "" {
 		glog.V(100).Infof("The name of the agent is empty")
 
-		builder.errorMsg = "agent 'name' cannot be empty"
+		return nil, fmt.Errorf("agent 'name' cannot be empty")
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the agent is empty")
 
-		builder.errorMsg = "agent 'namespace' cannot be empty"
+		return nil, fmt.Errorf("agent 'namespace' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -106,9 +106,7 @@ func (builder *agentBuilder) WithHostName(hostname string) *agentBuilder {
 			builder.Definition.Name, builder.Definition.Namespace)
 
 		builder.errorMsg = nonExistentMsg
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -131,9 +129,7 @@ func (builder *agentBuilder) WithRole(role string) *agentBuilder {
 			builder.Definition.Name, builder.Definition.Namespace)
 
 		builder.errorMsg = nonExistentMsg
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -304,11 +300,7 @@ func (builder *agentBuilder) Update() (*agentBuilder, error) {
 		glog.V(100).Infof("agent %s in namespace %s does not exist",
 			builder.Definition.Name, builder.Definition.Namespace)
 
-		builder.errorMsg = nonExistentMsg
-	}
-
-	if builder.errorMsg != "" {
-		return nil, fmt.Errorf(builder.errorMsg)
+		return builder, fmt.Errorf(nonExistentMsg)
 	}
 
 	err := builder.apiClient.Update(context.TODO(), builder.Definition)
@@ -372,13 +364,13 @@ func (builder *agentBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

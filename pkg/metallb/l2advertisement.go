@@ -43,7 +43,7 @@ func NewL2AdvertisementBuilder(apiClient *clients.Settings, name, nsname string)
 		return nil
 	}
 
-	builder := L2AdvertisementBuilder{
+	builder := &L2AdvertisementBuilder{
 		apiClient: apiClient,
 		Definition: &mlbtypes.L2Advertisement{
 			TypeMeta: metaV1.TypeMeta{
@@ -61,15 +61,19 @@ func NewL2AdvertisementBuilder(apiClient *clients.Settings, name, nsname string)
 		glog.V(100).Infof("The name of the L2Advertisement is empty")
 
 		builder.errorMsg = "L2Advertisement 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the L2Advertisement is empty")
 
 		builder.errorMsg = "L2Advertisement 'nsname' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // PullL2Advertisement pulls existing L2Advertisement from cluster.
@@ -82,7 +86,7 @@ func PullL2Advertisement(apiClient *clients.Settings, name, nsname string) (*L2A
 		return nil, fmt.Errorf("l2Advertisement 'apiClient' cannot be empty")
 	}
 
-	builder := L2AdvertisementBuilder{
+	builder := &L2AdvertisementBuilder{
 		apiClient: apiClient,
 		Definition: &mlbtypes.L2Advertisement{
 			ObjectMeta: metaV1.ObjectMeta{
@@ -110,7 +114,7 @@ func PullL2Advertisement(apiClient *clients.Settings, name, nsname string) (*L2A
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Exists checks whether the given L2Advertisement exists.
@@ -272,7 +276,7 @@ func (builder *L2AdvertisementBuilder) Update(force bool) (*L2AdvertisementBuild
 		}
 	}
 
-	return builder, err
+	return builder, nil
 }
 
 // WithNodeSelector adds the specified NodeSelectors to the L2Advertisement.
@@ -287,9 +291,7 @@ func (builder *L2AdvertisementBuilder) WithNodeSelector(nodeSelectors []metaV1.L
 
 	if len(nodeSelectors) < 1 {
 		builder.errorMsg = "error: nodeSelectors setting is empty list, the list should contain at least one element"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -310,9 +312,7 @@ func (builder *L2AdvertisementBuilder) WithIPAddressPools(ipAddressPools []strin
 
 	if len(ipAddressPools) < 1 {
 		builder.errorMsg = "error: IPAddressPools setting is empty list, the list should contain at least one element"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -335,9 +335,7 @@ func (builder *L2AdvertisementBuilder) WithIPAddressPoolsSelectors(
 	if len(poolSelector) < 1 {
 		builder.errorMsg = "error: IPAddressPoolSelectors setting is empty list, " +
 			"the list should contain at least one element"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -393,13 +391,13 @@ func (builder *L2AdvertisementBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

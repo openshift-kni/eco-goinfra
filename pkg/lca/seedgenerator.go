@@ -46,7 +46,7 @@ func NewSeedGeneratorBuilder(
 		return nil
 	}
 
-	builder := SeedGeneratorBuilder{
+	builder := &SeedGeneratorBuilder{
 		apiClient: apiClient.Client,
 		Definition: &lcasgv1.SeedGenerator{
 			ObjectMeta: metav1.ObjectMeta{
@@ -59,9 +59,11 @@ func NewSeedGeneratorBuilder(
 		glog.V(100).Infof("The name of the seedgenerator must be " + seedImageName)
 
 		builder.errorMsg = "SeedGenerator name must be " + seedImageName
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // WithOptions creates seedgenerator with generic mutation options.
@@ -304,13 +306,13 @@ func (builder *SeedGeneratorBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {
