@@ -194,7 +194,9 @@ func (builder *SetBuilder) Delete() error {
 		builder.Definition.Name)
 
 	if !builder.Exists() {
-		return fmt.Errorf("machineSet cannot be deleted because it does not exist")
+		builder.Object = nil
+
+		return nil
 	}
 
 	err := builder.apiClient.MachineSets(builder.Object.Namespace).Delete(

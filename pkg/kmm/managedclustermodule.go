@@ -235,7 +235,9 @@ func (builder *ManagedClusterModuleBuilder) Delete() (*ManagedClusterModuleBuild
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return builder, fmt.Errorf("managedclustermodule cannot be deleted because it does not exist")
+		builder.Object = nil
+
+		return builder, nil
 	}
 
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)

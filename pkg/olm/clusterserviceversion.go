@@ -87,6 +87,8 @@ func (builder *ClusterServiceVersionBuilder) Delete() error {
 		builder.Definition.Namespace)
 
 	if !builder.Exists() {
+		builder.Object = nil
+
 		return nil
 	}
 

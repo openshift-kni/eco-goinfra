@@ -140,7 +140,9 @@ func (builder *Builder) Delete() (*Builder, error) {
 	glog.V(100).Infof("Deleting ClusterPolicy %s", builder.Definition.Name)
 
 	if !builder.Exists() {
-		return builder, fmt.Errorf("clusterpolicy cannot be deleted because it does not exist")
+		builder.Object = nil
+
+		return builder, nil
 	}
 
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)

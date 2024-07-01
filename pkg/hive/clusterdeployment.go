@@ -304,7 +304,9 @@ func (builder *ClusterDeploymentBuilder) Delete() error {
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return fmt.Errorf("clusterdeployment cannot be deleted because it does not exist")
+		builder.Object = nil
+
+		return nil
 	}
 
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)

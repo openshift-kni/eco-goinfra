@@ -132,6 +132,8 @@ func (builder *Builder) Delete() error {
 	glog.V(100).Infof("Deleting the secret %s from namespace %s", builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
+		builder.Object = nil
+
 		return nil
 	}
 

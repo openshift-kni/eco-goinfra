@@ -246,6 +246,8 @@ func (builder *ClassBuilder) Delete() error {
 	glog.V(100).Infof("Deleting storageclass %s", builder.Definition.Name)
 
 	if !builder.Exists() {
+		builder.Object = nil
+
 		return nil
 	}
 

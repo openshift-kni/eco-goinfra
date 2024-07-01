@@ -170,7 +170,9 @@ func (builder *LocalVolumeDiscoveryBuilder) Delete() error {
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return fmt.Errorf("localVolumeDiscovery cannot be deleted because it does not exist")
+		builder.Object = nil
+
+		return nil
 	}
 
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)

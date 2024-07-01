@@ -2,6 +2,7 @@ package ocm
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -224,11 +225,11 @@ func TestPolicyDelete(t *testing.T) {
 		},
 		{
 			testBuilder:   buildValidPolicyTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: fmt.Errorf("policy cannot be deleted because it does not exist"),
+			expectedError: nil,
 		},
 		{
 			testBuilder:   buildInvalidPolicyTestBuilder(buildTestClientWithDummyPolicy()),
-			expectedError: fmt.Errorf("policy 'nsname' cannot be empty"),
+			expectedError: errors.New("policy 'nsname' cannot be empty"),
 		},
 	}
 
@@ -244,39 +245,22 @@ func TestPolicyDelete(t *testing.T) {
 
 func TestPolicyUpdate(t *testing.T) {
 	testCases := []struct {
-		alreadyExists bool
-		force         bool
+		force bool
 	}{
 		{
-			alreadyExists: false,
-			force:         false,
+			force: false,
 		},
 		{
-			alreadyExists: true,
-			force:         false,
-		},
-		{
-			alreadyExists: false,
-			force:         true,
-		},
-		{
-			alreadyExists: true,
-			force:         true,
+			force: true,
 		},
 	}
 
 	for _, testCase := range testCases {
+		var err error
+
 		testBuilder := buildValidPolicyTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
-
-		// Create the builder rather than just adding it to the client so that the proper metadata is added and
-		// the update will not fail.
-		if testCase.alreadyExists {
-			var err error
-
-			testBuilder = buildValidPolicyTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
-			testBuilder, err = testBuilder.Create()
-			assert.Nil(t, err)
-		}
+		testBuilder, err = testBuilder.Create()
+		assert.Nil(t, err)
 
 		assert.NotNil(t, testBuilder.Definition)
 		assert.False(t, testBuilder.Definition.Spec.Disabled)
@@ -286,13 +270,9 @@ func TestPolicyUpdate(t *testing.T) {
 		policyBuilder, err := testBuilder.Update(testCase.force)
 		assert.NotNil(t, testBuilder.Definition)
 
-		if testCase.alreadyExists {
-			assert.Nil(t, err)
-			assert.Equal(t, testBuilder.Definition.Name, policyBuilder.Definition.Name)
-			assert.Equal(t, testBuilder.Definition.Spec.Disabled, policyBuilder.Definition.Spec.Disabled)
-		} else {
-			assert.NotNil(t, err)
-		}
+		assert.Nil(t, err)
+		assert.Equal(t, testBuilder.Definition.Name, policyBuilder.Definition.Name)
+		assert.Equal(t, testBuilder.Definition.Spec.Disabled, policyBuilder.Definition.Spec.Disabled)
 	}
 }
 

@@ -330,6 +330,8 @@ func (builder *NetworkBuilder) Delete() error {
 	}
 
 	if !builder.Exists() {
+		builder.Object = nil
+
 		return nil
 	}
 
