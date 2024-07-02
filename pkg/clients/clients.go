@@ -463,6 +463,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			k8sClientObjects = append(k8sClientObjects, v)
 		case *corev1.Node:
 			k8sClientObjects = append(k8sClientObjects, v)
+		case *corev1.Secret:
+			k8sClientObjects = append(k8sClientObjects, v)
 		case *appsv1.Deployment:
 			k8sClientObjects = append(k8sClientObjects, v)
 		case *appsv1.StatefulSet:
