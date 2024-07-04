@@ -4,61 +4,25 @@ import (
 	"fmt"
 	"testing"
 
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
+	odfoperatorv1alpha1 "github.com/red-hat-storage/odf-operator/api/v1alpha1"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	ocsoperatorv1 "github.com/red-hat-storage/ocs-operator/api/v1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var (
-	storageClusterGVK = schema.GroupVersionKind{
-		Group:   APIGroup,
-		Version: APIVersion,
-		Kind:    StorageClusterKind,
-	}
-	defaultStorageClusterName      = "ocs-storagecluster"
-	defaultStorageClusterNamespace = "openshift-storage"
-	defaultManageNodes             = false
-	defaultStorageClassName        = "ocs-storagecluster-cephfs"
-	defaultVolumeMode              = corev1.PersistentVolumeBlock
-	errStorageClusterNotExists     = fmt.Errorf("storageCluster object ocs-storagecluster does not exist in " +
-		"namespace openshift-storage")
+	defaultSystemODFName      = "ocs-cluster-system"
+	defaultSystemODFNamespace = "openshift-odf"
 )
 
-//nolint:funlen
-func TestSorageClusterPull(t *testing.T) {
-	generateStorageCluster := func(name, namespace string) *ocsoperatorv1.StorageCluster {
-		return &ocsoperatorv1.StorageCluster{
+func TestPullSystemODF(t *testing.T) {
+	generateSystemODF := func(name, namespace string) *odfoperatorv1alpha1.StorageSystem {
+		return &odfoperatorv1alpha1.StorageSystem{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,
-			},
-			Spec: ocsoperatorv1.StorageClusterSpec{
-				ManageNodes: false,
-				ManagedResources: ocsoperatorv1.ManagedResourcesSpec{
-					CephBlockPools: ocsoperatorv1.ManageCephBlockPools{
-						ReconcileStrategy: "manage",
-					},
-					CephFilesystems: ocsoperatorv1.ManageCephFilesystems{
-						ReconcileStrategy: "manage",
-					},
-					CephObjectStoreUsers: ocsoperatorv1.ManageCephObjectStoreUsers{
-						ReconcileStrategy: "manage",
-					},
-					CephObjectStores: ocsoperatorv1.ManageCephObjectStores{
-						ReconcileStrategy: "manage",
-					},
-				},
-				MonDataDirHostPath: "/var/lib/rook",
-				MultiCloudGateway: &ocsoperatorv1.MultiCloudGatewaySpec{
-					ReconcileStrategy: "manage",
-				},
-				StorageDeviceSets: make([]ocsoperatorv1.StorageDeviceSet, 0),
 			},
 		}
 	}
@@ -71,38 +35,38 @@ func TestSorageClusterPull(t *testing.T) {
 		client              bool
 	}{
 		{
-			name:                "test",
-			namespace:           "openshift-storage",
+			name:                defaultSystemODFName,
+			namespace:           defaultSystemODFNamespace,
 			addToRuntimeObjects: true,
 			expectedError:       nil,
 			client:              true,
 		},
 		{
 			name:                "",
-			namespace:           "openshift-storage",
+			namespace:           defaultSystemODFNamespace,
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("storageCluster 'name' cannot be empty"),
+			expectedError:       fmt.Errorf("SystemODF 'name' cannot be empty"),
 			client:              true,
 		},
 		{
-			name:                "test",
+			name:                defaultSystemODFName,
 			namespace:           "",
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("storageCluster 'namespace' cannot be empty"),
+			expectedError:       fmt.Errorf("SystemODF 'namespace' cannot be empty"),
 			client:              true,
 		},
 		{
-			name:                "ocstest",
-			namespace:           "openshift-storage",
+			name:                "odftest",
+			namespace:           defaultSystemODFNamespace,
 			addToRuntimeObjects: false,
-			expectedError:       fmt.Errorf("storageCluster object ocstest does not exist in namespace openshift-storage"),
+			expectedError:       fmt.Errorf("SystemODF object odftest does not exist in namespace openshift-odf"),
 			client:              true,
 		},
 		{
-			name:                "ocstest",
-			namespace:           "openshift-storage",
+			name:                "odftest",
+			namespace:           defaultSystemODFNamespace,
 			addToRuntimeObjects: true,
-			expectedError:       fmt.Errorf("storageCluster 'apiClient' cannot be empty"),
+			expectedError:       fmt.Errorf("SystemODF 'apiClient' cannot be empty"),
 			client:              false,
 		},
 	}
@@ -113,10 +77,10 @@ func TestSorageClusterPull(t *testing.T) {
 
 		var testSettings *clients.Settings
 
-		testStorageCluster := generateStorageCluster(testCase.name, testCase.namespace)
+		testSystemODF := generateSystemODF(testCase.name, testCase.namespace)
 
 		if testCase.addToRuntimeObjects {
-			runtimeObjects = append(runtimeObjects, testStorageCluster)
+			runtimeObjects = append(runtimeObjects, testSystemODF)
 		}
 
 		if testCase.client {
@@ -125,571 +89,263 @@ func TestSorageClusterPull(t *testing.T) {
 			})
 		}
 
-		builderResult, err := PullStorageCluster(testSettings, testCase.name, testCase.namespace)
+		builderResult, err := PullSystemODF(testSettings, testCase.name, testCase.namespace)
 		assert.Equal(t, testCase.expectedError, err)
 
-		if testCase.expectedError != nil {
-			assert.Equal(t, testCase.expectedError.Error(), err.Error())
-		} else {
-			assert.Equal(t, testStorageCluster.Name, builderResult.Object.Name)
+		if testCase.expectedError == nil {
+			assert.Equal(t, testSystemODF.Name, builderResult.Object.Name)
+			assert.Equal(t, testSystemODF.Namespace, builderResult.Object.Namespace)
 		}
 	}
 }
 
-func TestNewStorageClusterBuilder(t *testing.T) {
+func TestNewSystemODFBuilder(t *testing.T) {
 	testCases := []struct {
 		name          string
 		namespace     string
 		expectedError string
+		client        bool
 	}{
 		{
-			name:          defaultStorageClusterName,
-			namespace:     defaultStorageClusterNamespace,
+			name:          defaultSystemODFName,
+			namespace:     defaultSystemODFNamespace,
 			expectedError: "",
+			client:        true,
 		},
 		{
 			name:          "",
-			namespace:     defaultStorageClusterNamespace,
-			expectedError: "storageCluster 'name' cannot be empty",
+			namespace:     defaultSystemODFNamespace,
+			expectedError: "SystemODF 'name' cannot be empty",
+			client:        true,
 		},
 		{
-			name:          defaultStorageClusterName,
+			name:          defaultSystemODFName,
 			namespace:     "",
-			expectedError: "storageCluster 'nsname' cannot be empty",
+			expectedError: "SystemODF 'nsname' cannot be empty",
+			client:        true,
+		},
+		{
+			name:          defaultSystemODFName,
+			namespace:     defaultSystemODFNamespace,
+			expectedError: "",
+			client:        false,
 		},
 	}
 
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients(clients.TestClientParams{
-			GVK: []schema.GroupVersionKind{storageClusterGVK},
-		})
-		testStorageClusterBuilder := NewStorageClusterBuilder(testSettings, testCase.name, testCase.namespace)
-		assert.Equal(t, testCase.expectedError, testStorageClusterBuilder.errorMsg)
-		assert.NotNil(t, testStorageClusterBuilder.Definition)
+		var testSettings *clients.Settings
+
+		if testCase.client {
+			testSettings = clients.GetTestClients(clients.TestClientParams{})
+		}
+
+		testSystemODFBuilder := NewSystemODFBuilder(testSettings, testCase.name, testCase.namespace)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testCase.name, testStorageClusterBuilder.Definition.Name)
-			assert.Equal(t, testCase.namespace, testStorageClusterBuilder.Definition.Namespace)
+			if testCase.client {
+				assert.Equal(t, testCase.name, testSystemODFBuilder.Definition.Name)
+				assert.Equal(t, testCase.namespace, testSystemODFBuilder.Definition.Namespace)
+			} else {
+				assert.Nil(t, testSystemODFBuilder)
+			}
+		} else {
+			assert.Equal(t, testCase.expectedError, testSystemODFBuilder.errorMsg)
+			assert.NotNil(t, testSystemODFBuilder.Definition)
 		}
 	}
 }
 
-func TestStorageClusterExist(t *testing.T) {
+func TestSystemODFExist(t *testing.T) {
 	testCases := []struct {
-		testStorageCluster *StorageClusterBuilder
-		expectedStatus     bool
+		testSystemODF  *SystemODFBuilder
+		expectedStatus bool
 	}{
 		{
-			testStorageCluster: buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedStatus:     true,
+			testSystemODF:  buildValidSystemODFBuilder(buildSystemODFClientWithDummyObject()),
+			expectedStatus: true,
 		},
 		{
-			testStorageCluster: buildInValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedStatus:     false,
+			testSystemODF:  buildInValidSystemODFBuilder(buildSystemODFClientWithDummyObject()),
+			expectedStatus: false,
 		},
 		{
-			testStorageCluster: buildValidStorageClusterBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedStatus:     false,
+			testSystemODF:  buildValidSystemODFBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedStatus: false,
 		},
 	}
 
 	for _, testCase := range testCases {
-		exist := testCase.testStorageCluster.Exists()
+		exist := testCase.testSystemODF.Exists()
 		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
-func TestStorageClusterGet(t *testing.T) {
+func TestSystemODFGet(t *testing.T) {
 	testCases := []struct {
-		testStorageCluster *StorageClusterBuilder
-		expectedError      error
+		testSystemODF *SystemODFBuilder
+		expectedError error
 	}{
 		{
-			testStorageCluster: buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedError:      nil,
+			testSystemODF: buildValidSystemODFBuilder(buildSystemODFClientWithDummyObject()),
+			expectedError: nil,
 		},
 		{
-			testStorageCluster: buildInValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedError:      fmt.Errorf("storageclusters.ocs.openshift.io \"\" not found"),
+			testSystemODF: buildInValidSystemODFBuilder(buildSystemODFClientWithDummyObject()),
+			expectedError: fmt.Errorf("SystemODF 'name' cannot be empty"),
 		},
 		{
-			testStorageCluster: buildValidStorageClusterBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:      fmt.Errorf("storageclusters.ocs.openshift.io \"ocs-storagecluster\" not found"),
+			testSystemODF: buildValidSystemODFBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: fmt.Errorf("storagesystems.odf.openshift.io \"ocs-cluster-system\" " +
+				"not found"),
 		},
 	}
 
 	for _, testCase := range testCases {
-		storageClusterObj, err := testCase.testStorageCluster.Get()
+		systemODFObj, err := testCase.testSystemODF.Get()
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, storageClusterObj, testCase.testStorageCluster.Definition)
+			assert.Equal(t, systemODFObj.Name, testCase.testSystemODF.Definition.Name)
+			assert.Equal(t, systemODFObj.Namespace, testCase.testSystemODF.Definition.Namespace)
+			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 	}
 }
 
-func TestStorageClusterCreate(t *testing.T) {
+func TestSystemODFCreate(t *testing.T) {
 	testCases := []struct {
-		testStorageCluster *StorageClusterBuilder
-		expectedError      string
+		testSystemODF *SystemODFBuilder
+		expectedError error
 	}{
 		{
-			testStorageCluster: buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedError:      "",
+			testSystemODF: buildValidSystemODFBuilder(buildSystemODFClientWithDummyObject()),
+			expectedError: nil,
 		},
 		{
-			testStorageCluster: buildInValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedError: fmt.Sprintf("StorageCluster.ocs.openshift.io \"\" is invalid: " +
-				"metadata.name: Required value: name is required"),
+			testSystemODF: buildInValidSystemODFBuilder(buildSystemODFClientWithDummyObject()),
+			expectedError: fmt.Errorf("SystemODF 'name' cannot be empty"),
+		},
+		{
+			testSystemODF: buildValidSystemODFBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: nil,
 		},
 	}
 
 	for _, testCase := range testCases {
-		testStorageClusterBuilder, err := testCase.testStorageCluster.Create()
-
-		if testCase.expectedError == "" {
-			assert.Equal(t, testStorageClusterBuilder.Definition, testStorageClusterBuilder.Object)
-		} else {
-			assert.Equal(t, testCase.expectedError, err.Error())
-		}
-	}
-}
-
-func TestStorageClusterDelete(t *testing.T) {
-	testCases := []struct {
-		testStorageCluster *StorageClusterBuilder
-		expectedError      error
-	}{
-		{
-			testStorageCluster: buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedError:      nil,
-		},
-		{
-			testStorageCluster: buildInValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedError:      fmt.Errorf("can not delete storageCluster: storageclusters.ocs.openshift.io \"\" not found"),
-		},
-	}
-
-	for _, testCase := range testCases {
-		err := testCase.testStorageCluster.Delete()
-
-		if testCase.expectedError == nil {
-			assert.Nil(t, testCase.testStorageCluster.Object)
-		} else {
-			assert.Equal(t, testCase.expectedError.Error(), err.Error())
-		}
-	}
-}
-
-func TestStorageClusterUpdate(t *testing.T) {
-	testCases := []struct {
-		testStorageCluster *StorageClusterBuilder
-		expectedError      error
-		manageNodes        bool
-	}{
-		{
-			testStorageCluster: buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedError:      nil,
-			manageNodes:        true,
-		},
-		{
-			testStorageCluster: buildInValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedError:      fmt.Errorf("storageCluster object  does not exist in namespace openshift-storage"),
-			manageNodes:        true,
-		},
-	}
-
-	for _, testCase := range testCases {
-		assert.Equal(t, defaultManageNodes, testCase.testStorageCluster.Definition.Spec.ManageNodes)
-		assert.Nil(t, nil, testCase.testStorageCluster.Object)
-		testCase.testStorageCluster.WithManageNodes(testCase.manageNodes)
-		_, err := testCase.testStorageCluster.Update()
+		testSystemODFBuilder, err := testCase.testSystemODF.Create()
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, testCase.manageNodes, testCase.testStorageCluster.Definition.Spec.ManageNodes)
+			assert.Equal(t, testSystemODFBuilder.Definition.Name, testSystemODFBuilder.Object.Name)
+			assert.Equal(t, testSystemODFBuilder.Definition.Namespace, testSystemODFBuilder.Object.Namespace)
 		}
 	}
 }
 
-func TestStorageClusterWithManageNodes(t *testing.T) {
+func TestSystemODFDelete(t *testing.T) {
 	testCases := []struct {
-		testManageNodes   bool
-		expectedError     bool
-		expectedErrorText string
+		testSystemODF *SystemODFBuilder
+		expectedError error
 	}{
 		{
-			testManageNodes:   true,
-			expectedError:     false,
-			expectedErrorText: "",
+			testSystemODF: buildValidSystemODFBuilder(buildSystemODFClientWithDummyObject()),
+			expectedError: nil,
 		},
 		{
-			testManageNodes:   false,
-			expectedError:     false,
-			expectedErrorText: "",
+			testSystemODF: buildInValidSystemODFBuilder(buildSystemODFClientWithDummyObject()),
+			expectedError: fmt.Errorf("SystemODF 'name' cannot be empty"),
+		},
+		{
+			testSystemODF: buildValidSystemODFBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: nil,
 		},
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject())
-
-		result := testBuilder.WithManageNodes(testCase.testManageNodes)
-
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-			}
-		} else {
-			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testManageNodes, result.Definition.Spec.ManageNodes)
-		}
-	}
-}
-
-func TestStorageClusterGetManageNodes(t *testing.T) {
-	testCases := []struct {
-		testStorageCluster *StorageClusterBuilder
-		expectedError      error
-	}{
-		{
-			testStorageCluster: buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedError:      nil,
-		},
-		{
-			testStorageCluster: buildValidStorageClusterBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:      errStorageClusterNotExists,
-		},
-	}
-
-	for _, testCase := range testCases {
-		currentStorageClusterManageNodesValue, err := testCase.testStorageCluster.GetManageNodes()
+		err := testCase.testSystemODF.Delete()
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, currentStorageClusterManageNodesValue, testCase.testStorageCluster.Object.Spec.ManageNodes)
-		} else {
-			assert.Equal(t, testCase.expectedError.Error(), err.Error())
+			assert.Nil(t, testCase.testSystemODF.Object)
+			assert.Nil(t, err)
 		}
 	}
 }
 
-func TestStorageClusterWithManagedResources(t *testing.T) {
+func TestSystemODFWithSpec(t *testing.T) {
 	testCases := []struct {
-		testManagedResources ocsoperatorv1.ManagedResourcesSpec
-		expectedError        bool
-		expectedErrorText    string
+		testKind      odfoperatorv1alpha1.StorageKind
+		testName      string
+		testNamespace string
+		expectedError string
 	}{
 		{
-			testManagedResources: ocsoperatorv1.ManagedResourcesSpec{
-				CephBlockPools: ocsoperatorv1.ManageCephBlockPools{
-					ReconcileStrategy: "manage",
-				},
-				CephFilesystems: ocsoperatorv1.ManageCephFilesystems{
-					ReconcileStrategy: "manage",
-				},
-				CephObjectStoreUsers: ocsoperatorv1.ManageCephObjectStoreUsers{
-					ReconcileStrategy: "manage",
-				},
-				CephObjectStores: ocsoperatorv1.ManageCephObjectStores{
-					ReconcileStrategy: "manage",
-				},
-			},
-			expectedError:     false,
-			expectedErrorText: "",
+			testKind:      odfoperatorv1alpha1.StorageKind("cluster.ocs.openshift.io/v1"),
+			testName:      "ocs-cluster",
+			testNamespace: defaultSystemODFNamespace,
+			expectedError: "",
 		},
 		{
-			testManagedResources: ocsoperatorv1.ManagedResourcesSpec{},
-			expectedError:        false,
-			expectedErrorText:    "",
+			testKind:      odfoperatorv1alpha1.StorageKind(""),
+			testName:      "ocs-cluster",
+			testNamespace: defaultSystemODFNamespace,
+			expectedError: "SystemODF spec 'kind' cannot be empty",
+		},
+		{
+			testKind:      odfoperatorv1alpha1.StorageKind("cluster.ocs.openshift.io/v1"),
+			testName:      "",
+			testNamespace: defaultSystemODFNamespace,
+			expectedError: "SystemODF spec 'name' cannot be empty",
+		},
+		{
+			testKind:      odfoperatorv1alpha1.StorageKind("storagecluster.ocs.openshift.io/v1"),
+			testName:      "ocs-cluster",
+			testNamespace: "",
+			expectedError: "SystemODF spec 'nsname' cannot be empty",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject())
+		testBuilder := buildValidSystemODFBuilder(buildSystemODFClientWithDummyObject())
 
-		result := testBuilder.WithManagedResources(testCase.testManagedResources)
+		result := testBuilder.WithSpec(testCase.testKind, testCase.testName, testCase.testNamespace)
+		assert.Equal(t, testCase.expectedError, result.errorMsg)
 
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-			}
-		} else {
+		if testCase.expectedError == "" {
 			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testManagedResources, result.Definition.Spec.ManagedResources)
+			assert.Equal(t, testCase.testKind, result.Definition.Spec.Kind)
+			assert.Equal(t, testCase.testName, result.Definition.Spec.Name)
+			assert.Equal(t, testCase.testNamespace, result.Definition.Spec.Namespace)
 		}
 	}
 }
 
-func TestStorageClusterGetManagedResources(t *testing.T) {
-	testCases := []struct {
-		testStorageCluster *StorageClusterBuilder
-		expectedError      error
-	}{
-		{
-			testStorageCluster: buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedError:      nil,
-		},
-		{
-			testStorageCluster: buildValidStorageClusterBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:      errStorageClusterNotExists,
-		},
-	}
+func buildValidSystemODFBuilder(apiClient *clients.Settings) *SystemODFBuilder {
+	systemODFBuilder := NewSystemODFBuilder(
+		apiClient, defaultSystemODFName, defaultSystemODFNamespace)
 
-	for _, testCase := range testCases {
-		currentStorageClusterManagedResourcesValue, err := testCase.testStorageCluster.GetManagedResources()
-
-		if testCase.expectedError == nil {
-			assert.Equal(t, *currentStorageClusterManagedResourcesValue,
-				testCase.testStorageCluster.Object.Spec.ManagedResources)
-		} else {
-			assert.Equal(t, testCase.expectedError.Error(), err.Error())
-		}
-	}
+	return systemODFBuilder
 }
 
-func TestStorageClusterWithMonDataDirHostPath(t *testing.T) {
-	testCases := []struct {
-		testMonDataDirHostPath string
-		expectedError          bool
-		expectedErrorText      string
-	}{
-		{
-			testMonDataDirHostPath: "/var/lib/rook",
-			expectedError:          false,
-			expectedErrorText:      "",
-		},
-		{
-			testMonDataDirHostPath: "",
-			expectedError:          true,
-			expectedErrorText:      "the expectedMonDataDirHostPath can not be empty",
-		},
-	}
+func buildInValidSystemODFBuilder(apiClient *clients.Settings) *SystemODFBuilder {
+	systemODFBuilder := NewSystemODFBuilder(
+		apiClient, "", defaultSystemODFNamespace)
 
-	for _, testCase := range testCases {
-		testBuilder := buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject())
-
-		result := testBuilder.WithMonDataDirHostPath(testCase.testMonDataDirHostPath)
-
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-			}
-		} else {
-			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testMonDataDirHostPath, result.Definition.Spec.MonDataDirHostPath)
-		}
-	}
+	return systemODFBuilder
 }
 
-func TestStorageClusterGetMonDataDirHostPath(t *testing.T) {
-	testCases := []struct {
-		testStorageCluster *StorageClusterBuilder
-		expectedError      error
-	}{
-		{
-			testStorageCluster: buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedError:      nil,
-		},
-		{
-			testStorageCluster: buildValidStorageClusterBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:      errStorageClusterNotExists,
-		},
-	}
-
-	for _, testCase := range testCases {
-		currentStorageClusterMonDataDirHostPathValue, err := testCase.testStorageCluster.GetMonDataDirHostPath()
-
-		if testCase.expectedError == nil {
-			assert.Equal(t, currentStorageClusterMonDataDirHostPathValue,
-				testCase.testStorageCluster.Object.Spec.MonDataDirHostPath)
-		} else {
-			assert.Equal(t, testCase.expectedError.Error(), err.Error())
-		}
-	}
-}
-
-func TestStorageClusterWithMultiCloudGateway(t *testing.T) {
-	testCases := []struct {
-		testMultiCloudGateway ocsoperatorv1.MultiCloudGatewaySpec
-		expectedError         bool
-		expectedErrorText     string
-	}{
-		{
-			testMultiCloudGateway: ocsoperatorv1.MultiCloudGatewaySpec{
-				ReconcileStrategy: "manage",
-			},
-			expectedError:     false,
-			expectedErrorText: "",
-		},
-		{
-			testMultiCloudGateway: ocsoperatorv1.MultiCloudGatewaySpec{},
-			expectedError:         false,
-			expectedErrorText:     "",
-		},
-	}
-
-	for _, testCase := range testCases {
-		testBuilder := buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject())
-
-		result := testBuilder.WithMultiCloudGateway(testCase.testMultiCloudGateway)
-
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-			}
-		} else {
-			assert.NotNil(t, result)
-			assert.Equal(t, &testCase.testMultiCloudGateway, result.Definition.Spec.MultiCloudGateway)
-		}
-	}
-}
-
-func TestStorageClusterGetMultiCloudGateway(t *testing.T) {
-	testCases := []struct {
-		testStorageCluster *StorageClusterBuilder
-		expectedError      error
-	}{
-		{
-			testStorageCluster: buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedError:      nil,
-		},
-		{
-			testStorageCluster: buildValidStorageClusterBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:      errStorageClusterNotExists,
-		},
-	}
-
-	for _, testCase := range testCases {
-		currentStorageClusterMultiCloudGatewayValue, err := testCase.testStorageCluster.GetMultiCloudGateway()
-
-		if testCase.expectedError == nil {
-			assert.Equal(t, currentStorageClusterMultiCloudGatewayValue,
-				testCase.testStorageCluster.Object.Spec.MultiCloudGateway)
-		} else {
-			assert.Equal(t, testCase.expectedError.Error(), err.Error())
-		}
-	}
-}
-
-func TestStorageClusterWithStorageDeviceSets(t *testing.T) {
-	resourceListMap := make(map[corev1.ResourceName]resource.Quantity)
-	resourceListMap[corev1.ResourceStorage] = resource.MustParse("1")
-
-	testCases := []struct {
-		testStorageDeviceSets ocsoperatorv1.StorageDeviceSet
-		expectedError         bool
-		expectedErrorText     string
-	}{
-		{
-			testStorageDeviceSets: ocsoperatorv1.StorageDeviceSet{
-				Count:    3,
-				Replica:  1,
-				Portable: false,
-				Name:     "local-block",
-				DataPVCTemplate: corev1.PersistentVolumeClaim{
-					Spec: corev1.PersistentVolumeClaimSpec{
-						AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-						Resources: corev1.VolumeResourceRequirements{
-							Requests: resourceListMap,
-						},
-						StorageClassName: &defaultStorageClassName,
-						VolumeMode:       &defaultVolumeMode,
-					},
-				},
-			},
-			expectedError:     false,
-			expectedErrorText: "",
-		},
-		{
-			testStorageDeviceSets: ocsoperatorv1.StorageDeviceSet{},
-			expectedError:         false,
-			expectedErrorText:     "",
-		},
-	}
-
-	for _, testCase := range testCases {
-		testBuilder := buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject())
-
-		result := testBuilder.WithStorageDeviceSet(testCase.testStorageDeviceSets)
-
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-			}
-		} else {
-			assert.NotNil(t, result)
-			assert.Equal(t, []ocsoperatorv1.StorageDeviceSet{testCase.testStorageDeviceSets},
-				result.Definition.Spec.StorageDeviceSets)
-		}
-	}
-}
-
-func TestStorageClusterGetStorageDeviceSets(t *testing.T) {
-	testCases := []struct {
-		testStorageCluster *StorageClusterBuilder
-		expectedError      error
-	}{
-		{
-			testStorageCluster: buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedError:      nil,
-		},
-		{
-			testStorageCluster: buildValidStorageClusterBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:      errStorageClusterNotExists,
-		},
-	}
-
-	for _, testCase := range testCases {
-		currentStorageClusterStorageDeviceSets, err := testCase.testStorageCluster.GetStorageDeviceSets()
-
-		if testCase.expectedError == nil {
-			assert.Equal(t, currentStorageClusterStorageDeviceSets,
-				testCase.testStorageCluster.Object.Spec.StorageDeviceSets)
-		} else {
-			assert.Equal(t, testCase.expectedError.Error(), err.Error())
-		}
-	}
-}
-
-func buildValidStorageClusterBuilder(apiClient *clients.Settings) *StorageClusterBuilder {
-	storageClusterBuilder := NewStorageClusterBuilder(
-		apiClient, defaultStorageClusterName, defaultStorageClusterNamespace)
-	storageClusterBuilder.Definition.ResourceVersion = "999"
-
-	return storageClusterBuilder
-}
-
-func buildInValidStorageClusterBuilder(apiClient *clients.Settings) *StorageClusterBuilder {
-	storageClusterBuilder := NewStorageClusterBuilder(
-		apiClient, "", defaultStorageClusterNamespace)
-	storageClusterBuilder.Definition.ResourceVersion = "999"
-
-	return storageClusterBuilder
-}
-
-func buildStorageClusterClientWithDummyObject() *clients.Settings {
+func buildSystemODFClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyStorageCluster(),
-		GVK:            []schema.GroupVersionKind{storageClusterGVK},
+		K8sMockObjects: buildDummySystemODF(),
 	})
 }
 
-func buildDummyStorageCluster() []runtime.Object {
-	return append([]runtime.Object{}, &ocsoperatorv1.StorageCluster{
+func buildDummySystemODF() []runtime.Object {
+	return append([]runtime.Object{}, &odfoperatorv1alpha1.StorageSystem{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      defaultStorageClusterName,
-			Namespace: defaultStorageClusterNamespace,
-		},
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "StorageCluster",
-			APIVersion: fmt.Sprintf("%s/%s", APIGroup, APIVersion),
-		},
-		Spec: ocsoperatorv1.StorageClusterSpec{
-			ManageNodes:        false,
-			ManagedResources:   ocsoperatorv1.ManagedResourcesSpec{},
-			MonDataDirHostPath: "",
-			MultiCloudGateway:  nil,
-			StorageDeviceSets:  make([]ocsoperatorv1.StorageDeviceSet, 0),
+			Name:      defaultSystemODFName,
+			Namespace: defaultSystemODFNamespace,
 		},
 	})
 }

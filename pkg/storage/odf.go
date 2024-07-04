@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	ocsoperatorv1 "github.com/red-hat-storage/ocs-operator/api/v1"
+	odfoperatorv1alpha1 "github.com/red-hat-storage/odf-operator/api/v1alpha1"
+
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/golang/glog"
@@ -14,32 +15,34 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// StorageSystemBuilder provides struct for storageSystem object containing connection
-// to the cluster and the storageCluster definitions.
-type StorageSystemBuilder struct {
-	// StorageSystem definition. Used to create a storageSystem object
-	Definition *ocsoperatorv1.StorageSystem
-	// Created storageCluster object
-	Object *ocsoperatorv1.StorageCluster
+// SystemODFBuilder provides struct for SystemODF object containing connection
+// to the cluster and the SystemODF definitions.
+type SystemODFBuilder struct {
+	// SystemODF definition. Used to create a SystemODF object
+	Definition *odfoperatorv1alpha1.StorageSystem
+	// Created SystemODF object
+	Object *odfoperatorv1alpha1.StorageSystem
 	// api client to interact with the cluster.
 	apiClient goclient.Client
-	// Used in functions that define or mutate storageCluster definition. errorMsg is processed before the
-	// storageCluster object is created.
+	// Used in functions that define or mutate SystemODF definition. errorMsg is processed before the
+	// SystemODF object is created.
 	errorMsg string
 }
 
-// NewStorageClusterBuilder creates a new instance of Builder.
-func NewStorageClusterBuilder(apiClient *clients.Settings, name, nsname string) *StorageClusterBuilder {
+// NewSystemODFBuilder creates a new instance of Builder.
+func NewSystemODFBuilder(apiClient *clients.Settings, name, nsname string) *SystemODFBuilder {
 	glog.V(100).Infof(
-		"Initializing new storageCluster structure with the following params: %s, %s", name, nsname)
+		"Initializing new SystemODF structure with the following params: %s, %s", name, nsname)
 
-	builder := StorageClusterBuilder{
+	if apiClient == nil {
+		glog.V(100).Infof("SystemODF 'apiClient' cannot be empty")
+
+		return nil
+	}
+
+	builder := &SystemODFBuilder{
 		apiClient: apiClient.Client,
-		Definition: &ocsoperatorv1.StorageCluster{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       StorageClusterKind,
-				APIVersion: fmt.Sprintf("%s/%s", APIGroup, APIVersion),
-			},
+		Definition: &odfoperatorv1alpha1.StorageSystem{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: nsname,
@@ -48,34 +51,38 @@ func NewStorageClusterBuilder(apiClient *clients.Settings, name, nsname string) 
 	}
 
 	if name == "" {
-		glog.V(100).Infof("The name of the storageCluster is empty")
+		glog.V(100).Infof("The name of the SystemODF is empty")
 
-		builder.errorMsg = "storageCluster 'name' cannot be empty"
+		builder.errorMsg = "SystemODF 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
-		glog.V(100).Infof("The namespace of the storageCluster is empty")
+		glog.V(100).Infof("The namespace of the SystemODF is empty")
 
-		builder.errorMsg = "storageCluster 'nsname' cannot be empty"
+		builder.errorMsg = "SystemODF 'nsname' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
-// PullStorageCluster gets an existing storageCluster object from the cluster.
-func PullStorageCluster(apiClient *clients.Settings, name, namespace string) (*StorageClusterBuilder, error) {
-	if apiClient == nil {
-		glog.V(100).Infof("The apiClient is empty")
-
-		return nil, fmt.Errorf("storageCluster 'apiClient' cannot be empty")
-	}
-
-	glog.V(100).Infof("Pulling existing storageCluster object %s from namespace %s",
+// PullSystemODF gets an existing SystemODF object from the cluster.
+func PullSystemODF(apiClient *clients.Settings, name, namespace string) (*SystemODFBuilder, error) {
+	glog.V(100).Infof("Pulling existing SystemODF object %s from namespace %s",
 		name, namespace)
 
-	builder := StorageClusterBuilder{
+	if apiClient == nil {
+		glog.V(100).Infof("The SystemODF's apiClient is empty")
+
+		return nil, fmt.Errorf("SystemODF 'apiClient' cannot be empty")
+	}
+
+	builder := SystemODFBuilder{
 		apiClient: apiClient.Client,
-		Definition: &ocsoperatorv1.StorageCluster{
+		Definition: &odfoperatorv1alpha1.StorageSystem{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,
@@ -84,19 +91,19 @@ func PullStorageCluster(apiClient *clients.Settings, name, namespace string) (*S
 	}
 
 	if name == "" {
-		glog.V(100).Infof("The name of the storageCluster is empty")
+		glog.V(100).Infof("The name of the SystemODF is empty")
 
-		return nil, fmt.Errorf("storageCluster 'name' cannot be empty")
+		return nil, fmt.Errorf("SystemODF 'name' cannot be empty")
 	}
 
 	if namespace == "" {
-		glog.V(100).Infof("The namespace of the storageCluster is empty")
+		glog.V(100).Infof("The namespace of the SystemODF is empty")
 
-		return nil, fmt.Errorf("storageCluster 'namespace' cannot be empty")
+		return nil, fmt.Errorf("SystemODF 'namespace' cannot be empty")
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("storageCluster object %s does not exist in namespace %s",
+		return nil, fmt.Errorf("SystemODF object %s does not exist in namespace %s",
 			name, namespace)
 	}
 
@@ -105,38 +112,38 @@ func PullStorageCluster(apiClient *clients.Settings, name, namespace string) (*S
 	return &builder, nil
 }
 
-// Get fetches existing storageCluster from cluster.
-func (builder *StorageClusterBuilder) Get() (*ocsoperatorv1.StorageCluster, error) {
+// Get fetches existing SystemODF from cluster.
+func (builder *SystemODFBuilder) Get() (*odfoperatorv1alpha1.StorageSystem, error) {
 	if valid, err := builder.validate(); !valid {
 		return nil, err
 	}
 
-	glog.V(100).Infof("Getting existing storageCluster with name %s from the namespace %s",
+	glog.V(100).Infof("Getting existing SystemODF with name %s from the namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
-	storageClusterObj := &ocsoperatorv1.StorageCluster{}
+	storageSystemObj := &odfoperatorv1alpha1.StorageSystem{}
 	err := builder.apiClient.Get(context.TODO(), goclient.ObjectKey{
 		Name:      builder.Definition.Name,
 		Namespace: builder.Definition.Namespace,
-	}, storageClusterObj)
+	}, storageSystemObj)
 
 	if err != nil {
-		glog.V(100).Infof("storageCluster object %s does not exist in namespace %s",
+		glog.V(100).Infof("failed to find SystemODF object %s in namespace %s",
 			builder.Definition.Name, builder.Definition.Namespace)
 
 		return nil, err
 	}
 
-	return storageClusterObj, nil
+	return storageSystemObj, nil
 }
 
-// Exists checks whether the given storageCluster exists.
-func (builder *StorageClusterBuilder) Exists() bool {
+// Exists checks whether the given SystemODF exists.
+func (builder *SystemODFBuilder) Exists() bool {
 	if valid, _ := builder.validate(); !valid {
 		return false
 	}
 
-	glog.V(100).Infof("Checking if storageCluster %s exists in namespace %s",
+	glog.V(100).Infof("Checking if SystemODF %s exists in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	var err error
@@ -145,13 +152,13 @@ func (builder *StorageClusterBuilder) Exists() bool {
 	return err == nil || !k8serrors.IsNotFound(err)
 }
 
-// Create makes a storageCluster in the cluster and stores the created object in struct.
-func (builder *StorageClusterBuilder) Create() (*StorageClusterBuilder, error) {
+// Create makes a SystemODF in the cluster and stores the created object in struct.
+func (builder *SystemODFBuilder) Create() (*SystemODFBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err
 	}
 
-	glog.V(100).Infof("Creating the storageCluster %s in namespace %s",
+	glog.V(100).Infof("Creating the SystemODF %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace,
 	)
 
@@ -166,19 +173,29 @@ func (builder *StorageClusterBuilder) Create() (*StorageClusterBuilder, error) {
 	return builder, err
 }
 
-// Delete removes storageCluster object from a cluster.
-func (builder *StorageClusterBuilder) Delete() error {
+// Delete removes SystemODF object from a cluster.
+func (builder *SystemODFBuilder) Delete() error {
 	if valid, err := builder.validate(); !valid {
 		return err
 	}
 
-	glog.V(100).Infof("Deleting the storageCluster object %s in namespace %s",
+	glog.V(100).Infof("Deleting the SystemODF object %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
+
+	if !builder.Exists() {
+		glog.V(100).Infof(" SystemODF %s in namespace %s cannot be deleted"+
+			" because it does not exist",
+			builder.Definition.Name, builder.Definition.Namespace)
+
+		builder.Object = nil
+
+		return nil
+	}
 
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
 
 	if err != nil {
-		return fmt.Errorf("can not delete storageCluster: %w", err)
+		return fmt.Errorf("can not delete SystemODF: %w", err)
 	}
 
 	builder.Object = nil
@@ -186,205 +203,53 @@ func (builder *StorageClusterBuilder) Delete() error {
 	return nil
 }
 
-// Update renovates the storageCluster in the cluster and stores the created object in struct.
-func (builder *StorageClusterBuilder) Update() (*StorageClusterBuilder, error) {
-	if valid, err := builder.validate(); !valid {
-		return builder, err
-	}
-
-	glog.V(100).Infof("Updating the storageCluster %s in namespace %s",
-		builder.Definition.Name, builder.Definition.Namespace)
-
-	if !builder.Exists() {
-		return nil, fmt.Errorf("storageCluster object %s does not exist in namespace %s",
-			builder.Definition.Name, builder.Definition.Namespace)
-	}
-
-	err := builder.apiClient.Update(context.TODO(), builder.Definition)
-	if err == nil {
-		builder.Object = builder.Definition
-	}
-
-	return builder, err
-}
-
-// GetManageNodes fetches storageCluster manageNodes value.
-func (builder *StorageClusterBuilder) GetManageNodes() (bool, error) {
-	if valid, err := builder.validate(); !valid {
-		return false, err
-	}
-
-	glog.V(100).Infof("Getting storageCluster %s in namespace %s manageNodes configuration",
-		builder.Definition.Name, builder.Definition.Namespace)
-
-	if !builder.Exists() {
-		return false, fmt.Errorf("storageCluster object %s does not exist in namespace %s",
-			builder.Definition.Name, builder.Definition.Namespace)
-	}
-
-	return builder.Object.Spec.ManageNodes, nil
-}
-
-// GetManagedResources fetches storageCluster managedResources value.
-func (builder *StorageClusterBuilder) GetManagedResources() (*ocsoperatorv1.ManagedResourcesSpec, error) {
-	if valid, err := builder.validate(); !valid {
-		return nil, err
-	}
-
-	glog.V(100).Infof("Getting storageCluster %s in namespace %s managedResources configuration",
-		builder.Definition.Name, builder.Definition.Namespace)
-
-	if !builder.Exists() {
-		return nil, fmt.Errorf("storageCluster object %s does not exist in namespace %s",
-			builder.Definition.Name, builder.Definition.Namespace)
-	}
-
-	return &builder.Object.Spec.ManagedResources, nil
-}
-
-// GetMonDataDirHostPath fetches storageCluster monDataDirHostPath value.
-func (builder *StorageClusterBuilder) GetMonDataDirHostPath() (string, error) {
-	if valid, err := builder.validate(); !valid {
-		return "", err
-	}
-
-	glog.V(100).Infof("Getting storageCluster %s in namespace %s monDataDirHostPath configuration",
-		builder.Definition.Name, builder.Definition.Namespace)
-
-	if !builder.Exists() {
-		return "", fmt.Errorf("storageCluster object %s does not exist in namespace %s",
-			builder.Definition.Name, builder.Definition.Namespace)
-	}
-
-	return builder.Object.Spec.MonDataDirHostPath, nil
-}
-
-// GetMultiCloudGateway fetches storageCluster multiCloudGateway value.
-func (builder *StorageClusterBuilder) GetMultiCloudGateway() (*ocsoperatorv1.MultiCloudGatewaySpec, error) {
-	if valid, err := builder.validate(); !valid {
-		return nil, err
-	}
-
-	glog.V(100).Infof("Getting storageCluster %s in namespace %s multiCloudGateway configuration",
-		builder.Definition.Name, builder.Definition.Namespace)
-
-	if !builder.Exists() {
-		return nil, fmt.Errorf("storageCluster object %s does not exist in namespace %s",
-			builder.Definition.Name, builder.Definition.Namespace)
-	}
-
-	return builder.Object.Spec.MultiCloudGateway, nil
-}
-
-// GetStorageDeviceSets fetches storageCluster storageDeviceSets value.
-func (builder *StorageClusterBuilder) GetStorageDeviceSets() ([]ocsoperatorv1.StorageDeviceSet, error) {
-	if valid, err := builder.validate(); !valid {
-		return nil, err
-	}
-
-	glog.V(100).Infof("Getting storageCluster %s in namespace %s storageDeviceSets configuration",
-		builder.Definition.Name, builder.Definition.Namespace)
-
-	if !builder.Exists() {
-		return nil, fmt.Errorf("storageCluster object %s does not exist in namespace %s",
-			builder.Definition.Name, builder.Definition.Namespace)
-	}
-
-	return builder.Object.Spec.StorageDeviceSets, nil
-}
-
-// WithManageNodes sets the storageCluster's managedNodes value.
-func (builder *StorageClusterBuilder) WithManageNodes(expectedManagedNodesValue bool) *StorageClusterBuilder {
+// WithSpec sets the SystemODF with storageCluster spec values.
+func (builder *SystemODFBuilder) WithSpec(
+	kind odfoperatorv1alpha1.StorageKind, name, nsname string) *SystemODFBuilder {
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
 	glog.V(100).Infof(
-		"Setting storageCluster %s in namespace %s with managedNodes value: %t",
-		builder.Definition.Name, builder.Definition.Namespace, expectedManagedNodesValue)
+		"Setting SystemODF %s in namespace %s with storageCluster spec; \n"+
+			"kind: %v, name: %s, namespace %s",
+		builder.Definition.Name, builder.Definition.Namespace, kind, name, nsname)
 
-	builder.Definition.Spec.ManageNodes = expectedManagedNodesValue
+	if kind == "" {
+		glog.V(100).Infof("The kind of the SystemODF spec is empty")
 
-	return builder
-}
-
-// WithManagedResources sets the storageCluster's managedResources value.
-func (builder *StorageClusterBuilder) WithManagedResources(
-	expectedManagedResources ocsoperatorv1.ManagedResourcesSpec) *StorageClusterBuilder {
-	if valid, _ := builder.validate(); !valid {
-		return builder
-	}
-
-	glog.V(100).Infof(
-		"Setting storageCluster %s in namespace %s with managedResources value: %v",
-		builder.Definition.Name, builder.Definition.Namespace, expectedManagedResources)
-
-	builder.Definition.Spec.ManagedResources = expectedManagedResources
-
-	return builder
-}
-
-// WithMonDataDirHostPath sets the storageCluster's monDataDirHostPath value.
-func (builder *StorageClusterBuilder) WithMonDataDirHostPath(
-	expectedMonDataDirHostPath string) *StorageClusterBuilder {
-	if valid, _ := builder.validate(); !valid {
-		return builder
-	}
-
-	glog.V(100).Infof(
-		"Setting storageCluster %s in namespace %s with monDataDirHostPath value: %s",
-		builder.Definition.Name, builder.Definition.Namespace, expectedMonDataDirHostPath)
-
-	if expectedMonDataDirHostPath == "" {
-		glog.V(100).Infof("the expectedMonDataDirHostPath can not be empty")
-
-		builder.errorMsg = "the expectedMonDataDirHostPath can not be empty"
+		builder.errorMsg = "SystemODF spec 'kind' cannot be empty"
 
 		return builder
 	}
 
-	builder.Definition.Spec.MonDataDirHostPath = expectedMonDataDirHostPath
+	if name == "" {
+		glog.V(100).Infof("The name of the storageCluster spec is empty")
 
-	return builder
-}
+		builder.errorMsg = "SystemODF spec 'name' cannot be empty"
 
-// WithMultiCloudGateway sets the storageCluster's multiCloudGateway value.
-func (builder *StorageClusterBuilder) WithMultiCloudGateway(
-	expectedMultiCloudGateway ocsoperatorv1.MultiCloudGatewaySpec) *StorageClusterBuilder {
-	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
-	glog.V(100).Infof(
-		"Setting storageCluster %s in namespace %s with multiCloudGateway value: %v",
-		builder.Definition.Name, builder.Definition.Namespace, expectedMultiCloudGateway)
+	if nsname == "" {
+		glog.V(100).Infof("The namespace of the SystemODF spec is empty")
 
-	builder.Definition.Spec.MultiCloudGateway = &expectedMultiCloudGateway
+		builder.errorMsg = "SystemODF spec 'nsname' cannot be empty"
 
-	return builder
-}
-
-// WithStorageDeviceSet sets the storageCluster's storageDeviceSets value.
-func (builder *StorageClusterBuilder) WithStorageDeviceSet(
-	expectedStorageDeviceSet ocsoperatorv1.StorageDeviceSet) *StorageClusterBuilder {
-	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
 
-	glog.V(100).Infof(
-		"Setting storageCluster %s in namespace %s with storageDeviceSets value: %v",
-		builder.Definition.Name, builder.Definition.Namespace, expectedStorageDeviceSet)
-
-	builder.Definition.Spec.StorageDeviceSets =
-		append(builder.Definition.Spec.StorageDeviceSets, expectedStorageDeviceSet)
+	builder.Definition.Spec.Kind = kind
+	builder.Definition.Spec.Name = name
+	builder.Definition.Spec.Namespace = nsname
 
 	return builder
 }
 
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
-func (builder *StorageClusterBuilder) validate() (bool, error) {
-	resourceCRD := "StorageCluster"
+func (builder *SystemODFBuilder) validate() (bool, error) {
+	resourceCRD := "StorageSystem"
 
 	if builder == nil {
 		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
@@ -402,6 +267,12 @@ func (builder *StorageClusterBuilder) validate() (bool, error) {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
 		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
 	}
 
 	return true, nil
