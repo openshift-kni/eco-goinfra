@@ -12,15 +12,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var (
-	storageClusterGVK = schema.GroupVersionKind{
-		Group:   APIGroup,
-		Version: APIVersion,
-		Kind:    StorageClusterKind,
-	}
 	defaultStorageClusterName      = "ocs-storagecluster"
 	defaultStorageClusterNamespace = "openshift-storage"
 	defaultManageNodes             = false
@@ -132,6 +126,8 @@ func TestSorageClusterPull(t *testing.T) {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		} else {
 			assert.Equal(t, testStorageCluster.Name, builderResult.Object.Name)
+			assert.Equal(t, testStorageCluster.Namespace, builderResult.Object.Namespace)
+			assert.Nil(t, err)
 		}
 	}
 }
@@ -141,35 +137,53 @@ func TestNewStorageClusterBuilder(t *testing.T) {
 		name          string
 		namespace     string
 		expectedError string
+		client        bool
 	}{
 		{
 			name:          defaultStorageClusterName,
 			namespace:     defaultStorageClusterNamespace,
 			expectedError: "",
+			client:        true,
 		},
 		{
 			name:          "",
 			namespace:     defaultStorageClusterNamespace,
 			expectedError: "storageCluster 'name' cannot be empty",
+			client:        true,
 		},
 		{
 			name:          defaultStorageClusterName,
 			namespace:     "",
 			expectedError: "storageCluster 'nsname' cannot be empty",
+			client:        true,
+		},
+		{
+			name:          defaultStorageClusterName,
+			namespace:     defaultStorageClusterNamespace,
+			expectedError: "",
+			client:        false,
 		},
 	}
 
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients(clients.TestClientParams{
-			GVK: []schema.GroupVersionKind{storageClusterGVK},
-		})
+		var testSettings *clients.Settings
+
+		if testCase.client {
+			testSettings = clients.GetTestClients(clients.TestClientParams{})
+		}
+
 		testStorageClusterBuilder := NewStorageClusterBuilder(testSettings, testCase.name, testCase.namespace)
-		assert.Equal(t, testCase.expectedError, testStorageClusterBuilder.errorMsg)
-		assert.NotNil(t, testStorageClusterBuilder.Definition)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testCase.name, testStorageClusterBuilder.Definition.Name)
-			assert.Equal(t, testCase.namespace, testStorageClusterBuilder.Definition.Namespace)
+			if testCase.client {
+				assert.Equal(t, testCase.name, testStorageClusterBuilder.Definition.Name)
+				assert.Equal(t, testCase.namespace, testStorageClusterBuilder.Definition.Namespace)
+			} else {
+				assert.Nil(t, testStorageClusterBuilder)
+			}
+		} else {
+			assert.Equal(t, testCase.expectedError, testStorageClusterBuilder.errorMsg)
+			assert.NotNil(t, testStorageClusterBuilder.Definition)
 		}
 	}
 }
@@ -210,7 +224,7 @@ func TestStorageClusterGet(t *testing.T) {
 		},
 		{
 			testStorageCluster: buildInValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedError:      fmt.Errorf("storageclusters.ocs.openshift.io \"\" not found"),
+			expectedError:      fmt.Errorf("storageCluster 'name' cannot be empty"),
 		},
 		{
 			testStorageCluster: buildValidStorageClusterBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -222,7 +236,9 @@ func TestStorageClusterGet(t *testing.T) {
 		storageClusterObj, err := testCase.testStorageCluster.Get()
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, storageClusterObj, testCase.testStorageCluster.Definition)
+			assert.Equal(t, storageClusterObj.Name, testCase.testStorageCluster.Definition.Name)
+			assert.Equal(t, storageClusterObj.Namespace, testCase.testStorageCluster.Definition.Namespace)
+			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
@@ -240,8 +256,11 @@ func TestStorageClusterCreate(t *testing.T) {
 		},
 		{
 			testStorageCluster: buildInValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedError: fmt.Sprintf("StorageCluster.ocs.openshift.io \"\" is invalid: " +
-				"metadata.name: Required value: name is required"),
+			expectedError:      "storageCluster 'name' cannot be empty",
+		},
+		{
+			testStorageCluster: buildValidStorageClusterBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:      "",
 		},
 	}
 
@@ -249,7 +268,9 @@ func TestStorageClusterCreate(t *testing.T) {
 		testStorageClusterBuilder, err := testCase.testStorageCluster.Create()
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testStorageClusterBuilder.Definition, testStorageClusterBuilder.Object)
+			assert.Equal(t, testStorageClusterBuilder.Definition.Name, testStorageClusterBuilder.Object.Name)
+			assert.Equal(t, testStorageClusterBuilder.Definition.Namespace, testStorageClusterBuilder.Object.Namespace)
+			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError, err.Error())
 		}
@@ -267,7 +288,12 @@ func TestStorageClusterDelete(t *testing.T) {
 		},
 		{
 			testStorageCluster: buildInValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedError:      fmt.Errorf("can not delete storageCluster: storageclusters.ocs.openshift.io \"\" not found"),
+			expectedError:      fmt.Errorf("storageCluster 'name' cannot be empty"),
+		},
+		{
+			testStorageCluster: buildValidStorageClusterBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: fmt.Errorf("can not delete storageCluster: " +
+				"storageclusters.ocs.openshift.io \"ocs-storagecluster\" not found"),
 		},
 	}
 
@@ -276,6 +302,7 @@ func TestStorageClusterDelete(t *testing.T) {
 
 		if testCase.expectedError == nil {
 			assert.Nil(t, testCase.testStorageCluster.Object)
+			assert.Nil(t, err)
 		} else {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
@@ -295,7 +322,7 @@ func TestStorageClusterUpdate(t *testing.T) {
 		},
 		{
 			testStorageCluster: buildInValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedError:      fmt.Errorf("storageCluster object  does not exist in namespace openshift-storage"),
+			expectedError:      fmt.Errorf("storageCluster 'name' cannot be empty"),
 			manageNodes:        true,
 		},
 	}
@@ -305,29 +332,27 @@ func TestStorageClusterUpdate(t *testing.T) {
 		assert.Nil(t, nil, testCase.testStorageCluster.Object)
 		testCase.testStorageCluster.WithManageNodes(testCase.manageNodes)
 		_, err := testCase.testStorageCluster.Update()
-		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, testCase.manageNodes, testCase.testStorageCluster.Definition.Spec.ManageNodes)
+		} else {
+			assert.Equal(t, testCase.expectedError, err)
 		}
 	}
 }
 
 func TestStorageClusterWithManageNodes(t *testing.T) {
 	testCases := []struct {
-		testManageNodes   bool
-		expectedError     bool
-		expectedErrorText string
+		testManageNodes bool
+		expectedError   string
 	}{
 		{
-			testManageNodes:   true,
-			expectedError:     false,
-			expectedErrorText: "",
+			testManageNodes: true,
+			expectedError:   "",
 		},
 		{
-			testManageNodes:   false,
-			expectedError:     false,
-			expectedErrorText: "",
+			testManageNodes: false,
+			expectedError:   "",
 		},
 	}
 
@@ -336,10 +361,8 @@ func TestStorageClusterWithManageNodes(t *testing.T) {
 
 		result := testBuilder.WithManageNodes(testCase.testManageNodes)
 
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-			}
+		if testCase.expectedError != "" {
+			assert.Equal(t, testCase.expectedError, result.errorMsg)
 		} else {
 			assert.NotNil(t, result)
 			assert.Equal(t, testCase.testManageNodes, result.Definition.Spec.ManageNodes)
@@ -373,11 +396,39 @@ func TestStorageClusterGetManageNodes(t *testing.T) {
 	}
 }
 
+func TestStorageClusterWithFlexibleScaling(t *testing.T) {
+	testCases := []struct {
+		testFlexibleScaling bool
+		expectedError       string
+	}{
+		{
+			testFlexibleScaling: true,
+			expectedError:       "",
+		},
+		{
+			testFlexibleScaling: false,
+			expectedError:       "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject())
+
+		result := testBuilder.WithFlexibleScaling(testCase.testFlexibleScaling)
+
+		if testCase.expectedError != "" {
+			assert.Equal(t, testCase.expectedError, result.errorMsg)
+		} else {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testFlexibleScaling, result.Definition.Spec.FlexibleScaling)
+		}
+	}
+}
+
 func TestStorageClusterWithManagedResources(t *testing.T) {
 	testCases := []struct {
 		testManagedResources ocsoperatorv1.ManagedResourcesSpec
-		expectedError        bool
-		expectedErrorText    string
+		expectedError        string
 	}{
 		{
 			testManagedResources: ocsoperatorv1.ManagedResourcesSpec{
@@ -394,13 +445,11 @@ func TestStorageClusterWithManagedResources(t *testing.T) {
 					ReconcileStrategy: "manage",
 				},
 			},
-			expectedError:     false,
-			expectedErrorText: "",
+			expectedError: "",
 		},
 		{
 			testManagedResources: ocsoperatorv1.ManagedResourcesSpec{},
-			expectedError:        false,
-			expectedErrorText:    "",
+			expectedError:        "",
 		},
 	}
 
@@ -409,10 +458,8 @@ func TestStorageClusterWithManagedResources(t *testing.T) {
 
 		result := testBuilder.WithManagedResources(testCase.testManagedResources)
 
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-			}
+		if testCase.expectedError != "" {
+			assert.Equal(t, testCase.expectedError, result.errorMsg)
 		} else {
 			assert.NotNil(t, result)
 			assert.Equal(t, testCase.testManagedResources, result.Definition.Spec.ManagedResources)
@@ -450,18 +497,15 @@ func TestStorageClusterGetManagedResources(t *testing.T) {
 func TestStorageClusterWithMonDataDirHostPath(t *testing.T) {
 	testCases := []struct {
 		testMonDataDirHostPath string
-		expectedError          bool
-		expectedErrorText      string
+		expectedError          string
 	}{
 		{
 			testMonDataDirHostPath: "/var/lib/rook",
-			expectedError:          false,
-			expectedErrorText:      "",
+			expectedError:          "",
 		},
 		{
 			testMonDataDirHostPath: "",
-			expectedError:          true,
-			expectedErrorText:      "the expectedMonDataDirHostPath can not be empty",
+			expectedError:          "the expectedMonDataDirHostPath can not be empty",
 		},
 	}
 
@@ -470,10 +514,8 @@ func TestStorageClusterWithMonDataDirHostPath(t *testing.T) {
 
 		result := testBuilder.WithMonDataDirHostPath(testCase.testMonDataDirHostPath)
 
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-			}
+		if testCase.expectedError != "" {
+			assert.Equal(t, testCase.expectedError, result.errorMsg)
 		} else {
 			assert.NotNil(t, result)
 			assert.Equal(t, testCase.testMonDataDirHostPath, result.Definition.Spec.MonDataDirHostPath)
@@ -511,20 +553,17 @@ func TestStorageClusterGetMonDataDirHostPath(t *testing.T) {
 func TestStorageClusterWithMultiCloudGateway(t *testing.T) {
 	testCases := []struct {
 		testMultiCloudGateway ocsoperatorv1.MultiCloudGatewaySpec
-		expectedError         bool
-		expectedErrorText     string
+		expectedError         string
 	}{
 		{
 			testMultiCloudGateway: ocsoperatorv1.MultiCloudGatewaySpec{
 				ReconcileStrategy: "manage",
 			},
-			expectedError:     false,
-			expectedErrorText: "",
+			expectedError: "",
 		},
 		{
 			testMultiCloudGateway: ocsoperatorv1.MultiCloudGatewaySpec{},
-			expectedError:         false,
-			expectedErrorText:     "",
+			expectedError:         "",
 		},
 	}
 
@@ -533,10 +572,8 @@ func TestStorageClusterWithMultiCloudGateway(t *testing.T) {
 
 		result := testBuilder.WithMultiCloudGateway(testCase.testMultiCloudGateway)
 
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-			}
+		if testCase.expectedError != "" {
+			assert.Equal(t, testCase.expectedError, result.errorMsg)
 		} else {
 			assert.NotNil(t, result)
 			assert.Equal(t, &testCase.testMultiCloudGateway, result.Definition.Spec.MultiCloudGateway)
@@ -577,8 +614,7 @@ func TestStorageClusterWithStorageDeviceSets(t *testing.T) {
 
 	testCases := []struct {
 		testStorageDeviceSets ocsoperatorv1.StorageDeviceSet
-		expectedError         bool
-		expectedErrorText     string
+		expectedError         string
 	}{
 		{
 			testStorageDeviceSets: ocsoperatorv1.StorageDeviceSet{
@@ -597,13 +633,11 @@ func TestStorageClusterWithStorageDeviceSets(t *testing.T) {
 					},
 				},
 			},
-			expectedError:     false,
-			expectedErrorText: "",
+			expectedError: "",
 		},
 		{
 			testStorageDeviceSets: ocsoperatorv1.StorageDeviceSet{},
-			expectedError:         false,
-			expectedErrorText:     "",
+			expectedError:         "",
 		},
 	}
 
@@ -612,10 +646,8 @@ func TestStorageClusterWithStorageDeviceSets(t *testing.T) {
 
 		result := testBuilder.WithStorageDeviceSet(testCase.testStorageDeviceSets)
 
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-			}
+		if testCase.expectedError != "" {
+			assert.Equal(t, testCase.expectedError, result.errorMsg)
 		} else {
 			assert.NotNil(t, result)
 			assert.Equal(t, []ocsoperatorv1.StorageDeviceSet{testCase.testStorageDeviceSets},
@@ -651,10 +683,43 @@ func TestStorageClusterGetStorageDeviceSets(t *testing.T) {
 	}
 }
 
+func TestStorageClusterWithAnnotations(t *testing.T) {
+	testCases := []struct {
+		testAnnotations   map[string]string
+		expectedErrorText string
+	}{
+		{
+			testAnnotations:   map[string]string{"uninstall.ocs.openshift.io/cleanup-policy": "delete"},
+			expectedErrorText: "",
+		},
+		{
+			testAnnotations: map[string]string{"uninstall.ocs.openshift.io/cleanup-policy": "delete",
+				"uninstall.ocs.openshift.io/mode": "graceful"},
+			expectedErrorText: "",
+		},
+		{
+			testAnnotations:   map[string]string{},
+			expectedErrorText: "'annotations' argument cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject())
+
+		result := testBuilder.WithAnnotations(testCase.testAnnotations)
+
+		if testCase.expectedErrorText != "" {
+			assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
+		} else {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testAnnotations, result.Definition.Annotations)
+		}
+	}
+}
+
 func buildValidStorageClusterBuilder(apiClient *clients.Settings) *StorageClusterBuilder {
 	storageClusterBuilder := NewStorageClusterBuilder(
 		apiClient, defaultStorageClusterName, defaultStorageClusterNamespace)
-	storageClusterBuilder.Definition.ResourceVersion = "999"
 
 	return storageClusterBuilder
 }
@@ -662,7 +727,6 @@ func buildValidStorageClusterBuilder(apiClient *clients.Settings) *StorageCluste
 func buildInValidStorageClusterBuilder(apiClient *clients.Settings) *StorageClusterBuilder {
 	storageClusterBuilder := NewStorageClusterBuilder(
 		apiClient, "", defaultStorageClusterNamespace)
-	storageClusterBuilder.Definition.ResourceVersion = "999"
 
 	return storageClusterBuilder
 }
@@ -670,7 +734,6 @@ func buildInValidStorageClusterBuilder(apiClient *clients.Settings) *StorageClus
 func buildStorageClusterClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
 		K8sMockObjects: buildDummyStorageCluster(),
-		GVK:            []schema.GroupVersionKind{storageClusterGVK},
 	})
 }
 
@@ -679,10 +742,6 @@ func buildDummyStorageCluster() []runtime.Object {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      defaultStorageClusterName,
 			Namespace: defaultStorageClusterNamespace,
-		},
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "StorageCluster",
-			APIVersion: fmt.Sprintf("%s/%s", APIGroup, APIVersion),
 		},
 		Spec: ocsoperatorv1.StorageClusterSpec{
 			ManageNodes:        false,
