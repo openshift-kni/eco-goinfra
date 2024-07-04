@@ -196,20 +196,57 @@ func TestDelete(t *testing.T) {
 	}
 }
 
-func TestWithOptions(t *testing.T) {
-	testBuilder := buildTestBuilderWithFakeObjects([]runtime.Object{})
+func TestUpdate(t *testing.T) {
+	generateTestConfigMap := func() *corev1.ConfigMap {
+		return &corev1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-name",
+				Namespace: "test-namespace",
+			},
+		}
+	}
 
-	testBuilder.WithOptions(func(builder *Builder) (*Builder, error) {
-		return builder, nil
-	})
+	testCases := []struct {
+		configMapExistsAlready bool
+	}{
+		{
+			configMapExistsAlready: false,
+		},
+		{
+			configMapExistsAlready: true,
+		},
+	}
 
-	assert.Equal(t, "", testBuilder.errorMsg)
+	for _, testCase := range testCases {
+		var runtimeObjects []runtime.Object
 
-	testBuilder.WithOptions(func(builder *Builder) (*Builder, error) {
-		return builder, errors.New("error")
-	})
+		if testCase.configMapExistsAlready {
+			runtimeObjects = append(runtimeObjects, generateTestConfigMap())
+		}
 
-	assert.Equal(t, "error", testBuilder.errorMsg)
+		testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects)
+
+		// Assert the deployment before the update
+		assert.NotNil(t, testBuilder.Definition)
+		assert.Nil(t, testBuilder.Definition.Data)
+
+		// Set a value in the definition to test the update
+		testBuilder.Definition.Data = map[string]string{"key1": "value1", "key2": "value2"}
+
+		// Perform the update
+		result, err := testBuilder.Update()
+
+		// Assert the result
+		assert.NotNil(t, testBuilder.Definition)
+
+		if !testCase.configMapExistsAlready {
+			assert.NotNil(t, err)
+		} else {
+			assert.Nil(t, err)
+			assert.Equal(t, testBuilder.Definition.Name, result.Definition.Name)
+			assert.Equal(t, testBuilder.Definition.Data, result.Definition.Data)
+		}
+	}
 }
 
 func TestGetGVR(t *testing.T) {
@@ -277,6 +314,22 @@ func TestValidate(t *testing.T) {
 			assert.True(t, result)
 		}
 	}
+}
+
+func TestWithOptions(t *testing.T) {
+	testBuilder := buildTestBuilderWithFakeObjects([]runtime.Object{})
+
+	testBuilder.WithOptions(func(builder *Builder) (*Builder, error) {
+		return builder, nil
+	})
+
+	assert.Equal(t, "", testBuilder.errorMsg)
+
+	testBuilder.WithOptions(func(builder *Builder) (*Builder, error) {
+		return builder, errors.New("error")
+	})
+
+	assert.Equal(t, "error", testBuilder.errorMsg)
 }
 
 func TestWithData(t *testing.T) {
