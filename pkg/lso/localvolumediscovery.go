@@ -280,7 +280,7 @@ func (builder *LocalVolumeDiscoveryBuilder) WithTolerations(
 	}
 
 	if len(tolerations) == 0 {
-		glog.V(100).Infof("The tolerations is empty")
+		glog.V(100).Infof("The tolerations list is empty")
 
 		builder.errorMsg = "'tolerations' argument cannot be empty"
 
