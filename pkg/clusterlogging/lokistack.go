@@ -329,6 +329,38 @@ func (builder *LokiStackBuilder) WithManagementState(
 	return builder
 }
 
+// WithLimits sets the lokiStack operator's limits configuration.
+func (builder *LokiStackBuilder) WithLimits(
+	limits lokiv1.LimitsSpec) *LokiStackBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof(
+		"Setting lokiStack %s in namespace %s with the limits config: %v",
+		builder.Definition.Name, builder.Definition.Namespace, limits)
+
+	builder.Definition.Spec.Limits = &limits
+
+	return builder
+}
+
+// WithTemplate sets the lokiStack operator's template configuration.
+func (builder *LokiStackBuilder) WithTemplate(
+	template lokiv1.LokiTemplateSpec) *LokiStackBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof(
+		"Setting lokiStack %s in namespace %s with the template config: %v",
+		builder.Definition.Name, builder.Definition.Namespace, template)
+
+	builder.Definition.Spec.Template = &template
+
+	return builder
+}
+
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
 func (builder *LokiStackBuilder) validate() (bool, error) {

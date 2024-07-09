@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	corev1 "k8s.io/api/core/v1"
+
 	lokiv1 "github.com/grafana/loki/operator/apis/loki/v1"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
@@ -14,6 +16,15 @@ import (
 var (
 	defaultLokiStackName      = "lokistack-test"
 	defaultLokiStackNamespace = "lokistack-space"
+	lokiStackComponents       = &lokiv1.LokiComponentSpec{
+		NodeSelector: map[string]string{
+			"node-role.kubernetes.io/infra": "",
+		},
+		Tolerations: []corev1.Toleration{{
+			Key:      "node-role.kubernetes.io/infra",
+			Operator: "Exists",
+		}},
+	}
 )
 
 func TestPullLokiStack(t *testing.T) {
@@ -97,7 +108,6 @@ func TestPullLokiStack(t *testing.T) {
 		} else {
 			assert.Equal(t, testLokiStack.Name, builderResult.Object.Name)
 			assert.Equal(t, testLokiStack.Namespace, builderResult.Object.Namespace)
-			assert.Nil(t, err)
 		}
 	}
 }
@@ -276,13 +286,13 @@ func TestLokiStackDelete(t *testing.T) {
 func TestLokiStackUpdate(t *testing.T) {
 	testCases := []struct {
 		testLokiStack *LokiStackBuilder
-		expectedError string
 		testSize      lokiv1.LokiStackSizeType
+		expectedError string
 	}{
 		{
 			testLokiStack: buildValidLokiStackBuilder(buildLokiStackClientWithDummyObject()),
-			expectedError: "",
 			testSize:      lokiv1.SizeOneXDemo,
+			expectedError: "",
 		},
 	}
 
@@ -331,10 +341,9 @@ func TestLokiStackWithSize(t *testing.T) {
 		testBuilder := buildValidLokiStackBuilder(buildLokiStackClientWithDummyObject())
 
 		result := testBuilder.WithSize(testCase.testSize)
+		assert.Equal(t, testCase.expectedError, result.errorMsg)
 
-		if testCase.expectedError != "" {
-			assert.Equal(t, testCase.expectedError, result.errorMsg)
-		} else {
+		if testCase.expectedError == "" {
 			assert.NotNil(t, result)
 			assert.Equal(t, testCase.testSize, result.Definition.Spec.Size)
 		}
@@ -361,10 +370,9 @@ func TestLokiStackWithStorage(t *testing.T) {
 		testBuilder := buildValidLokiStackBuilder(buildLokiStackClientWithDummyObject())
 
 		result := testBuilder.WithStorage(testCase.testStorage)
+		assert.Equal(t, testCase.expectedError, result.errorMsg)
 
-		if testCase.expectedError != "" {
-			assert.Equal(t, testCase.expectedError, result.errorMsg)
-		} else {
+		if testCase.expectedError == "" {
 			assert.NotNil(t, result)
 			assert.Equal(t, testCase.testStorage, result.Definition.Spec.Storage)
 		}
@@ -390,10 +398,9 @@ func TestLokiStackWithStorageClassName(t *testing.T) {
 		testBuilder := buildValidLokiStackBuilder(buildLokiStackClientWithDummyObject())
 
 		result := testBuilder.WithStorageClassName(testCase.testStorageClassName)
+		assert.Equal(t, testCase.expectedError, result.errorMsg)
 
-		if testCase.expectedError != "" {
-			assert.Equal(t, testCase.expectedError, result.errorMsg)
-		} else {
+		if testCase.expectedError == "" {
 			assert.NotNil(t, result)
 			assert.Equal(t, testCase.testStorageClassName, result.Definition.Spec.StorageClassName)
 		}
@@ -417,10 +424,9 @@ func TestLokiStackWithTenants(t *testing.T) {
 		testBuilder := buildValidLokiStackBuilder(buildLokiStackClientWithDummyObject())
 
 		result := testBuilder.WithTenants(testCase.testTenants)
+		assert.Equal(t, testCase.expectedError, result.errorMsg)
 
-		if testCase.expectedError != "" {
-			assert.Equal(t, testCase.expectedError, result.errorMsg)
-		} else {
+		if testCase.expectedError == "" {
 			assert.NotNil(t, result)
 			assert.Equal(t, testCase.testTenants.Mode, result.Definition.Spec.Tenants.Mode)
 		}
@@ -456,10 +462,9 @@ func TestLokiStackWithRules(t *testing.T) {
 		testBuilder := buildValidLokiStackBuilder(buildLokiStackClientWithDummyObject())
 
 		result := testBuilder.WithRules(testCase.testRules)
+		assert.Equal(t, testCase.expectedError, result.errorMsg)
 
-		if testCase.expectedError != "" {
-			assert.Equal(t, testCase.expectedError, result.errorMsg)
-		} else {
+		if testCase.expectedError == "" {
 			assert.NotNil(t, result)
 			assert.Equal(t, testCase.testRules.Enabled, result.Definition.Spec.Rules.Enabled)
 
@@ -490,12 +495,89 @@ func TestLokiStackWithManagementState(t *testing.T) {
 		testBuilder := buildValidLokiStackBuilder(buildLokiStackClientWithDummyObject())
 
 		result := testBuilder.WithManagementState(testCase.testManagementState)
+		assert.Equal(t, testCase.expectedError, result.errorMsg)
 
-		if testCase.expectedError != "" {
-			assert.Equal(t, testCase.expectedError, result.errorMsg)
-		} else {
+		if testCase.expectedError == "" {
 			assert.NotNil(t, result)
 			assert.Equal(t, testCase.testManagementState, result.Definition.Spec.ManagementState)
+		}
+	}
+}
+
+func TestLokiStackWithLimits(t *testing.T) {
+	testCases := []struct {
+		testLimitSpec lokiv1.LimitsSpec
+		expectedError string
+	}{
+		{
+			testLimitSpec: lokiv1.LimitsSpec{
+				Global: &lokiv1.LimitsTemplateSpec{
+					Retention: &lokiv1.RetentionLimitSpec{
+						Days: 7,
+					},
+				},
+			},
+			expectedError: "",
+		},
+		{
+			testLimitSpec: lokiv1.LimitsSpec{},
+			expectedError: "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidLokiStackBuilder(buildLokiStackClientWithDummyObject())
+
+		result := testBuilder.WithLimits(testCase.testLimitSpec)
+		assert.Equal(t, testCase.expectedError, result.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testLimitSpec.Global, result.Definition.Spec.Limits.Global)
+		}
+	}
+}
+
+func TestLokiStackWithTemplate(t *testing.T) {
+	testCases := []struct {
+		testTemplate  lokiv1.LokiTemplateSpec
+		expectedError string
+	}{
+		{
+			testTemplate: lokiv1.LokiTemplateSpec{
+				Compactor:     lokiStackComponents,
+				Distributor:   lokiStackComponents,
+				Ingester:      lokiStackComponents,
+				Querier:       lokiStackComponents,
+				QueryFrontend: lokiStackComponents,
+				Gateway:       lokiStackComponents,
+				IndexGateway:  lokiStackComponents,
+				Ruler:         lokiStackComponents,
+			},
+			expectedError: "",
+		},
+		{
+			testTemplate:  lokiv1.LokiTemplateSpec{},
+			expectedError: "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidLokiStackBuilder(buildLokiStackClientWithDummyObject())
+
+		result := testBuilder.WithTemplate(testCase.testTemplate)
+		assert.Equal(t, testCase.expectedError, result.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testTemplate.Compactor, result.Definition.Spec.Template.Compactor)
+			assert.Equal(t, testCase.testTemplate.Distributor, result.Definition.Spec.Template.Distributor)
+			assert.Equal(t, testCase.testTemplate.Ingester, result.Definition.Spec.Template.Ingester)
+			assert.Equal(t, testCase.testTemplate.Querier, result.Definition.Spec.Template.Querier)
+			assert.Equal(t, testCase.testTemplate.QueryFrontend, result.Definition.Spec.Template.QueryFrontend)
+			assert.Equal(t, testCase.testTemplate.Gateway, result.Definition.Spec.Template.Gateway)
+			assert.Equal(t, testCase.testTemplate.IndexGateway, result.Definition.Spec.Template.IndexGateway)
+			assert.Equal(t, testCase.testTemplate.Ruler, result.Definition.Spec.Template.Ruler)
 		}
 	}
 }
