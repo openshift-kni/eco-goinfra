@@ -1,4 +1,4 @@
-package clusterlogging
+package storage
 
 import (
 	"fmt"
@@ -183,7 +183,7 @@ func TestObjectBucketClaimExists(t *testing.T) {
 	}
 }
 
-func TestLokiStackGet(t *testing.T) {
+func TestObjectBucketClaimGet(t *testing.T) {
 	testCases := []struct {
 		testObjectBucketClaim *ObjectBucketClaimBuilder
 		expectedError         error
@@ -217,57 +217,56 @@ func TestLokiStackGet(t *testing.T) {
 
 func TestObjectBucketClaimCreate(t *testing.T) {
 	testCases := []struct {
-		testLokiStack *ObjectBucketClaimBuilder
-		expectedError string
+		testObjectBucketClaim *ObjectBucketClaimBuilder
+		expectedError         error
 	}{
 		{
-			testLokiStack: buildValidObjectBucketClaimBuilder(buildObjectBucketClaimClientWithDummyObject()),
-			expectedError: "",
+			testObjectBucketClaim: buildValidObjectBucketClaimBuilder(buildObjectBucketClaimClientWithDummyObject()),
+			expectedError:         nil,
 		},
 		{
-			testLokiStack: buildInValidObjectBucketClaimBuilder(buildObjectBucketClaimClientWithDummyObject()),
-			expectedError: "objectBucketClaim 'name' cannot be empty",
+			testObjectBucketClaim: buildInValidObjectBucketClaimBuilder(buildObjectBucketClaimClientWithDummyObject()),
+			expectedError:         fmt.Errorf("objectBucketClaim 'name' cannot be empty"),
 		},
 		{
-			testLokiStack: buildValidObjectBucketClaimBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: "",
+			testObjectBucketClaim: buildValidObjectBucketClaimBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:         nil,
 		},
 	}
 
 	for _, testCase := range testCases {
-		testObjectBucketClaimBuilder, err := testCase.testLokiStack.Create()
+		testObjectBucketClaimBuilder, err := testCase.testObjectBucketClaim.Create()
+		assert.Equal(t, testCase.expectedError, err)
 
-		if testCase.expectedError == "" {
+		if testCase.expectedError == nil {
 			assert.Equal(t, testObjectBucketClaimBuilder.Definition.Name, testObjectBucketClaimBuilder.Object.Name)
 			assert.Equal(t, testObjectBucketClaimBuilder.Definition.Namespace, testObjectBucketClaimBuilder.Object.Namespace)
 			assert.Nil(t, err)
-		} else {
-			assert.Equal(t, testCase.expectedError, err.Error())
 		}
 	}
 }
 
 func TestObjectBucketClaimDelete(t *testing.T) {
 	testCases := []struct {
-		testLokiStack *ObjectBucketClaimBuilder
-		expectedError error
+		testObjectBucketClaim *ObjectBucketClaimBuilder
+		expectedError         error
 	}{
 		{
-			testLokiStack: buildValidObjectBucketClaimBuilder(buildObjectBucketClaimClientWithDummyObject()),
-			expectedError: nil,
+			testObjectBucketClaim: buildValidObjectBucketClaimBuilder(buildObjectBucketClaimClientWithDummyObject()),
+			expectedError:         nil,
 		},
 		{
-			testLokiStack: buildValidObjectBucketClaimBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: nil,
+			testObjectBucketClaim: buildValidObjectBucketClaimBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError:         nil,
 		},
 	}
 
 	for _, testCase := range testCases {
-		err := testCase.testLokiStack.Delete()
+		err := testCase.testObjectBucketClaim.Delete()
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
-			assert.Nil(t, testCase.testLokiStack.Object)
+			assert.Nil(t, testCase.testObjectBucketClaim.Object)
 			assert.Nil(t, err)
 		}
 	}
@@ -277,12 +276,12 @@ func TestObjectBucketClaimUpdate(t *testing.T) {
 	testCases := []struct {
 		testObjectBucketClaim *ObjectBucketClaimBuilder
 		testStorageClassName  string
-		expectedError         string
+		expectedError         error
 	}{
 		{
 			testObjectBucketClaim: buildValidObjectBucketClaimBuilder(buildObjectBucketClaimClientWithDummyObject()),
 			testStorageClassName:  "gp2",
-			expectedError:         "",
+			expectedError:         nil,
 		},
 	}
 
@@ -292,7 +291,7 @@ func TestObjectBucketClaimUpdate(t *testing.T) {
 		testCase.testObjectBucketClaim.WithStorageClassName(testCase.testStorageClassName)
 		_, err := testCase.testObjectBucketClaim.Update()
 
-		if testCase.expectedError != "" {
+		if testCase.expectedError != nil {
 			assert.Equal(t, testCase.expectedError, err.Error())
 		} else {
 			assert.Equal(t, testCase.testStorageClassName,
@@ -320,12 +319,39 @@ func TestObjectBucketClaimWithStorageClassName(t *testing.T) {
 		testBuilder := buildValidObjectBucketClaimBuilder(buildObjectBucketClaimClientWithDummyObject())
 
 		result := testBuilder.WithStorageClassName(testCase.testStorageClassName)
+		assert.Equal(t, testCase.expectedError, result.errorMsg)
 
-		if testCase.expectedError != "" {
-			assert.Equal(t, testCase.expectedError, result.errorMsg)
-		} else {
+		if testCase.expectedError == "" {
 			assert.NotNil(t, result)
 			assert.Equal(t, testCase.testStorageClassName, result.Definition.Spec.StorageClassName)
+		}
+	}
+}
+
+func TestObjectBucketClaimWithGenerateBucketName(t *testing.T) {
+	testCases := []struct {
+		testGenerateBucketName string
+		expectedError          string
+	}{
+		{
+			testGenerateBucketName: "test-bucket-odf",
+			expectedError:          "",
+		},
+		{
+			testGenerateBucketName: "",
+			expectedError:          "'generateBucketName' argument cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidObjectBucketClaimBuilder(buildObjectBucketClaimClientWithDummyObject())
+
+		result := testBuilder.WithGenerateBucketName(testCase.testGenerateBucketName)
+		assert.Equal(t, testCase.expectedError, result.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testGenerateBucketName, result.Definition.Spec.GenerateBucketName)
 		}
 	}
 }
@@ -346,11 +372,11 @@ func buildInValidObjectBucketClaimBuilder(apiClient *clients.Settings) *ObjectBu
 
 func buildObjectBucketClaimClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyTriggerAuthentication(),
+		K8sMockObjects: buildDummyObjectBucketClaim(),
 	})
 }
 
-func buildDummyTriggerAuthentication() []runtime.Object {
+func buildDummyObjectBucketClaim() []runtime.Object {
 	return append([]runtime.Object{}, &noobaav1alpha1.ObjectBucketClaim{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      defaultObjectBucketClaimName,

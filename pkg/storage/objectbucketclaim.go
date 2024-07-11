@@ -1,4 +1,4 @@
-package clusterlogging
+package storage
 
 import (
 	"context"
@@ -26,7 +26,7 @@ type ObjectBucketClaimBuilder struct {
 	errorMsg string
 }
 
-// NewObjectBucketClaimBuilder method creates new instance of builder.
+// NewObjectBucketClaimBuilder creates new instance of builder.
 func NewObjectBucketClaimBuilder(
 	apiClient *clients.Settings, name, nsname string) *ObjectBucketClaimBuilder {
 	glog.V(100).Infof("Initializing new objectBucketClaim structure with the following params: "+
@@ -153,7 +153,7 @@ func (builder *ObjectBucketClaimBuilder) Delete() error {
 		return err
 	}
 
-	glog.V(100).Infof("Deleting the objectBucketClaim %s in namespace %s",
+	glog.V(100).Infof("Deleting the objectBucketClaim %s from namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
@@ -210,9 +210,7 @@ func (builder *ObjectBucketClaimBuilder) Update() (*ObjectBucketClaimBuilder, er
 		return nil, err
 	}
 
-	if err == nil {
-		builder.Object = builder.Definition
-	}
+	builder.Object = builder.Definition
 
 	return builder, err
 }
