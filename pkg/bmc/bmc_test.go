@@ -46,6 +46,15 @@ var redfishChassisNoPowerJSONResponse string
 //go:embed testdata/redfish_v1_power.json
 var redfishPowerJSONResponse string
 
+//go:embed testdata/redfish_v1_system_boot_options.json
+var redfishSystemBootOptionsJSONResponse string
+
+//go:embed testdata/redfish_v1_system_boot_option_Boot0000.json
+var redfishSystemBootOption0000JSONResponse string
+
+//go:embed testdata/redfish_v1_system_boot_option_Boot0003.json
+var redfishSystemBootOption0003JSONResponse string
+
 // redfishAuth is used to unmarshall the received login request redfish credentials.
 type redfishAuth struct {
 	UserName string
@@ -53,12 +62,13 @@ type redfishAuth struct {
 }
 
 type redfishAPIResponseCallbacks struct {
-	v1         func(r *http.Request)
-	sessions   func(r *http.Request)
-	system     func(r *http.Request)
-	secureBoot func(r *http.Request)
-	chassis    func(r *http.Request)
-	power      func(r *http.Request)
+	v1          func(r *http.Request)
+	sessions    func(r *http.Request)
+	system      func(r *http.Request)
+	secureBoot  func(r *http.Request)
+	bootOptions func(r *http.Request)
+	chassis     func(r *http.Request)
+	power       func(r *http.Request)
 }
 
 const (
@@ -654,6 +664,61 @@ func TestBMCSerialConsole(t *testing.T) {
 	assert.EqualError(t, err, expectedErrMsg)
 }
 
+func TestBMCSystemBootOptions(t *testing.T) {
+	// Create fake redfish endpoint.
+	redfishServer := createFakeRedfishLocalServer(false, redfishAPIResponseCallbacks{})
+	defer redfishServer.Close()
+
+	host := strings.Split(redfishServer.URL, "//")[1]
+	bmc := New(host).WithRedfishUser(defaultUsername, defaultPassword).WithRedfishTimeout(1 * time.Hour)
+
+	expectedOptions := map[string]string{
+		"Boot0000": "PXE Device 1: Embedded NIC 1 Port 1 Partition 1",
+		"Boot0003": "RAID Controller in SL 3: Red Hat Enterprise Linux",
+	}
+
+	bootOptions, err := bmc.SystemBootOptions()
+	assert.NoError(t, err)
+	assert.Equal(t, expectedOptions, bootOptions)
+}
+
+func TestBMCSystemBootOrderReferences(t *testing.T) {
+	// Create fake redfish endpoint.
+	redfishServer := createFakeRedfishLocalServer(false, redfishAPIResponseCallbacks{})
+	defer redfishServer.Close()
+
+	host := strings.Split(redfishServer.URL, "//")[1]
+	bmc := New(host).WithRedfishUser(defaultUsername, defaultPassword)
+
+	expectedBootOrder := []string{"Boot0003", "Boot0000"}
+
+	bootOrder, err := bmc.SystemBootOrderReferences()
+	assert.NoError(t, err)
+	assert.Equal(t, expectedBootOrder, bootOrder)
+}
+
+func TestBMCSetSystemBootOrderReferences(t *testing.T) {
+	// Create fake redfish endpoint.
+	redfishServer := createFakeRedfishLocalServer(false, redfishAPIResponseCallbacks{})
+	defer redfishServer.Close()
+
+	host := strings.Split(redfishServer.URL, "//")[1]
+	bmc := New(host).WithRedfishUser(defaultUsername, defaultPassword)
+
+	// Read the current boot order.
+	expectedBootOrder := []string{"Boot0003", "Boot0000"}
+
+	bootOrder, err := bmc.SystemBootOrderReferences()
+	assert.NoError(t, err)
+	assert.Equal(t, expectedBootOrder, bootOrder)
+
+	// Switch first and second boot references and remove the last two
+	newBootOrder := []string{expectedBootOrder[1], expectedBootOrder[0]}
+
+	err = bmc.SetSystemBootOrderReferences(newBootOrder)
+	assert.NoError(t, err)
+}
+
 func getDelayResponseCallbackFn(t *testing.T, respDelay time.Duration) func(r *http.Request) {
 	t.Helper()
 
@@ -687,7 +752,7 @@ func getAuthDataCallbackFn(t *testing.T, user *User) func(r *http.Request) {
 // it will be filled with the auth credentials received in the login request. All the responses, except the login one,
 // are sent using static json data from the testdata folder. The flag secureBootEnable is used to load the json response
 // for the secure boot api depending on wether we want it to be enabled or disabled for our test.
-func createFakeRedfishLocalServer(secureBootEnabled bool, callbacks redfishAPIResponseCallbacks) *httptest.Server {
+func createFakeRedfishLocalServer(secureBootEnabled bool, callbacks redfishAPIResponseCallbacks) *httptest.Server { //nolint:funlen,lll
 	sbEnabled := secureBootEnabled
 	mux := http.NewServeMux()
 	mux.HandleFunc("/redfish/v1/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -733,6 +798,25 @@ func createFakeRedfishLocalServer(secureBootEnabled bool, callbacks redfishAPIRe
 			} else {
 				_, _ = writer.Write([]byte(redfishSystemSecureBootDisabledJSONResponse))
 			}
+		}))
+
+	mux.HandleFunc("/redfish/v1/Systems/System.Embedded.1/BootOptions",
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if callbacks.bootOptions != nil {
+				callbacks.bootOptions(r)
+			}
+
+			_, _ = w.Write([]byte(redfishSystemBootOptionsJSONResponse))
+		}))
+
+	mux.HandleFunc("/redfish/v1/Systems/System.Embedded.1/BootOptions/Boot0000",
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, _ = w.Write([]byte(redfishSystemBootOption0000JSONResponse))
+		}))
+
+	mux.HandleFunc("/redfish/v1/Systems/System.Embedded.1/BootOptions/Boot0003",
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, _ = w.Write([]byte(redfishSystemBootOption0003JSONResponse))
 		}))
 
 	mux.HandleFunc("GET /redfish/v1/Chassis", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
