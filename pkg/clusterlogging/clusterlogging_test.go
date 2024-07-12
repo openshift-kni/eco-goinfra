@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	corev1 "k8s.io/api/core/v1"
+
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	clov1 "github.com/openshift/cluster-logging-operator/api/logging/v1"
 	"github.com/stretchr/testify/assert"
@@ -141,19 +143,19 @@ func TestClusterLoggingGet(t *testing.T) {
 		expectedError  error
 	}{
 		{
-			clusterLogging: buildValidClusterLogging(buildClusterLoggingTestClientWithDummyObject()),
+			clusterLogging: buildValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
 			expectedError:  nil,
 		},
 		{
-			clusterLogging: buildValidClusterLogging(clients.GetTestClients(clients.TestClientParams{})),
+			clusterLogging: buildValidClusterLoggingBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError:  fmt.Errorf("clusterloggings.logging.openshift.io \"clusterlogging\" not found"),
 		},
 		{
-			clusterLogging: buildInValidClusterLogging(clients.GetTestClients(clients.TestClientParams{})),
+			clusterLogging: buildInValidClusterLoggingBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError:  fmt.Errorf("the clusterLogging 'name' cannot be empty"),
 		},
 		{
-			clusterLogging: buildInValidClusterLogging(buildClusterLoggingTestClientWithDummyObject()),
+			clusterLogging: buildInValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
 			expectedError:  fmt.Errorf("the clusterLogging 'name' cannot be empty"),
 		},
 	}
@@ -176,19 +178,19 @@ func TestClusterLoggingCreate(t *testing.T) {
 		expectedError  error
 	}{
 		{
-			clusterLogging: buildValidClusterLogging(buildClusterLoggingTestClientWithDummyObject()),
+			clusterLogging: buildValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
 			expectedError:  nil,
 		},
 		{
-			clusterLogging: buildValidClusterLogging(clients.GetTestClients(clients.TestClientParams{})),
+			clusterLogging: buildValidClusterLoggingBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError:  nil,
 		},
 		{
-			clusterLogging: buildInValidClusterLogging(clients.GetTestClients(clients.TestClientParams{})),
+			clusterLogging: buildInValidClusterLoggingBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError:  fmt.Errorf("the clusterLogging 'name' cannot be empty"),
 		},
 		{
-			clusterLogging: buildInValidClusterLogging(buildClusterLoggingTestClientWithDummyObject()),
+			clusterLogging: buildInValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
 			expectedError:  fmt.Errorf("the clusterLogging 'name' cannot be empty"),
 		},
 	}
@@ -211,19 +213,19 @@ func TestClusterLoggingDelete(t *testing.T) {
 		expectedError  error
 	}{
 		{
-			clusterLogging: buildValidClusterLogging(buildClusterLoggingTestClientWithDummyObject()),
+			clusterLogging: buildValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
 			expectedError:  nil,
 		},
 		{
-			clusterLogging: buildValidClusterLogging(clients.GetTestClients(clients.TestClientParams{})),
+			clusterLogging: buildValidClusterLoggingBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError:  fmt.Errorf("clusterLogging cannot be deleted because it does not exist"),
 		},
 		{
-			clusterLogging: buildInValidClusterLogging(clients.GetTestClients(clients.TestClientParams{})),
+			clusterLogging: buildInValidClusterLoggingBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError:  fmt.Errorf("the clusterLogging 'name' cannot be empty"),
 		},
 		{
-			clusterLogging: buildInValidClusterLogging(buildClusterLoggingTestClientWithDummyObject()),
+			clusterLogging: buildInValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
 			expectedError:  fmt.Errorf("the clusterLogging 'name' cannot be empty"),
 		},
 	}
@@ -244,16 +246,16 @@ func TestClusterLoggingExist(t *testing.T) {
 		expectedStatus bool
 	}{
 		{
-			clusterLogging: buildValidClusterLogging(buildClusterLoggingTestClientWithDummyObject()),
+			clusterLogging: buildValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
 			expectedStatus: true,
 		},
 		{
-			clusterLogging: buildValidClusterLogging(clients.GetTestClients(clients.TestClientParams{})),
+			clusterLogging: buildValidClusterLoggingBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedStatus: false,
 		},
 
 		{
-			clusterLogging: buildInValidClusterLogging(buildClusterLoggingTestClientWithDummyObject()),
+			clusterLogging: buildInValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
 			expectedStatus: false,
 		},
 	}
@@ -270,19 +272,19 @@ func TestClusterLoggingUpdate(t *testing.T) {
 		expectedError  error
 	}{
 		{
-			clusterLogging: buildValidClusterLogging(buildClusterLoggingTestClientWithDummyObject()),
+			clusterLogging: buildValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
 			expectedError:  nil,
 		},
 		{
-			clusterLogging: buildValidClusterLogging(clients.GetTestClients(clients.TestClientParams{})),
+			clusterLogging: buildValidClusterLoggingBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError:  fmt.Errorf("clusterloggings.logging.openshift.io \"clusterlogging\" not found"),
 		},
 		{
-			clusterLogging: buildInValidClusterLogging(clients.GetTestClients(clients.TestClientParams{})),
+			clusterLogging: buildInValidClusterLoggingBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError:  fmt.Errorf("the clusterLogging 'name' cannot be empty"),
 		},
 		{
-			clusterLogging: buildInValidClusterLogging(buildClusterLoggingTestClientWithDummyObject()),
+			clusterLogging: buildInValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject()),
 			expectedError:  fmt.Errorf("the clusterLogging 'name' cannot be empty"),
 		},
 	}
@@ -301,15 +303,150 @@ func TestClusterLoggingUpdate(t *testing.T) {
 	}
 }
 
-func buildValidClusterLogging(apiClient *clients.Settings) *Builder {
+func TestClusterLoggingWithCollection(t *testing.T) {
+	testCases := []struct {
+		testCollection clov1.CollectionSpec
+		expectedError  string
+	}{
+		{
+			testCollection: clov1.CollectionSpec{
+				Type: "vector",
+				CollectorSpec: clov1.CollectorSpec{
+					Tolerations: []corev1.Toleration{{
+						Key:      "node-role.kubernetes.io/infra",
+						Operator: "Exists",
+					}, {
+						Key:      "node.ocs.openshift.io/storage",
+						Operator: "Equal",
+						Value:    "true",
+						Effect:   "NoSchedule",
+					}},
+				},
+			},
+			expectedError: "",
+		},
+		{
+			testCollection: clov1.CollectionSpec{},
+			expectedError:  "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject())
+
+		result := testBuilder.WithCollection(testCase.testCollection)
+		assert.Equal(t, testCase.expectedError, result.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testCollection, *result.Definition.Spec.Collection)
+		}
+	}
+}
+
+func TestClusterLoggingWithManagementState(t *testing.T) {
+	testCases := []struct {
+		testManagementState clov1.ManagementState
+		expectedError       string
+	}{
+		{
+			testManagementState: clov1.ManagementStateManaged,
+			expectedError:       "",
+		},
+		{
+			testManagementState: clov1.ManagementStateUnmanaged,
+			expectedError:       "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject())
+
+		result := testBuilder.WithManagementState(testCase.testManagementState)
+		assert.Equal(t, testCase.expectedError, result.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testManagementState, result.Definition.Spec.ManagementState)
+		}
+	}
+}
+
+func TestClusterLoggingWithLogStore(t *testing.T) {
+	testCases := []struct {
+		testLogStore  clov1.LogStoreSpec
+		expectedError string
+	}{
+		{
+			testLogStore: clov1.LogStoreSpec{
+				Type:      "lokistack",
+				LokiStack: clov1.LokiStackStoreSpec{Name: "logging-loki"},
+			},
+			expectedError: "",
+		},
+		{
+			testLogStore:  clov1.LogStoreSpec{},
+			expectedError: "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject())
+
+		result := testBuilder.WithLogStore(testCase.testLogStore)
+		assert.Equal(t, testCase.expectedError, result.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testLogStore, *result.Definition.Spec.LogStore)
+		}
+	}
+}
+
+func TestClusterLoggingWithVisualization(t *testing.T) {
+	testCases := []struct {
+		testVisualization clov1.VisualizationSpec
+		expectedError     string
+	}{
+		{
+			testVisualization: clov1.VisualizationSpec{
+				Type:         "ocp-console",
+				NodeSelector: map[string]string{"node-role.kubernetes.io/infra": ""},
+				Tolerations: []corev1.Toleration{{
+					Key:      "node-role.kubernetes.io/infra",
+					Operator: "Exists",
+				}},
+			},
+			expectedError: "",
+		},
+		{
+			testVisualization: clov1.VisualizationSpec{},
+			expectedError:     "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidClusterLoggingBuilder(buildClusterLoggingClientWithDummyObject())
+
+		result := testBuilder.WithVisualization(testCase.testVisualization)
+		assert.Equal(t, testCase.expectedError, result.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testVisualization, *result.Definition.Spec.Visualization)
+		}
+	}
+}
+
+func buildValidClusterLoggingBuilder(apiClient *clients.Settings) *Builder {
 	return NewBuilder(apiClient, defaultClusterLoggingName, defaultClusterLoggingNsName)
 }
 
-func buildInValidClusterLogging(apiClient *clients.Settings) *Builder {
+func buildInValidClusterLoggingBuilder(apiClient *clients.Settings) *Builder {
 	return NewBuilder(apiClient, "", defaultClusterLoggingNsName)
 }
 
-func buildClusterLoggingTestClientWithDummyObject() *clients.Settings {
+func buildClusterLoggingClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
 		K8sMockObjects: buildDummyClusterLogging(),
 	})

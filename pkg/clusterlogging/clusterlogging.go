@@ -215,6 +215,70 @@ func (builder *Builder) Update(force bool) (*Builder, error) {
 	return builder, err
 }
 
+// WithCollection sets the clusterLogging operator's collection configuration.
+func (builder *Builder) WithCollection(
+	collection clov1.CollectionSpec) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof(
+		"Setting clusterLogging %s in namespace %s with the collection config: %v",
+		builder.Definition.Name, builder.Definition.Namespace, collection)
+
+	builder.Definition.Spec.Collection = &collection
+
+	return builder
+}
+
+// WithManagementState sets the clusterLogging operator's managementState configuration.
+func (builder *Builder) WithManagementState(
+	managementState clov1.ManagementState) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof(
+		"Setting clusterLogging %s in namespace %s with the managementState config: %v",
+		builder.Definition.Name, builder.Definition.Namespace, managementState)
+
+	builder.Definition.Spec.ManagementState = managementState
+
+	return builder
+}
+
+// WithLogStore sets the clusterLogging operator's logStore configuration.
+func (builder *Builder) WithLogStore(
+	logStore clov1.LogStoreSpec) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof(
+		"Setting clusterLogging %s in namespace %s with the logStore config: %v",
+		builder.Definition.Name, builder.Definition.Namespace, logStore)
+
+	builder.Definition.Spec.LogStore = &logStore
+
+	return builder
+}
+
+// WithVisualization sets the clusterLogging operator's visualization configuration.
+func (builder *Builder) WithVisualization(
+	visualization clov1.VisualizationSpec) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof(
+		"Setting clusterLogging %s in namespace %s with the visualization config: %v",
+		builder.Definition.Name, builder.Definition.Namespace, visualization)
+
+	builder.Definition.Spec.Visualization = &visualization
+
+	return builder
+}
+
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
 func (builder *Builder) validate() (bool, error) {
