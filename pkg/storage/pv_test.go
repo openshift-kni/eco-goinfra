@@ -104,31 +104,30 @@ func TestPersistentVolumeExists(t *testing.T) {
 
 func TestPersistentVolumeDelete(t *testing.T) {
 	testCases := []struct {
-		testBuilder       *PVBuilder
-		expectedErrorText string
+		testBuilder   *PVBuilder
+		expectedError error
 	}{
 		{
-			testBuilder:       buildValidPersistentVolumeTestBuilder(buildTestClientWithDummyPersistentVolume()),
-			expectedErrorText: "",
+			testBuilder:   buildValidPersistentVolumeTestBuilder(buildTestClientWithDummyPersistentVolume()),
+			expectedError: nil,
 		},
 		{
-			testBuilder:       buildValidPersistentVolumeTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedErrorText: "",
+			testBuilder:   buildValidPersistentVolumeTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: nil,
 		},
 		{
-			testBuilder:       buildInvalidPersistentVolumeTestBuilder(buildTestClientWithDummyPersistentVolume()),
-			expectedErrorText: "can not redefine the undefined PersistentVolume",
+			testBuilder:   buildInvalidPersistentVolumeTestBuilder(buildTestClientWithDummyPersistentVolume()),
+			expectedError: fmt.Errorf("can not redefine the undefined PersistentVolume"),
 		},
 	}
 
 	for _, testCase := range testCases {
 		err := testCase.testBuilder.Delete()
+		assert.Equal(t, testCase.expectedError, err)
 
-		if testCase.expectedErrorText == "" {
+		if testCase.expectedError == nil {
 			assert.Nil(t, err)
 			assert.Nil(t, testCase.testBuilder.Object)
-		} else {
-			assert.EqualError(t, err, testCase.expectedErrorText)
 		}
 	}
 }
@@ -193,7 +192,7 @@ func TestPersistentVolumeWaitUntilDeleted(t *testing.T) {
 	}
 }
 
-// buildDummyPersistentVolume returns a PersistenVolume with the specified name.
+// buildDummyPersistentVolume returns a PersistentVolume with the specified name.
 func buildDummyPersistentVolume(name string) *corev1.PersistentVolume {
 	return &corev1.PersistentVolume{
 		ObjectMeta: metav1.ObjectMeta{
