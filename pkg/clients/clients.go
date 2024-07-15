@@ -31,6 +31,7 @@ import (
 	ptpV1 "github.com/openshift/ptp-operator/pkg/client/clientset/versioned/typed/ptp/v1"
 	olm2 "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/scheme"
 
+	oauthv1 "github.com/openshift/api/oauth/v1"
 	olmv1 "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1"
 	olm "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1alpha1"
 
@@ -291,6 +292,10 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	}
 
 	if err := olm2.AddToScheme(crScheme); err != nil {
+		return err
+	}
+
+	if err := oauthv1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
@@ -608,6 +613,9 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *lcav1.ImageBasedUpgrade:
 			genericClientObjects = append(genericClientObjects, v)
 		case *lcasgv1.SeedGenerator:
+			genericClientObjects = append(genericClientObjects, v)
+		// OAuthClient Objects
+		case *oauthv1.OAuthClient:
 			genericClientObjects = append(genericClientObjects, v)
 		// Hive Client Objects
 		case *hiveV1.HiveConfig:
