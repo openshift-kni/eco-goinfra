@@ -1,0 +1,17 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#BootOption.BootOption",
+  "@odata.id": "/redfish/v1/Systems/System.Embedded.1/BootOptions/Boot0000",
+  "@odata.type": "#BootOption.v1_0_4.BootOption",
+  "BootOptionEnabled": true,
+  "BootOptionReference": "Boot0000",
+  "Description": "Current settings of the UEFI Boot option",
+  "DisplayName": "PXE Device 1: Embedded NIC 1 Port 1 Partition 1",
+  "Id": "Boot0000",
+  "Name": "Uefi Boot Option",
+  "UefiDevicePath": "VenHw(3A191845-5F86-4E78-8FCE-C4CFF59F9DAA)",
+  "RelatedItem": [
+    {
+      "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Embedded.1/NetworkDeviceFunctions/NIC.Embedded.1-1-1"
+    }
+  ]
+}

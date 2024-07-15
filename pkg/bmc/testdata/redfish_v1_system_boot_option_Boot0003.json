@@ -1,0 +1,17 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#BootOption.BootOption",
+  "@odata.id": "/redfish/v1/Systems/System.Embedded.1/BootOptions/Boot0003",
+  "@odata.type": "#BootOption.v1_0_4.BootOption",
+  "BootOptionEnabled": true,
+  "BootOptionReference": "Boot0003",
+  "Description": "Current settings of the UEFI Boot option",
+  "DisplayName": "RAID Controller in SL 3: Red Hat Enterprise Linux",
+  "Id": "Boot0003",
+  "Name": "Uefi Boot Option",
+  "UefiDevicePath": "HD(1,GPT,3C849C22-2F6C-425F-8072-B3B822F5BEA2,0x800,0x12C000)/\\EFI\\redhat\\shimx64.efi",
+  "RelatedItem": [
+    {
+      "@odata.id": "/redfish/v1/Chassis/Enclosure.Internal.0-1:RAID.SL.3-1"
+    }
+  ]
+}

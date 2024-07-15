@@ -44,9 +44,7 @@
       },
       "BootOrder": [
         "Boot0003",
-        "Boot0000",
-        "Boot0001",
-        "Boot0002"
+        "Boot0000"
       ],
       "BootOrder@odata.count": 4,
       "BootSourceOverrideEnabled": "Disabled",
