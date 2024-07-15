@@ -366,6 +366,36 @@ func TestMetalLbWithOptions(t *testing.T) {
 	assert.Equal(t, "error", testBuilder.errorMsg)
 }
 
+func TestMetalLbWithFRRconfigAlwaysBlock(t *testing.T) {
+	testCases := []struct {
+		testMetalLb   *Builder
+		prefixes      []string
+		expectedError string
+	}{
+		{
+			testMetalLb:   buildValidMetalLbBuilder(buildMetalLbTestClientWithDummyObject()),
+			expectedError: "",
+			prefixes:      []string{"192.168.1.0/24", "2001:1::0/64"},
+		},
+		{
+			testMetalLb:   buildValidMetalLbBuilder(buildMetalLbTestClientWithDummyObject()),
+			expectedError: "error prefixes cannot be empty",
+			prefixes:      []string{},
+		},
+	}
+
+	for _, testCase := range testCases {
+		assert.Equal(t, defaultMetalLbNodeSelector, testCase.testMetalLb.Definition.Spec.SpeakerNodeSelector)
+		assert.Nil(t, nil, testCase.testMetalLb.Object)
+		metalLbBuilder := testCase.testMetalLb.WithFRRconfigAlwaysBlock(testCase.prefixes)
+		assert.Equal(t, testCase.expectedError, metalLbBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, map[string]string{}, metalLbBuilder.Definition.Spec.FRRK8SConfig.AlwaysBlock)
+		}
+	}
+}
+
 func TestGetMetalLbIoGVR(t *testing.T) {
 	assert.Equal(t, GetMetalLbIoGVR(),
 		schema.GroupVersionResource{

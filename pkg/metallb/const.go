@@ -3,6 +3,8 @@ package metallb
 const (
 	// APIGroup represents metallb api group.
 	APIGroup = "metallb.io"
+	// FRRAPIGroup represents metallb frr api group.
+	FRRAPIGroup = "frrk8s.metallb.io"
 	// APIVersion represents version of metallb api.
 	APIVersion = "v1beta1"
 	// MetalLBList represents kind of MetalLBList object.
