@@ -12,6 +12,8 @@ import (
 // MetalLBLogLevel defines MetalLB Log Level.
 type MetalLBLogLevel string
 
+type BGPType string
+
 // MetalLBSpec defines the desired state of MetalLB.
 type MetalLBSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
@@ -59,6 +61,18 @@ type MetalLBSpec struct {
 	// additional configs to be applied on MetalLB Speaker daemonset.
 	// +optional
 	SpeakerConfig *Config `json:"speakerConfig,omitempty"`
+
+	// The type of BGP implementation deployed with MetalLB
+	// +optional
+	BGPBackend BGPType `json:"bgpBackend,omitempty"`
+
+	// The specific frr-k8s configuration
+	FRRK8SConfig *FRRK8SConfig `json:"frrk8sConfig,omitempty"`
+}
+
+type FRRK8SConfig struct {
+	// A list of cidrs we want always to block for incoming routes
+	AlwaysBlock []string `json:"alwaysBlock,omitempty"`
 }
 
 // Config type definition.
