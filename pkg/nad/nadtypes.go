@@ -4,6 +4,7 @@ package nad
 type (
 	Capability struct {
 		Mac bool `json:"mac,omitempty"`
+		IPs bool `json:"ips,omitempty"`
 	}
 
 	// Link contains the link name of a link.
