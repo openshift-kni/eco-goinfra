@@ -3,6 +3,7 @@ package clusterlogging
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 
@@ -580,6 +581,44 @@ func TestLokiStackWithTemplate(t *testing.T) {
 			assert.Equal(t, testCase.testTemplate.Ruler, result.Definition.Spec.Template.Ruler)
 		}
 	}
+}
+
+func TestLokiStackIsReady(t *testing.T) {
+	testCases := []struct {
+		testLokiStack *LokiStackBuilder
+		testCondition bool
+	}{
+		{
+			testLokiStack: buildValidLokiStackBuilderWithCondition(buildLokiStackClientWithDummyObject(), "Ready"),
+			testCondition: true,
+		},
+		{
+			testLokiStack: buildValidLokiStackBuilderWithCondition(buildLokiStackClientWithDummyObject(), "NotReady"),
+			testCondition: false,
+		},
+		{
+			testLokiStack: buildValidLokiStackBuilderWithCondition(clients.GetTestClients(clients.TestClientParams{}),
+				"Ready"),
+			testCondition: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		isReadyResult := testCase.testLokiStack.IsReady(2 * time.Second)
+
+		assert.Equal(t, testCase.testCondition, isReadyResult)
+	}
+}
+
+func buildValidLokiStackBuilderWithCondition(apiClient *clients.Settings,
+	conditionType string) *LokiStackBuilder {
+	lokiStackBuilder := buildValidLokiStackBuilder(apiClient)
+	lokiStackBuilder.Definition.Status.Conditions = []metav1.Condition{{
+		Type:   conditionType,
+		Status: metav1.ConditionTrue,
+	}}
+
+	return lokiStackBuilder
 }
 
 func buildValidLokiStackBuilder(apiClient *clients.Settings) *LokiStackBuilder {
