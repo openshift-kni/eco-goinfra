@@ -3,6 +3,7 @@ package clusterlogging
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 
@@ -436,6 +437,46 @@ func TestClusterLoggingWithVisualization(t *testing.T) {
 			assert.Equal(t, testCase.testVisualization, *result.Definition.Spec.Visualization)
 		}
 	}
+}
+
+func TestClusterLoggingIsReady(t *testing.T) {
+	testCases := []struct {
+		testClusterLogging *Builder
+		testCondition      bool
+	}{
+		{
+			testClusterLogging: buildValidClusterLoggingBuilderWithCondition(buildClusterLoggingClientWithDummyObject(),
+				clov1.ConditionReady),
+			testCondition: true,
+		},
+		{
+			testClusterLogging: buildValidClusterLoggingBuilderWithCondition(buildClusterLoggingClientWithDummyObject(),
+				clov1.ConditionDegraded),
+			testCondition: false,
+		},
+		{
+			testClusterLogging: buildValidClusterLoggingBuilderWithCondition(
+				clients.GetTestClients(clients.TestClientParams{}), clov1.ConditionReady),
+			testCondition: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		isReadyResult := testCase.testClusterLogging.IsReady(2 * time.Second)
+
+		assert.Equal(t, testCase.testCondition, isReadyResult)
+	}
+}
+
+func buildValidClusterLoggingBuilderWithCondition(apiClient *clients.Settings,
+	conditionType clov1.ConditionType) *Builder {
+	clusterLoggingBuilder := buildValidClusterLoggingBuilder(apiClient)
+	clusterLoggingBuilder.Definition.Status.Conditions = []clov1.Condition{{
+		Type:   conditionType,
+		Status: corev1.ConditionTrue,
+	}}
+
+	return clusterLoggingBuilder
 }
 
 func buildValidClusterLoggingBuilder(apiClient *clients.Settings) *Builder {
