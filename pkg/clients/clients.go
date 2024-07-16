@@ -6,8 +6,9 @@ import (
 	"os"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/argocd/argocdtypes"
-	"github.com/openshift-kni/eco-goinfra/pkg/metallb/mlbtypes"
 	"github.com/openshift-kni/eco-goinfra/pkg/oadp/oadptypes"
+	"github.com/openshift-kni/eco-goinfra/pkg/schemes/metallb/mlboperator"
+	"github.com/openshift-kni/eco-goinfra/pkg/schemes/metallb/mlbtypes"
 
 	"github.com/golang/glog"
 	"k8s.io/client-go/dynamic"
@@ -513,7 +514,7 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *mlbtypes.BGPAdvertisement:
 			genericClientObjects = append(genericClientObjects, v)
-		case *mlbtypes.MetalLB:
+		case *mlboperator.MetalLB:
 			genericClientObjects = append(genericClientObjects, v)
 		case *mlbtypes.L2Advertisement:
 			genericClientObjects = append(genericClientObjects, v)
