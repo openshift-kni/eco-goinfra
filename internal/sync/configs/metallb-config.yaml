@@ -32,4 +32,7 @@
   branch: main
   remote_api_directory: pkg/params
   local_api_directory: schemes/metallb/mlboperatorparams
+  replace_imports:
+    - old: "github.com/metallb/metallb-operator/api/v1beta1"
+      new: v1beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/metallb/mlboperator"
 ...
