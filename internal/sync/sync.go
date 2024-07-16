@@ -109,7 +109,7 @@ func repoSynced(clonedDir, localDir string, repo *repo) bool {
 	for _, importMap := range repo.ReplaceImports {
 		err = refactor(
 			importMap["new"],
-			fmt.Sprintf("%q", importMap["old"]),
+			importMap["old"],
 			localDir,
 			"*.go")
 
@@ -171,7 +171,7 @@ func syncDirectories(clonedDir, localDir string, repo *repo) {
 	}
 
 	for _, importMap := range repo.ReplaceImports {
-		err = refactor(fmt.Sprintf("%q", importMap["old"]), importMap["new"], localDir, "*.go")
+		err = refactor(importMap["old"], importMap["new"], localDir, "*.go")
 
 		if err != nil {
 			glog.V(100).Infof("Failed to refactor file. Exit with error 1")
