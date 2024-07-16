@@ -3,6 +3,9 @@ package clusterlogging
 import (
 	"context"
 	"fmt"
+	"time"
+
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	lokiv1 "github.com/grafana/loki/operator/apis/loki/v1"
 
@@ -359,6 +362,32 @@ func (builder *LokiStackBuilder) WithTemplate(
 	builder.Definition.Spec.Template = &template
 
 	return builder
+}
+
+// IsReady checks for the duration of timeout if the lokiStack state is Ready.
+func (builder *LokiStackBuilder) IsReady(timeout time.Duration) bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
+	err := wait.PollUntilContextTimeout(
+		context.TODO(), time.Second, timeout, true, func(ctx context.Context) (bool, error) {
+			if !builder.Exists() {
+				return false, nil
+			}
+
+			for _, condition := range builder.Definition.Status.Conditions {
+				if condition.Type == "Ready" {
+					if condition.Status == metav1.ConditionTrue {
+						return true, nil
+					}
+				}
+			}
+
+			return false, nil
+		})
+
+	return err == nil
 }
 
 // validate will check that the builder and builder definition are properly initialized before
