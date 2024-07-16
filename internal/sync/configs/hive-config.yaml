@@ -1,0 +1,39 @@
+---
+- name: hive scheme
+  sync: false
+  repo_link: "https://github.com/openshift/hive"
+  branch: mce-2.6
+  remote_api_directory: apis/scheme
+  local_api_directory: schemes/hive/scheme
+
+- name: hive v1 api
+  sync: false
+  repo_link: "https://github.com/openshift/hive"
+  branch: mce-2.6
+  remote_api_directory: apis/hive/v1
+  local_api_directory: schemes/hive/api/v1
+  replace_imports:
+    - old: '"github.com/openshift/hive/apis/scheme"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/scheme"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/agent"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1/agent"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/aws"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1/aws"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/azure"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1/azure"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/baremetal"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1/baremetal"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/gcp"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1/gcp"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/ibmcloud"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1/ibmcloud"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/none"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1/none"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/openstack"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1/openstack"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/ovirt"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1/ovirt"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/vsphere"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1/vsphere"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/metricsconfig"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1/metricsconfig"'
