@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	"github.com/openshift-kni/eco-goinfra/pkg/metallb/mlbtypes"
+	mlbtypes "github.com/openshift-kni/eco-goinfra/pkg/schemes/metallb/mlboperator"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
