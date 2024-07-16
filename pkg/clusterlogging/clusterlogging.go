@@ -3,6 +3,10 @@ package clusterlogging
 import (
 	"context"
 	"fmt"
+	"time"
+
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
@@ -277,6 +281,32 @@ func (builder *Builder) WithVisualization(
 	builder.Definition.Spec.Visualization = &visualization
 
 	return builder
+}
+
+// IsReady checks for the duration of timeout if the clusterLogging instance state is Ready.
+func (builder *Builder) IsReady(timeout time.Duration) bool {
+	if valid, _ := builder.validate(); !valid {
+		return false
+	}
+
+	err := wait.PollUntilContextTimeout(
+		context.TODO(), time.Second, timeout, true, func(ctx context.Context) (bool, error) {
+			if !builder.Exists() {
+				return false, nil
+			}
+
+			for _, condition := range builder.Definition.Status.Conditions {
+				if condition.Type == clov1.ConditionReady {
+					if condition.Status == corev1.ConditionTrue {
+						return true, nil
+					}
+				}
+			}
+
+			return false, nil
+		})
+
+	return err == nil
 }
 
 // validate will check that the builder and builder definition are properly initialized before
