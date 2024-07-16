@@ -11,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
@@ -148,12 +149,76 @@ func TestClusterOperatorGet(t *testing.T) {
 	}
 }
 
+func TestClusterOperatorHasDesiredVersion(t *testing.T) {
+	testCases := []struct {
+		desiredVersion      string
+		expectedOutput      bool
+		testClusterOperator *Builder
+		expectedError       error
+	}{
+		{
+			desiredVersion:      "",
+			expectedOutput:      false,
+			testClusterOperator: buildValidClusterOperatorBuilder(buildClusterOperatorClientWithDummyObject()),
+			expectedError:       fmt.Errorf("desiredVersion can't be empty"),
+		},
+		{
+			desiredVersion: "4.14.0",
+			expectedOutput: true,
+			testClusterOperator: buildFakeClusterOperatorWithVersions(buildClusterOperatorClientWithDummyObject(),
+				[]string{"4.13.2", "4.14.0"}),
+			expectedError: nil,
+		},
+		{
+			desiredVersion:      "4.14.0",
+			expectedOutput:      false,
+			testClusterOperator: nil,
+			expectedError:       fmt.Errorf("error: received nil ClusterOperator builder"),
+		},
+		{
+			desiredVersion: "4.14.0",
+			expectedOutput: false,
+			testClusterOperator: buildFakeClusterOperatorWithVersions(buildClusterOperatorClientWithDummyObject(),
+				[]string{"4.13.2", "4.13.0"}),
+			expectedError: nil,
+		},
+		{
+			desiredVersion: "4.14.0",
+			expectedOutput: false,
+			testClusterOperator: buildFakeClusterOperatorWithVersions(buildClusterOperatorClientWithDummyObject(),
+				[]string{"4.13.2", "invalid"}),
+			expectedError: nil,
+		},
+		{
+			desiredVersion:      "4.14.0",
+			expectedOutput:      false,
+			testClusterOperator: buildFakeClusterOperatorWithVersions(buildClusterOperatorClientWithDummyObject(), []string{}),
+			expectedError:       fmt.Errorf("undefined cluster operator status versions"),
+		},
+		{
+			desiredVersion:      "4.14.0",
+			expectedOutput:      false,
+			testClusterOperator: buildNilClientClusterOperatorBuilder(),
+			expectedError:       fmt.Errorf("ClusterOperator builder cannot have nil apiClient"),
+		},
+	}
+	for _, testCase := range testCases {
+		result, err := testCase.testClusterOperator.HasDesiredVersion(testCase.desiredVersion)
+		assert.Equal(t, testCase.expectedOutput, result)
+		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
 func buildValidClusterOperatorBuilder(apiClient *clients.Settings) *Builder {
-	return newBuilder(apiClient, defaultClusterOperatorName)
+	return newBuilder(apiClient, defaultClusterOperatorName, configV1.ClusterOperatorStatus{})
 }
 
 func buildInValidClusterOperatorBuilder(apiClient *clients.Settings) *Builder {
-	return newBuilder(apiClient, "")
+	return newBuilder(apiClient, "", configV1.ClusterOperatorStatus{})
+}
+
+func buildNilClientClusterOperatorBuilder() *Builder {
+	return newBuilder(nil, defaultClusterOperatorName, configV1.ClusterOperatorStatus{})
 }
 
 func buildClusterOperatorClientWithDummyObject() *clients.Settings {
@@ -172,17 +237,79 @@ func buildDummyClusterOperatorConfig() []runtime.Object {
 	})
 }
 
+func buildFakeClusterOperatorListWithDesiredVersion(apiClient *clients.Settings) []*Builder {
+	desiredVersion := "4.14.0"
+
+	return buildFakeClusterOperatorListWithVersions(apiClient, []string{desiredVersion,
+		"4.13.24", "4.13.25"}, []string{"4.13.23", desiredVersion, "4.13.25"})
+}
+
+func buildFakeClusterOperatorListWithoutDesiredVersion(apiClient *clients.Settings) []*Builder {
+	return buildFakeClusterOperatorListWithVersions(apiClient, []string{"4.13.23",
+		"4.13.24", "4.13.25"}, []string{"4.13.23", "", "4.13.25"})
+}
+
+func buildFakeClusterOperatorListWithVersions(apiClient *clients.Settings,
+	versionList1, versionList2 []string) []*Builder {
+	listWithVersions := []*Builder{buildFakeClusterOperatorWithVersions(apiClient, versionList1),
+		buildFakeClusterOperatorWithVersions(apiClient, versionList2)}
+
+	return listWithVersions
+}
+
+// buildFakeClusterOperatorWithVersions creates a fake clusterOperator with
+// a specific list of ClusterOperatorStatusVersions for testing purpose.
+func buildFakeClusterOperatorWithVersions(apiClient *clients.Settings, versions []string) *Builder {
+	clusterOperatorStatusVersions := createFakeClusterOperatorStatusVersions(versions)
+
+	clusterOperatorStatus := createFakeClusterOperatorStatus(clusterOperatorStatusVersions)
+
+	clusterOperator := newBuilder(apiClient, defaultClusterOperatorName, clusterOperatorStatus)
+	clusterOperator.Object = clusterOperator.Definition
+
+	return clusterOperator
+}
+
+// createFakeClusterOperatorStatusVersions creates a fake list of ClusterOperatorStatusVersions.
+func createFakeClusterOperatorStatusVersions(versions []string) []configV1.OperandVersion {
+	var clusterOperatorStatusVersions []configV1.OperandVersion
+
+	for _, version := range versions {
+		clusterOperatorStatusVersions = append(clusterOperatorStatusVersions,
+			configV1.OperandVersion{Name: defaultClusterOperatorName, Version: version})
+	}
+
+	return clusterOperatorStatusVersions
+}
+
+// createFakeClusterOperatorStatus creates a fake lusterOperatorStatus containing a list of OperandVersions.
+func createFakeClusterOperatorStatus(
+	clusterOperatorStatusVersions []configV1.OperandVersion) configV1.ClusterOperatorStatus {
+	clusterOperatorStatus := configV1.ClusterOperatorStatus{
+		Versions: clusterOperatorStatusVersions,
+	}
+
+	return clusterOperatorStatus
+}
+
 // newBuilder method creates new instance of builder (for the unit test propose only).
-func newBuilder(apiClient *clients.Settings, name string) *Builder {
+func newBuilder(apiClient *clients.Settings, name string, status configV1.ClusterOperatorStatus) *Builder {
 	glog.V(100).Infof("Initializing new Builder structure with the name: %s", name)
 
+	var client runtimeClient.Client
+
+	if apiClient != nil {
+		client = apiClient.Client
+	}
+
 	builder := &Builder{
-		apiClient: apiClient.Client,
+		apiClient: client,
 		Definition: &configV1.ClusterOperator{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:            name,
 				ResourceVersion: "999",
 			},
+			Status: status,
 		},
 	}
 
