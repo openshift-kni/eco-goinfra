@@ -31,10 +31,12 @@ jobs:
 
       - name: Create PR
         uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_KEY }}
         with:
           commit-message: "sync: update external libs"
+          author: ${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>
           title: Sync update external libs
-          token: ${{ secrets.REPO_ACCESS_KEY }}
           body: |
             - sync update external libs
           branch: lib-sync-update
