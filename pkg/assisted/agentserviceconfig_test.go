@@ -14,7 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	fakeRuntimeClient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	agentInstallV1Beta1 "github.com/openshift/assisted-service/api/v1beta1"
+	agentInstallV1Beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/v1beta1"
 )
 
 func TestNewAgentServiceConfigBuilder(t *testing.T) {

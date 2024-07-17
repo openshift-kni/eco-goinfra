@@ -459,6 +459,8 @@ github.com/liggitt/tabwriter
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
+# github.com/mattn/go-sqlite3 v2.0.3+incompatible
+## explicit
 # github.com/metal3-io/baremetal-operator/apis v0.6.1
 ## explicit; go 1.21
 github.com/metal3-io/baremetal-operator/apis/metal3.io/v1alpha1
@@ -634,17 +636,6 @@ github.com/openshift/api/template
 github.com/openshift/api/template/v1
 github.com/openshift/api/user
 github.com/openshift/api/user/v1
-# github.com/openshift/assisted-service v1.0.10-0.20230830164851-6573b5d7021d
-## explicit; go 1.18
-github.com/openshift/assisted-service/pkg/validations
-# github.com/openshift/assisted-service/api v0.0.0 => github.com/openshift/assisted-service/api v0.0.0-20240529165317-6b26a25e2ae7
-## explicit; go 1.20
-github.com/openshift/assisted-service/api/common
-github.com/openshift/assisted-service/api/hiveextension/v1beta1
-github.com/openshift/assisted-service/api/v1beta1
-# github.com/openshift/assisted-service/models v0.0.0 => github.com/openshift/assisted-service/models v0.0.0-20240529165317-6b26a25e2ae7
-## explicit; go 1.20
-github.com/openshift/assisted-service/models
 # github.com/openshift/client-go v0.0.1 => github.com/openshift/client-go v0.0.1
 ## explicit; go 1.20
 github.com/openshift/client-go/build/applyconfigurations/build/v1
@@ -715,22 +706,6 @@ github.com/openshift/custom-resource-status/conditions/v1
 # github.com/openshift/elasticsearch-operator v0.0.0-20220613183908-e1648e67c298
 ## explicit; go 1.17
 github.com/openshift/elasticsearch-operator/apis/logging/v1
-# github.com/openshift/hive/apis v0.0.0-20220707210052-4804c09ccc5a
-## explicit; go 1.18
-github.com/openshift/hive/apis/hive/v1
-github.com/openshift/hive/apis/hive/v1/agent
-github.com/openshift/hive/apis/hive/v1/alibabacloud
-github.com/openshift/hive/apis/hive/v1/aws
-github.com/openshift/hive/apis/hive/v1/azure
-github.com/openshift/hive/apis/hive/v1/baremetal
-github.com/openshift/hive/apis/hive/v1/gcp
-github.com/openshift/hive/apis/hive/v1/ibmcloud
-github.com/openshift/hive/apis/hive/v1/metricsconfig
-github.com/openshift/hive/apis/hive/v1/none
-github.com/openshift/hive/apis/hive/v1/openstack
-github.com/openshift/hive/apis/hive/v1/ovirt
-github.com/openshift/hive/apis/hive/v1/vsphere
-github.com/openshift/hive/apis/scheme
 # github.com/openshift/library-go v0.0.0-20240419113445-f1541d628746
 ## explicit; go 1.21
 github.com/openshift/library-go/pkg/certs
@@ -1873,8 +1848,6 @@ sigs.k8s.io/yaml/goyaml.v3
 # github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
 # github.com/k8snetworkplumbingwg/sriov-network-operator => github.com/openshift/sriov-network-operator v0.0.0-20240508132640-2b61056c9758
 # github.com/openshift/api => github.com/openshift/api v0.0.0-20240605153344-636e2c17106f
-# github.com/openshift/assisted-service/api => github.com/openshift/assisted-service/api v0.0.0-20240529165317-6b26a25e2ae7
-# github.com/openshift/assisted-service/models => github.com/openshift/assisted-service/models v0.0.0-20240529165317-6b26a25e2ae7
 # github.com/openshift/client-go => github.com/openshift/client-go v0.0.1
 # github.com/portworx/sched-ops => github.com/portworx/sched-ops v1.20.4-rc1
 # k8s.io/api => k8s.io/api v0.29.4
