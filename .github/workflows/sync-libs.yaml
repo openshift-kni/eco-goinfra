@@ -1,0 +1,40 @@
+name: Update external libs
+
+on:
+  # Triggers the workflow every day
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  sync-libs:
+    permissions:
+      contents: write  # for peter-evans/create-pull-request to create branch
+      pull-requests: write  # for peter-evans/create-pull-request to create a PR
+
+    runs-on: ubuntu-22.04
+    env:
+      SHELL: /bin/bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go 1.22
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.22.5
+
+      - name: Run sync script
+        run: make lib-sync
+
+      - name: Create PR
+        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
+        with:
+          commit-message: "sync: update external libs"
+          title: Sync update external libs
+          token: ${{ secrets.REPO_ACCESS_KEY }}
+          body: |
+            - sync update external libs
+          branch: lib-sync-update
