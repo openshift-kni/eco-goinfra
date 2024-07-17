@@ -333,7 +333,7 @@ func TestLocalVolumeDiscoveryWithNodeSelector(t *testing.T) {
 	}
 }
 
-func TestLocalVolumeSetWithTolerations(t *testing.T) {
+func TestLocalVolumeDiscoveryWithTolerations(t *testing.T) {
 	testCases := []struct {
 		testTolerations   []corev1.Toleration
 		expectedErrorText string

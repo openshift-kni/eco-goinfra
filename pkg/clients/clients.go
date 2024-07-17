@@ -110,6 +110,7 @@ import (
 	machinev1beta1client "github.com/openshift/client-go/machine/clientset/versioned/typed/machine/v1beta1"
 	operatorv1alpha1 "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1"
 	nfdv1 "github.com/openshift/cluster-nfd-operator/api/v1"
+	lsov1 "github.com/openshift/local-storage-operator/api/v1"
 	lsov1alpha1 "github.com/openshift/local-storage-operator/api/v1alpha1"
 	ocsoperatorv1 "github.com/red-hat-storage/ocs-operator/api/v1"
 	mcmV1Beta1 "github.com/rh-ecosystem-edge/kernel-module-management/api-hub/v1beta1"
@@ -296,6 +297,10 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	}
 
 	if err := lsov1alpha1.AddToScheme(crScheme); err != nil {
+		return err
+	}
+
+	if err := lsov1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
@@ -544,6 +549,10 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *ocsoperatorv1.StorageCluster:
 			genericClientObjects = append(genericClientObjects, v)
+		case *lsov1alpha1.LocalVolumeDiscovery:
+			genericClientObjects = append(genericClientObjects, v)
+		case *lsov1alpha1.LocalVolumeSet:
+			genericClientObjects = append(genericClientObjects, v)
 		case *istiov1.ServiceMeshMemberRoll:
 			genericClientObjects = append(genericClientObjects, v)
 		case *istiov2.ServiceMeshControlPlane:
@@ -567,8 +576,6 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *kedav2v1alpha1.TriggerAuthentication:
 			genericClientObjects = append(genericClientObjects, v)
 		case *kedav2v1alpha1.ScaledObject:
-			genericClientObjects = append(genericClientObjects, v)
-		case *lsov1alpha1.LocalVolumeDiscovery:
 			genericClientObjects = append(genericClientObjects, v)
 		case *agentInstallV1Beta1.AgentServiceConfig:
 			genericClientObjects = append(genericClientObjects, v)
