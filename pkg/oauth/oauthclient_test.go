@@ -56,8 +56,8 @@ func TestOAuthClientPull(t *testing.T) {
 			K8sMockObjects: runtimeObjects,
 		})
 
-		// Test the Pull function
-		builderResult, err := Pull(testSettings, testCase.oauthTestClientName)
+		// Test the PullOAuthClient function
+		builderResult, err := PullOAuthClient(testSettings, testCase.oauthTestClientName)
 
 		// Check the error
 		assert.Equal(t, err, testCase.expectedError)
@@ -96,7 +96,7 @@ func TestOAuthClientUpdate(t *testing.T) {
 			K8sMockObjects: runtimeObjects,
 		})
 
-		oauthClientBuilder, err := Pull(testSettings, oauthClientName)
+		oauthClientBuilder, err := PullOAuthClient(testSettings, oauthClientName)
 		assert.Nil(t, err)
 
 		// Create a change in the builder
@@ -148,12 +148,12 @@ func TestOAuthClientCreate(t *testing.T) {
 
 		testBuilder, client := generateOAuthClientBuilder(testSettings, oauthClientName)
 
-		// Test the Delete function
+		// Test the Create function
 		_, err := testBuilder.Create()
 		assert.Nil(t, err)
 
 		// Assert that the object actually exists
-		_, err = Pull(client, oauthClientName)
+		_, err = PullOAuthClient(client, oauthClientName)
 		assert.Nil(t, err)
 	}
 }
@@ -190,12 +190,12 @@ func TestOAuthClientDelete(t *testing.T) {
 
 		testBuilder, client := generateOAuthClientBuilder(testSettings, oauthClientName)
 
-		// Testing the delete function
+		// Testing the Delete function
 		err := testBuilder.Delete()
 		assert.Nil(t, err)
 
 		// Assert that the object actually does not exist
-		_, err = Pull(client, oauthClientName)
+		_, err = PullOAuthClient(client, oauthClientName)
 		assert.NotNil(t, err)
 	}
 }
@@ -231,7 +231,7 @@ func TestOAuthClientGet(t *testing.T) {
 			K8sMockObjects: runtimeObjects,
 		})
 
-		oauthClientBuilder, err := Pull(testSettings, oauthClientName)
+		oauthClientBuilder, err := PullOAuthClient(testSettings, oauthClientName)
 		if testCase.expectedError == nil {
 			assert.Nil(t, err)
 		}
@@ -254,11 +254,9 @@ func TestOAuthClientExists(t *testing.T) {
 		addToRuntimeObjects bool
 	}{
 		{
-			expectedError:       nil,
 			addToRuntimeObjects: true,
 		},
 		{
-			expectedError:       fmt.Errorf("error: OAuthClient object oauth not found"),
 			addToRuntimeObjects: false,
 		},
 	}
@@ -269,31 +267,23 @@ func TestOAuthClientExists(t *testing.T) {
 			testSettings   *clients.Settings
 		)
 
-		testOAuthClient := generateOAuthClient(oauthClientName)
-
 		if testCase.addToRuntimeObjects {
-			runtimeObjects = append(runtimeObjects, testOAuthClient)
+			runtimeObjects = append(runtimeObjects, &oauthv1.OAuthClient{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: oauthClientName,
+				},
+			})
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
 			K8sMockObjects: runtimeObjects,
 		})
 
-		oauthClientBuilder, err := Pull(testSettings, oauthClientName)
-
-		if testCase.expectedError == nil {
-			assert.Nil(t, err)
-		}
+		testOAuthClientBuilder, _ := generateOAuthClientBuilder(testSettings, oauthClientName)
 
 		// Test the Exists function
-		builderResult := oauthClientBuilder.Exists()
-
-		// Check the error
-		assert.Equal(t, err, testCase.expectedError)
-
-		if testCase.expectedError == nil {
-			assert.NotNil(t, builderResult)
-		}
+		exists := testOAuthClientBuilder.Exists()
+		assert.Equal(t, testCase.addToRuntimeObjects, exists)
 	}
 }
 
@@ -344,7 +334,7 @@ func TestMultiClusterHubValidate(t *testing.T) {
 			K8sMockObjects: runtimeObjects,
 		})
 
-		testBuilder, err := Pull(testSettings, oauthClientName)
+		testBuilder, err := PullOAuthClient(testSettings, oauthClientName)
 
 		if testCase.expectedError == nil {
 			assert.Nil(t, err)

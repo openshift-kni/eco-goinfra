@@ -25,8 +25,8 @@ type OAuthClientBuilder struct {
 	apiClient goclient.Client
 }
 
-// Pull loads an existing OAuthClient into Builder struct.
-func Pull(apiClient *clients.Settings, name string) (*OAuthClientBuilder, error) {
+// PullOAuthClient loads an existing OAuthClient into Builder struct.
+func PullOAuthClient(apiClient *clients.Settings, name string) (*OAuthClientBuilder, error) {
 	glog.V(100).Infof("Pulling existing OAuthClient %s", name)
 
 	if apiClient == nil {
@@ -103,7 +103,7 @@ func (builder *OAuthClientBuilder) Exists() bool {
 		return false
 	}
 
-	glog.V(100).Infof("Checking if OAuthClientBuilder %s exists", builder.Definition.Name)
+	glog.V(100).Infof("Checking if OAuthClient %s exists", builder.Definition.Name)
 
 	var err error
 	builder.Object, err = builder.Get()
@@ -141,13 +141,18 @@ func (builder *OAuthClientBuilder) Delete() error {
 	glog.V(100).Infof("Deleting the OAuthClient %s", builder.Definition.Name)
 
 	if !builder.Exists() {
+		glog.V(100).Infof("OAuthClient %s cannot be deleted"+
+			" because it does not exist", builder.Definition.Name)
+
+		builder.Object = nil
+
 		return nil
 	}
 
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
 
 	if err != nil {
-		return fmt.Errorf("error: cannot delete OAuthClientBuilder: %w", err)
+		return fmt.Errorf("error: cannot delete OAuthClient: %w", err)
 	}
 
 	builder.Object = nil
