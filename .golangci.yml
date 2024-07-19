@@ -48,6 +48,7 @@ linters-settings:
           - "github.com/vmware-tanzu/velero"
           - "github.com/kelseyhightower/envconfig"
           - "github.com/red-hat-storage/ocs-operator"
+          - "github.com/red-hat-storage/odf-operator"
           - "github.com/stmcginnis/gofish"
           - "github.com/prometheus-operator/prometheus-operator"
   revive:
