@@ -22,6 +22,7 @@ type repo struct {
 	RemoteAPIDirectory string              `yaml:"remote_api_directory"`
 	LocalAPIDirectory  string              `yaml:"local_api_directory"`
 	ReplaceImports     []map[string]string `yaml:"replace_imports"`
+	Excludes           []string            `yaml:"excludes"`
 }
 
 func main() {
@@ -91,6 +92,17 @@ func repoSynced(clonedDir, localDir string, repo *repo) bool {
 		}
 	}
 
+	if len(repo.Excludes) > 0 {
+		glog.V(100).Infof("Remove excluded files under %s",
+			path.Base(clonedDir))
+
+		err := excludeFiles(clonedDir, repo.Excludes...)
+		if err != nil {
+			glog.V(100).Infof("Failed to remove excluded files due to %w. Exit with error 1", err)
+			os.Exit(1)
+		}
+	}
+
 	glog.V(100).Infof("Replace cloned package name: %s with the local package name: %s",
 		path.Base(clonedDir), path.Base(localDir))
 
@@ -143,6 +155,17 @@ func syncDirectories(clonedDir, localDir string, repo *repo) {
 	if os.MkdirAll(localDir, 0750) != nil {
 		glog.V(100).Infof("Failed to recreate api directory. Exit with error code 1")
 		os.Exit(1)
+	}
+
+	if len(repo.Excludes) > 0 {
+		glog.V(100).Infof("Remove excluded files under %s",
+			path.Base(clonedDir))
+
+		err := excludeFiles(clonedDir, repo.Excludes...)
+		if err != nil {
+			glog.V(100).Infof("Failed to remove excluded files due to %w. Exit with error 1", err)
+			os.Exit(1)
+		}
 	}
 
 	glog.V(100).Infof("Copy api filed from cloned directory to local api directory")
@@ -357,4 +380,39 @@ func refactorFunc(oldLine, newLine string, filePatterns []string) filepath.WalkF
 
 		return nil
 	}
+}
+
+func excludeFiles(path string, patterns ...string) error {
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range entries {
+		joinedPath := filepath.Join(path, entry.Name())
+
+		for _, pattern := range patterns {
+			match, err := filepath.Match(filepath.Base(joinedPath), pattern)
+			if err != nil {
+				return err
+			}
+
+			if match {
+				glog.V(100).Infof("Found that path %s matches %s - Excluding", joinedPath, pattern)
+
+				err = os.RemoveAll(joinedPath)
+				if err != nil {
+					return err
+				}
+
+				break
+			}
+		}
+
+		if _, err = os.Stat(joinedPath); err == nil && entry.IsDir() {
+			return excludeFiles(joinedPath, patterns...)
+		}
+	}
+
+	return nil
 }
