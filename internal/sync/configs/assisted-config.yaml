@@ -1,0 +1,95 @@
+---
+- name: assisted-hiveextension-v1beta1
+  sync: true
+  repo_link: "https://github.com/openshift/assisted-service"
+  branch: release-ocm-2.12
+  remote_api_directory: api/hiveextension/v1beta1
+  local_api_directory: schemes/assisted/api/hiveextension/v1beta1
+  replace_imports:
+    - old: '"github.com/openshift/hive/apis/hive/v1"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/hive/api/v1"'
+    - old: '"github.com/openshift/assisted-service/api/common"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/common"'
+
+- name: assisted-v1beta1
+  sync: true
+  repo_link: "https://github.com/openshift/assisted-service"
+  branch: release-ocm-2.12
+  remote_api_directory: api/v1beta1
+  local_api_directory: schemes/assisted/api/v1beta1
+  replace_imports:
+    - old: '"github.com/openshift/hive/apis/hive/v1"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/hive/api/v1"'
+    - old: '"github.com/openshift/assisted-service/models"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/models"'
+    - old: '"github.com/openshift/assisted-service/api/common"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/common"'
+
+- name: assisted-common
+  sync: true
+  repo_link: "https://github.com/openshift/assisted-service"
+  branch: release-ocm-2.12
+  remote_api_directory: api/common
+  local_api_directory: schemes/assisted/api/common    
+
+- name: assisted-models
+  sync: true
+  repo_link: "https://github.com/openshift/assisted-service"
+  branch: release-ocm-2.12
+  remote_api_directory: models
+  local_api_directory: schemes/assisted/models
+  replace_imports:
+    - old: '"github.com/openshift/assisted-service/pkg/validations"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/pkg/validations"'
+  excludes:
+    - vendor
+    - go.mod
+    - go.sum
+  
+- name: assisted-validations
+  sync: true
+  repo_link: "https://github.com/openshift/assisted-service"
+  branch: release-ocm-2.12
+  remote_api_directory: pkg/validations
+  local_api_directory: schemes/assisted/pkg/validations
+  excludes:
+    - "*_test.go"
+
+- name: assisted-hive-scheme
+  sync: true
+  repo_link: "https://github.com/openshift/hive"
+  branch: ocm-2.5-mce-2.0
+  remote_api_directory: apis/scheme
+  local_api_directory: schemes/assisted/hive/scheme
+
+- name: assisted-hive-v1
+  sync: true
+  repo_link: "https://github.com/openshift/hive"
+  branch: ocm-2.5-mce-2.0
+  remote_api_directory: apis/hive/v1
+  local_api_directory: schemes/assisted/hive/api/v1
+  replace_imports:
+    - old: '"github.com/openshift/hive/apis/scheme"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/hive/scheme"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/agent"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/hive/api/v1/agent"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/aws"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/hive/api/v1/aws"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/azure"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/hive/api/v1/azure"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/baremetal"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/hive/api/v1/baremetal"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/gcp"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/hive/api/v1/gcp"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/ibmcloud"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/hive/api/v1/ibmcloud"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/none"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/hive/api/v1/none"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/openstack"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/hive/api/v1/openstack"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/ovirt"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/hive/api/v1/ovirt"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/vsphere"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/hive/api/v1/vsphere"'
+    - old: '"github.com/openshift/hive/apis/hive/v1/metricsconfig"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/hive/api/v1/metricsconfig"'
