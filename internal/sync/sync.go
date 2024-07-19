@@ -392,7 +392,7 @@ func excludeFiles(path string, patterns ...string) error {
 		joinedPath := filepath.Join(path, entry.Name())
 
 		for _, pattern := range patterns {
-			match, err := filepath.Match(filepath.Base(joinedPath), pattern)
+			match, err := filepath.Match(pattern, filepath.Base(joinedPath))
 			if err != nil {
 				return err
 			}
