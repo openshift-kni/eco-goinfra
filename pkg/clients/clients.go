@@ -106,6 +106,7 @@ import (
 	nvidiagpuv1 "github.com/NVIDIA/gpu-operator/api/v1"
 	grafanaV4V1Alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	multinetpolicyclientv1 "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/client/clientset/versioned/typed/k8s.cni.cncf.io/v1beta1"
+	noobaav1alpha1 "github.com/kube-object-storage/lib-bucket-provisioner/pkg/apis/objectbucket.io/v1alpha1"
 	cguapiv1alpha1 "github.com/openshift-kni/cluster-group-upgrades-operator/pkg/api/clustergroupupgrades/v1alpha1"
 	machinev1beta1client "github.com/openshift/client-go/machine/clientset/versioned/typed/machine/v1beta1"
 	operatorv1alpha1 "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1"
@@ -412,6 +413,10 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
+	if err := noobaav1alpha1.AddToScheme(crScheme); err != nil {
+		return err
+	}
+
 	if err := kacv1.SchemeBuilder.AddToScheme(crScheme); err != nil {
 		return err
 	}
@@ -576,6 +581,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *kedav2v1alpha1.TriggerAuthentication:
 			genericClientObjects = append(genericClientObjects, v)
 		case *kedav2v1alpha1.ScaledObject:
+			genericClientObjects = append(genericClientObjects, v)
+		case *noobaav1alpha1.ObjectBucketClaim:
 			genericClientObjects = append(genericClientObjects, v)
 		case *agentInstallV1Beta1.AgentServiceConfig:
 			genericClientObjects = append(genericClientObjects, v)
