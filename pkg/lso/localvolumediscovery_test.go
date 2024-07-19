@@ -372,14 +372,12 @@ func TestLocalVolumeSetIsDiscovering(t *testing.T) {
 		testPhase      bool
 	}{
 		{
-			testLVDBuilder: buildValidLVDObjectBuilderWithPhase(buildLVDClientWithDummyObject(),
-				lsov1alpha1.Discovering),
-			testPhase: true,
+			testLVDBuilder: buildValidLVDObjectBuilder(buildLVDClientWithDummyObject(lsov1alpha1.Discovering)),
+			testPhase:      true,
 		},
 		{
-			testLVDBuilder: buildValidLVDObjectBuilderWithPhase(buildLVDClientWithDummyObject(),
-				lsov1alpha1.DiscoveryFailed),
-			testPhase: false,
+			testLVDBuilder: buildValidLVDObjectBuilder(buildLVDClientWithDummyObject(lsov1alpha1.DiscoveryFailed)),
+			testPhase:      false,
 		},
 	}
 
@@ -388,14 +386,6 @@ func TestLocalVolumeSetIsDiscovering(t *testing.T) {
 
 		assert.Equal(t, testCase.testPhase, isDiscoveringResult)
 	}
-}
-
-func buildValidLVDObjectBuilderWithPhase(apiClient *clients.Settings,
-	phase lsov1alpha1.DiscoveryPhase) *LocalVolumeDiscoveryBuilder {
-	lvdBuilder := buildValidLVDObjectBuilder(apiClient)
-	lvdBuilder.Definition.Status.Phase = phase
-
-	return lvdBuilder
 }
 
 func buildValidLVDObjectBuilder(apiClient *clients.Settings) *LocalVolumeDiscoveryBuilder {
@@ -412,17 +402,26 @@ func buildInValidLVDObjectBuilder(apiClient *clients.Settings) *LocalVolumeDisco
 	return lvdBuilder
 }
 
-func buildLVDClientWithDummyObject() *clients.Settings {
+func buildLVDClientWithDummyObject(phase ...lsov1alpha1.DiscoveryPhase) *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyLocalVolumeDiscovery(),
+		K8sMockObjects: buildDummyLocalVolumeDiscovery(phase...),
 	})
 }
 
-func buildDummyLocalVolumeDiscovery() []runtime.Object {
+func buildDummyLocalVolumeDiscovery(phase ...lsov1alpha1.DiscoveryPhase) []runtime.Object {
+	discoveryPhase := lsov1alpha1.Discovering
+
+	if len(phase) > 0 {
+		discoveryPhase = phase[0]
+	}
+
 	return append([]runtime.Object{}, &lsov1alpha1.LocalVolumeDiscovery{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      defaultLocalVolumeDiscoveryName,
 			Namespace: defaultLocalVolumeDiscoveryNamespace,
+		},
+		Status: lsov1alpha1.LocalVolumeDiscoveryStatus{
+			Phase: discoveryPhase,
 		},
 	})
 }
