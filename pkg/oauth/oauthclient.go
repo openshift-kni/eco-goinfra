@@ -77,7 +77,7 @@ func (builder *OAuthClientBuilder) Get() (*oauthv1.OAuthClient, error) {
 	return oauthClient, nil
 }
 
-// Create creates an OAuthClient object on the cluster from a builder.
+// Create constructs an OAuthClient object on the cluster from a builder.
 func (builder *OAuthClientBuilder) Create() (*OAuthClientBuilder, error) {
 	if valid, err := builder.validate(); !valid {
 		return builder, err

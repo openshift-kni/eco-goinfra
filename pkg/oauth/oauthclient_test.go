@@ -72,7 +72,6 @@ func TestOAuthClientUpdate(t *testing.T) {
 	testCases := []struct {
 		expectedError       error
 		addToRuntimeObjects bool
-		expectedErrorText   string
 	}{
 		{
 			expectedError:       nil,
@@ -250,7 +249,6 @@ func TestOAuthClientGet(t *testing.T) {
 
 func TestOAuthClientExists(t *testing.T) {
 	testCases := []struct {
-		expectedError       error
 		addToRuntimeObjects bool
 	}{
 		{
