@@ -160,7 +160,11 @@ type Settings struct {
 	clientCguV1.RanV1alpha1Interface
 	ClusterClient clusterClient.Interface
 	clusterV1Client.ClusterV1Interface
+	scheme *runtime.Scheme
 }
+
+// SchemeAttacher represents a function that can modify the clients current schemes.
+type SchemeAttacher func(*runtime.Scheme) error
 
 // New returns a *Settings with the given kubeconfig.
 //
@@ -218,8 +222,7 @@ func New(kubeconfig string) *Settings {
 	clientSet.ClusterV1Interface = clusterV1Client.NewForConfigOrDie(config)
 	clientSet.Config = config
 
-	crScheme := runtime.NewScheme()
-	err = SetScheme(crScheme)
+	err = SetScheme(clientSet.scheme)
 
 	if err != nil {
 		log.Print("Error to load apiClient scheme")
@@ -228,7 +231,7 @@ func New(kubeconfig string) *Settings {
 	}
 
 	clientSet.Client, err = runtimeClient.New(config, runtimeClient.Options{
-		Scheme: crScheme,
+		Scheme: clientSet.scheme,
 	})
 
 	if err != nil {
@@ -444,10 +447,27 @@ func (settings *Settings) GetAPIClient() (*Settings, error) {
 	return settings, nil
 }
 
+// AttachScheme attaches a scheme to the client's current scheme.
+func (settings *Settings) AttachScheme(attacher SchemeAttacher) error {
+	if settings == nil {
+		glog.V(100).Infof("APIClient is nil")
+
+		return fmt.Errorf("cannot add scheme to nil client")
+	}
+
+	err := attacher(settings.scheme)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // TestClientParams provides the struct to store the parameters for the test client.
 type TestClientParams struct {
-	K8sMockObjects []runtime.Object
-	GVK            []schema.GroupVersionKind
+	K8sMockObjects  []runtime.Object
+	GVK             []schema.GroupVersionKind
+	SchemeAttachers []SchemeAttacher
 
 	// Note: Add more fields below if/when needed.
 }
@@ -675,21 +695,29 @@ func GetTestClients(tcp TestClientParams) *Settings {
 	clientSet.ClientCgu = clientCguFake.NewSimpleClientset(cguObjects...)
 
 	// Update the generic client with schemes of generic resources
-	fakeClientScheme := runtime.NewScheme()
+	clientSet.scheme = runtime.NewScheme()
 
-	err := SetScheme(fakeClientScheme)
+	err := SetScheme(clientSet.scheme)
 	if err != nil {
 		return nil
 	}
 
 	if len(tcp.GVK) > 0 && len(genericClientObjects) > 0 {
-		fakeClientScheme.AddKnownTypeWithName(
+		clientSet.scheme.AddKnownTypeWithName(
 			tcp.GVK[0], genericClientObjects[0])
 	}
 
-	clientSet.Interface = dynamicFake.NewSimpleDynamicClient(fakeClientScheme, genericClientObjects...)
+	for _, attacher := range tcp.SchemeAttachers {
+		err := clientSet.AttachScheme(attacher)
+		if err != nil {
+			return nil
+		}
+	}
+
+	clientSet.Interface = dynamicFake.NewSimpleDynamicClient(clientSet.scheme, genericClientObjects...)
+
 	// Add fake runtime client to clientSet runtime client
-	clientSet.Client = fakeRuntimeClient.NewClientBuilder().WithScheme(fakeClientScheme).
+	clientSet.Client = fakeRuntimeClient.NewClientBuilder().WithScheme(clientSet.scheme).
 		WithRuntimeObjects(genericClientObjects...).Build()
 
 	return clientSet
