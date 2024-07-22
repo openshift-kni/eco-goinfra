@@ -223,6 +223,7 @@ func New(kubeconfig string) *Settings {
 	clientSet.ClusterV1Interface = clusterV1Client.NewForConfigOrDie(config)
 	clientSet.Config = config
 
+	clientSet.scheme = runtime.NewScheme()
 	err = SetScheme(clientSet.scheme)
 
 	if err != nil {
