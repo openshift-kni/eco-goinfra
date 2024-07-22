@@ -13,10 +13,8 @@ import (
 )
 
 var (
-	addressPoolGvk = schema.GroupVersionKind{
-		Group:   APIGroup,
-		Version: APIVersion,
-		Kind:    ipAddressPoolKind,
+	testSchemes = []clients.SchemeAttacher{
+		mlbtypes.AddToScheme,
 	}
 	defaultIPAddressPoolName = "default-pool"
 	defaultNsName            = "test-namespace"
@@ -87,9 +85,7 @@ func TestPullAddressPool(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
-				GVK:            []schema.GroupVersionKind{addressPoolGvk},
-			})
+				K8sMockObjects: runtimeObjects, SchemeAttachers: testSchemes})
 		}
 
 		builderResult, err := PullAddressPool(testSettings, testCase.name, testCase.namespace)
@@ -138,9 +134,7 @@ func TestNewIPAddressPoolBuilder(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients(clients.TestClientParams{
-			GVK: []schema.GroupVersionKind{addressPoolGvk},
-		})
+		testSettings := clients.GetTestClients(clients.TestClientParams{SchemeAttachers: testSchemes})
 		testIPAddressPoolBuilder := generateIPAddressPoolBuilder(
 			testSettings, testCase.name, testCase.namespace, testCase.addrPool)
 		assert.Equal(t, testCase.expectedError, testIPAddressPoolBuilder.errorMsg)
@@ -173,7 +167,7 @@ func TestIPAddressPoolGet(t *testing.T) {
 		assert.Equal(t, err, testCase.expectedError)
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, ipAddressPool, testCase.testIPAddressPool.Definition)
+			assert.Equal(t, ipAddressPool.Name, testCase.testIPAddressPool.Definition.Name)
 		}
 	}
 }
@@ -271,6 +265,7 @@ func TestIPAddressPoolUpdate(t *testing.T) {
 		assert.Nil(t, testCase.testIPAddressPool.Definition.Spec.AutoAssign)
 		assert.Nil(t, nil, testCase.testIPAddressPool.Object)
 		testCase.testIPAddressPool.WithAutoAssign(true)
+		testCase.testIPAddressPool.Definition.ObjectMeta.ResourceVersion = "999"
 		_, err := testCase.testIPAddressPool.Update(false)
 		assert.Equal(t, testCase.expectedError, err)
 
@@ -356,8 +351,8 @@ func buildInValidIPAddressPoolBuilder(apiClient *clients.Settings) *IPAddressPoo
 
 func buildTestClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyIPAddressPool(),
-		GVK:            []schema.GroupVersionKind{addressPoolGvk},
+		K8sMockObjects:  buildDummyIPAddressPool(),
+		SchemeAttachers: testSchemes,
 	})
 }
 

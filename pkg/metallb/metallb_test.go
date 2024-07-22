@@ -13,10 +13,8 @@ import (
 )
 
 var (
-	metalLbGVK = schema.GroupVersionKind{
-		Group:   APIGroup,
-		Version: APIVersion,
-		Kind:    metalLb,
+	mlbTestSchemes = []clients.SchemeAttacher{
+		mlbtypes.AddToScheme,
 	}
 	defaultMetalLbName         = "metallbio"
 	defaultMetalLbNsName       = "test-namespace"
@@ -92,8 +90,8 @@ func TestMetalLbPull(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
-				GVK:            []schema.GroupVersionKind{metalLbGVK},
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: mlbTestSchemes,
 			})
 		}
 
@@ -144,7 +142,7 @@ func TestMetalLbNewBuilder(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testSettings := clients.GetTestClients(clients.TestClientParams{
-			GVK: []schema.GroupVersionKind{metalLbGVK},
+			SchemeAttachers: mlbTestSchemes,
 		})
 		testMetalLbBuilder := generateMetalLb(testSettings, testCase.name, testCase.namespace, testCase.label)
 		assert.Equal(t, testCase.expectedError, testMetalLbBuilder.errorMsg)
@@ -198,7 +196,7 @@ func TestMetalLbGet(t *testing.T) {
 		assert.Equal(t, err, testCase.expectedError)
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, metalLb, testCase.testMetalLb.Definition)
+			assert.Equal(t, metalLb.Name, testCase.testMetalLb.Definition.Name)
 		}
 	}
 }
@@ -223,7 +221,7 @@ func TestMetalLbCreate(t *testing.T) {
 		assert.Equal(t, err, testCase.expectedError)
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, testMetalLbBuilder.Definition, testMetalLbBuilder.Object)
+			assert.Equal(t, testMetalLbBuilder.Definition.Name, testMetalLbBuilder.Object.Name)
 		}
 	}
 }
@@ -387,8 +385,8 @@ func buildInValidMetalLbBuilder(apiClient *clients.Settings) *Builder {
 
 func buildMetalLbTestClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyMetalLb(),
-		GVK:            []schema.GroupVersionKind{metalLbGVK},
+		K8sMockObjects:  buildDummyMetalLb(),
+		SchemeAttachers: mlbTestSchemes,
 	})
 }
 

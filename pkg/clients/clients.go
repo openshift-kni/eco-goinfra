@@ -7,8 +7,6 @@ import (
 
 	"github.com/openshift-kni/eco-goinfra/pkg/argocd/argocdtypes"
 	"github.com/openshift-kni/eco-goinfra/pkg/oadp/oadptypes"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/metallb/mlboperator"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/metallb/mlbtypes"
 
 	"github.com/golang/glog"
 	"k8s.io/client-go/dynamic"
@@ -547,18 +545,6 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *routev1.Route:
 			genericClientObjects = append(genericClientObjects, v)
-		case *mlbtypes.IPAddressPool:
-			genericClientObjects = append(genericClientObjects, v)
-		case *mlbtypes.BFDProfile:
-			genericClientObjects = append(genericClientObjects, v)
-		case *mlbtypes.BGPPeer:
-			genericClientObjects = append(genericClientObjects, v)
-		case *mlbtypes.BGPAdvertisement:
-			genericClientObjects = append(genericClientObjects, v)
-		case *mlboperator.MetalLB:
-			genericClientObjects = append(genericClientObjects, v)
-		case *mlbtypes.L2Advertisement:
-			genericClientObjects = append(genericClientObjects, v)
 		case *policiesv1.Policy:
 			genericClientObjects = append(genericClientObjects, v)
 		case *policiesv1.PlacementBinding:
@@ -714,6 +700,10 @@ func GetTestClients(tcp TestClientParams) *Settings {
 	if len(tcp.GVK) > 0 && len(genericClientObjects) > 0 {
 		clientSet.scheme.AddKnownTypeWithName(
 			tcp.GVK[0], genericClientObjects[0])
+	}
+
+	if len(tcp.K8sMockObjects) > 0 && len(tcp.SchemeAttachers) > 0 {
+		genericClientObjects = append(genericClientObjects, tcp.K8sMockObjects...)
 	}
 
 	for _, attacher := range tcp.SchemeAttachers {
