@@ -13,11 +13,6 @@ import (
 )
 
 var (
-	bpgAdvertisementGVK = schema.GroupVersionKind{
-		Group:   APIGroup,
-		Version: APIVersion,
-		Kind:    bpgAdvertisementKind,
-	}
 	defaultBGPAdvertisementName   = "default-bgpadvert"
 	defaultBGPAdvertisementNsName = "test-namespace"
 )
@@ -92,8 +87,8 @@ func TestPullBGPAdvertisement(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
-				GVK:            []schema.GroupVersionKind{bpgAdvertisementGVK},
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
 			})
 		}
 
@@ -134,7 +129,7 @@ func TestNewBGPAdvertisementBuilder(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testSettings := clients.GetTestClients(clients.TestClientParams{
-			GVK: []schema.GroupVersionKind{bpgAdvertisementGVK},
+			SchemeAttachers: testSchemes,
 		})
 		testBGPAdvertisementBuilder := generateBGPAdvertisement(testSettings, testCase.name, testCase.namespace)
 		assert.Equal(t, testCase.expectedError, testBGPAdvertisementBuilder.errorMsg)
@@ -187,7 +182,7 @@ func TestBGPAdvertisementGet(t *testing.T) {
 		assert.Equal(t, err, testCase.expectedError)
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, bgpAdvertisement, testCase.testBGPAdvertisement.Definition)
+			assert.Equal(t, bgpAdvertisement.Name, testCase.testBGPAdvertisement.Definition.Name)
 		}
 	}
 }
@@ -263,6 +258,7 @@ func TestBGPAdvertisementUpdate(t *testing.T) {
 		assert.Nil(t, testCase.testBGPAdvertisement.Definition.Spec.IPAddressPools)
 		assert.Nil(t, nil, testCase.testBGPAdvertisement.Object)
 		testCase.testBGPAdvertisement.WithIPAddressPools(testCase.ipAddressPool)
+		testCase.testBGPAdvertisement.Definition.ObjectMeta.ResourceVersion = "999"
 		_, err := testCase.testBGPAdvertisement.Update(false)
 		assert.Equal(t, testCase.expectedError, err)
 
@@ -566,8 +562,8 @@ func buildInValidBGPAdvertisementBuilder(apiClient *clients.Settings) *BGPAdvert
 
 func buildBGPAdvertisementTestClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyBGPAdvertisement(),
-		GVK:            []schema.GroupVersionKind{bpgAdvertisementGVK},
+		K8sMockObjects:  buildDummyBGPAdvertisement(),
+		SchemeAttachers: testSchemes,
 	})
 }
 

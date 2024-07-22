@@ -13,11 +13,6 @@ import (
 )
 
 var (
-	bgpPeerGVK = schema.GroupVersionKind{
-		Group:   APIGroup,
-		Version: APIVersion,
-		Kind:    bpgPeerKind,
-	}
 	defaultBGPPeerName   = "default-bgp-peer"
 	defaultBGPPeerNsName = "test-namespace"
 )
@@ -77,7 +72,7 @@ func TestNewBPGPeerBuilder(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testSettings := clients.GetTestClients(clients.TestClientParams{
-			GVK: []schema.GroupVersionKind{bgpPeerGVK},
+			SchemeAttachers: testSchemes,
 		})
 		testBGPPeerBuilder := generateBPGPeer(
 			testSettings, testCase.name, testCase.namespace, testCase.peerIP, testCase.asn, testCase.remoteAsn)
@@ -415,8 +410,7 @@ func buildInValidBGPPeerBuilder(apiClient *clients.Settings) *BGPPeerBuilder {
 
 func buildBGPPeerTestClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		// Work around. Dynamic client and Unstructured does not support unit.
-		K8sMockObjects: buildDummyBFDProfile(),
-		GVK:            []schema.GroupVersionKind{bgpPeerGVK},
+		K8sMockObjects:  buildDummyBFDProfile(),
+		SchemeAttachers: testSchemes,
 	})
 }

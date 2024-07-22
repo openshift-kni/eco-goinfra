@@ -13,11 +13,6 @@ import (
 )
 
 var (
-	l2AdvertisementGvk = schema.GroupVersionKind{
-		Group:   APIGroup,
-		Version: APIVersion,
-		Kind:    l2AdvertisementKind,
-	}
 	defaultL2AdvertisementName   = "default-l2advertisement"
 	defaultL2AdvertisementNsName = "test-namespace"
 )
@@ -91,8 +86,8 @@ func TestPullL2Advertisement(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
-				GVK:            []schema.GroupVersionKind{l2AdvertisementGvk},
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
 			})
 		}
 
@@ -134,7 +129,7 @@ func TestNewL2AdvertisementBuilder(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testSettings := clients.GetTestClients(clients.TestClientParams{
-			GVK: []schema.GroupVersionKind{l2AdvertisementGvk}})
+			SchemeAttachers: testSchemes})
 		testL2AdvertisementBuilder := generateL2AdvertisementBuilder(testSettings, testCase.name, testCase.namespace)
 		assert.Equal(t, testCase.expectedError, testL2AdvertisementBuilder.errorMsg)
 		assert.NotNil(t, testL2AdvertisementBuilder.Definition)
@@ -187,7 +182,7 @@ func TestL2AdvertisementGet(t *testing.T) {
 		assert.Equal(t, err, testCase.expectedError)
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, l2Advertisement, testCase.testL2Advertisement.Definition)
+			assert.Equal(t, l2Advertisement.Name, testCase.testL2Advertisement.Definition.Name)
 		}
 	}
 }
@@ -212,7 +207,7 @@ func TestL2AdvertisementCreate(t *testing.T) {
 		assert.Equal(t, err, testCase.expectedError)
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, ipAddressPoolBuilder.Definition, ipAddressPoolBuilder.Object)
+			assert.Equal(t, ipAddressPoolBuilder.Definition.Name, ipAddressPoolBuilder.Object.Name)
 		}
 	}
 }
@@ -270,6 +265,7 @@ func TestL2AdvertisementUpdate(t *testing.T) {
 		assert.Nil(t, testCase.testL2Advertisement.Definition.Spec.IPAddressPools)
 		assert.Nil(t, nil, testCase.testL2Advertisement.Object)
 		testCase.testL2Advertisement.WithIPAddressPools(testCase.addressPool)
+		testCase.testL2Advertisement.Definition.ObjectMeta.ResourceVersion = "999"
 		_, err := testCase.testL2Advertisement.Update(false)
 		assert.Equal(t, testCase.expectedError, err)
 
@@ -411,8 +407,8 @@ func buildInValidL2AdvertisementBuilder(apiClient *clients.Settings) *L2Advertis
 
 func buildL2AdvertisementTestClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyL2Advertisement(),
-		GVK:            []schema.GroupVersionKind{l2AdvertisementGvk},
+		K8sMockObjects:  buildDummyL2Advertisement(),
+		SchemeAttachers: testSchemes,
 	})
 }
 

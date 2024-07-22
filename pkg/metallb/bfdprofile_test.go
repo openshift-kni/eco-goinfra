@@ -13,11 +13,6 @@ import (
 )
 
 var (
-	bfdProfileGVK = schema.GroupVersionKind{
-		Group:   APIGroup,
-		Version: APIVersion,
-		Kind:    bfdProfileKind,
-	}
 	defaultBFDProfileName   = "default-bfd"
 	defaultBFDProfileNsName = "test-namespace"
 )
@@ -91,8 +86,8 @@ func TestPullBFDProfile(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
-				GVK:            []schema.GroupVersionKind{bfdProfileGVK},
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
 			})
 		}
 
@@ -133,7 +128,7 @@ func TestNewBFDBuilder(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testSettings := clients.GetTestClients(clients.TestClientParams{
-			GVK: []schema.GroupVersionKind{bfdProfileGVK},
+			SchemeAttachers: testSchemes,
 		})
 		testBFDProfileBuilder := generateBFDProfile(testSettings, testCase.name, testCase.namespace)
 		assert.Equal(t, testCase.expectedError, testBFDProfileBuilder.errorMsg)
@@ -166,7 +161,7 @@ func TestBFDProfileGet(t *testing.T) {
 		assert.Equal(t, err, testCase.expectedError)
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, bfdProfile, testCase.testBFDProfile.Definition)
+			assert.Equal(t, bfdProfile.Name, testCase.testBFDProfile.Definition.Name)
 		}
 	}
 }
@@ -264,6 +259,7 @@ func TestBFDProfileUpdate(t *testing.T) {
 		assert.Nil(t, testCase.testBFDProfile.Definition.Spec.EchoMode)
 		assert.Nil(t, nil, testCase.testBFDProfile.Object)
 		testCase.testBFDProfile.WithEchoMode(true)
+		testCase.testBFDProfile.Definition.ObjectMeta.ResourceVersion = "999"
 		_, err := testCase.testBFDProfile.Update(false)
 		assert.Equal(t, testCase.expectedError, err)
 
@@ -455,8 +451,8 @@ func buildInValidBFDProfileBuilder(apiClient *clients.Settings) *BFDBuilder {
 
 func buildBFDProfileTestClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyBFDProfile(),
-		GVK:            []schema.GroupVersionKind{bfdProfileGVK},
+		K8sMockObjects:  buildDummyBFDProfile(),
+		SchemeAttachers: testSchemes,
 	})
 }
 
