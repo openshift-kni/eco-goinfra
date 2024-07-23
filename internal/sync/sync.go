@@ -58,14 +58,16 @@ func syncRemoteRepo(repo *repo) {
 	projectLocalDirectory := path.Join("./pkg", repo.LocalAPIDirectory)
 
 	gitClone(basePath, repo)
+	excludeAndRefactor(projectClonedDirectory, projectLocalDirectory, repo)
 
 	glog.V(100).Infof("Comparing local %s and cloned %s api directories for repo %s",
 		projectLocalDirectory, projectClonedDirectory, repo.Name)
 
-	if repoSynced(projectClonedDirectory, projectLocalDirectory, repo) {
-		gitReset(repo.LocalAPIDirectory)
-	} else {
-		syncDirectories(projectClonedDirectory, projectLocalDirectory, repo)
+	err := execCmd("", "diff", []string{projectClonedDirectory, projectLocalDirectory})
+	if err != nil {
+		glog.V(100).Infof("Repos not synced. Copying cloned repo %s to %s", projectClonedDirectory, projectLocalDirectory)
+
+		copyClonedToLocal(projectClonedDirectory, projectLocalDirectory)
 	}
 
 	glog.V(100).Infof("Remove cloned directory from filesystem: %s", path.Join(basePath, repo.Name))
@@ -81,21 +83,13 @@ func syncRemoteRepo(repo *repo) {
 	}
 }
 
-func repoSynced(clonedDir, localDir string, repo *repo) bool {
-	glog.V(100).Infof("Verifying destination directory %s exists", localDir)
-
-	if _, err := os.Stat(localDir); os.IsNotExist(err) {
-		glog.V(100).Infof("Destination api directory %s doesn't exist creating directory", localDir)
-
-		if os.MkdirAll(localDir, 0777) != nil {
-			glog.V(100).Infof("Failed to create api directory. Exit with error code 1")
-			os.Exit(1)
-		}
-	}
+// excludeAndRefactor excludes and refactors files in the clonedDir to prepare them for being compared or copied to the
+// localDir.
+func excludeAndRefactor(clonedDir, localDir string, repo *repo) {
+	glog.V(100).Infof("Updating %s to match expected state of %s", clonedDir, localDir)
 
 	if len(repo.Excludes) > 0 {
-		glog.V(100).Infof("Remove excluded files under %s",
-			path.Base(clonedDir))
+		glog.V(100).Infof("Remove excluded files under %s", path.Base(clonedDir))
 
 		err := excludeFiles(clonedDir, repo.Excludes...)
 		if err != nil {
@@ -108,114 +102,44 @@ func repoSynced(clonedDir, localDir string, repo *repo) bool {
 		path.Base(clonedDir), path.Base(localDir))
 
 	err := refactor(
-		fmt.Sprintf("package %s", path.Base(localDir)),
 		fmt.Sprintf("package %s", path.Base(clonedDir)),
-		fmt.Sprintf("./%s", localDir), "*.go")
+		fmt.Sprintf("package %s", path.Base(localDir)),
+		clonedDir, "*.go")
 
 	if err != nil {
-		glog.V(100).Infof("Failed to refactor file before sync due to %w. Exit with error 1", err)
+		glog.V(100).Infof("Failed to replace package names due to %w. Exit with error 1", err)
 		os.Exit(1)
 	}
 
-	glog.V(100).Infof("Replace cloned package imports")
-
 	for _, importMap := range repo.ReplaceImports {
-		err = refactor(
-			importMap["new"],
-			importMap["old"],
-			localDir,
-			"*.go")
-
+		err = refactor(importMap["old"], importMap["new"], clonedDir, "*.go")
 		if err != nil {
-			glog.V(100).Infof("Failed to refactor file. Exit with error 1")
+			glog.V(100).Infof("Failed to refactor files due to %w. Exit with error 1", err)
 			os.Exit(1)
 		}
 	}
-
-	err = execCmd("", "diff", []string{clonedDir, localDir})
-
-	if err == nil {
-		glog.V(100).Infof("Repo synced. Revert local files to original state")
-
-		return true
-	}
-
-	return false
 }
 
-func syncDirectories(clonedDir, localDir string, repo *repo) {
-	glog.V(100).Infof("Repos are not synced. Cleaning local directory: %s", localDir)
+func copyClonedToLocal(clonedDir, localDir string) {
+	glog.V(100).Infof("Create path to new local directory: %s", localDir)
 
-	if os.RemoveAll(localDir) != nil {
-		glog.V(100).Infof("Failed to remove local api directory. Exit with error code 1")
-		os.Exit(1)
-	}
-
-	glog.V(100).Infof("Create new local directory: %s", localDir)
-
+	// We use MkdirAll to make sure the path leading up to localDir exists.
 	if os.MkdirAll(localDir, 0750) != nil {
-		glog.V(100).Infof("Failed to recreate api directory. Exit with error code 1")
+		glog.V(100).Info("Failed to create local directory. Exit with error code 1")
 		os.Exit(1)
 	}
 
-	if len(repo.Excludes) > 0 {
-		glog.V(100).Infof("Remove excluded files under %s",
-			path.Base(clonedDir))
-
-		err := excludeFiles(clonedDir, repo.Excludes...)
-		if err != nil {
-			glog.V(100).Infof("Failed to remove excluded files due to %w. Exit with error 1", err)
-			os.Exit(1)
-		}
-	}
-
-	glog.V(100).Infof("Copy api filed from cloned directory to local api directory")
-
-	err := execCmd(
-		"",
-		"cp",
-		[]string{"-a", fmt.Sprintf("%s/.", clonedDir), fmt.Sprintf("%s/", localDir)})
-
+	// We use RemoveAll to delete just localDir but not the path leading to it.
+	err := os.RemoveAll(localDir)
 	if err != nil {
-		glog.Infof("Failed to sync directories. Exit with error code 1")
+		glog.V(100).Infof("Failed to remove old local directory %s due to %w. Exit with error 1", localDir, err)
 		os.Exit(1)
 	}
 
-	glog.V(100).Infof("Fix packages names")
-
-	err = refactor(
-		fmt.Sprintf("package %s", path.Base(clonedDir)),
-		fmt.Sprintf("package %s", path.Base(localDir)),
-		localDir,
-		"*.go")
-
+	err = execCmd("", "cp", []string{"-a", clonedDir, localDir})
 	if err != nil {
-		glog.V(100).Infof("Failed to refactor file. Exit with error 1")
+		glog.V(100).Infof("Failed to sync directories due to %w. Exit with error 1", err)
 		os.Exit(1)
-	}
-
-	for _, importMap := range repo.ReplaceImports {
-		err = refactor(importMap["old"], importMap["new"], localDir, "*.go")
-
-		if err != nil {
-			glog.V(100).Infof("Failed to refactor file. Exit with error 1")
-			os.Exit(1)
-		}
-	}
-}
-
-func gitReset(packageName string) {
-	for _, cmdToRun := range [][]string{
-		{"reset", "--", fmt.Sprintf("./pkg/%s", packageName)},
-		{"checkout", "--", fmt.Sprintf("./pkg/%s", packageName)},
-		{"clean", "-d", "-f", fmt.Sprintf("./pkg/%s", packageName)},
-	} {
-		err := execCmd("", "git", cmdToRun)
-
-		if err != nil {
-			glog.Infof("Failed to reset project to it's original state. Exit with error 1")
-			os.Exit(1)
-		}
 	}
 }
 
