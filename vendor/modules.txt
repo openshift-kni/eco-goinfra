@@ -14,9 +14,6 @@ github.com/Masterminds/semver/v3
 # github.com/Masterminds/sprig/v3 v3.2.3
 ## explicit; go 1.13
 github.com/Masterminds/sprig/v3
-# github.com/NVIDIA/gpu-operator v1.11.1
-## explicit; go 1.17
-github.com/NVIDIA/gpu-operator/api/v1
 # github.com/ajeddeloh/go-json v0.0.0-20200220154158-5ae607161559
 ## explicit
 github.com/ajeddeloh/go-json

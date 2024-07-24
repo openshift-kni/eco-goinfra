@@ -790,8 +790,6 @@ github.com/Microsoft/go-winio v0.6.1 h1:9/kr64B9VUZrLm5YYwbGtUJnMgqWVOdUAXu6Migc
 github.com/Microsoft/go-winio v0.6.1/go.mod h1:LRdKpFKfdobln8UmuiYcKPot9D2v6svN5+sAH+4kjUM=
 github.com/Microsoft/hcsshim v0.12.0-rc.3 h1:5GNGrobGs/sN/0nFO21W9k4lFn+iXXZAE8fCZbmdRak=
 github.com/Microsoft/hcsshim v0.12.0-rc.3/go.mod h1:WuNfcaYNaw+KpCEsZCIM6HCEmu0c5HfXpi+dDSmveP0=
-github.com/NVIDIA/gpu-operator v1.11.1 h1:MuM3nFga8dcK0krgxarYaSmpGSnFYOl2zBQRBNvHKD0=
-github.com/NVIDIA/gpu-operator v1.11.1/go.mod h1:cKk+zdpWTj5fR7nRri+DzFoW8aG5iD3RkoYOMCMcNEU=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
 github.com/NYTimes/gziphandler v1.1.1/go.mod h1:n/CVRwUEOgIxrgPvAQhUUr9oeUtvrhMomdKFjzJNB0c=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
