@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path"
@@ -338,16 +339,16 @@ func readFile(cfg *[]repo, cfgFile string) error {
 }
 
 func refactor(oldLine, newLine, root string, patterns ...string) error {
-	return filepath.Walk(root, refactorFunc(oldLine, newLine, patterns))
+	return filepath.WalkDir(root, refactorFunc(oldLine, newLine, patterns))
 }
 
-func refactorFunc(oldLine, newLine string, filePatterns []string) filepath.WalkFunc {
-	return func(filePath string, fileInfo os.FileInfo, err error) error {
+func refactorFunc(oldLine, newLine string, filePatterns []string) fs.WalkDirFunc {
+	return func(filePath string, dirEntry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 
-		if fileInfo.IsDir() {
+		if dirEntry.IsDir() {
 			return nil
 		}
 
@@ -355,7 +356,7 @@ func refactorFunc(oldLine, newLine string, filePatterns []string) filepath.WalkF
 
 		for _, pattern := range filePatterns {
 			var err error
-			matched, err = filepath.Match(pattern, fileInfo.Name())
+			matched, err = filepath.Match(pattern, dirEntry.Name())
 
 			if err != nil {
 				return err
@@ -383,36 +384,28 @@ func refactorFunc(oldLine, newLine string, filePatterns []string) filepath.WalkF
 }
 
 func excludeFiles(path string, patterns ...string) error {
-	entries, err := os.ReadDir(path)
-	if err != nil {
-		return err
-	}
+	return filepath.WalkDir(path, excludeFunc(path, patterns))
+}
 
-	for _, entry := range entries {
-		joinedPath := filepath.Join(path, entry.Name())
+func excludeFunc(root string, patterns []string) fs.WalkDirFunc {
+	return func(filePath string, dirEntry fs.DirEntry, err error) error {
+		if filePath == root {
+			return nil
+		}
 
 		for _, pattern := range patterns {
-			match, err := filepath.Match(pattern, filepath.Base(joinedPath))
+			match, err := filepath.Match(pattern, filepath.Base(filePath))
 			if err != nil {
 				return err
 			}
 
 			if match {
-				glog.V(100).Infof("Found that path %s matches %s - Excluding", joinedPath, pattern)
+				glog.V(100).Infof("Found that path %s matches %s - Excluding", filePath, pattern)
 
-				err = os.RemoveAll(joinedPath)
-				if err != nil {
-					return err
-				}
-
-				break
+				return os.RemoveAll(filePath)
 			}
 		}
 
-		if _, err = os.Stat(joinedPath); err == nil && entry.IsDir() {
-			return excludeFiles(joinedPath, patterns...)
-		}
+		return nil
 	}
-
-	return nil
 }
