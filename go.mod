@@ -3,7 +3,6 @@ module github.com/openshift-kni/eco-goinfra
 go 1.22
 
 require (
-	github.com/NVIDIA/gpu-operator v1.11.1
 	github.com/argoproj-labs/argocd-operator v0.10.0
 	github.com/golang/glog v1.2.1
 	github.com/grafana-operator/grafana-operator/v4 v4.10.1
@@ -202,7 +201,7 @@ require (
 	k8s.io/cli-runtime v0.29.4 // indirect
 	k8s.io/component-base v0.29.4 // indirect
 	k8s.io/klog v1.0.0 // indirect
-	k8s.io/klog/v2 v2.120.1 // indirect
+	k8s.io/klog/v2 v2.120.1
 	k8s.io/kube-aggregator v0.29.4 // indirect
 	k8s.io/kube-openapi v0.0.0-20240411171206-dc4e619f62f3 // indirect
 	open-cluster-management.io/api v0.13.0
