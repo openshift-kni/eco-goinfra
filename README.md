@@ -198,3 +198,92 @@ func Function(
 	
 }
 ```
+
+### Sync Tool and Operator Types
+
+Previously, packages relied on importing the types from individual operators and adding them as dependencies. This has led to eco-goinfra having many dependencies, making it harder to reuse and increasing the chance of version conflicts between indirect dependencies.
+
+By using just the runtime client and removing dependencies on individual operators, the sync tool reduces the number of eco-goinfra dependencies and makes packages more modular. It will periodically copy over types from operator repos to this repo by cloning the desired path in the operator repo, applying changes specified in the config file, and then copying the resulting types into this repo.
+
+#### Running
+
+To run the sync tool, use the `lib-sync` makefile target.
+
+```
+make lib-sync
+```
+
+It may be faster to sync only one config file instead using the `--config-file` flag.
+
+```
+go run ./internal/sync --config-file ./internal/sync/configs/<config-file.yaml>
+```
+
+If the sync fails while adding a new set of operator types, remove the synced directory from `schemes/<pkg-to-sync>` and rerun the sync.
+
+#### Configuration
+
+Config files for the sync tool live in the [internal/sync/configs](./internal/sync/configs/) directory. A good example of all the features available is in the [nvidia-config.yaml](./internal/sync/configs/nvidia-config.yaml) file.
+
+Each config is a YAML document with a top level list of objects that follow this form:
+
+```yaml
+- name: operator-repo # 1
+  sync: true # 2
+  repo_link: "https://github.com/operator/repo" # 3
+  branch: main # 4
+  remote_api_directory: pkg/apis/v1 # 5
+  local_api_directory: schemes/operator/operatortypes # 6
+  replace_imports: # 7
+    - old: '"github.com/operator/repo/pkg/apis/v1/config"' # 8
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/operator/operatortypes/config"'
+    - old: '"github.com/operator/repo/pkg/apis/v1/utils/exec"'
+      new: exec "github.com/openshift-kni/eco-goinfra/pkg/schemes/operator/operatortypes/executils" # 9
+  excludes:
+    - "*_test.go" # 10
+```
+
+1. Name, which does not have to be unique, identifies the repos in logs and controls where it is cloned during the sync. It should be named using only alphanumeric characters and hyphens, although the name itself does not affect how the repo gets synced.
+2. Sync is whether the operator repo will be synced both periodically and when `make lib-sync` is used manually.
+3. Repo link is the url of the operator repo itself. It does not need to end in `.git`.
+4. Branch is the branch of the operator repo to sync with.
+5. Remote API directory is the path in the operator repo to sync with, relative to the operator repo root.
+6. Local API directory is the path in eco-goinfra where the remote API directory should be synced to. Relative to the eco-goinfra root, it should start with `schemes/`.
+7. The operator may import code from other parts of its repo or even other repos. These imports must be updated to new paths when synced to eco-goinfra. Replace imports is an optional field to allow updating these paths during the sync.
+8. Import replacement is done through find and replace, so we include the double quotes to make sure it is an import being matched.
+9. If the package name in eco-goinfra is different than the operator repo, the import should be renamed so the code still works.
+10. Excludes is an optional list of file patterns to exclude. Since tests and mocks may add their own dependencies, excluding them can reduce how many other dependencies need to be synced.
+
+Like in the [nvidia-config.yaml](./internal/sync/configs/nvidia-config.yaml) example, it is often the case that one repo will import a few others. All of the imported repos should be specified in the sync config to avoid adding new dependencies.
+
+#### Using the Synced Types
+
+Instead of directly adding the scheme synced from the operator repo to the [clients](./pkg/clients/) package, the client scheme should be updated in `NewBuilder()`, `Pull()`, and any `List***()` functions. The [metallb](./pkg/metallb/metallb.go) package provides a good example of this.
+
+```go
+// in NewBuilder
+err := apiClient.AttachScheme(mlbtypes.AddToScheme)
+if err != nil {
+	glog.V(100).Infof("Failed to add metallb scheme to client schemes")
+
+	return nil
+}
+```
+
+[metallb_test.go](./pkg/metallb/metallb_test.go) provides an example of how to use the schemes in unit tests. There should be a variable for the test schemes.
+
+```go
+var mlbTestSchemes = []clients.SchemeAttacher{
+	mlbtypes.AddToScheme,
+}
+```
+
+And these schemes should be provided when creating the test client.
+
+```go
+// in buildMetalLbTestClientWithDummyObject
+clients.GetTestClients(clients.TestClientParams{
+	K8sMockObjects:  buildDummyMetalLb(),
+	SchemeAttachers: mlbTestSchemes,
+})
+```
