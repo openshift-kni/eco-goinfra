@@ -106,7 +106,6 @@ import (
 	multinetpolicyclientv1 "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/client/clientset/versioned/typed/k8s.cni.cncf.io/v1beta1"
 	noobaav1alpha1 "github.com/kube-object-storage/lib-bucket-provisioner/pkg/apis/objectbucket.io/v1alpha1"
 	cguapiv1alpha1 "github.com/openshift-kni/cluster-group-upgrades-operator/pkg/api/clustergroupupgrades/v1alpha1"
-	nvidiagpuv1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/nvidiagpu/nvidiagputypes"
 	machinev1beta1client "github.com/openshift/client-go/machine/clientset/versioned/typed/machine/v1beta1"
 	operatorv1alpha1 "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1"
 	nfdv1 "github.com/openshift/cluster-nfd-operator/api/v1"
@@ -330,10 +329,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	}
 
 	if err := mcmV1Beta1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := nvidiagpuv1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
