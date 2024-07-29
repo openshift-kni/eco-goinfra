@@ -39,4 +39,4 @@ jobs:
           title: Sync update external libs
           body: |
             - sync update external libs
-          branch: lib-sync-update
+          branch: sync
