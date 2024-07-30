@@ -1,0 +1,48 @@
+---
+- name: oadp-v1alpha1
+  sync: false
+  repo_link: "https://github.com/openshift/oadp-operator"
+  branch: oadp-1.4
+  remote_api_directory: api/v1alpha1
+  local_api_directory: schemes/oadp/api/v1alpha1
+  replace_imports:
+    - old: '"github.com/openshift/oadp-operator/pkg/common"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/oadp/pkg/common"'
+    - old: '"github.com/openshift/oadp-operator/pkg/velero/server"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/oadp/pkg/velero/server"'
+    - old: '"github.com/vmware-tanzu/velero/pkg/apis/velero/v1"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/oadp/velero/api/v1"'
+
+- name: oadp-common-pkg
+  sync: false
+  repo_link: "https://github.com/openshift/oadp-operator"
+  branch: oadp-1.4
+  remote_api_directory: pkg/common
+  local_api_directory: schemes/oadp/pkg/common
+  replace_imports:
+    - old: '"github.com/vmware-tanzu/velero/pkg/restore"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/oadp/velero/pkg/restore"'
+  excludes:
+    - "*_test.go"
+
+- name: oadp-velero-restore-pkg
+  sync: false
+  repo_link: "https://github.com/openshift/velero"
+  branch: oadp-1.4
+  remote_api_directory: pkg/restore
+  local_api_directory: schemes/oadp/velero/pkg/restore
+  excludes:
+    - "*_test.go"
+    - "actions"
+    - "prioritize_group_version.go"
+    - "pv_restorer.go"
+    - "restore.go"
+    - "request.go"
+    - "merge_service_account.go"
+
+- name: oadp-velero-v1
+  sync: false
+  repo_link: "https://github.com/openshift/velero"
+  branch: oadp-1.4
+  remote_api_directory: pkg/apis/velero/v1
+  local_api_directory: schemes/oadp/velero/api/v1
