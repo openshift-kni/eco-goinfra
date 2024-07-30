@@ -5,22 +5,16 @@ import (
 	"testing"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	"github.com/openshift-kni/eco-goinfra/pkg/oadp/oadptypes"
+	oadpv1alpha1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/oadp/api/v1alpha1"
+	v1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/oadp/velero/api/v1"
 	"github.com/stretchr/testify/assert"
-	v1 "github.com/vmware-tanzu/velero/pkg/apis/velero/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/dynamic/fake"
 )
 
-var (
-	DPAGVK = schema.GroupVersionKind{
-		Group:   APIGroup,
-		Version: V1Alpha1Version,
-		Kind:    DPAKind,
-	}
-)
+var testSchemes = []clients.SchemeAttacher{
+	oadpv1alpha1.AddToScheme,
+}
 
 const (
 	testDataProtectionApplication = "test-dataprotectionapplication"
@@ -31,18 +25,18 @@ func TestNewDPABuilder(t *testing.T) {
 	testCases := []struct {
 		name          string
 		namespace     string
-		config        oadptypes.ApplicationConfig
+		config        oadpv1alpha1.ApplicationConfig
 		client        bool
 		expectedError string
 	}{
 		{
 			name:      testDataProtectionApplication,
 			namespace: testDataProtectionApplication,
-			config: oadptypes.ApplicationConfig{
-				Velero: &oadptypes.VeleroConfig{
-					DefaultPlugins: []oadptypes.DefaultPlugin{
-						oadptypes.DefaultPluginAWS,
-						oadptypes.DefaultPluginOpenShift,
+			config: oadpv1alpha1.ApplicationConfig{
+				Velero: &oadpv1alpha1.VeleroConfig{
+					DefaultPlugins: []oadpv1alpha1.DefaultPlugin{
+						oadpv1alpha1.DefaultPluginAWS,
+						oadpv1alpha1.DefaultPluginOpenShift,
 					},
 					ResourceTimeout: "10m",
 				},
@@ -53,11 +47,11 @@ func TestNewDPABuilder(t *testing.T) {
 		{
 			name:      "",
 			namespace: testDataProtectionApplication,
-			config: oadptypes.ApplicationConfig{
-				Velero: &oadptypes.VeleroConfig{
-					DefaultPlugins: []oadptypes.DefaultPlugin{
-						oadptypes.DefaultPluginAWS,
-						oadptypes.DefaultPluginOpenShift,
+			config: oadpv1alpha1.ApplicationConfig{
+				Velero: &oadpv1alpha1.VeleroConfig{
+					DefaultPlugins: []oadpv1alpha1.DefaultPlugin{
+						oadpv1alpha1.DefaultPluginAWS,
+						oadpv1alpha1.DefaultPluginOpenShift,
 					},
 					ResourceTimeout: "10m",
 				},
@@ -68,11 +62,11 @@ func TestNewDPABuilder(t *testing.T) {
 		{
 			name:      testDataProtectionApplication,
 			namespace: "",
-			config: oadptypes.ApplicationConfig{
-				Velero: &oadptypes.VeleroConfig{
-					DefaultPlugins: []oadptypes.DefaultPlugin{
-						oadptypes.DefaultPluginAWS,
-						oadptypes.DefaultPluginOpenShift,
+			config: oadpv1alpha1.ApplicationConfig{
+				Velero: &oadpv1alpha1.VeleroConfig{
+					DefaultPlugins: []oadpv1alpha1.DefaultPlugin{
+						oadpv1alpha1.DefaultPluginAWS,
+						oadpv1alpha1.DefaultPluginOpenShift,
 					},
 					ResourceTimeout: "10m",
 				},
@@ -83,18 +77,18 @@ func TestNewDPABuilder(t *testing.T) {
 		{
 			name:          testDataProtectionApplication,
 			namespace:     testDataProtectionApplication,
-			config:        oadptypes.ApplicationConfig{},
+			config:        oadpv1alpha1.ApplicationConfig{},
 			client:        true,
 			expectedError: "dataprotectionapplication velero config cannot be empty",
 		},
 		{
 			name:      testDataProtectionApplication,
 			namespace: testDataProtectionApplication,
-			config: oadptypes.ApplicationConfig{
-				Velero: &oadptypes.VeleroConfig{
-					DefaultPlugins: []oadptypes.DefaultPlugin{
-						oadptypes.DefaultPluginAWS,
-						oadptypes.DefaultPluginOpenShift,
+			config: oadpv1alpha1.ApplicationConfig{
+				Velero: &oadpv1alpha1.VeleroConfig{
+					DefaultPlugins: []oadpv1alpha1.DefaultPlugin{
+						oadpv1alpha1.DefaultPluginAWS,
+						oadpv1alpha1.DefaultPluginOpenShift,
 					},
 					ResourceTimeout: "10m",
 				},
@@ -183,7 +177,7 @@ func TestPullDPA(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(
-				clients.TestClientParams{GVK: []schema.GroupVersionKind{DPAGVK}, K8sMockObjects: runtimeObjects})
+				clients.TestClientParams{K8sMockObjects: runtimeObjects, SchemeAttachers: testSchemes})
 		}
 
 		testBuilder, err := PullDPA(testSettings, testCase.name, testCase.namespace)
@@ -240,27 +234,17 @@ func TestListDataProtectionApplication(t *testing.T) {
 
 	for _, testCase := range testCases {
 		var (
-			runtimeObjectLists []runtime.Object
-			testClient         *clients.Settings
+			runtimeObjects []runtime.Object
+			testClient     *clients.Settings
 		)
 
-		dpas := generateDataProtectionApplicationList()
-
 		if testCase.exists {
-			runtimeObjectLists = append(runtimeObjectLists, dpas)
+			runtimeObjects = append(runtimeObjects, generateDataProtectionApplication())
 		}
 
 		if testCase.client {
-			testClient = clients.GetTestClients(clients.TestClientParams{})
-
-			testScheme := runtime.NewScheme()
-			testScheme.AddKnownTypes(oadptypes.DPAGroupVersion, runtimeObjectLists...)
-			testScheme.AddKnownTypes(oadptypes.DPAGroupVersion, []runtime.Object{&dpas.Items[0]}...)
-
-			testClient.Interface = fake.NewSimpleDynamicClientWithCustomListKinds(
-				testScheme, map[schema.GroupVersionResource]string{
-					GetDataProtectionApplicationGVR(): "DataProtectionApplicationList",
-				}, runtimeObjectLists...)
+			testClient = clients.GetTestClients(clients.TestClientParams{K8sMockObjects: runtimeObjects,
+				SchemeAttachers: testSchemes})
 		}
 
 		testBuilders, err := ListDataProtectionApplication(testClient, testCase.namespace)
@@ -274,11 +258,11 @@ func TestListDataProtectionApplication(t *testing.T) {
 
 func TestDPAWithBackupLocation(t *testing.T) {
 	testCases := []struct {
-		backupLocation oadptypes.BackupLocation
+		backupLocation oadpv1alpha1.BackupLocation
 		expectError    string
 	}{
 		{
-			backupLocation: oadptypes.BackupLocation{
+			backupLocation: oadpv1alpha1.BackupLocation{
 				Velero: &v1.BackupStorageLocationSpec{
 					Provider: "aws",
 					StorageType: v1.StorageType{
@@ -296,7 +280,7 @@ func TestDPAWithBackupLocation(t *testing.T) {
 			expectError: "",
 		},
 		{
-			backupLocation: oadptypes.BackupLocation{},
+			backupLocation: oadpv1alpha1.BackupLocation{},
 			expectError:    "dataprotectionapplication backuplocation cannot have empty velero config",
 		},
 	}
@@ -543,14 +527,14 @@ func TestDPAValidate(t *testing.T) {
 
 func buildTestDPABuilderWithFakeObjects(objects []runtime.Object) *DPABuilder {
 	testClient := clients.GetTestClients(
-		clients.TestClientParams{GVK: []schema.GroupVersionKind{DPAGVK}, K8sMockObjects: objects})
+		clients.TestClientParams{K8sMockObjects: objects, SchemeAttachers: testSchemes})
 
 	testBuilder := NewDPABuilder(
-		testClient, testDataProtectionApplication, testDataProtectionApplication, oadptypes.ApplicationConfig{
-			Velero: &oadptypes.VeleroConfig{
-				DefaultPlugins: []oadptypes.DefaultPlugin{
-					oadptypes.DefaultPluginAWS,
-					oadptypes.DefaultPluginOpenShift,
+		testClient, testDataProtectionApplication, testDataProtectionApplication, oadpv1alpha1.ApplicationConfig{
+			Velero: &oadpv1alpha1.VeleroConfig{
+				DefaultPlugins: []oadpv1alpha1.DefaultPlugin{
+					oadpv1alpha1.DefaultPluginAWS,
+					oadpv1alpha1.DefaultPluginOpenShift,
 				},
 				ResourceTimeout: "10m",
 			},
@@ -561,44 +545,28 @@ func buildTestDPABuilderWithFakeObjects(objects []runtime.Object) *DPABuilder {
 
 func generateDPABuilder() *DPABuilder {
 	return &DPABuilder{
-		apiClient:  clients.GetTestClients(clients.TestClientParams{GVK: []schema.GroupVersionKind{DPAGVK}}),
+		apiClient:  clients.GetTestClients(clients.TestClientParams{SchemeAttachers: testSchemes}).Client,
 		Definition: generateDataProtectionApplication(),
 	}
 }
 
-func generateDataProtectionApplicationList() *oadptypes.DataProtectionApplicationList {
-	return &oadptypes.DataProtectionApplicationList{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       APIGroup,
-			APIVersion: V1Alpha1Version,
-		},
-		Items: []oadptypes.DataProtectionApplication{
-			*generateDataProtectionApplication(),
-		},
-	}
-}
-
-func generateDataProtectionApplication() *oadptypes.DataProtectionApplication {
-	return &oadptypes.DataProtectionApplication{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       APIGroup,
-			APIVersion: V1Alpha1Version,
-		},
+func generateDataProtectionApplication() *oadpv1alpha1.DataProtectionApplication {
+	return &oadpv1alpha1.DataProtectionApplication{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      testDataProtectionApplication,
 			Namespace: testDataProtectionApplication,
 		},
-		Spec: oadptypes.DataProtectionApplicationSpec{
-			Configuration: &oadptypes.ApplicationConfig{
-				Velero: &oadptypes.VeleroConfig{
-					DefaultPlugins: []oadptypes.DefaultPlugin{
-						oadptypes.DefaultPluginAWS,
-						oadptypes.DefaultPluginOpenShift,
+		Spec: oadpv1alpha1.DataProtectionApplicationSpec{
+			Configuration: &oadpv1alpha1.ApplicationConfig{
+				Velero: &oadpv1alpha1.VeleroConfig{
+					DefaultPlugins: []oadpv1alpha1.DefaultPlugin{
+						oadpv1alpha1.DefaultPluginAWS,
+						oadpv1alpha1.DefaultPluginOpenShift,
 					},
 					ResourceTimeout: "10m",
 				},
 			},
-			BackupLocations: []oadptypes.BackupLocation{
+			BackupLocations: []oadpv1alpha1.BackupLocation{
 				{
 					Velero: &v1.BackupStorageLocationSpec{
 						Provider: "aws",
