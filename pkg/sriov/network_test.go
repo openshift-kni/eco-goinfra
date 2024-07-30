@@ -183,6 +183,53 @@ func TestNewNetworkBuilder(t *testing.T) {
 	}
 }
 
+func TestWithLogLevel(t *testing.T) {
+	testCases := []struct {
+		loglevel          string
+		expectedErrorText string
+	}{
+		{
+			loglevel:          "panic",
+			expectedErrorText: "",
+		},
+		{
+			loglevel:          "error",
+			expectedErrorText: "",
+		},
+		{
+			loglevel:          "warning",
+			expectedErrorText: "",
+		},
+		{
+			loglevel:          "info",
+			expectedErrorText: "",
+		},
+		{
+			loglevel:          "debug",
+			expectedErrorText: "",
+		},
+		{
+			loglevel:          "",
+			expectedErrorText: "",
+		},
+		{
+			loglevel: "invalid",
+			expectedErrorText: "invalid logLevel value, allowed logLevel values are:" +
+				" panic, error, warning, info, debug or empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
+		netBuilder := buildValidSriovNetworkTestBuilder(testSettings).WithLogLevel(testCase.loglevel)
+		assert.Equal(t, netBuilder.errorMsg, testCase.expectedErrorText)
+
+		if testCase.expectedErrorText == "" {
+			assert.Equal(t, netBuilder.Definition.Spec.LogLevel, testCase.loglevel)
+		}
+	}
+}
+
 func TestWithVlan(t *testing.T) {
 	testCases := []struct {
 		vlanID            uint16
