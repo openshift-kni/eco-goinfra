@@ -23,13 +23,11 @@ import (
 	eskv1 "github.com/openshift/elasticsearch-operator/apis/logging/v1"
 	monv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 
+	oauthv1 "github.com/openshift/api/oauth/v1"
 	clientConfigV1 "github.com/openshift/client-go/config/clientset/versioned/typed/config/v1"
 	v1security "github.com/openshift/client-go/security/clientset/versioned/typed/security/v1"
 	mcv1 "github.com/openshift/machine-config-operator/pkg/apis/machineconfiguration.openshift.io/v1"
 	ptpV1 "github.com/openshift/ptp-operator/pkg/client/clientset/versioned/typed/ptp/v1"
-	olm2 "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/scheme"
-
-	oauthv1 "github.com/openshift/api/oauth/v1"
 	olmv1 "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1"
 	olm "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/typed/operators/v1alpha1"
 
@@ -289,10 +287,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	}
 
 	if err := operatorv1.Install(crScheme); err != nil {
-		return err
-	}
-
-	if err := olm2.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
