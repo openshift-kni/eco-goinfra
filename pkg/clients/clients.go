@@ -533,8 +533,6 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			genericClientObjects = append(genericClientObjects, v)
 		case *routev1.Route:
 			genericClientObjects = append(genericClientObjects, v)
-		case *policiesv1.Policy:
-			genericClientObjects = append(genericClientObjects, v)
 		case *policiesv1.PlacementBinding:
 			genericClientObjects = append(genericClientObjects, v)
 		case *placementrulev1.PlacementRule:
