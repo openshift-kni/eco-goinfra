@@ -192,6 +192,10 @@ func TestManagedClusterDelete(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			testBuilder:   buildValidManagedClusterTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: nil,
+		},
+		{
 			testBuilder:   buildInvalidManagedClusterTestBuilder(buildTestClientWithDummyManagedCluster()),
 			expectedError: fmt.Errorf("managedCluster 'name' cannot be empty"),
 		},
@@ -240,6 +244,82 @@ func TestManagedClusterUpdate(t *testing.T) {
 			assert.Equal(t, testBuilder.Definition.Spec.HubAcceptsClient, managedClusterBuilder.Definition.Spec.HubAcceptsClient)
 		} else {
 			assert.NotNil(t, err)
+		}
+	}
+}
+
+func TestManagedClusterValidate(t *testing.T) {
+	testCases := []struct {
+		builderNil      bool
+		definitionNil   bool
+		apiClientNil    bool
+		builderErrorMsg string
+		expectedError   error
+	}{
+		{
+			builderNil:      false,
+			definitionNil:   false,
+			apiClientNil:    false,
+			builderErrorMsg: "",
+			expectedError:   nil,
+		},
+		{
+			builderNil:      true,
+			definitionNil:   false,
+			apiClientNil:    false,
+			builderErrorMsg: "",
+			expectedError:   fmt.Errorf("error: received nil managedCluster builder"),
+		},
+		{
+			builderNil:      false,
+			definitionNil:   true,
+			apiClientNil:    false,
+			builderErrorMsg: "",
+			expectedError:   fmt.Errorf("can not redefine the undefined managedCluster"),
+		},
+		{
+			builderNil:      false,
+			definitionNil:   false,
+			apiClientNil:    true,
+			builderErrorMsg: "",
+			expectedError:   fmt.Errorf("managedCluster builder cannot have nil apiClient"),
+		},
+		{
+			builderNil:      false,
+			definitionNil:   false,
+			apiClientNil:    false,
+			builderErrorMsg: "test error",
+			expectedError:   fmt.Errorf("test error"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		managedClusterBuilder := buildValidManagedClusterTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+
+		if testCase.builderNil {
+			managedClusterBuilder = nil
+		}
+
+		if testCase.definitionNil {
+			managedClusterBuilder.Definition = nil
+		}
+
+		if testCase.apiClientNil {
+			managedClusterBuilder.apiClient = nil
+		}
+
+		if testCase.builderErrorMsg != "" {
+			managedClusterBuilder.errorMsg = testCase.builderErrorMsg
+		}
+
+		valid, err := managedClusterBuilder.validate()
+
+		if testCase.expectedError != nil {
+			assert.False(t, valid)
+			assert.Equal(t, testCase.expectedError, err)
+		} else {
+			assert.True(t, valid)
+			assert.Nil(t, err)
 		}
 	}
 }

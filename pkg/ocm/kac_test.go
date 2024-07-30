@@ -238,6 +238,11 @@ func TestKACUpdate(t *testing.T) {
 			assert.True(t, kacBuilder.Exists())
 		}
 
+		// This causes an error while updating and allows us to test the code path for force updates.
+		if testCase.force {
+			kacBuilder.Definition.ResourceVersion = kacBuilder.Definition.Name
+		}
+
 		assert.NotNil(t, kacBuilder.Definition)
 		assert.False(t, kacBuilder.Definition.Spec.SearchCollectorConfig.Enabled)
 
