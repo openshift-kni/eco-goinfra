@@ -75,7 +75,6 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	coreV1Client "k8s.io/client-go/kubernetes/typed/core/v1"
 	storageV1Client "k8s.io/client-go/kubernetes/typed/storage/v1"
-	policiesv1 "open-cluster-management.io/governance-policy-propagator/api/v1"
 
 	plumbingv1 "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/apis/k8s.cni.cncf.io/v1beta1"
 	fakeMultiNetPolicyClient "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/client/clientset/versioned/fake"
@@ -352,10 +351,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
-	if err := policiesv1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
 	if err := cguapiv1alpha1.AddToScheme(crScheme); err != nil {
 		return err
 	}
@@ -527,8 +522,6 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *operatorv1.OpenShiftAPIServer:
 			genericClientObjects = append(genericClientObjects, v)
 		case *routev1.Route:
-			genericClientObjects = append(genericClientObjects, v)
-		case *policiesv1.PlacementBinding:
 			genericClientObjects = append(genericClientObjects, v)
 		case *policiesv1beta1.PolicySet:
 			genericClientObjects = append(genericClientObjects, v)
