@@ -3,6 +3,7 @@ package pod
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -12,13 +13,8 @@ import (
 )
 
 // List returns pod inventory in the given namespace.
+// If nsname is empty, returns pods for all namespaces.
 func List(apiClient *clients.Settings, nsname string, options ...metav1.ListOptions) ([]*Builder, error) {
-	if nsname == "" {
-		glog.V(100).Infof("pod 'nsname' parameter can not be empty")
-
-		return nil, fmt.Errorf("failed to list pods, 'nsname' parameter is empty")
-	}
-
 	logMessage := fmt.Sprintf("Listing pods in the nsname %s", nsname)
 	passedOptions := metav1.ListOptions{}
 
@@ -181,4 +177,69 @@ func WaitForAllPodsInNamespaceRunning(
 	}
 
 	return true, nil
+}
+
+// WaitForAllPodsInNamespacesHealthy waits until all pods in a list of namespaces that match options
+// are in healthy state.
+// An pod in a healthy state is in running phase and optionally in ready condition.
+//
+// nsNames lists the list of namespaces to monitor. Monitors all namespaces when empty.
+// timeout is the duration to wait for the pods to be healthy
+// includeSucceeded when true, implies that pods in succeeded phase are running.
+// checkReadiness when true, to also checks that the podConditions are ready.
+// ignoreFailedPods when true, to Ignore failed pods with restart policy set to never.
+// ignoreNamespaces is a list of namespaces to ignore.
+// options reduces the list of namespace to only the ones matching options.
+func WaitForAllPodsInNamespacesHealthy(
+	apiClient *clients.Settings,
+	nsNames []string,
+	timeout time.Duration,
+	includeSucceeded bool,
+	checkReadiness bool,
+	ignoreFailedPods bool,
+	ignoreNamespaces []string,
+	options ...metav1.ListOptions,
+) error {
+	logMessage := fmt.Sprintf("Waiting for all pods in %v namespaces", nsNames)
+	passedOptions := metav1.ListOptions{}
+
+	if len(options) > 1 {
+		glog.V(100).Infof("'options' parameter must be empty or single-valued")
+
+		return fmt.Errorf("error: more than one ListOptions was passed")
+	}
+
+	if len(options) == 1 {
+		passedOptions = options[0]
+		logMessage += fmt.Sprintf(" with the options %v", passedOptions)
+	}
+
+	glog.V(100).Infof(logMessage + " are in running state")
+
+	var podList []*Builder
+
+	for _, ns := range nsNames {
+		podListForNs, err := List(apiClient, ns, passedOptions)
+		if err != nil {
+			glog.V(100).Infof("Failed to list all pods due to %s", err.Error())
+
+			return err
+		}
+		podList = append(podList, podListForNs...)
+	}
+
+	for _, podObj := range podList {
+		if slices.Contains(ignoreNamespaces, podObj.apiClient.Namespace) {
+			continue
+		}
+
+		err := podObj.WaitUntilHealthy(timeout, checkReadiness, includeSucceeded, ignoreFailedPods)
+		if err != nil {
+			glog.V(100).Infof("Failed to wait for all pods to be healthy due to %s", err.Error())
+
+			return err
+		}
+	}
+
+	return nil
 }
