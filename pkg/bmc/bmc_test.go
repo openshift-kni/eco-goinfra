@@ -651,12 +651,15 @@ func TestBMCSerialConsole(t *testing.T) {
 	_, _, err := bmc.OpenSerialConsole("console com2")
 	assert.EqualError(t, err, expectedErrMsg)
 
-	// Test without cli command... A best effort is made to open it based on system's manufacturer.
+	// This can sometimes return two different messages, but both signify a timeout as expected.
 	expectedErrMsg = `failed to get redfish system manufacturer for 1.2.3.4: redfish connection error: ` +
-		`failed to connect to redfish endpoint: Get "https://1.2.3.4/redfish/v1/": context deadline exceeded`
+		`failed to connect to redfish endpoint: Get "https://1.2.3.4/redfish/v1/": `
+	deadlineErrMsg := "context deadline exceeded"
+	timeoutErrMsg := "dial tcp 1.2.3.4:443: i/o timeout"
 
+	// Test without cli command. A best effort is made to open it based on system's manufacturer.
 	_, _, err = bmc.OpenSerialConsole("")
-	assert.EqualError(t, err, expectedErrMsg)
+	assert.Contains(t, []string{expectedErrMsg + deadlineErrMsg, expectedErrMsg + timeoutErrMsg}, err.Error())
 
 	expectedErrMsg = "no underlying ssh session found for 1.2.3.4"
 
