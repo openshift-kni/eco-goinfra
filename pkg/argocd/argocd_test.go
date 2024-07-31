@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	argocdoperatorv1alpha1 "github.com/argoproj-labs/argocd-operator/api/v1alpha1"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdoperator"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,18 +13,21 @@ import (
 )
 
 var (
+	testSchemes = []clients.SchemeAttacher{
+		argocdoperator.AddToScheme,
+	}
 	defaultArgoCdName   = "argocd"
 	defaultArgoCdNSName = "test-namespace"
 )
 
 func TestArgoCdPull(t *testing.T) {
-	generateArgoCd := func(name, namespace string) *argocdoperatorv1alpha1.ArgoCD {
-		return &argocdoperatorv1alpha1.ArgoCD{
+	generateArgoCd := func(name, namespace string) *argocdoperator.ArgoCD {
+		return &argocdoperator.ArgoCD{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,
 			},
-			Spec: argocdoperatorv1alpha1.ArgoCDSpec{},
+			Spec: argocdoperator.ArgoCDSpec{},
 		}
 	}
 
@@ -86,7 +89,8 @@ func TestArgoCdPull(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
 			})
 		}
 
@@ -124,7 +128,7 @@ func TestArgoCdNewBuilder(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients(clients.TestClientParams{})
+		testSettings := buildArgoCdTestClientWithScheme()
 		testArgoCdBuilder := NewBuilder(testSettings, testCase.name, testCase.namespace)
 		assert.Equal(t, testCase.expectedError, testArgoCdBuilder.errorMsg)
 		assert.NotNil(t, testArgoCdBuilder.Definition)
@@ -176,7 +180,7 @@ func TestArgoCdExist(t *testing.T) {
 			expectedStatus: false,
 		},
 		{
-			testArgoCd:     buildInValidArgoCdBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testArgoCd:     buildInValidArgoCdBuilder(buildArgoCdTestClientWithScheme()),
 			expectedStatus: false,
 		},
 	}
@@ -193,11 +197,11 @@ func TestArgoCdCreate(t *testing.T) {
 		expectedError error
 	}{
 		{
-			testArgoCd:    buildValidArgoCdBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testArgoCd:    buildValidArgoCdBuilder(buildArgoCdTestClientWithScheme()),
 			expectedError: nil,
 		},
 		{
-			testArgoCd:    buildInValidArgoCdBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testArgoCd:    buildInValidArgoCdBuilder(buildArgoCdTestClientWithScheme()),
 			expectedError: fmt.Errorf("argocd 'nsname' cannot be empty"),
 		},
 	}
@@ -226,7 +230,7 @@ func TestArgoCdDelete(t *testing.T) {
 			expectedError: fmt.Errorf("argocd 'nsname' cannot be empty"),
 		},
 		{
-			testArgoCd:    buildValidArgoCdBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testArgoCd:    buildValidArgoCdBuilder(buildArgoCdTestClientWithScheme()),
 			expectedError: nil,
 		},
 	}
@@ -258,7 +262,7 @@ func TestArgoCdUpdate(t *testing.T) {
 			image:         "testimage",
 		},
 		{
-			testArgoCd:    buildValidArgoCdBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testArgoCd:    buildValidArgoCdBuilder(buildArgoCdTestClientWithScheme()),
 			expectedError: fmt.Errorf("argocds.argoproj.io \"argocd\" not found"),
 		},
 	}
@@ -293,19 +297,26 @@ func buildInValidArgoCdBuilder(apiClient *clients.Settings) *Builder {
 
 func buildArgoCdTestClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyArgoCd(),
+		K8sMockObjects:  buildDummyArgoCd(),
+		SchemeAttachers: testSchemes,
+	})
+}
+
+func buildArgoCdTestClientWithScheme() *clients.Settings {
+	return clients.GetTestClients(clients.TestClientParams{
+		SchemeAttachers: testSchemes,
 	})
 }
 
 func buildDummyArgoCd() []runtime.Object {
-	return append([]runtime.Object{}, &argocdoperatorv1alpha1.ArgoCD{
+	return append([]runtime.Object{}, &argocdoperator.ArgoCD{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            defaultArgoCdName,
 			Namespace:       defaultArgoCdNSName,
 			ResourceVersion: "999",
 		},
 
-		Spec: argocdoperatorv1alpha1.ArgoCDSpec{
+		Spec: argocdoperator.ArgoCDSpec{
 			Image: "",
 		},
 	})

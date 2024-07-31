@@ -1,0 +1,416 @@
+---
+# Argo CD operator
+- name: argocd-operator
+  sync: true
+  repo_link: "https://github.com/argoproj-labs/argocd-operator"
+  branch: master
+  remote_api_directory: api/v1beta1
+  local_api_directory: schemes/argocd/argocdoperator
+  replace_imports:
+    - old: '"github.com/argoproj-labs/argocd-operator/common"'
+      new: common "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdoperatorcommon"
+  excludes:
+    - "*_test.go"
+    - "testdata"
+
+- name: argocd-operator
+  sync: true
+  repo_link: "https://github.com/argoproj-labs/argocd-operator"
+  branch: master
+  remote_api_directory: common
+  local_api_directory: schemes/argocd/argocdoperatorcommon
+
+# Argo CD applications
+- name: argo-cd
+  sync: true
+  repo_link: "https://github.com/argoproj/argo-cd"
+  branch: master
+  remote_api_directory: pkg/apis/application
+  local_api_directory: schemes/argocd/argocdtypes
+  replace_imports:
+    - old: synccommon "github.com/argoproj/gitops-engine/pkg/sync/common"
+      new: synccommon "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/sync/common"
+    - old: '"github.com/argoproj/argo-cd/v2/common"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/common"'
+    - old: '"github.com/argoproj/argo-cd/v2/util/security"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/security"'
+    - old: '"github.com/argoproj/argo-cd/v2/util/cert"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/cert"'
+    - old: '"github.com/argoproj/argo-cd/v2/util/git"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/git"'
+    - old: '"github.com/argoproj/argo-cd/v2/util/helm"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/helm"'
+    - old: '"github.com/argoproj/argo-cd/v2/util/collections"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/collections"'
+    - old: '"github.com/argoproj/argo-cd/v2/util/env"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/env"'
+    - old: utilhttp "github.com/argoproj/argo-cd/v2/util/http"
+      new: utilhttp "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/http"
+    - old: '"github.com/argoproj/argo-cd/v2/util/glob"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/glob"'
+    - old: '"github.com/argoproj/gitops-engine/pkg/health"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/health"'
+    - old: '"github.com/argoproj/argo-cd/v2/pkg/apis/application"'
+      new: application "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdtypes"
+  excludes:
+    - "*_test.go"
+    - "*.pb.go"
+    - "*.proto"
+    - "openapi_generated.go"
+
+# Argo CD v2 utils
+- name: argo-cd
+  sync: true
+  repo_link: "https://github.com/argoproj/argo-cd"
+  branch: master
+  remote_api_directory: common
+  local_api_directory: schemes/argocd/argocdv2/common
+  excludes:
+    - "*_test.go"
+
+- name: argo-cd
+  sync: true
+  repo_link: "https://github.com/argoproj/argo-cd"
+  branch: master
+  remote_api_directory: util/cache
+  local_api_directory: schemes/argocd/argocdv2/util/cache
+  replace_imports:
+    - old: '"github.com/argoproj/argo-cd/v2/common"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/common"'
+    - old: '"github.com/argoproj/argo-cd/v2/util/env"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/env"'
+    - old: certutil "github.com/argoproj/argo-cd/v2/util/cert"
+      new: certutil "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/cert"
+    - old: cacheutil "github.com/argoproj/argo-cd/v2/util/cache"
+      new: cacheutil "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/cache"
+    - old: ioutil "github.com/argoproj/argo-cd/v2/util/io"
+      new: ioutil "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/io"
+    - old: appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
+      new: appv1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdtypes/v1alpha1"
+  excludes:
+    - "*_test.go"
+    - "mocks"
+
+- name: argo-cd
+  sync: true
+  repo_link: "https://github.com/argoproj/argo-cd"
+  branch: master
+  remote_api_directory: util/cert
+  local_api_directory: schemes/argocd/argocdv2/util/cert
+  replace_imports:
+    - old: '"github.com/argoproj/argo-cd/v2/common"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/common"'
+  excludes:
+    - "*_test.go"
+
+- name: argo-cd
+  sync: true
+  repo_link: "https://github.com/argoproj/argo-cd"
+  branch: master
+  remote_api_directory: util/collections
+  local_api_directory: schemes/argocd/argocdv2/util/collections
+  excludes:
+    - "*_test.go"
+
+- name: argo-cd
+  sync: true
+  repo_link: "https://github.com/argoproj/argo-cd"
+  branch: master
+  remote_api_directory: util/config
+  local_api_directory: schemes/argocd/argocdv2/util/config
+  excludes:
+    - "*_test.go"
+
+- name: argo-cd
+  sync: true
+  repo_link: "https://github.com/argoproj/argo-cd"
+  branch: master
+  remote_api_directory: util/env
+  local_api_directory: schemes/argocd/argocdv2/util/env
+  replace_imports:
+    - old: timeutil "github.com/argoproj/pkg/time"
+      new: timeutil "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/pkg/time"
+  excludes:
+    - "*_test.go"
+
+- name: argo-cd
+  sync: true
+  repo_link: "https://github.com/argoproj/argo-cd"
+  branch: master
+  remote_api_directory: util/exec
+  local_api_directory: schemes/argocd/argocdv2/util/exec
+  replace_imports:
+    - old: '"github.com/argoproj/gitops-engine/pkg/utils/tracing"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/utils/tracing"'
+    - old: '"github.com/argoproj/argo-cd/v2/util/log"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/log"'
+    - old: argoexec "github.com/argoproj/pkg/exec"
+      new: argoexec "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/pkg/exec"
+  excludes:
+    - "*_test.go"
+
+- name: argo-cd
+  sync: true
+  repo_link: "https://github.com/argoproj/argo-cd"
+  branch: master
+  remote_api_directory: util/git
+  local_api_directory: schemes/argocd/argocdv2/util/git
+  replace_imports:
+    - old: '"github.com/argoproj/argo-cd/v2/common"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/common"'
+    - old: '"github.com/argoproj/argo-cd/v2/util/env"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/env"'
+    - old: '"github.com/argoproj/argo-cd/v2/util/proxy"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/proxy"'
+    - old: argoioutils "github.com/argoproj/argo-cd/v2/util/io"
+      new: argoioutils "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/io"
+    - old: certutil "github.com/argoproj/argo-cd/v2/util/cert"
+      new: certutil "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/cert"
+    - old: executil "github.com/argoproj/argo-cd/v2/util/exec"
+      new: executil "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/exec"
+    - old: argoexec "github.com/argoproj/pkg/exec"
+      new: argoexec "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/pkg/exec"
+    - old: argoio "github.com/argoproj/gitops-engine/pkg/utils/io"
+      new: argoio "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/utils/io"
+    - old: "github.com/argoproj/gitops-engine/pkg/utils/text"
+      new: "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/utils/text"
+  excludes:
+    - "*_test.go"
+    - "testdata"
+    - "mocks"
+
+- name: argo-cd
+  sync: true
+  repo_link: "https://github.com/argoproj/argo-cd"
+  branch: master
+  remote_api_directory: util/glob
+  local_api_directory: schemes/argocd/argocdv2/util/glob
+  excludes:
+    - "*_test.go"
+
+- name: argo-cd
+  sync: true
+  repo_link: "https://github.com/argoproj/argo-cd"
+  branch: master
+  remote_api_directory: util/helm
+  local_api_directory: schemes/argocd/argocdv2/util/helm
+  replace_imports:
+    - old: '"github.com/argoproj/argo-cd/v2/common"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/common"'
+    - old: '"github.com/argoproj/argo-cd/v2/util/proxy"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/proxy"'
+    - old: '"github.com/argoproj/argo-cd/v2/util/cache"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/cache"'
+    - old: '"github.com/argoproj/argo-cd/v2/util/config"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/config"'
+    - old: '"github.com/argoproj/argo-cd/v2/util/io/files"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/io/files"'
+    - old: pathutil "github.com/argoproj/argo-cd/v2/util/io/path"
+      new: pathutil "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/io/path"
+    - old: executil "github.com/argoproj/argo-cd/v2/util/exec"
+      new: executil "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/exec"
+    - old: argoio "github.com/argoproj/argo-cd/v2/util/io"
+      new: argoio "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/io"
+    - old: '"github.com/argoproj/pkg/sync"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/pkg/sync"'
+  excludes:
+    - "*_test.go"
+    - "testdata"
+    - "mocks"
+
+- name: argo-cd
+  sync: true
+  repo_link: "https://github.com/argoproj/argo-cd"
+  branch: master
+  remote_api_directory: util/http
+  local_api_directory: schemes/argocd/argocdv2/util/http
+  replace_imports:
+    - old: '"github.com/argoproj/argo-cd/v2/common"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/common"'
+    - old: '"github.com/argoproj/argo-cd/v2/util/env"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/env"'
+  excludes:
+    - "*_test.go"
+
+- name: argo-cd
+  sync: true
+  repo_link: "https://github.com/argoproj/argo-cd"
+  branch: master
+  remote_api_directory: util/io
+  local_api_directory: schemes/argocd/argocdv2/util/io
+  excludes:
+    - "*_test.go"
+    - "testdata"
+    - "mocks"
+
+- name: argo-cd
+  sync: true
+  repo_link: "https://github.com/argoproj/argo-cd"
+  branch: master
+  remote_api_directory: util/log
+  local_api_directory: schemes/argocd/argocdv2/util/log
+  replace_imports:
+    - old: '"github.com/argoproj/argo-cd/v2/common"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/common"'
+  excludes:
+    - "*_test.go"
+
+- name: argo-cd
+  sync: true
+  repo_link: "https://github.com/argoproj/argo-cd"
+  branch: master
+  remote_api_directory: util/proxy
+  local_api_directory: schemes/argocd/argocdv2/util/proxy
+  excludes:
+    - "*_test.go"
+
+- name: argo-cd
+  sync: true
+  repo_link: "https://github.com/argoproj/argo-cd"
+  branch: master
+  remote_api_directory: util/security
+  local_api_directory: schemes/argocd/argocdv2/util/security
+  replace_imports:
+    - old: '"github.com/argoproj/argo-cd/v2/util/glob"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdv2/util/glob"'
+  excludes:
+    - "*_test.go"
+
+# Argo CD gitops engine
+- name: gitops-engine
+  sync: true
+  repo_link: "https://github.com/argoproj/gitops-engine"
+  branch: master
+  remote_api_directory: pkg/diff
+  local_api_directory: schemes/argocd/gitopsengine/diff
+  replace_imports:
+    - old: '"github.com/argoproj/gitops-engine/internal/kubernetes_vendor/pkg/api/v1/endpoints"'
+      new: endpoints "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/internal/kubernetesendpoints"
+    - old: '"github.com/argoproj/gitops-engine/pkg/diff/internal/fieldmanager"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/diff/internal/fieldmanager"'
+    - old: '"github.com/argoproj/gitops-engine/pkg/sync/resource"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/sync/resource"'
+    - old: jsonutil "github.com/argoproj/gitops-engine/pkg/utils/json"
+      new: jsonutil "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/utils/json"
+    - old: gescheme "github.com/argoproj/gitops-engine/pkg/utils/kube/scheme"
+      new: gescheme "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/utils/kube/scheme"
+  excludes:
+    - "*_test.go"
+    - "testdata"
+    - "mocks"
+
+- name: gitops-engine
+  sync: true
+  repo_link: "https://github.com/argoproj/gitops-engine"
+  branch: master
+  remote_api_directory: pkg/health
+  local_api_directory: schemes/argocd/gitopsengine/health
+  replace_imports:
+    - old: '"github.com/argoproj/gitops-engine/pkg/utils/kube"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/utils/kube"'
+  excludes:
+    - "*_test.go"
+    - "testdata"
+
+- name: gitops-engine
+  sync: true
+  repo_link: "https://github.com/argoproj/gitops-engine"
+  branch: master
+  remote_api_directory: internal/kubernetes_vendor/pkg/api/v1/endpoints
+  local_api_directory: schemes/argocd/gitopsengine/internal/kubernetesendpoints
+  replace_imports:
+    - old: hashutil "github.com/argoproj/gitops-engine/internal/kubernetes_vendor/pkg/util/hash"
+      new: hashutil "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/internal/kuberneteshash"
+
+- name: gitops-engine
+  sync: true
+  repo_link: "https://github.com/argoproj/gitops-engine"
+  branch: master
+  remote_api_directory: internal/kubernetes_vendor/pkg/util/hash
+  local_api_directory: schemes/argocd/gitopsengine/internal/kuberneteshash
+
+- name: gitops-engine
+  sync: true
+  repo_link: "https://github.com/argoproj/gitops-engine"
+  branch: master
+  remote_api_directory: pkg/sync/common
+  local_api_directory: schemes/argocd/gitopsengine/sync/common
+  replace_imports:
+    - old: '"github.com/argoproj/gitops-engine/pkg/utils/kube"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/utils/kube"'
+  excludes:
+    - "*_test.go"
+
+- name: gitops-engine
+  sync: true
+  repo_link: "https://github.com/argoproj/gitops-engine"
+  branch: master
+  remote_api_directory: pkg/sync/resource
+  local_api_directory: schemes/argocd/gitopsengine/sync/resource
+  excludes:
+    - "*_test.go"
+
+- name: gitops-engine
+  sync: true
+  repo_link: "https://github.com/argoproj/gitops-engine"
+  branch: master
+  remote_api_directory: pkg/utils
+  local_api_directory: schemes/argocd/gitopsengine/utils
+  replace_imports:
+    - old: '"github.com/argoproj/gitops-engine/pkg/utils/tracing"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/utils/tracing"'
+    - old: '"github.com/argoproj/gitops-engine/pkg/utils/kube/scheme"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/utils/kube/scheme"'
+    - old: '"github.com/argoproj/gitops-engine/pkg/utils/io"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/utils/io"'
+    - old: '"github.com/argoproj/gitops-engine/pkg/diff"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/diff"'
+    - old: utils "github.com/argoproj/gitops-engine/pkg/utils/io"
+      new: utils "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/utils/io"
+  excludes:
+    - "*_test.go"
+    - "testdata"
+    - "kubetest"
+    - "testing"
+    - "tracer_testing"
+
+# Argo CD pkg
+- name: argo-pkg
+  sync: true
+  repo_link: "https://github.com/argoproj/pkg"
+  branch: master
+  remote_api_directory: exec
+  local_api_directory: schemes/argocd/pkg/exec
+  replace_imports:
+    - old: '"github.com/argoproj/pkg/rand"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/pkg/rand"'
+  excludes:
+    - "*_test.go"
+
+- name: argo-pkg
+  sync: true
+  repo_link: "https://github.com/argoproj/pkg"
+  branch: master
+  remote_api_directory: rand
+  local_api_directory: schemes/argocd/pkg/rand
+  excludes:
+    - "*_test.go"
+
+- name: argo-pkg
+  sync: true
+  repo_link: "https://github.com/argoproj/pkg"
+  branch: master
+  remote_api_directory: sync
+  local_api_directory: schemes/argocd/pkg/sync
+  excludes:
+    - "*_test.go"
+
+- name: argo-pkg
+  sync: true
+  repo_link: "https://github.com/argoproj/pkg"
+  branch: master
+  remote_api_directory: time
+  local_api_directory: schemes/argocd/pkg/time
+  excludes:
+    - "*_test.go"
+...

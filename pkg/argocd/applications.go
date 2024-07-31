@@ -5,31 +5,23 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
-	"github.com/openshift-kni/eco-goinfra/pkg/argocd/argocdtypes"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
+	appsv1alpha1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdtypes/v1alpha1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-)
-
-const (
-	// APIGroup const definition.
-	APIGroup = "argoproj.io"
-	// APIVersion const definition.
-	APIVersion = "v1alpha1"
+	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // ApplicationBuilder provides a struct for an application object from the cluster and a definition.
 type ApplicationBuilder struct {
 	// application Definition, used to create the application object.
-	Definition *argocdtypes.Application
+	Definition *appsv1alpha1.Application
 	// created application object.
-	Object *argocdtypes.Application
+	Object *appsv1alpha1.Application
 	// api client to interact with the cluster.
-	apiClient *clients.Settings
+	apiClient runtimeClient.Client
 	// used to store latest error message upon defining or mutating application definition.
 	errorMsg string
 }
@@ -44,9 +36,16 @@ func PullApplication(apiClient *clients.Settings, name, nsname string) (*Applica
 		return nil, fmt.Errorf("application 'apiClient' cannot be empty")
 	}
 
+	err := apiClient.AttachScheme(appsv1alpha1.AddToScheme)
+	if err != nil {
+		glog.V(100).Info("Failed to add Argo CD applications scheme to client schemes")
+
+		return nil, fmt.Errorf("failed to add argo cd applications scheme to client schemes")
+	}
+
 	builder := ApplicationBuilder{
-		apiClient: apiClient,
-		Definition: &argocdtypes.Application{
+		apiClient: apiClient.Client,
+		Definition: &appsv1alpha1.Application{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: nsname,
@@ -91,7 +90,7 @@ func (builder *ApplicationBuilder) Exists() bool {
 }
 
 // Get returns argocd application object if found.
-func (builder *ApplicationBuilder) Get() (*argocdtypes.Application, error) {
+func (builder *ApplicationBuilder) Get() (*appsv1alpha1.Application, error) {
 	if valid, err := builder.validate(); !valid {
 		return nil, err
 	}
@@ -99,18 +98,20 @@ func (builder *ApplicationBuilder) Get() (*argocdtypes.Application, error) {
 	glog.V(100).Infof("Getting argocd app %s in namespace %s",
 		builder.Definition.Name, builder.Definition.Namespace)
 
-	unsObject, err := builder.apiClient.Resource(
-		GetApplicationsGVR()).Namespace(builder.Definition.Namespace).Get(
-		context.TODO(), builder.Definition.Name, metav1.GetOptions{})
+	app := &appsv1alpha1.Application{}
+	err := builder.apiClient.Get(context.TODO(),
+		runtimeClient.ObjectKey{Name: builder.Definition.Name, Namespace: builder.Definition.Namespace},
+		app)
 
 	if err != nil {
 		glog.V(100).Infof(
-			"Failed to Get Application object in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
+			"Failed to Get Application object %s in namespace %s",
+			builder.Definition.Name, builder.Definition.Name, builder.Definition.Namespace)
 
 		return nil, err
 	}
 
-	return builder.convertToStructured(unsObject)
+	return app, nil
 }
 
 // Update renovates the existing argocd application object with the argocd application definition in builder.
@@ -122,18 +123,14 @@ func (builder *ApplicationBuilder) Update(force bool) (*ApplicationBuilder, erro
 	glog.V(100).Infof("Updating the argocd application object %s in namespace %s", builder.Definition.Name,
 		builder.Definition.Namespace)
 
-	unstructuredApplication, err := runtime.DefaultUnstructuredConverter.ToUnstructured(builder.Definition)
+	if !builder.Exists() {
+		glog.V(100).Infof("Application %s does not exist in namespace %s",
+			builder.Definition.Name, builder.Definition.Namespace)
 
-	if err != nil {
-		glog.V(100).Infof("Failed to convert structured Application to unstructured object")
-
-		return nil, err
+		return nil, fmt.Errorf("cannot update non-existent application")
 	}
 
-	_, err = builder.apiClient.Resource(
-		GetApplicationsGVR()).Namespace(builder.Definition.Namespace).Update(
-		context.TODO(), &unstructured.Unstructured{Object: unstructuredApplication}, metav1.UpdateOptions{})
-
+	err := builder.apiClient.Update(context.TODO(), builder.Definition)
 	if err != nil {
 		if force {
 			glog.V(100).Infof(
@@ -176,10 +173,7 @@ func (builder *ApplicationBuilder) Delete() (*ApplicationBuilder, error) {
 		return builder, nil
 	}
 
-	err := builder.apiClient.Resource(
-		GetApplicationsGVR()).Namespace(builder.Definition.Namespace).Delete(
-		context.TODO(), builder.Definition.Name, metav1.DeleteOptions{})
-
+	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
 	if err != nil {
 		return builder, fmt.Errorf("can not delete argocd application: %w", err)
 	}
@@ -200,28 +194,9 @@ func (builder *ApplicationBuilder) Create() (*ApplicationBuilder, error) {
 
 	var err error
 	if !builder.Exists() {
-		unstructuredApplication, err := runtime.DefaultUnstructuredConverter.ToUnstructured(builder.Definition)
-
-		if err != nil {
-			glog.V(100).Infof("Failed to convert structured Application to unstructured object")
-
-			return nil, err
-		}
-
-		unsObject, err := builder.apiClient.Resource(
-			GetApplicationsGVR()).Namespace(builder.Definition.Namespace).Create(
-			context.TODO(), &unstructured.Unstructured{Object: unstructuredApplication}, metav1.CreateOptions{})
-
-		if err != nil {
-			glog.V(100).Infof("Failed to create Application")
-
-			return nil, err
-		}
-
-		builder.Object, err = builder.convertToStructured(unsObject)
-
-		if err != nil {
-			return nil, err
+		err = builder.apiClient.Create(context.TODO(), builder.Definition)
+		if err == nil {
+			builder.Object = builder.Definition
 		}
 	}
 
@@ -272,7 +247,9 @@ func (builder *ApplicationBuilder) WithGitDetails(gitRepo, gitBranch, gitPath st
 // GetApplicationsGVR returns applications GroupVersionResource which could be used for Clean function.
 func GetApplicationsGVR() schema.GroupVersionResource {
 	return schema.GroupVersionResource{
-		Group: APIGroup, Version: APIVersion, Resource: "applications",
+		Group:    appsv1alpha1.SchemeGroupVersion.Group,
+		Version:  appsv1alpha1.SchemeGroupVersion.Version,
+		Resource: "applications",
 	}
 }
 
@@ -306,20 +283,4 @@ func (builder *ApplicationBuilder) validate() (bool, error) {
 	}
 
 	return true, nil
-}
-
-func (builder *ApplicationBuilder) convertToStructured(
-	unsObject *unstructured.Unstructured) (*argocdtypes.Application, error) {
-	application := &argocdtypes.Application{}
-
-	err := runtime.DefaultUnstructuredConverter.FromUnstructured(unsObject.Object, application)
-	if err != nil {
-		glog.V(100).Infof(
-			"Failed to convert from unstructured to Application object in namespace %s",
-			builder.Definition.Name, builder.Definition.Namespace)
-
-		return nil, err
-	}
-
-	return application, err
 }

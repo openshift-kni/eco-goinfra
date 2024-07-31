@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/argocd/argocdtypes"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	appsv1alpha1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdtypes/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -13,26 +13,14 @@ import (
 )
 
 var (
-	applicationGVK = schema.GroupVersionKind{
-		Group:   APIGroup,
-		Version: APIVersion,
-		Kind:    "Application",
+	appsTestSchemes = []clients.SchemeAttacher{
+		appsv1alpha1.AddToScheme,
 	}
 	defaultApplicationName   = "application-name"
 	defaultApplicationNsName = "application-ns-name"
 )
 
 func TestPullApplication(t *testing.T) {
-	generateApplication := func(name, namespace string) *argocdtypes.Application {
-		return &argocdtypes.Application{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: namespace,
-			},
-			Spec: argocdtypes.ApplicationSpec{},
-		}
-	}
-
 	testCases := []struct {
 		name                string
 		namespace           string
@@ -84,15 +72,15 @@ func TestPullApplication(t *testing.T) {
 			testSettings   *clients.Settings
 		)
 
-		testApplication := generateApplication(testCase.name, testCase.namespace)
+		testApplication := buildDummyApplication(testCase.name, testCase.namespace)
 		if testCase.addToRuntimeObjects {
 			runtimeObjects = append(runtimeObjects, testApplication)
 		}
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
-				GVK:            []schema.GroupVersionKind{applicationGVK},
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: appsTestSchemes,
 			})
 		}
 
@@ -116,7 +104,7 @@ func TestApplicationExist(t *testing.T) {
 			expectedStatus:         true,
 		},
 		{
-			testApplicationBuilder: buildValidApplicationBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testApplicationBuilder: buildValidApplicationBuilder(buildApplicationTestClientWithScheme()),
 			expectedStatus:         false,
 		},
 	}
@@ -137,7 +125,7 @@ func TestApplicationGet(t *testing.T) {
 			expectedError:          nil,
 		},
 		{
-			testApplicationBuilder: buildValidApplicationBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testApplicationBuilder: buildValidApplicationBuilder(buildApplicationTestClientWithScheme()),
 			expectedError:          fmt.Errorf("applications.argoproj.io \"application-name\" not found"),
 		},
 	}
@@ -157,31 +145,58 @@ func TestApplicationGet(t *testing.T) {
 
 func TestApplicationUpdate(t *testing.T) {
 	testCases := []struct {
-		testApplicationBuilder *ApplicationBuilder
-		expectedError          error
+		alreadyExists     bool
+		force             bool
+		expectedErrorText string
 	}{
 		{
-			testApplicationBuilder: buildValidApplicationBuilder(buildApplicationTestClientWithDummyObject()),
-			expectedError:          nil,
+			alreadyExists:     false,
+			force:             false,
+			expectedErrorText: "cannot update non-existent application",
 		},
 		{
-			testApplicationBuilder: buildValidApplicationBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:          fmt.Errorf("applications.argoproj.io \"application-name\" not found"),
+			alreadyExists:     true,
+			force:             false,
+			expectedErrorText: "",
+		},
+		{
+			alreadyExists:     false,
+			force:             true,
+			expectedErrorText: "cannot update non-existent application",
+		},
+		{
+			alreadyExists:     true,
+			force:             true,
+			expectedErrorText: "",
 		},
 	}
 
 	for _, testCase := range testCases {
-		assert.Equal(t, testCase.testApplicationBuilder.Definition.Spec.Project, "")
-		testCase.testApplicationBuilder.Definition.Spec.Project = "test"
-		application, err := testCase.testApplicationBuilder.Update(false)
+		kacBuilder := buildValidApplicationBuilder(buildApplicationTestClientWithScheme())
 
-		if testCase.expectedError != nil {
-			assert.Equal(t, testCase.expectedError.Error(), err.Error())
-		} else {
-			assert.Equal(t, testCase.expectedError, err)
+		// Create the builder rather than just adding it to the client so that the proper metadata is added and
+		// the update will not fail.
+		if testCase.alreadyExists {
+			var err error
+			kacBuilder, err = kacBuilder.Create()
+
+			assert.Nil(t, err)
+			assert.True(t, kacBuilder.Exists())
 		}
 
-		assert.Equal(t, application.Object.Spec.Project, "test")
+		assert.NotNil(t, kacBuilder.Definition)
+		assert.Empty(t, kacBuilder.Definition.Spec.Project)
+
+		kacBuilder.Definition.Spec.Project = "test"
+
+		kacBuilder, err := kacBuilder.Update(testCase.force)
+
+		if testCase.expectedErrorText == "" {
+			assert.Nil(t, err)
+			assert.Equal(t, "test", kacBuilder.Object.Spec.Project)
+		} else {
+			assert.EqualError(t, err, testCase.expectedErrorText)
+		}
 	}
 }
 
@@ -195,7 +210,7 @@ func TestApplicationDelete(t *testing.T) {
 			expectedError:          nil,
 		},
 		{
-			testApplicationBuilder: buildValidApplicationBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testApplicationBuilder: buildValidApplicationBuilder(buildApplicationTestClientWithScheme()),
 			expectedError:          nil,
 		},
 	}
@@ -223,7 +238,7 @@ func TestApplicationCreate(t *testing.T) {
 			expectedError:          nil,
 		},
 		{
-			testApplicationBuilder: buildValidApplicationBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testApplicationBuilder: buildValidApplicationBuilder(buildApplicationTestClientWithScheme()),
 			expectedError:          nil,
 		},
 	}
@@ -299,44 +314,52 @@ func TestApplicationWithGitDetails(t *testing.T) {
 func TestApplicationGVR(t *testing.T) {
 	assert.Equal(t, GetApplicationsGVR(),
 		schema.GroupVersionResource{
-			Group: APIGroup, Version: APIVersion, Resource: "applications",
+			Group:    appsv1alpha1.SchemeGroupVersion.Group,
+			Version:  appsv1alpha1.SchemeGroupVersion.Version,
+			Resource: "applications",
 		})
 }
 
 func buildValidApplicationBuilder(apiClient *clients.Settings) *ApplicationBuilder {
 	return &ApplicationBuilder{
-		apiClient:  apiClient,
+		apiClient:  apiClient.Client,
 		Definition: buildDummyApplication(defaultApplicationName, defaultApplicationNsName),
 	}
 }
 
 func buildApplicationTestClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyApplicationRuntime(),
-		GVK:            []schema.GroupVersionKind{applicationGVK},
+		K8sMockObjects:  buildDummyApplicationRuntime(),
+		SchemeAttachers: appsTestSchemes,
+	})
+}
+
+func buildApplicationTestClientWithScheme() *clients.Settings {
+	return clients.GetTestClients(clients.TestClientParams{
+		SchemeAttachers: appsTestSchemes,
 	})
 }
 
 func buildDummyApplicationRuntime() []runtime.Object {
-	return append([]runtime.Object{}, &argocdtypes.Application{
+	return append([]runtime.Object{}, &appsv1alpha1.Application{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      defaultApplicationName,
 			Namespace: defaultApplicationNsName,
 		},
 
-		Spec: argocdtypes.ApplicationSpec{},
+		Spec: appsv1alpha1.ApplicationSpec{},
 	})
 }
 
-func buildDummyApplication(name, namespace string) *argocdtypes.Application {
-	return &argocdtypes.Application{
+func buildDummyApplication(name, namespace string) *appsv1alpha1.Application {
+	return &appsv1alpha1.Application{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 		},
 
-		Spec: argocdtypes.ApplicationSpec{
-			Source: &argocdtypes.ApplicationSource{},
+		Spec: appsv1alpha1.ApplicationSpec{
+			Source: &appsv1alpha1.ApplicationSource{},
 		},
 	}
 }

@@ -5,14 +5,12 @@ import (
 	"log"
 	"os"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/argocd/argocdtypes"
 	"github.com/openshift-kni/eco-goinfra/pkg/oadp/oadptypes"
 
 	"github.com/golang/glog"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 
-	argocdOperatorv1alpha1 "github.com/argoproj-labs/argocd-operator/api/v1alpha1"
 	lokiv1 "github.com/grafana/loki/operator/apis/loki/v1"
 	kedav1alpha1 "github.com/kedacore/keda-olm-operator/apis/keda/v1alpha1"
 	kedav2v1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
@@ -356,10 +354,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
-	if err := argocdOperatorv1alpha1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
 	if err := policiesv1.AddToScheme(crScheme); err != nil {
 		return err
 	}
@@ -605,11 +599,6 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *monv1.ServiceMonitor:
 			genericClientObjects = append(genericClientObjects, v)
 		case *oadptypes.DataProtectionApplication:
-			genericClientObjects = append(genericClientObjects, v)
-		// ArgoCD Client Objects
-		case *argocdOperatorv1alpha1.ArgoCD:
-			genericClientObjects = append(genericClientObjects, v)
-		case *argocdtypes.Application:
 			genericClientObjects = append(genericClientObjects, v)
 		// LCA Client Objects
 		case *lcav1.ImageBasedUpgrade:
