@@ -233,7 +233,7 @@ func WaitForAllPodsInNamespacesHealthy(
 			continue
 		}
 
-		err := podObj.WaitUntilHealthy(timeout, checkReadiness, includeSucceeded, ignoreFailedPods)
+		err := podObj.WaitUntilHealthy(timeout, includeSucceeded, checkReadiness, ignoreFailedPods)
 		if err != nil {
 			glog.V(100).Infof("Failed to wait for all pods to be healthy due to %s", err.Error())
 
