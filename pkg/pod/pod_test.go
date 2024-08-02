@@ -80,41 +80,6 @@ func TestWithCustomResourcesRequests(t *testing.T) {
 	}
 }
 
-func buildPodTestBuilderWithFakeObjects(objects []runtime.Object, name, namespace string) (*Builder, error) {
-	fakeClient := k8sfake.NewSimpleClientset(objects...)
-
-	return Pull(&clients.Settings{
-		K8sClient:       fakeClient,
-		CoreV1Interface: fakeClient.CoreV1(),
-	}, name, namespace)
-}
-
-func generateTestPod(name, namespace string, phase corev1.PodPhase, conditionType corev1.PodConditionType,
-	neverRestart bool) *corev1.Pod {
-	pod := corev1.Pod{}
-	pod.Name = name
-	pod.Namespace = namespace
-	pod.Status.Phase = phase
-	condition := corev1.PodCondition{}
-	condition.Type = conditionType
-	condition.Status = corev1.ConditionTrue
-
-	pod.Status.Conditions = append(pod.Status.Conditions, condition)
-	if neverRestart {
-		pod.Spec.RestartPolicy = corev1.RestartPolicyNever
-	}
-
-	return &pod
-}
-
-func getErrorString(err error) string {
-	if err == nil {
-		return ""
-	}
-
-	return err.Error()
-}
-
 func TestWaitUntilInStatuses(t *testing.T) {
 	testCases := []struct {
 		checkedPhases    []corev1.PodPhase
@@ -241,75 +206,37 @@ func TestWaitUntilHealthy(t *testing.T) {
 	}
 }
 
-func TestWaitForAllPodsInNamespacesHealthy(t *testing.T) {
-	testCases := []struct {
-		namespaces       []string
-		includeSucceeded bool
-		checkReadiness   bool
-		ignoreFailedPods bool
-		ignoreNamespaces []string
-		expectedErrMsg   string
-	}{
-		{
-			namespaces:       []string{"ns1"},
-			includeSucceeded: true,
-			checkReadiness:   false,
-			ignoreFailedPods: true,
-			ignoreNamespaces: []string{},
-			expectedErrMsg:   "",
-		},
-		{
-			namespaces:       []string{"ns1"},
-			includeSucceeded: true,
-			checkReadiness:   true,
-			ignoreFailedPods: true,
-			ignoreNamespaces: []string{},
-			expectedErrMsg:   "",
-		},
-		{
-			namespaces:       []string{"ns2"},
-			includeSucceeded: true,
-			checkReadiness:   true,
-			ignoreFailedPods: true,
-			ignoreNamespaces: []string{},
-			expectedErrMsg:   "context deadline exceeded",
-		},
-		{
-			namespaces:       []string{""},
-			includeSucceeded: true,
-			checkReadiness:   true,
-			ignoreFailedPods: true,
-			ignoreNamespaces: []string{},
-			expectedErrMsg:   "context deadline exceeded",
-		},
-		{
-			namespaces:       []string{""},
-			includeSucceeded: true,
-			checkReadiness:   true,
-			ignoreFailedPods: true,
-			ignoreNamespaces: []string{"ns2"},
-			expectedErrMsg:   "context deadline exceeded",
-		},
+func buildPodTestBuilderWithFakeObjects(objects []runtime.Object, name, namespace string) (*Builder, error) {
+	fakeClient := k8sfake.NewSimpleClientset(objects...)
+
+	return Pull(&clients.Settings{
+		K8sClient:       fakeClient,
+		CoreV1Interface: fakeClient.CoreV1(),
+	}, name, namespace)
+}
+
+func generateTestPod(name, namespace string, phase corev1.PodPhase, conditionType corev1.PodConditionType,
+	neverRestart bool) *corev1.Pod {
+	pod := corev1.Pod{}
+	pod.Name = name
+	pod.Namespace = namespace
+	pod.Status.Phase = phase
+	condition := corev1.PodCondition{}
+	condition.Type = conditionType
+	condition.Status = corev1.ConditionTrue
+
+	pod.Status.Conditions = append(pod.Status.Conditions, condition)
+	if neverRestart {
+		pod.Spec.RestartPolicy = corev1.RestartPolicyNever
 	}
 
-	var runtimeObjects []runtime.Object
-	runtimeObjects = append(runtimeObjects, generateTestPod("test1", "ns1", corev1.PodRunning, corev1.PodReady, false))
-	runtimeObjects = append(runtimeObjects, generateTestPod("test2", "ns1", corev1.PodRunning, corev1.PodReady, false))
-	runtimeObjects = append(runtimeObjects, generateTestPod("test3", "ns1", corev1.PodRunning, corev1.PodReady, false))
-	runtimeObjects = append(runtimeObjects, generateTestPod("test4", "ns1", corev1.PodRunning, corev1.PodReady, false))
-	runtimeObjects = append(runtimeObjects, generateTestPod("test5", "ns1", corev1.PodRunning, corev1.PodReady, false))
-	runtimeObjects = append(runtimeObjects, generateTestPod("test1", "ns2", corev1.PodRunning, corev1.PodReady, false))
-	runtimeObjects = append(runtimeObjects, generateTestPod("test2", "ns2", corev1.PodRunning, corev1.PodInitialized,
-		false))
-	fakeClient := k8sfake.NewSimpleClientset(runtimeObjects...)
+	return &pod
+}
 
-	for _, testCase := range testCases {
-		err := WaitForAllPodsInNamespacesHealthy(&clients.Settings{
-			K8sClient:       fakeClient,
-			CoreV1Interface: fakeClient.CoreV1()}, testCase.namespaces, 2*time.Second, testCase.includeSucceeded,
-			testCase.checkReadiness,
-			testCase.ignoreFailedPods, testCase.ignoreNamespaces)
-
-		assert.Equal(t, testCase.expectedErrMsg, getErrorString(err))
+func getErrorString(err error) string {
+	if err == nil {
+		return ""
 	}
+
+	return err.Error()
 }

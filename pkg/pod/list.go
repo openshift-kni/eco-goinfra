@@ -13,8 +13,13 @@ import (
 )
 
 // List returns pod inventory in the given namespace.
-// If nsname is empty, returns pods for all namespaces.
 func List(apiClient *clients.Settings, nsname string, options ...metav1.ListOptions) ([]*Builder, error) {
+	if nsname == "" {
+		glog.V(100).Infof("pod 'nsname' parameter can not be empty")
+
+		return nil, fmt.Errorf("failed to list pods, 'nsname' parameter is empty")
+	}
+
 	logMessage := fmt.Sprintf("Listing pods in the nsname %s", nsname)
 	passedOptions := metav1.ListOptions{}
 
@@ -218,14 +223,25 @@ func WaitForAllPodsInNamespacesHealthy(
 
 	var podList []*Builder
 
-	for _, ns := range nsNames {
-		podListForNs, err := List(apiClient, ns, passedOptions)
+	if len(nsNames) == 0 {
+		var err error
+		podList, err = ListInAllNamespaces(apiClient, passedOptions)
+
 		if err != nil {
 			glog.V(100).Infof("Failed to list all pods due to %s", err.Error())
 
 			return err
 		}
-		podList = append(podList, podListForNs...)
+	} else {
+		for _, ns := range nsNames {
+			podListForNs, err := List(apiClient, ns, passedOptions)
+			if err != nil {
+				glog.V(100).Infof("Failed to list all pods due to %s", err.Error())
+
+				return err
+			}
+			podList = append(podList, podListForNs...)
+		}
 	}
 
 	for _, podObj := range podList {

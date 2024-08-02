@@ -301,7 +301,7 @@ func (builder *Builder) WaitUntilHealthy(timeout time.Duration, includeSucceeded
 		builder.Object.Status.Phase == corev1.PodFailed &&
 		builder.Object.Spec.RestartPolicy == corev1.RestartPolicyNever {
 		glog.V(100).Infof("Ignore failed pod with restart policy never. Message: %s",
-			statusesChecked, builder.Object.Status.Message)
+			builder.Object.Status.Message)
 
 		return nil
 	}
