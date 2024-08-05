@@ -36,7 +36,7 @@ type AdditionalOptions func(builder *KubeletConfigBuilder) (*KubeletConfigBuilde
 func NewKubeletConfigBuilder(apiClient *clients.Settings, name string) *KubeletConfigBuilder {
 	glog.V(100).Infof("Initializing new KubeletConfigBuilder structure with the name: %s", name)
 
-	builder := KubeletConfigBuilder{
+	builder := &KubeletConfigBuilder{
 		apiClient: apiClient,
 		Definition: &mcv1.KubeletConfig{
 			ObjectMeta: metav1.ObjectMeta{
@@ -49,16 +49,18 @@ func NewKubeletConfigBuilder(apiClient *clients.Settings, name string) *KubeletC
 		glog.V(100).Infof("The name of the KubeletConfig is empty")
 
 		builder.errorMsg = "KubeletConfig 'name' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // PullKubeletConfig fetches existing kubeletconfig from cluster.
 func PullKubeletConfig(apiClient *clients.Settings, name string) (*KubeletConfigBuilder, error) {
 	glog.V(100).Infof("Pulling existing kubeletconfig name %s from cluster", name)
 
-	builder := KubeletConfigBuilder{
+	builder := &KubeletConfigBuilder{
 		apiClient: apiClient,
 		Definition: &mcv1.KubeletConfig{
 			ObjectMeta: metav1.ObjectMeta{
@@ -70,7 +72,7 @@ func PullKubeletConfig(apiClient *clients.Settings, name string) (*KubeletConfig
 	if name == "" {
 		glog.V(100).Infof("The name of the kubeletconfig is empty")
 
-		builder.errorMsg = "kubeletconfig 'name' cannot be empty"
+		return nil, fmt.Errorf("kubeletconfig 'name' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -79,7 +81,7 @@ func PullKubeletConfig(apiClient *clients.Settings, name string) (*KubeletConfig
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Create generates a kubeletconfig in the cluster and stores the created object in struct.
@@ -180,15 +182,15 @@ func (builder *KubeletConfigBuilder) WithSystemReserved(cpu, memory string) *Kub
 		glog.V(100).Infof("The cpu cannot be empty")
 
 		builder.errorMsg = "'cpu' cannot be empty"
+
+		return builder
 	}
 
 	if memory == "" {
 		glog.V(100).Infof("The memory cannot be empty")
 
 		builder.errorMsg = "'memory' cannot be empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -245,13 +247,13 @@ func (builder *KubeletConfigBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

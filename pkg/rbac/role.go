@@ -34,7 +34,7 @@ func NewRoleBuilder(apiClient *clients.Settings, name, nsname string, rule v1.Po
 		"Initializing new role structure with the following params: "+
 			"name: %s, namespace: %s, rule %v", name, nsname, rule)
 
-	builder := RoleBuilder{
+	builder := &RoleBuilder{
 		apiClient: apiClient,
 		Definition: &v1.Role{
 			ObjectMeta: metav1.ObjectMeta{
@@ -48,17 +48,21 @@ func NewRoleBuilder(apiClient *clients.Settings, name, nsname string, rule v1.Po
 		glog.V(100).Infof("The name of the role is empty")
 
 		builder.errorMsg = "Role 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the role is empty")
 
 		builder.errorMsg = "Role 'nsname' cannot be empty"
+
+		return builder
 	}
 
 	builder.WithRules([]v1.PolicyRule{rule})
 
-	return &builder
+	return builder
 }
 
 // WithRules adds the specified PolicyRule to the Role.
@@ -74,9 +78,7 @@ func (builder *RoleBuilder) WithRules(rules []v1.PolicyRule) *RoleBuilder {
 		glog.V(100).Infof("The list of rules is empty")
 
 		builder.errorMsg = "cannot create role with empty rule"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -85,21 +87,23 @@ func (builder *RoleBuilder) WithRules(rules []v1.PolicyRule) *RoleBuilder {
 			glog.V(100).Infof("The role has no verbs")
 
 			builder.errorMsg = "role must contain at least one Verb"
+
+			return builder
 		}
 
 		if len(rule.Resources) == 0 {
 			glog.V(100).Infof("The role has no resources")
 
 			builder.errorMsg = "role must contain at least one Resource"
+
+			return builder
 		}
 
 		if len(rule.APIGroups) == 0 {
 			glog.V(100).Infof("The role has no apigroups")
 
 			builder.errorMsg = "role must contain at least one APIGroup"
-		}
 
-		if builder.errorMsg != "" {
 			return builder
 		}
 	}
@@ -143,7 +147,7 @@ func (builder *RoleBuilder) WithOptions(
 func PullRole(apiClient *clients.Settings, name, nsname string) (*RoleBuilder, error) {
 	glog.V(100).Infof("Pulling existing role name %s under namespace %s from cluster", name, nsname)
 
-	builder := RoleBuilder{
+	builder := &RoleBuilder{
 		apiClient: apiClient,
 		Definition: &v1.Role{
 			ObjectMeta: metav1.ObjectMeta{
@@ -156,13 +160,13 @@ func PullRole(apiClient *clients.Settings, name, nsname string) (*RoleBuilder, e
 	if name == "" {
 		glog.V(100).Infof("The name of the role is empty")
 
-		builder.errorMsg = "role 'name' cannot be empty"
+		return nil, fmt.Errorf("role 'name' cannot be empty")
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the role is empty")
 
-		builder.errorMsg = "role 'namespace' cannot be empty"
+		return nil, fmt.Errorf("role 'nsname' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -171,7 +175,7 @@ func PullRole(apiClient *clients.Settings, name, nsname string) (*RoleBuilder, e
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Create makes a Role in the cluster and stores the created object in struct.
@@ -214,7 +218,7 @@ func (builder *RoleBuilder) Delete() error {
 
 	builder.Object = nil
 
-	return err
+	return nil
 }
 
 // Update modifies the existing Role object with role definition in builder.
@@ -263,13 +267,13 @@ func (builder *RoleBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

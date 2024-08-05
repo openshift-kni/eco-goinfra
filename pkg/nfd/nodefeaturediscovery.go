@@ -38,7 +38,7 @@ func NewBuilderFromObjectString(apiClient *clients.Settings, almExample string) 
 	glog.V(100).Infof(
 		"Initializing Builder definition to NodeFeatureDiscovery object")
 
-	builder := Builder{
+	builder := &Builder{
 		apiClient:  apiClient,
 		Definition: nodeFeatureDiscovery,
 	}
@@ -49,15 +49,19 @@ func NewBuilderFromObjectString(apiClient *clients.Settings, almExample string) 
 
 		builder.errorMsg = fmt.Sprintf("Error initializing NodeFeatureDiscovery from alm-examples: %s",
 			err.Error())
+
+		return builder
 	}
 
 	if builder.Definition == nil {
 		glog.V(100).Infof("The NodeFeatureDiscovery object definition is nil")
 
 		builder.errorMsg = "NodeFeatureDiscovery definition is nil"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // Get returns NodeFeatureDiscovery object if found.
@@ -82,14 +86,14 @@ func (builder *Builder) Get() (*nfdv1.NodeFeatureDiscovery, error) {
 		return nil, err
 	}
 
-	return nodeFeatureDiscovery, err
+	return nodeFeatureDiscovery, nil
 }
 
 // Pull loads an existing NodeFeatureDiscovery into Builder struct.
 func Pull(apiClient *clients.Settings, name, namespace string) (*Builder, error) {
 	glog.V(100).Infof("Pulling existing nodeFeatureDiscovery name: %s in namespace: %s", name, namespace)
 
-	builder := Builder{
+	builder := &Builder{
 		apiClient: apiClient,
 		Definition: &nfdv1.NodeFeatureDiscovery{
 			ObjectMeta: metav1.ObjectMeta{
@@ -102,13 +106,13 @@ func Pull(apiClient *clients.Settings, name, namespace string) (*Builder, error)
 	if name == "" {
 		glog.V(100).Infof("NodeFeatureDiscovery name is empty")
 
-		builder.errorMsg = "NodeFeatureDiscovery 'name' cannot be empty"
+		return nil, fmt.Errorf("NodeFeatureDiscovery 'name' cannot be empty")
 	}
 
 	if namespace == "" {
 		glog.V(100).Infof("NodeFeatureDiscovery namespace is empty")
 
-		builder.errorMsg = "NodeFeatureDiscovery 'namespace' cannot be empty"
+		return nil, fmt.Errorf("NodeFeatureDiscovery 'namespace' cannot be empty")
 	}
 
 	if !builder.Exists() {
@@ -117,7 +121,7 @@ func Pull(apiClient *clients.Settings, name, namespace string) (*Builder, error)
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Exists checks whether the given NodeFeatureDiscovery exists.
@@ -214,7 +218,7 @@ func (builder *Builder) Update(force bool) (*Builder, error) {
 		}
 	}
 
-	return builder, err
+	return builder, nil
 }
 
 // getNodeFeatureDiscoveryFromAlmExample extracts the NodeFeatureDiscovery from the alm-examples block.

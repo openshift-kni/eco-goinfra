@@ -32,7 +32,7 @@ func PullValidatingConfiguration(apiClient *clients.Settings, name string) (
 	*ValidatingConfigurationBuilder, error) {
 	glog.V(100).Infof("Pulling existing ValidatingWebhookConfiguration name %s from cluster", name)
 
-	builder := ValidatingConfigurationBuilder{
+	builder := &ValidatingConfigurationBuilder{
 		apiClient: apiClient,
 		Definition: &admregv1.ValidatingWebhookConfiguration{
 			ObjectMeta: metav1.ObjectMeta{
@@ -45,6 +45,8 @@ func PullValidatingConfiguration(apiClient *clients.Settings, name string) (
 		glog.V(100).Infof("The name of the ValidatingWebhookConfiguration is empty")
 
 		builder.errorMsg = "ValidatingWebhookConfiguration 'name' cannot be empty"
+
+		return builder, nil
 	}
 
 	if !builder.Exists() {
@@ -53,7 +55,7 @@ func PullValidatingConfiguration(apiClient *clients.Settings, name string) (
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Exists checks whether the given ValidatingWebhookConfiguration object exists in the cluster.
@@ -142,7 +144,7 @@ func (builder *ValidatingConfigurationBuilder) validate() (bool, error) {
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

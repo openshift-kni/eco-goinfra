@@ -36,7 +36,7 @@ func NewConfigBuilder(apiClient *clients.Settings, name string) *ConfigBuilder {
 		return nil
 	}
 
-	builder := ConfigBuilder{
+	builder := &ConfigBuilder{
 		apiClient: apiClient.Client,
 		Definition: &hiveV1.HiveConfig{
 			ObjectMeta: metav1.ObjectMeta{
@@ -50,9 +50,11 @@ func NewConfigBuilder(apiClient *clients.Settings, name string) *ConfigBuilder {
 		glog.V(100).Infof("The name of the HiveConfig is empty")
 
 		builder.errorMsg = "hiveconfig 'name' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // PullConfig loads an existing HiveConfig into ConfigBuilder struct.
@@ -205,13 +207,13 @@ func (builder *ConfigBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

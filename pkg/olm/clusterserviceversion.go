@@ -38,7 +38,7 @@ func PullClusterServiceVersion(apiClient *clients.Settings, name, namespace stri
 		return nil, fmt.Errorf("clusterserviceversion 'apiClient' cannot be empty")
 	}
 
-	builder := ClusterServiceVersionBuilder{
+	builder := &ClusterServiceVersionBuilder{
 		apiClient: apiClient,
 		Definition: &oplmV1alpha1.ClusterServiceVersion{
 			ObjectMeta: metav1.ObjectMeta{
@@ -66,7 +66,7 @@ func PullClusterServiceVersion(apiClient *clients.Settings, name, namespace stri
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Get returns ClusterServiceVersion object if found.
@@ -134,7 +134,7 @@ func (builder *ClusterServiceVersionBuilder) Delete() error {
 
 	builder.Object = nil
 
-	return err
+	return nil
 }
 
 // GetAlmExamples extracts and returns the alm-examples block from the clusterserviceversion.
@@ -210,13 +210,13 @@ func (builder *ClusterServiceVersionBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

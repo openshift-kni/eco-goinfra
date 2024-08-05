@@ -81,7 +81,7 @@ func PullLocalVolumeSet(apiClient *clients.Settings, name, nsname string) (*Loca
 		return nil, fmt.Errorf("localVolumeSet 'apiClient' cannot be empty")
 	}
 
-	builder := LocalVolumeSetBuilder{
+	builder := &LocalVolumeSetBuilder{
 		apiClient: apiClient.Client,
 		Definition: &lsov1alpha1.LocalVolumeSet{
 			ObjectMeta: metav1.ObjectMeta{
@@ -109,7 +109,7 @@ func PullLocalVolumeSet(apiClient *clients.Settings, name, nsname string) (*Loca
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Get fetches existing localVolumeSet from cluster.
