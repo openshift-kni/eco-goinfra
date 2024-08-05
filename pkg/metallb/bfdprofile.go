@@ -191,7 +191,9 @@ func (builder *BFDBuilder) Delete() (*BFDBuilder, error) {
 	)
 
 	if !builder.Exists() {
-		return builder, fmt.Errorf("BFDProfile cannot be deleted because it does not exist")
+		builder.Object = nil
+
+		return builder, nil
 	}
 
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)

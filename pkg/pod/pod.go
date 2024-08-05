@@ -185,7 +185,9 @@ func (builder *Builder) Delete() (*Builder, error) {
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return builder, fmt.Errorf("pod cannot be deleted because it does not exist")
+		builder.Object = nil
+
+		return builder, nil
 	}
 
 	err := builder.apiClient.Pods(builder.Definition.Namespace).Delete(

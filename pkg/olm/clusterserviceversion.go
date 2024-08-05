@@ -123,6 +123,8 @@ func (builder *ClusterServiceVersionBuilder) Delete() error {
 	if !builder.Exists() {
 		glog.V(100).Infof("clusterserviceversion cannot be deleted because it does not exist")
 
+		builder.Object = nil
+
 		return nil
 	}
 
