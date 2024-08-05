@@ -90,6 +90,12 @@ func NewBuilder(apiClient *clients.Settings, name, nsname, image string) *Builde
 func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	glog.V(100).Infof("Pulling existing pod name: %s namespace:%s", name, nsname)
 
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is empty")
+
+		return nil, fmt.Errorf("pod 'apiClient' cannot be empty")
+	}
+
 	builder := Builder{
 		apiClient: apiClient,
 		Definition: &corev1.Pod{

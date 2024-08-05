@@ -14,6 +14,12 @@ import (
 
 // List returns pod inventory in the given namespace.
 func List(apiClient *clients.Settings, nsname string, options ...metav1.ListOptions) ([]*Builder, error) {
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is empty")
+
+		return nil, fmt.Errorf("podList 'apiClient' cannot be empty")
+	}
+
 	if nsname == "" {
 		glog.V(100).Infof("pod 'nsname' parameter can not be empty")
 
@@ -63,6 +69,12 @@ func ListInAllNamespaces(apiClient *clients.Settings, options ...metav1.ListOpti
 	logMessage := "Listing all pods in all namespaces"
 	passedOptions := metav1.ListOptions{}
 
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is empty")
+
+		return nil, fmt.Errorf("podList 'apiClient' cannot be empty")
+	}
+
 	if len(options) > 1 {
 		glog.V(100).Infof("'options' parameter must be empty or single-valued")
 
@@ -104,6 +116,12 @@ func ListInAllNamespaces(apiClient *clients.Settings, options ...metav1.ListOpti
 func ListByNamePattern(apiClient *clients.Settings, namePattern, nsname string) ([]*Builder, error) {
 	glog.V(100).Infof("Listing pods in the nsname %s filtered by the name pattern %s", nsname, namePattern)
 
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is empty")
+
+		return nil, fmt.Errorf("podList 'apiClient' cannot be empty")
+	}
+
 	if nsname == "" {
 		glog.V(100).Infof("pod 'nsname' parameter can not be empty")
 
@@ -143,6 +161,12 @@ func WaitForAllPodsInNamespaceRunning(
 	nsname string,
 	timeout time.Duration,
 	options ...metav1.ListOptions) (bool, error) {
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is empty")
+
+		return false, fmt.Errorf("podList 'apiClient' cannot be empty")
+	}
+
 	if nsname == "" {
 		glog.V(100).Infof("'nsname' parameter can not be empty")
 
@@ -207,6 +231,12 @@ func WaitForAllPodsInNamespacesHealthy(
 ) error {
 	logMessage := fmt.Sprintf("Waiting for all pods in %v namespaces", nsNames)
 	passedOptions := metav1.ListOptions{}
+
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is empty")
+
+		return fmt.Errorf("podList 'apiClient' cannot be empty")
+	}
 
 	if len(options) > 1 {
 		glog.V(100).Infof("'options' parameter must be empty or single-valued")
