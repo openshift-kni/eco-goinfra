@@ -21,14 +21,12 @@ import (
 	"os"
 	"strings"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	kata_v1alpha1 "github.com/NVIDIA/k8s-kata-manager/api/v1alpha1/config"
 	upgrade_v1alpha1 "github.com/NVIDIA/k8s-operator-libs/api/upgrade/v1alpha1"
 	promv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	"golang.org/x/mod/semver"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/NVIDIA/gpu-operator/internal/consts"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -69,8 +67,6 @@ type ClusterPolicySpec struct {
 	Validator ValidatorSpec `json:"validator,omitempty"`
 	// GPUDirectStorage defines the spec for GDS components(Experimental)
 	GPUDirectStorage *GPUDirectStorageSpec `json:"gds,omitempty"`
-	// GDRCopy component spec
-	GDRCopy *GDRCopySpec `json:"gdrcopy,omitempty"`
 	// SandboxWorkloads defines the spec for handling sandbox workloads (i.e. Virtual Machines)
 	SandboxWorkloads SandboxWorkloadsSpec `json:"sandboxWorkloads,omitempty"`
 	// VFIOManager for configuration to deploy VFIO-PCI Manager
@@ -460,12 +456,6 @@ type DriverSpec struct {
 	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Enable NVIDIA Driver deployment using pre-compiled modules"
 	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.x-descriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	UsePrecompiled *bool `json:"usePrecompiled,omitempty"`
-
-	// UseOpenKernelModules indicates if the open GPU kernel modules should be used
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Enable use of open GPU kernel modules"
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.x-descriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
-	UseOpenKernelModules *bool `json:"useOpenKernelModules,omitempty"`
 
 	// Enabled indicates if deployment of NVIDIA Driver through operator is enabled
 	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
@@ -1260,53 +1250,6 @@ type GPUDirectStorageSpec struct {
 	Env []EnvVar `json:"env,omitempty"`
 }
 
-// GDRCopySpec defines the properties for NVIDIA GDRCopy driver (gdrdrv) deployment
-type GDRCopySpec struct {
-	// Enabled indicates if GDRCopy is enabled through GPU Operator
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Enable GDRCopy through GPU operator"
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.x-descriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
-	Enabled *bool `json:"enabled,omitempty"`
-
-	// NVIDIA GDRCopy driver image repository
-	// +kubebuilder:validation:Optional
-	Repository string `json:"repository,omitempty"`
-
-	// NVIDIA GDRCopy driver image name
-	// +kubebuilder:validation:Pattern=[a-zA-Z0-9\-]+
-	Image string `json:"image,omitempty"`
-
-	// NVIDIA GDRCopy driver image tag
-	// +kubebuilder:validation:Optional
-	Version string `json:"version,omitempty"`
-
-	// Image pull policy
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Image Pull Policy"
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.x-descriptors="urn:alm:descriptor:com.tectonic.ui:imagePullPolicy"
-	ImagePullPolicy string `json:"imagePullPolicy,omitempty"`
-
-	// Image pull secrets
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Image pull secrets"
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.x-descriptors="urn:alm:descriptor:io.kubernetes:Secret"
-	ImagePullSecrets []string `json:"imagePullSecrets,omitempty"`
-
-	// Optional: List of arguments
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Arguments"
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.x-descriptors="urn:alm:descriptor:com.tectonic.ui:advanced,urn:alm:descriptor:com.tectonic.ui:text"
-	Args []string `json:"args,omitempty"`
-
-	// Optional: List of environment variables
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Environment Variables"
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.x-descriptors="urn:alm:descriptor:com.tectonic.ui:advanced,urn:alm:descriptor:com.tectonic.ui:text"
-	Env []EnvVar `json:"env,omitempty"`
-}
-
 // MIGPartedConfigSpec defines custom mig-parted config for NVIDIA MIG Manager container
 type MIGPartedConfigSpec struct {
 	// ConfigMap name
@@ -1639,7 +1582,7 @@ type ClusterPolicyStatus struct {
 	// Namespace indicates a namespace in which the operator is installed
 	Namespace string `json:"namespace,omitempty"`
 	// Conditions is a list of conditions representing the ClusterPolicy's current state.
-	Conditions []metav1.Condition `json:"conditions,omitempty"`
+	Conditions []metav1.Condition `json:"conditions"`
 }
 
 // +kubebuilder:object:root=true
@@ -1752,9 +1695,6 @@ func ImagePath(spec interface{}) (string, error) {
 	case *GPUDirectStorageSpec:
 		config := spec.(*GPUDirectStorageSpec)
 		return imagePath(config.Repository, config.Image, config.Version, "GDS_IMAGE")
-	case *GDRCopySpec:
-		config := spec.(*GDRCopySpec)
-		return imagePath(config.Repository, config.Image, config.Version, "GDRCOPY_IMAGE")
 	case *VFIOManagerSpec:
 		config := spec.(*VFIOManagerSpec)
 		return imagePath(config.Repository, config.Image, config.Version, "VFIO_MANAGER_IMAGE")
@@ -1813,15 +1753,6 @@ func (d *DriverSpec) UsePrecompiledDrivers() bool {
 		return false
 	}
 	return *d.UsePrecompiled
-}
-
-// OpenKernelModulesEnabled returns true if driver install is enabled using open GPU kernel modules
-func (d *DriverSpec) OpenKernelModulesEnabled() bool {
-	if d.UseOpenKernelModules == nil {
-		// default is false if not specified by user
-		return false
-	}
-	return *d.UseOpenKernelModules
 }
 
 // IsEnabled returns true if device-plugin is enabled(default) through gpu-operator
@@ -1943,7 +1874,7 @@ func (m *NodeStatusExporterSpec) IsEnabled() bool {
 	return *m.Enabled
 }
 
-// IsEnabled returns true if GPUDirect RDMA are enabled through gpu-operator
+// IsEnabled returns true if GPUDirect RDMA are enabled through gpu-perator
 func (g *GPUDirectRDMASpec) IsEnabled() bool {
 	if g.Enabled == nil {
 		// GPUDirectRDMA is disabled by default
@@ -1952,53 +1883,13 @@ func (g *GPUDirectRDMASpec) IsEnabled() bool {
 	return *g.Enabled
 }
 
-// IsHostMOFED returns true if GPUDirect RDMA is enabled through MOFED installed on the host
-func (g *GPUDirectRDMASpec) IsHostMOFED() bool {
-	if g.UseHostMOFED == nil {
-		// GPUDirectRDMA is disabled by default
-		return false
-	}
-	return g.IsEnabled() && *g.UseHostMOFED
-}
-
-// IsEnabled returns true if GPUDirect Storage are enabled through gpu-operator
+// IsEnabled returns true if GPUDirect Storage are enabled through gpu-perator
 func (gds *GPUDirectStorageSpec) IsEnabled() bool {
 	if gds.Enabled == nil {
 		// GPUDirectStorage is disabled by default
 		return false
 	}
 	return *gds.Enabled
-}
-
-// IsOpenKernelModulesRequired returns true if NVIDIA OpenRM drivers required in this configuration
-func (gds *GPUDirectStorageSpec) IsOpenKernelModulesRequired() bool {
-	// Add constraints here which require OpenRM drivers
-	if !gds.IsEnabled() {
-		return false
-	}
-
-	// If image digest is provided instead of the version, assume that OpenRM driver is required
-	if strings.HasPrefix(gds.Version, "sha256") {
-		return true
-	}
-
-	gdsVersion := gds.Version
-	if !strings.HasPrefix(gdsVersion, "v") {
-		gdsVersion = fmt.Sprintf("v%s", gdsVersion)
-	}
-	if semver.Compare(gdsVersion, consts.MinimumGDSVersionForOpenRM) >= 0 {
-		return true
-	}
-	return false
-}
-
-// IsEnabled returns true if GDRCopy is enabled through gpu-operator
-func (gdrcopy *GDRCopySpec) IsEnabled() bool {
-	if gdrcopy.Enabled == nil {
-		// GDRCopy is disabled by default
-		return false
-	}
-	return *gdrcopy.Enabled
 }
 
 // IsEnabled returns true if DCGM hostengine as a separate Pod is enabled through gpu-perator
