@@ -296,12 +296,12 @@ func (builder *Builder) WaitUntilRunning(timeout time.Duration) error {
 }
 
 // WaitUntilHealthy waits for the duration of the defined timeout or until the pod is healthy.
-// An healthy pod is in running phase and optionally in ready condition.
+// A healthy pod is in running phase and optionally in ready condition.
 //
 // timeout is the duration to wait for the pod to be healthy
 // includeSucceeded when true, implies that pod in succeeded phase is running.
-// skipReadiness when true, to also checks that the podCondition is ready.
-// ignoreFailedPods when true, to Ignore failed pod with restart policy set to never.
+// skipReadinessCheck when false, checks that the podCondition is ready.
+// ignoreRestartPolicyNever when true, Ignores failed pods with restart policy set to never.
 func (builder *Builder) WaitUntilHealthy(timeout time.Duration, includeSucceeded, skipReadinessCheck,
 	ignoreRestartPolicyNever bool) error {
 	statusesChecked := []corev1.PodPhase{corev1.PodRunning}
@@ -322,7 +322,7 @@ func (builder *Builder) WaitUntilHealthy(timeout time.Duration, includeSucceeded
 		statusesChecked = append(statusesChecked, corev1.PodSucceeded)
 	}
 
-	podPhase, err := builder.WaitUntilInStatuses(statusesChecked, timeout)
+	podPhase, err := builder.WaitUntilInOneOfStatuses(statusesChecked, timeout)
 
 	if err != nil {
 		glog.V(100).Infof("pod condition is not in %v. Message: %s", statusesChecked, builder.Object.Status.Message)
@@ -330,7 +330,7 @@ func (builder *Builder) WaitUntilHealthy(timeout time.Duration, includeSucceeded
 		return err
 	}
 
-	if skipReadinessCheck || *podPhase != corev1.PodRunning {
+	if skipReadinessCheck || *podPhase == corev1.PodSucceeded {
 		return nil
 	}
 
@@ -353,14 +353,14 @@ func (builder *Builder) WaitUntilInStatus(status corev1.PodPhase, timeout time.D
 	glog.V(100).Infof("Waiting for the defined period until pod %s in namespace %s has status %v",
 		builder.Definition.Name, builder.Definition.Namespace, status)
 
-	_, err := builder.WaitUntilInStatuses([]corev1.PodPhase{status}, timeout)
+	_, err := builder.WaitUntilInOneOfStatuses([]corev1.PodPhase{status}, timeout)
 
 	return err
 }
 
-// WaitUntilInStatuses waits for the duration of the defined timeout or until the pod gets to any specific status
+// WaitUntilInOneOfStatuses waits for the duration of the defined timeout or until the pod gets to any specific status
 // in a list of statues.
-func (builder *Builder) WaitUntilInStatuses(statuses []corev1.PodPhase,
+func (builder *Builder) WaitUntilInOneOfStatuses(statuses []corev1.PodPhase,
 	timeout time.Duration) (*corev1.PodPhase, error) {
 	if valid, err := builder.validate(); !valid {
 		return nil, err

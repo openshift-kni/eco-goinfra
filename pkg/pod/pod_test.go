@@ -120,7 +120,7 @@ func TestWaitUntilInStatuses(t *testing.T) {
 		assert.Nil(t, err)
 
 		var phase *corev1.PodPhase
-		phase, err = testBuilder.WaitUntilInStatuses(testCase.checkedPhases, 2*time.Second)
+		phase, err = testBuilder.WaitUntilInOneOfStatuses(testCase.checkedPhases, 2*time.Second)
 
 		assert.Equal(t, testCase.expectedErrMsg, getErrorString(err))
 		assert.Equal(t, testCase.expectedPodPhase, *phase)
