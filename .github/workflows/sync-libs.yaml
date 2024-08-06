@@ -40,3 +40,4 @@ jobs:
           body: |
             - sync update external libs
           branch: sync
+          delete-branch: true
