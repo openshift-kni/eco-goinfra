@@ -38,6 +38,13 @@ func PullClusterServiceVersion(apiClient *clients.Settings, name, namespace stri
 		return nil, fmt.Errorf("clusterserviceversion 'apiClient' cannot be empty")
 	}
 
+	err := apiClient.AttachScheme(oplmV1alpha1.AddToScheme)
+	if err != nil {
+		glog.V(100).Infof("Failed to add operatorsV1alpha1 scheme to client schemes")
+
+		return nil, err
+	}
+
 	builder := ClusterServiceVersionBuilder{
 		apiClient: apiClient,
 		Definition: &oplmV1alpha1.ClusterServiceVersion{
