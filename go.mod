@@ -3,7 +3,7 @@ module github.com/openshift-kni/eco-goinfra
 go 1.20
 
 require (
-	github.com/NVIDIA/gpu-operator v1.8.3-0.20240306022107-5fcd98c024cf
+	github.com/NVIDIA/gpu-operator v1.8.3-0.20230908215219-ec06e52425f3
 	github.com/argoproj-labs/argocd-operator v0.8.0
 	github.com/golang/glog v1.1.2
 	github.com/grafana-operator/grafana-operator/v4 v4.10.1
@@ -20,13 +20,13 @@ require (
 	github.com/openshift/client-go v0.0.1
 	github.com/openshift/cluster-logging-operator v0.0.0-20240220162552-cbb65f2dca2b // release-5.8
 	github.com/openshift/cluster-nfd-operator v0.0.0-20231206145954-f49a827bf617
-	github.com/openshift/cluster-node-tuning-operator v0.0.0-20231225123609-e63d2c9626fe
+	github.com/openshift/cluster-node-tuning-operator v0.0.0-20231207200033-570bbfd7e761
 	github.com/openshift/hive/apis v0.0.0-20220707210052-4804c09ccc5a
 	github.com/openshift/local-storage-operator v0.0.0-20240308014313-cc4f213cd7c8 // release-4.15
-	github.com/openshift/machine-config-operator v0.0.1-0.20230807154212-886c5c3fc7a9
+	github.com/openshift/machine-config-operator v0.0.1-0.20231024085435-7e1fb719c1ba
 	github.com/openshift/ptp-operator v0.0.0-20231220185604-29113b41981b
-	github.com/operator-framework/api v0.22.0
-	github.com/operator-framework/operator-lifecycle-manager v0.27.1-0.20240301195430-1d12f8f4de16
+	github.com/operator-framework/api v0.21.0
+	github.com/operator-framework/operator-lifecycle-manager v0.26.0
 	github.com/rh-ecosystem-edge/kernel-module-management v0.0.0-20240214075243-67ea06a82ab8
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa
 	golang.org/x/net v0.20.0
@@ -37,7 +37,7 @@ require (
 	k8s.io/apimachinery v0.29.0
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/kubectl v0.28.5
-	k8s.io/kubelet v0.27.4
+	k8s.io/kubelet v0.27.7
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b
 	maistra.io/api v0.0.0-20230704084350-dfc96815fb16
 	open-cluster-management.io/governance-policy-propagator v0.12.0
@@ -169,7 +169,7 @@ require (
 	golang.org/x/mod v0.15.0 // indirect
 	golang.org/x/oauth2 v0.14.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
-	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/term v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
@@ -179,7 +179,7 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20231120223509-83a465c0220f // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231212172506-995d672761c0 // indirect
 	google.golang.org/grpc v1.60.1 // indirect
-	google.golang.org/protobuf v1.31.0 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
@@ -200,7 +200,7 @@ require (
 )
 
 replace (
-	github.com/k8snetworkplumbingwg/sriov-network-operator => github.com/openshift/sriov-network-operator v0.0.0-20240228013256-b13485442721 // release-4.15
+	github.com/k8snetworkplumbingwg/sriov-network-operator => github.com/openshift/sriov-network-operator v0.0.0-20240805020554-36ef98ec8bf0 // release-4.15
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20240228005710-4511c790cc60 // release-4.15
 	github.com/openshift/assisted-service/api => github.com/openshift/assisted-service/api v0.0.0-20240222220008-d60e80f8658c // release-4.15
 	github.com/openshift/assisted-service/models => github.com/openshift/assisted-service/models v0.0.0-20240222220008-d60e80f8658c // release-4.15
