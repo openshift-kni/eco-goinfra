@@ -50,6 +50,12 @@ func NewBuilder(apiClient *clients.Settings, name, nsname, image string) *Builde
 			"name: %s, namespace: %s, image: %s",
 		name, nsname, image)
 
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is empty, pod 'apiClient' cannot be empty")
+
+		return nil
+	}
+
 	builder := &Builder{
 		apiClient:  apiClient,
 		Definition: getDefinition(name, nsname),
@@ -294,16 +300,16 @@ func (builder *Builder) WaitUntilRunning(timeout time.Duration) error {
 //
 // timeout is the duration to wait for the pod to be healthy
 // includeSucceeded when true, implies that pod in succeeded phase is running.
-// checkReadiness when true, to also checks that the podCondition is ready.
+// skipReadiness when true, to also checks that the podCondition is ready.
 // ignoreFailedPods when true, to Ignore failed pod with restart policy set to never.
-func (builder *Builder) WaitUntilHealthy(timeout time.Duration, includeSucceeded, checkReadiness,
-	ignoreFailedPods bool) error {
+func (builder *Builder) WaitUntilHealthy(timeout time.Duration, includeSucceeded, skipReadinessCheck,
+	ignoreRestartPolicyNever bool) error {
 	statusesChecked := []corev1.PodPhase{corev1.PodRunning}
 
 	// Ignore failed pod with restart policy never. This could happen in image pruner or installer pods that
 	// will never restart. For those pods, instead of restarting the same pod, a new pod will be created
 	// to complete the task.
-	if ignoreFailedPods &&
+	if ignoreRestartPolicyNever &&
 		builder.Object.Status.Phase == corev1.PodFailed &&
 		builder.Object.Spec.RestartPolicy == corev1.RestartPolicyNever {
 		glog.V(100).Infof("Ignore failed pod with restart policy never. Message: %s",
@@ -324,7 +330,7 @@ func (builder *Builder) WaitUntilHealthy(timeout time.Duration, includeSucceeded
 		return err
 	}
 
-	if !(checkReadiness && podPhase == corev1.PodRunning) {
+	if skipReadinessCheck || *podPhase != corev1.PodRunning {
 		return nil
 	}
 
@@ -347,24 +353,17 @@ func (builder *Builder) WaitUntilInStatus(status corev1.PodPhase, timeout time.D
 	glog.V(100).Infof("Waiting for the defined period until pod %s in namespace %s has status %v",
 		builder.Definition.Name, builder.Definition.Namespace, status)
 
-	return wait.PollUntilContextTimeout(
-		context.TODO(), time.Second, timeout, true, func(ctx context.Context) (bool, error) {
-			updatePod, err := builder.apiClient.Pods(builder.Object.Namespace).Get(
-				context.TODO(), builder.Object.Name, metav1.GetOptions{})
-			if err != nil {
-				return false, nil
-			}
+	_, err := builder.WaitUntilInStatuses([]corev1.PodPhase{status}, timeout)
 
-			return updatePod.Status.Phase == status, nil
-		})
+	return err
 }
 
 // WaitUntilInStatuses waits for the duration of the defined timeout or until the pod gets to any specific status
 // in a list of statues.
 func (builder *Builder) WaitUntilInStatuses(statuses []corev1.PodPhase,
-	timeout time.Duration) (corev1.PodPhase, error) {
+	timeout time.Duration) (*corev1.PodPhase, error) {
 	if valid, err := builder.validate(); !valid {
-		return corev1.PodUnknown, err
+		return nil, err
 	}
 
 	glog.V(100).Infof("Waiting for the defined period until pod %s in namespace %s has status %v",
@@ -372,7 +371,7 @@ func (builder *Builder) WaitUntilInStatuses(statuses []corev1.PodPhase,
 
 	var foundPhase corev1.PodPhase
 
-	return foundPhase, wait.PollUntilContextTimeout(
+	return &foundPhase, wait.PollUntilContextTimeout(
 		context.TODO(), time.Second, timeout, true, func(ctx context.Context) (bool, error) {
 			updatePod, err := builder.apiClient.Pods(builder.Object.Namespace).Get(
 				context.TODO(), builder.Object.Name, metav1.GetOptions{})

@@ -119,74 +119,74 @@ func TestWaitUntilInStatuses(t *testing.T) {
 		testBuilder, err := buildPodTestBuilderWithFakeObjects(runtimeObjects, testCase.pod.Name, testCase.pod.Namespace)
 		assert.Nil(t, err)
 
-		var phase corev1.PodPhase
+		var phase *corev1.PodPhase
 		phase, err = testBuilder.WaitUntilInStatuses(testCase.checkedPhases, 2*time.Second)
 
 		assert.Equal(t, testCase.expectedErrMsg, getErrorString(err))
-		assert.Equal(t, testCase.expectedPodPhase, phase)
+		assert.Equal(t, testCase.expectedPodPhase, *phase)
 	}
 }
 
 func TestWaitUntilHealthy(t *testing.T) {
 	testCases := []struct {
 		includeSucceeded bool
-		checkReadiness   bool
+		skipReadiness    bool
 		ignoreFailedPods bool
 		expectedErrMsg   string
 		pod              *corev1.Pod
 	}{
 		{
 			includeSucceeded: true,
-			checkReadiness:   true,
+			skipReadiness:    false,
 			ignoreFailedPods: true,
 			expectedErrMsg:   "",
 			pod:              generateTestPod("test1", "ns1", corev1.PodRunning, corev1.PodReady, false),
 		},
 		{
 			includeSucceeded: true,
-			checkReadiness:   true,
+			skipReadiness:    false,
 			ignoreFailedPods: true,
 			expectedErrMsg:   "context deadline exceeded",
 			pod:              generateTestPod("test1", "ns1", corev1.PodRunning, corev1.PodInitialized, false),
 		},
 		{
 			includeSucceeded: false,
-			checkReadiness:   true,
+			skipReadiness:    false,
 			ignoreFailedPods: true,
 			expectedErrMsg:   "context deadline exceeded",
 			pod:              generateTestPod("test1", "ns1", corev1.PodSucceeded, corev1.PodScheduled, false),
 		},
 		{
 			includeSucceeded: true,
-			checkReadiness:   true,
+			skipReadiness:    false,
 			ignoreFailedPods: true,
 			expectedErrMsg:   "",
 			pod:              generateTestPod("test1", "ns1", corev1.PodSucceeded, corev1.PodScheduled, false),
 		},
 		{
 			includeSucceeded: true,
-			checkReadiness:   false,
+			skipReadiness:    true,
 			ignoreFailedPods: true,
 			expectedErrMsg:   "",
 			pod:              generateTestPod("test1", "ns1", corev1.PodRunning, corev1.PodScheduled, false),
 		},
 		{
 			includeSucceeded: true,
-			checkReadiness:   true,
+			skipReadiness:    false,
 			ignoreFailedPods: false,
 			expectedErrMsg:   "context deadline exceeded",
 			pod:              generateTestPod("test1", "ns1", corev1.PodFailed, corev1.PodScheduled, false),
 		},
 		{
 			includeSucceeded: true,
-			checkReadiness:   true,
+			skipReadiness:    false,
 			ignoreFailedPods: true,
 			expectedErrMsg:   "",
 			pod:              generateTestPod("test1", "ns1", corev1.PodFailed, corev1.PodScheduled, true),
 		},
 		{
 			includeSucceeded: true,
-			checkReadiness:   true,
+			skipReadiness:    false,
 			ignoreFailedPods: true,
 			expectedErrMsg:   "context deadline exceeded",
 			pod:              generateTestPod("test1", "ns1", corev1.PodFailed, corev1.PodScheduled, false),
@@ -199,7 +199,7 @@ func TestWaitUntilHealthy(t *testing.T) {
 		testBuilder, err := buildPodTestBuilderWithFakeObjects(runtimeObjects, testCase.pod.Name, testCase.pod.Namespace)
 		assert.Nil(t, err)
 
-		err = testBuilder.WaitUntilHealthy(2*time.Second, testCase.includeSucceeded, testCase.checkReadiness,
+		err = testBuilder.WaitUntilHealthy(2*time.Second, testCase.includeSucceeded, testCase.skipReadiness,
 			testCase.ignoreFailedPods)
 
 		assert.Equal(t, testCase.expectedErrMsg, getErrorString(err))
