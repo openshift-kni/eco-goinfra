@@ -9,13 +9,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func TestNetworkList(t *testing.T) {
 	testCases := []struct {
 		testNetwork   []*NetworkBuilder
 		nsName        string
-		listOptions   []metav1.ListOptions
+		listOptions   []client.ListOptions
 		expectedError error
 		client        bool
 	}{
@@ -34,13 +35,13 @@ func TestNetworkList(t *testing.T) {
 		{
 			testNetwork: []*NetworkBuilder{buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject())},
 			nsName:      "testnamespace",
-			listOptions: []metav1.ListOptions{{LabelSelector: "test"}},
+			listOptions: []client.ListOptions{{Continue: "test"}},
 			client:      true,
 		},
 		{
 			testNetwork:   []*NetworkBuilder{buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject())},
 			nsName:        "testnamespace",
-			listOptions:   []metav1.ListOptions{{LabelSelector: "test"}, {Continue: "true"}},
+			listOptions:   []client.ListOptions{{Namespace: "test"}, {Continue: "true"}},
 			expectedError: fmt.Errorf("error: more than one ListOptions was passed"),
 			client:        true,
 		},
@@ -56,7 +57,8 @@ func TestNetworkList(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: buildDummySrIovNetworkObject(),
+				K8sMockObjects:  buildDummySrIovNetworkObject(),
+				SchemeAttachers: testSchemes,
 			})
 		}
 
@@ -74,7 +76,7 @@ func TestNetworkCleanAllNetworksByTargetNamespace(t *testing.T) {
 		testNetwork    []*NetworkBuilder
 		operatorNsName string
 		targetNsName   string
-		listOptions    []metav1.ListOptions
+		listOptions    []client.ListOptions
 		client         bool
 		expectedError  error
 	}{
@@ -102,14 +104,14 @@ func TestNetworkCleanAllNetworksByTargetNamespace(t *testing.T) {
 			testNetwork:    []*NetworkBuilder{buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject())},
 			operatorNsName: "testnamespace",
 			targetNsName:   "targetns",
-			listOptions:    []metav1.ListOptions{{AllowWatchBookmarks: false}},
+			listOptions:    []client.ListOptions{{Namespace: "test"}},
 			client:         true,
 		},
 		{
 			testNetwork:    []*NetworkBuilder{buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject())},
 			operatorNsName: "testnamespace",
 			targetNsName:   "targetns",
-			listOptions:    []metav1.ListOptions{{LabelSelector: "test"}, {Continue: "true"}},
+			listOptions:    []client.ListOptions{{Namespace: "test"}, {Continue: "true"}},
 			expectedError:  fmt.Errorf("error: more than one ListOptions was passed"),
 			client:         true,
 		},
