@@ -12,44 +12,67 @@ import (
 	placementrulev1 "open-cluster-management.io/multicloud-operators-subscription/pkg/apis/apps/placementrule/v1"
 )
 
-var (
+const (
 	defaultPlacementRuleName   = "placementrule-test"
 	defaultPlacementRuleNsName = "test-ns"
 )
+
+var placementRuleTestSchemes = []clients.SchemeAttacher{
+	placementrulev1.AddToScheme,
+}
 
 func TestNewPlacementRuleBuilder(t *testing.T) {
 	testCases := []struct {
 		placementRuleName      string
 		placementRuleNamespace string
+		client                 bool
 		expectedErrorText      string
 	}{
 		{
 			placementRuleName:      defaultPlacementRuleName,
 			placementRuleNamespace: defaultPlacementRuleNsName,
+			client:                 true,
 			expectedErrorText:      "",
 		},
 		{
 			placementRuleName:      "",
 			placementRuleNamespace: defaultPlacementRuleNsName,
+			client:                 true,
 			expectedErrorText:      "placementrule's 'name' cannot be empty",
 		},
 		{
 			placementRuleName:      defaultPlacementRuleName,
 			placementRuleNamespace: "",
+			client:                 true,
 			expectedErrorText:      "placementrule's 'nsname' cannot be empty",
+		},
+		{
+			placementRuleName:      defaultPlacementRuleName,
+			placementRuleNamespace: defaultPlacementRuleNsName,
+			client:                 false,
+			expectedErrorText:      "",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients(clients.TestClientParams{})
-		placementRuleBuilder := NewPlacementRuleBuilder(
-			testSettings,
-			testCase.placementRuleName,
-			testCase.placementRuleNamespace)
-		assert.NotNil(t, placementRuleBuilder)
-		assert.Equal(t, testCase.expectedErrorText, placementRuleBuilder.errorMsg)
-		assert.Equal(t, testCase.placementRuleName, placementRuleBuilder.Definition.Name)
-		assert.Equal(t, testCase.placementRuleNamespace, placementRuleBuilder.Definition.Namespace)
+		var client *clients.Settings
+
+		if testCase.client {
+			client = buildTestClientWithPlacementRuleScheme()
+		}
+
+		placementRuleBuilder := NewPlacementRuleBuilder(client, testCase.placementRuleName, testCase.placementRuleNamespace)
+
+		if testCase.client {
+			assert.Equal(t, testCase.expectedErrorText, placementRuleBuilder.errorMsg)
+
+			if testCase.expectedErrorText == "" {
+				assert.Equal(t, testCase.placementRuleName, placementRuleBuilder.Definition.Name)
+				assert.Equal(t, testCase.placementRuleNamespace, placementRuleBuilder.Definition.Namespace)
+			}
+		} else {
+			assert.Nil(t, placementRuleBuilder)
+		}
 	}
 }
 
@@ -59,21 +82,21 @@ func TestPullPlacementRule(t *testing.T) {
 		placementRuleNamespace string
 		addToRuntimeObjects    bool
 		client                 bool
-		expectedErrorText      string
+		expectedError          error
 	}{
 		{
 			placementRuleName:      defaultPlacementRuleName,
 			placementRuleNamespace: defaultPlacementRuleNsName,
 			addToRuntimeObjects:    true,
 			client:                 true,
-			expectedErrorText:      "",
+			expectedError:          nil,
 		},
 		{
 			placementRuleName:      defaultPlacementRuleName,
 			placementRuleNamespace: defaultPlacementRuleNsName,
 			addToRuntimeObjects:    false,
 			client:                 true,
-			expectedErrorText: fmt.Sprintf(
+			expectedError: fmt.Errorf(
 				"placementrule object %s does not exist in namespace %s", defaultPlacementRuleName, defaultPlacementRuleNsName),
 		},
 		{
@@ -81,21 +104,21 @@ func TestPullPlacementRule(t *testing.T) {
 			placementRuleNamespace: defaultPlacementRuleNsName,
 			addToRuntimeObjects:    false,
 			client:                 true,
-			expectedErrorText:      "placementrule's 'name' cannot be empty",
+			expectedError:          fmt.Errorf("placementrule's 'name' cannot be empty"),
 		},
 		{
 			placementRuleName:      defaultPlacementRuleName,
 			placementRuleNamespace: "",
 			addToRuntimeObjects:    false,
 			client:                 true,
-			expectedErrorText:      "placementrule's 'namespace' cannot be empty",
+			expectedError:          fmt.Errorf("placementrule's 'namespace' cannot be empty"),
 		},
 		{
 			placementRuleName:      defaultPlacementRuleName,
 			placementRuleNamespace: defaultPlacementRuleNsName,
 			addToRuntimeObjects:    false,
 			client:                 false,
-			expectedErrorText:      "placementrule's 'apiClient' cannot be empty",
+			expectedError:          fmt.Errorf("placementrule's 'apiClient' cannot be empty"),
 		},
 	}
 
@@ -113,17 +136,15 @@ func TestPullPlacementRule(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: placementRuleTestSchemes,
 			})
 		}
 
 		placementRuleBuilder, err := PullPlacementRule(testSettings, testPlacementRule.Name, testPlacementRule.Namespace)
+		assert.Equal(t, testCase.expectedError, err)
 
-		if testCase.expectedErrorText != "" {
-			assert.NotNil(t, err)
-			assert.Equal(t, testCase.expectedErrorText, err.Error())
-		} else {
-			assert.Nil(t, err)
+		if testCase.expectedError == nil {
 			assert.Equal(t, testPlacementRule.Name, placementRuleBuilder.Object.Name)
 			assert.Equal(t, testPlacementRule.Namespace, placementRuleBuilder.Object.Namespace)
 		}
@@ -144,7 +165,7 @@ func TestPlacementRuleExists(t *testing.T) {
 			exists:      false,
 		},
 		{
-			testBuilder: buildValidPlacementRuleTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testBuilder: buildValidPlacementRuleTestBuilder(buildTestClientWithPlacementRuleScheme()),
 			exists:      false,
 		},
 	}
@@ -165,7 +186,7 @@ func TestPlacementRuleGet(t *testing.T) {
 			expectedPlacementRule: buildDummyPlacementRule(defaultPlacementRuleName, defaultPlacementRuleNsName),
 		},
 		{
-			testBuilder:           buildValidPlacementRuleTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testBuilder:           buildValidPlacementRuleTestBuilder(buildTestClientWithPlacementRuleScheme()),
 			expectedPlacementRule: nil,
 		},
 	}
@@ -190,11 +211,11 @@ func TestPlacementRuleCreate(t *testing.T) {
 		expectedError error
 	}{
 		{
-			testBuilder:   buildValidPlacementRuleTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testBuilder:   buildValidPlacementRuleTestBuilder(buildTestClientWithPlacementRuleScheme()),
 			expectedError: nil,
 		},
 		{
-			testBuilder:   buildInvalidPlacementRuleTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testBuilder:   buildInvalidPlacementRuleTestBuilder(buildTestClientWithPlacementRuleScheme()),
 			expectedError: fmt.Errorf("placementrule's 'nsname' cannot be empty"),
 		},
 	}
@@ -258,14 +279,14 @@ func TestPlacementRuleUpdate(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidPlacementRuleTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+		testBuilder := buildValidPlacementRuleTestBuilder(buildTestClientWithPlacementRuleScheme())
 
 		// Create the builder rather than just adding it to the client so that the proper metadata is added and
 		// the update will not fail.
 		if testCase.alreadyExists {
 			var err error
 
-			testBuilder = buildValidPlacementRuleTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+			testBuilder = buildValidPlacementRuleTestBuilder(buildTestClientWithPlacementRuleScheme())
 			testBuilder, err = testBuilder.Create()
 			assert.Nil(t, err)
 		}
@@ -288,6 +309,82 @@ func TestPlacementRuleUpdate(t *testing.T) {
 	}
 }
 
+func TestPlacementRuleValidate(t *testing.T) {
+	testCases := []struct {
+		builderNil      bool
+		definitionNil   bool
+		apiClientNil    bool
+		builderErrorMsg string
+		expectedError   error
+	}{
+		{
+			builderNil:      false,
+			definitionNil:   false,
+			apiClientNil:    false,
+			builderErrorMsg: "",
+			expectedError:   nil,
+		},
+		{
+			builderNil:      true,
+			definitionNil:   false,
+			apiClientNil:    false,
+			builderErrorMsg: "",
+			expectedError:   fmt.Errorf("error: received nil placementRule builder"),
+		},
+		{
+			builderNil:      false,
+			definitionNil:   true,
+			apiClientNil:    false,
+			builderErrorMsg: "",
+			expectedError:   fmt.Errorf("can not redefine the undefined placementRule"),
+		},
+		{
+			builderNil:      false,
+			definitionNil:   false,
+			apiClientNil:    true,
+			builderErrorMsg: "",
+			expectedError:   fmt.Errorf("placementRule builder cannot have nil apiClient"),
+		},
+		{
+			builderNil:      false,
+			definitionNil:   false,
+			apiClientNil:    false,
+			builderErrorMsg: "test error",
+			expectedError:   fmt.Errorf("test error"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		placementRuleBuilder := buildValidPlacementRuleTestBuilder(buildTestClientWithPlacementRuleScheme())
+
+		if testCase.builderNil {
+			placementRuleBuilder = nil
+		}
+
+		if testCase.definitionNil {
+			placementRuleBuilder.Definition = nil
+		}
+
+		if testCase.apiClientNil {
+			placementRuleBuilder.apiClient = nil
+		}
+
+		if testCase.builderErrorMsg != "" {
+			placementRuleBuilder.errorMsg = testCase.builderErrorMsg
+		}
+
+		valid, err := placementRuleBuilder.validate()
+
+		if testCase.expectedError != nil {
+			assert.False(t, valid)
+			assert.Equal(t, testCase.expectedError, err)
+		} else {
+			assert.True(t, valid)
+			assert.Nil(t, err)
+		}
+	}
+}
+
 // buildDummyPlacementRule returns a PlacementRule with the provided name and namespace.
 func buildDummyPlacementRule(name, nsname string) *placementrulev1.PlacementRule {
 	return &placementrulev1.PlacementRule{
@@ -304,6 +401,14 @@ func buildTestClientWithDummyPlacementRule() *clients.Settings {
 		K8sMockObjects: []runtime.Object{
 			buildDummyPlacementRule(defaultPlacementRuleName, defaultPlacementRuleNsName),
 		},
+		SchemeAttachers: placementRuleTestSchemes,
+	})
+}
+
+// buildTestClientWithPlacementRuleScheme returns a client with no objects but the PlacementRule scheme attached.
+func buildTestClientWithPlacementRuleScheme() *clients.Settings {
+	return clients.GetTestClients(clients.TestClientParams{
+		SchemeAttachers: placementRuleTestSchemes,
 	})
 }
 
