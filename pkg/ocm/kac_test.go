@@ -16,6 +16,10 @@ const (
 	defaultKACNamespace = "test-ns"
 )
 
+var kacTestSchemes = []clients.SchemeAttacher{
+	kacv1.SchemeBuilder.AddToScheme,
+}
+
 func TestNewKACBuilder(t *testing.T) {
 	testCases := []struct {
 		kacName           string
@@ -45,7 +49,7 @@ func TestNewKACBuilder(t *testing.T) {
 			kacName:           defaultKACName,
 			kacNamespace:      defaultKACNamespace,
 			client:            false,
-			expectedErrorText: "klusterletAddonConfig 'apiClient' cannot be nil",
+			expectedErrorText: "",
 		},
 	}
 
@@ -53,15 +57,20 @@ func TestNewKACBuilder(t *testing.T) {
 		var testSettings *clients.Settings
 
 		if testCase.client {
-			testSettings = clients.GetTestClients(clients.TestClientParams{})
+			testSettings = buildTestClientWithKACScheme()
 		}
 
 		kacBuilder := NewKACBuilder(testSettings, testCase.kacName, testCase.kacNamespace)
-		assert.Equal(t, testCase.expectedErrorText, kacBuilder.errorMsg)
 
-		if testCase.expectedErrorText == "" {
-			assert.Equal(t, testCase.kacName, kacBuilder.Definition.Name)
-			assert.Equal(t, testCase.kacNamespace, kacBuilder.Definition.Namespace)
+		if testCase.client {
+			assert.Equal(t, testCase.expectedErrorText, kacBuilder.errorMsg)
+
+			if testCase.expectedErrorText == "" {
+				assert.Equal(t, testCase.kacName, kacBuilder.Definition.Name)
+				assert.Equal(t, testCase.kacNamespace, kacBuilder.Definition.Namespace)
+			}
+		} else {
+			assert.Nil(t, kacBuilder)
 		}
 	}
 }
@@ -126,7 +135,8 @@ func TestPullKAC(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: kacTestSchemes,
 			})
 		}
 
@@ -156,7 +166,7 @@ func TestKACExists(t *testing.T) {
 			exists:      false,
 		},
 		{
-			testBuilder: buildValidKACTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testBuilder: buildValidKACTestBuilder(buildTestClientWithKACScheme()),
 			exists:      false,
 		},
 	}
@@ -173,7 +183,7 @@ func TestKACCreate(t *testing.T) {
 		expectedError error
 	}{
 		{
-			testBuilder:   buildValidKACTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testBuilder:   buildValidKACTestBuilder(buildTestClientWithKACScheme()),
 			expectedError: nil,
 		},
 		{
@@ -181,7 +191,7 @@ func TestKACCreate(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			testBuilder:   buildInvalidKACTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testBuilder:   buildInvalidKACTestBuilder(buildTestClientWithKACScheme()),
 			expectedError: fmt.Errorf("klusterletAddonConfig 'nsname' cannot be empty"),
 		},
 	}
@@ -226,7 +236,7 @@ func TestKACUpdate(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		kacBuilder := buildValidKACTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+		kacBuilder := buildValidKACTestBuilder(buildTestClientWithKACScheme())
 
 		// Create the builder rather than just adding it to the client so that the proper metadata is added and
 		// the update will not fail.
@@ -269,11 +279,11 @@ func TestKACDelete(t *testing.T) {
 			expectedErrorText: "",
 		},
 		{
-			testBuilder:       buildValidKACTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testBuilder:       buildValidKACTestBuilder(buildTestClientWithKACScheme()),
 			expectedErrorText: "",
 		},
 		{
-			testBuilder:       buildInvalidKACTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testBuilder:       buildInvalidKACTestBuilder(buildTestClientWithKACScheme()),
 			expectedErrorText: "klusterletAddonConfig 'nsname' cannot be empty",
 		},
 	}
@@ -336,7 +346,7 @@ func TestKACValidate(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		kacBuilder := buildValidKACTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+		kacBuilder := buildValidKACTestBuilder(buildTestClientWithKACScheme())
 
 		if testCase.builderNil {
 			kacBuilder = nil
@@ -382,6 +392,14 @@ func buildTestClientWithDummyKAC() *clients.Settings {
 		K8sMockObjects: []runtime.Object{
 			buildDummyKAC(defaultKACName, defaultKACNamespace),
 		},
+		SchemeAttachers: kacTestSchemes,
+	})
+}
+
+// buildTestClientWithKACScheme returns a client with no objects but the KlusterletAddonConfig scheme attached.
+func buildTestClientWithKACScheme() *clients.Settings {
+	return clients.GetTestClients(clients.TestClientParams{
+		SchemeAttachers: kacTestSchemes,
 	})
 }
 

@@ -11,7 +11,11 @@ import (
 	clusterv1 "open-cluster-management.io/api/cluster/v1"
 )
 
-var defaultManagedClusterName = "managedcluster-test"
+const defaultManagedClusterName = "managedcluster-test"
+
+var clusterTestSchemes = []clients.SchemeAttacher{
+	clusterv1.Install,
+}
 
 func TestNewManagedClusterBuilder(t *testing.T) {
 	testCases := []struct {
@@ -32,7 +36,7 @@ func TestNewManagedClusterBuilder(t *testing.T) {
 		{
 			managedClusterName: defaultManagedClusterName,
 			client:             false,
-			expectedErrorText:  "managedCluster 'apiClient' cannot be nil",
+			expectedErrorText:  "",
 		},
 	}
 
@@ -40,13 +44,20 @@ func TestNewManagedClusterBuilder(t *testing.T) {
 		var testSettings *clients.Settings
 
 		if testCase.client {
-			testSettings = clients.GetTestClients(clients.TestClientParams{})
+			testSettings = buildTestClientWithManagedClusterScheme()
 		}
 
 		managedClusterBuilder := NewManagedClusterBuilder(testSettings, testCase.managedClusterName)
 
-		assert.NotNil(t, managedClusterBuilder)
-		assert.Equal(t, testCase.expectedErrorText, managedClusterBuilder.errorMsg)
+		if testCase.client {
+			assert.Equal(t, testCase.expectedErrorText, managedClusterBuilder.errorMsg)
+
+			if testCase.expectedErrorText == "" {
+				assert.Equal(t, testCase.managedClusterName, managedClusterBuilder.Definition.Name)
+			}
+		} else {
+			assert.Nil(t, managedClusterBuilder)
+		}
 	}
 }
 
@@ -82,9 +93,9 @@ func TestManagedClusterWithOptions(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		managedClusterBuilder := buildInvalidManagedClusterTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+		managedClusterBuilder := buildInvalidManagedClusterTestBuilder(buildTestClientWithManagedClusterScheme())
 		if testCase.valid {
-			managedClusterBuilder = buildValidManagedClusterTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+			managedClusterBuilder = buildValidManagedClusterTestBuilder(buildTestClientWithManagedClusterScheme())
 		}
 
 		managedClusterBuilder = managedClusterBuilder.WithOptions(testCase.options)
@@ -145,18 +156,18 @@ func TestPullManagedCluster(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: clusterTestSchemes,
 			})
 		}
 
 		managedClusterBuilder, err := PullManagedCluster(testSettings, testManagedCluster.Name)
 
-		if testCase.expectedErrorText != "" {
-			assert.NotNil(t, err)
-			assert.Equal(t, testCase.expectedErrorText, err.Error())
-		} else {
+		if testCase.expectedErrorText == "" {
 			assert.Nil(t, err)
 			assert.Equal(t, testManagedCluster.Name, managedClusterBuilder.Object.Name)
+		} else {
+			assert.EqualError(t, err, testCase.expectedErrorText)
 		}
 	}
 }
@@ -192,7 +203,7 @@ func TestManagedClusterDelete(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			testBuilder:   buildValidManagedClusterTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testBuilder:   buildValidManagedClusterTestBuilder(buildTestClientWithManagedClusterScheme()),
 			expectedError: nil,
 		},
 		{
@@ -224,7 +235,7 @@ func TestManagedClusterUpdate(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidManagedClusterTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+		testBuilder := buildValidManagedClusterTestBuilder(buildTestClientWithManagedClusterScheme())
 
 		if testCase.alreadyExists {
 			testBuilder = buildValidManagedClusterTestBuilder(buildTestClientWithDummyManagedCluster())
@@ -294,7 +305,7 @@ func TestManagedClusterValidate(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		managedClusterBuilder := buildValidManagedClusterTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+		managedClusterBuilder := buildValidManagedClusterTestBuilder(buildTestClientWithManagedClusterScheme())
 
 		if testCase.builderNil {
 			managedClusterBuilder = nil
@@ -339,6 +350,14 @@ func buildTestClientWithDummyManagedCluster() *clients.Settings {
 		K8sMockObjects: []runtime.Object{
 			buildDummyManagedCluster(defaultManagedClusterName),
 		},
+		SchemeAttachers: clusterTestSchemes,
+	})
+}
+
+// buildTestClientWithManagedClusterScheme returns a client with no objects but the ManagedCluster scheme.
+func buildTestClientWithManagedClusterScheme() *clients.Settings {
+	return clients.GetTestClients(clients.TestClientParams{
+		SchemeAttachers: clusterTestSchemes,
 	})
 }
 
