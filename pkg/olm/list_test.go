@@ -270,3 +270,69 @@ func TestListClusterServiceVersionInAllNamespaces(t *testing.T) {
 		}
 	}
 }
+
+func TestListInstallPlan(t *testing.T) {
+	testCases := []struct {
+		installPlan   []*InstallPlanBuilder
+		nsName        string
+		listOptions   []client.ListOptions
+		expectedError error
+		client        bool
+	}{
+		{
+			installPlan: []*InstallPlanBuilder{
+				buildValidInstallPlanBuilder(buildInstallPlanTestClientWithDummyObject())},
+			nsName:        "test-namespace",
+			expectedError: nil,
+			client:        true,
+		},
+		{
+			installPlan: []*InstallPlanBuilder{
+				buildValidInstallPlanBuilder(buildInstallPlanTestClientWithDummyObject())},
+			nsName:        "",
+			expectedError: fmt.Errorf("the nsname of the installplan is empty"),
+			client:        true,
+		},
+		{
+			installPlan: []*InstallPlanBuilder{
+				buildValidInstallPlanBuilder(buildInstallPlanTestClientWithDummyObject())},
+			nsName:        "test-namespace",
+			expectedError: nil,
+			listOptions:   []client.ListOptions{{Continue: "true"}},
+			client:        true,
+		},
+		{
+			installPlan: []*InstallPlanBuilder{
+				buildValidInstallPlanBuilder(buildInstallPlanTestClientWithDummyObject())},
+			nsName:        "test-namespace",
+			expectedError: fmt.Errorf("error: more than one ListOptions was passed"),
+			listOptions:   []client.ListOptions{{Continue: "true"}, {Limit: 100}},
+			client:        true,
+		},
+		{
+			installPlan: []*InstallPlanBuilder{
+				buildValidInstallPlanBuilder(buildInstallPlanTestClientWithDummyObject())},
+			nsName:        "test-namespace",
+			expectedError: fmt.Errorf("failed to list installPlan, 'apiClient' parameter is empty"),
+			listOptions:   []client.ListOptions{},
+			client:        false,
+		},
+	}
+	for _, testCase := range testCases {
+		var testSettings *clients.Settings
+
+		if testCase.client {
+			testSettings = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects:  buildDummyInstallPlan(),
+				SchemeAttachers: testSchemes,
+			})
+		}
+
+		netBuilders, err := ListInstallPlan(testSettings, testCase.nsName, testCase.listOptions...)
+		assert.Equal(t, err, testCase.expectedError)
+
+		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
+			assert.Equal(t, len(netBuilders), len(testCase.installPlan))
+		}
+	}
+}
