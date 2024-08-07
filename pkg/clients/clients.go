@@ -654,6 +654,8 @@ func GetTestClients(tcp TestClientParams) *Settings {
 
 	if len(tcp.K8sMockObjects) > 0 && len(tcp.SchemeAttachers) > 0 {
 		genericClientObjects = append(genericClientObjects, tcp.K8sMockObjects...)
+	} else {
+		clientSet.Interface = dynamicFake.NewSimpleDynamicClient(clientSet.scheme, genericClientObjects...)
 	}
 
 	for _, attacher := range tcp.SchemeAttachers {
@@ -662,8 +664,6 @@ func GetTestClients(tcp TestClientParams) *Settings {
 			return nil
 		}
 	}
-
-	clientSet.Interface = dynamicFake.NewSimpleDynamicClient(clientSet.scheme, genericClientObjects...)
 
 	// Add fake runtime client to clientSet runtime client
 	clientSet.Client = fakeRuntimeClient.NewClientBuilder().WithScheme(clientSet.scheme).
