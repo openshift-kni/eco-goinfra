@@ -12,55 +12,84 @@ import (
 	policiesv1beta1 "open-cluster-management.io/governance-policy-propagator/api/v1beta1"
 )
 
-var (
+const (
 	defaultPolicySetName   = "policyset-test"
 	defaultPolicySetNsName = "test-ns"
 )
+
+var policySetTestSchemes = []clients.SchemeAttacher{
+	policiesv1beta1.AddToScheme,
+}
 
 func TestNewPolicySetBuilder(t *testing.T) {
 	testCases := []struct {
 		policySetName      string
 		policySetNamespace string
 		policyName         string
+		client             bool
 		expectedErrorText  string
 	}{
 		{
 			policySetName:      defaultPolicySetName,
 			policySetNamespace: defaultPolicySetNsName,
 			policyName:         defaultPolicyName,
+			client:             true,
 			expectedErrorText:  "",
 		},
 		{
 			policySetName:      "",
 			policySetNamespace: defaultPolicySetNsName,
 			policyName:         defaultPolicyName,
+			client:             true,
 			expectedErrorText:  "policyset's 'name' cannot be empty",
 		},
 		{
 			policySetName:      defaultPolicySetName,
 			policySetNamespace: "",
 			policyName:         defaultPolicyName,
+			client:             true,
 			expectedErrorText:  "policyset's 'nsname' cannot be empty",
 		},
 		{
 			policySetName:      defaultPolicySetName,
 			policySetNamespace: defaultPolicySetNsName,
 			policyName:         "",
+			client:             true,
 			expectedErrorText:  "policyset's 'policy' cannot be empty",
+		},
+		{
+			policySetName:      defaultPolicySetName,
+			policySetNamespace: defaultPolicySetNsName,
+			policyName:         defaultPolicyName,
+			client:             false,
+			expectedErrorText:  "",
 		},
 	}
 
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients(clients.TestClientParams{})
+		var client *clients.Settings
+
+		if testCase.client {
+			client = buildTestClientWithPolicySetScheme()
+		}
+
 		policySetBuilder := NewPolicySetBuilder(
-			testSettings,
+			client,
 			testCase.policySetName,
 			testCase.policySetNamespace,
 			policiesv1beta1.NonEmptyString(testCase.policyName))
-		assert.NotNil(t, policySetBuilder)
-		assert.Equal(t, testCase.expectedErrorText, policySetBuilder.errorMsg)
-		assert.Equal(t, testCase.policySetName, policySetBuilder.Definition.Name)
-		assert.Equal(t, testCase.policySetNamespace, policySetBuilder.Definition.Namespace)
+
+		if testCase.client {
+			assert.Equal(t, testCase.expectedErrorText, policySetBuilder.errorMsg)
+
+			if testCase.expectedErrorText == "" {
+				assert.Equal(t, testCase.expectedErrorText, policySetBuilder.errorMsg)
+				assert.Equal(t, testCase.policySetName, policySetBuilder.Definition.Name)
+				assert.Equal(t, testCase.policySetNamespace, policySetBuilder.Definition.Namespace)
+			}
+		} else {
+			assert.Nil(t, policySetBuilder)
+		}
 	}
 }
 
@@ -70,21 +99,21 @@ func TestPullPolicySet(t *testing.T) {
 		policySetNamespace  string
 		addToRuntimeObjects bool
 		client              bool
-		expectedErrorText   string
+		expectedError       error
 	}{
 		{
 			policySetName:       defaultPolicySetName,
 			policySetNamespace:  defaultPolicySetNsName,
 			addToRuntimeObjects: true,
 			client:              true,
-			expectedErrorText:   "",
+			expectedError:       nil,
 		},
 		{
 			policySetName:       defaultPolicySetName,
 			policySetNamespace:  defaultPolicySetNsName,
 			addToRuntimeObjects: false,
 			client:              true,
-			expectedErrorText: fmt.Sprintf(
+			expectedError: fmt.Errorf(
 				"policyset object %s does not exist in namespace %s", defaultPolicySetName, defaultPolicySetNsName),
 		},
 		{
@@ -92,21 +121,21 @@ func TestPullPolicySet(t *testing.T) {
 			policySetNamespace:  defaultPolicySetNsName,
 			addToRuntimeObjects: false,
 			client:              true,
-			expectedErrorText:   "policyset's 'name' cannot be empty",
+			expectedError:       fmt.Errorf("policyset's 'name' cannot be empty"),
 		},
 		{
 			policySetName:       defaultPolicySetName,
 			policySetNamespace:  "",
 			addToRuntimeObjects: false,
 			client:              true,
-			expectedErrorText:   "policyset's 'namespace' cannot be empty",
+			expectedError:       fmt.Errorf("policyset's 'namespace' cannot be empty"),
 		},
 		{
 			policySetName:       defaultPolicySetName,
 			policySetNamespace:  defaultPolicySetNsName,
 			addToRuntimeObjects: false,
 			client:              false,
-			expectedErrorText:   "policyset's 'apiClient' cannot be empty",
+			expectedError:       fmt.Errorf("policyset's 'apiClient' cannot be nil"),
 		},
 	}
 
@@ -124,17 +153,15 @@ func TestPullPolicySet(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: policySetTestSchemes,
 			})
 		}
 
 		policySetBuilder, err := PullPolicySet(testSettings, testPolicySet.Name, testPolicySet.Namespace)
+		assert.Equal(t, testCase.expectedError, err)
 
-		if testCase.expectedErrorText != "" {
-			assert.NotNil(t, err)
-			assert.Equal(t, testCase.expectedErrorText, err.Error())
-		} else {
-			assert.Nil(t, err)
+		if testCase.expectedError == nil {
 			assert.Equal(t, testPolicySet.Name, policySetBuilder.Object.Name)
 			assert.Equal(t, testPolicySet.Namespace, policySetBuilder.Object.Namespace)
 		}
@@ -155,7 +182,7 @@ func TestPolicySetExists(t *testing.T) {
 			exists:      false,
 		},
 		{
-			testBuilder: buildValidPolicySetTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testBuilder: buildValidPolicySetTestBuilder(buildTestClientWithPolicySetScheme()),
 			exists:      false,
 		},
 	}
@@ -176,7 +203,7 @@ func TestPolicySetGet(t *testing.T) {
 			expectedPolicySet: buildDummyPolicySet(defaultPolicySetName, defaultPolicySetNsName),
 		},
 		{
-			testBuilder:       buildValidPolicySetTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testBuilder:       buildValidPolicySetTestBuilder(buildTestClientWithPolicySetScheme()),
 			expectedPolicySet: nil,
 		},
 	}
@@ -201,11 +228,11 @@ func TestPolicySetCreate(t *testing.T) {
 		expectedError error
 	}{
 		{
-			testBuilder:   buildValidPolicySetTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testBuilder:   buildValidPolicySetTestBuilder(buildTestClientWithPolicySetScheme()),
 			expectedError: nil,
 		},
 		{
-			testBuilder:   buildInvalidPolicySetTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testBuilder:   buildInvalidPolicySetTestBuilder(buildTestClientWithPolicySetScheme()),
 			expectedError: fmt.Errorf("policyset's 'nsname' cannot be empty"),
 		},
 	}
@@ -269,14 +296,14 @@ func TestPolicySetUpdate(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidPolicySetTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+		testBuilder := buildValidPolicySetTestBuilder(buildTestClientWithPolicySetScheme())
 
 		// Create the builder rather than just adding it to the client so that the proper metadata is added and
 		// the update will not fail.
 		if testCase.alreadyExists {
 			var err error
 
-			testBuilder = buildValidPolicySetTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+			testBuilder = buildValidPolicySetTestBuilder(buildTestClientWithPolicySetScheme())
 			testBuilder, err = testBuilder.Create()
 			assert.Nil(t, err)
 		}
@@ -315,7 +342,7 @@ func TestPolicySetWithPolicy(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients(clients.TestClientParams{})
+		testSettings := buildTestClientWithPolicySetScheme()
 		policySetBuilder := buildValidPolicySetTestBuilder(testSettings).WithAdditionalPolicy(testCase.policyName)
 		assert.Equal(t, testCase.expectedErrorText, policySetBuilder.errorMsg)
 
@@ -324,6 +351,82 @@ func TestPolicySetWithPolicy(t *testing.T) {
 				t,
 				[]policiesv1beta1.NonEmptyString{policiesv1beta1.NonEmptyString(defaultPolicyName), testCase.policyName},
 				policySetBuilder.Definition.Spec.Policies)
+		}
+	}
+}
+
+func TestPolicySetValidate(t *testing.T) {
+	testCases := []struct {
+		builderNil      bool
+		definitionNil   bool
+		apiClientNil    bool
+		builderErrorMsg string
+		expectedError   error
+	}{
+		{
+			builderNil:      false,
+			definitionNil:   false,
+			apiClientNil:    false,
+			builderErrorMsg: "",
+			expectedError:   nil,
+		},
+		{
+			builderNil:      true,
+			definitionNil:   false,
+			apiClientNil:    false,
+			builderErrorMsg: "",
+			expectedError:   fmt.Errorf("error: received nil policySet builder"),
+		},
+		{
+			builderNil:      false,
+			definitionNil:   true,
+			apiClientNil:    false,
+			builderErrorMsg: "",
+			expectedError:   fmt.Errorf("can not redefine the undefined policySet"),
+		},
+		{
+			builderNil:      false,
+			definitionNil:   false,
+			apiClientNil:    true,
+			builderErrorMsg: "",
+			expectedError:   fmt.Errorf("policySet builder cannot have nil apiClient"),
+		},
+		{
+			builderNil:      false,
+			definitionNil:   false,
+			apiClientNil:    false,
+			builderErrorMsg: "test error",
+			expectedError:   fmt.Errorf("test error"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		policySetBuilder := buildValidPolicySetTestBuilder(buildTestClientWithPolicySetScheme())
+
+		if testCase.builderNil {
+			policySetBuilder = nil
+		}
+
+		if testCase.definitionNil {
+			policySetBuilder.Definition = nil
+		}
+
+		if testCase.apiClientNil {
+			policySetBuilder.apiClient = nil
+		}
+
+		if testCase.builderErrorMsg != "" {
+			policySetBuilder.errorMsg = testCase.builderErrorMsg
+		}
+
+		valid, err := policySetBuilder.validate()
+
+		if testCase.expectedError != nil {
+			assert.False(t, valid)
+			assert.Equal(t, testCase.expectedError, err)
+		} else {
+			assert.True(t, valid)
+			assert.Nil(t, err)
 		}
 	}
 }
@@ -344,6 +447,14 @@ func buildTestClientWithDummyPolicySet() *clients.Settings {
 		K8sMockObjects: []runtime.Object{
 			buildDummyPolicySet(defaultPolicySetName, defaultPolicySetNsName),
 		},
+		SchemeAttachers: policySetTestSchemes,
+	})
+}
+
+// buildTestClientWithPolicySetScheme returns a client with no objects but the PolicySet scheme attached.
+func buildTestClientWithPolicySetScheme() *clients.Settings {
+	return clients.GetTestClients(clients.TestClientParams{
+		SchemeAttachers: policySetTestSchemes,
 	})
 }
 

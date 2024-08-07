@@ -116,7 +116,6 @@ import (
 	veleroFakeClient "github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned/fake"
 	veleroV1Client "github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned/typed/velero/v1"
 	dynamicFake "k8s.io/client-go/dynamic/fake"
-	policiesv1beta1 "open-cluster-management.io/governance-policy-propagator/api/v1beta1"
 )
 
 // Settings provides the struct to talk with relevant API.
@@ -355,10 +354,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
-	if err := policiesv1beta1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
 	if err := routev1.AddToScheme(crScheme); err != nil {
 		return err
 	}
@@ -522,8 +517,6 @@ func GetTestClients(tcp TestClientParams) *Settings {
 		case *operatorv1.OpenShiftAPIServer:
 			genericClientObjects = append(genericClientObjects, v)
 		case *routev1.Route:
-			genericClientObjects = append(genericClientObjects, v)
-		case *policiesv1beta1.PolicySet:
 			genericClientObjects = append(genericClientObjects, v)
 		case *configV1.Node:
 			genericClientObjects = append(genericClientObjects, v)
