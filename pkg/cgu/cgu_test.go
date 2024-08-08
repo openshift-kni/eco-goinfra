@@ -17,6 +17,8 @@ var (
 	defaultCguName           = "cgu-test"
 	defaultCguNsName         = "test-ns"
 	defaultCguMaxConcurrency = 1
+	defaultCguClusterName    = "test-cluster"
+	defaultCguClusterState   = v1alpha1.NotStarted
 	defaultCguCondition      = conditionComplete
 )
 
@@ -546,6 +548,168 @@ func TestCguWaitUntilComplete(t *testing.T) {
 
 		cguBuilder := buildValidCguTestBuilder(testSettings)
 		_, err := cguBuilder.WaitUntilComplete(time.Second)
+
+		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
+func TestCguWaitUntilClusterInState(t *testing.T) {
+	testCases := []struct {
+		cluster       string
+		state         string
+		exists        bool
+		inState       bool
+		valid         bool
+		expectedError error
+	}{
+		{
+			cluster:       defaultCguClusterName,
+			state:         defaultCguClusterState,
+			exists:        true,
+			inState:       true,
+			valid:         true,
+			expectedError: nil,
+		},
+		{
+			cluster:       "",
+			state:         defaultCguClusterState,
+			exists:        true,
+			inState:       true,
+			valid:         true,
+			expectedError: fmt.Errorf("cluster name cannot be empty"),
+		},
+		{
+			cluster:       defaultCguClusterName,
+			state:         "",
+			exists:        true,
+			inState:       true,
+			valid:         true,
+			expectedError: fmt.Errorf("state cannot be empty"),
+		},
+		{
+			cluster:       defaultCguClusterName,
+			state:         defaultCguClusterState,
+			exists:        false,
+			inState:       true,
+			valid:         true,
+			expectedError: fmt.Errorf("cgu object %s does not exist in namespace %s", defaultCguName, defaultCguNsName),
+		},
+		{
+			cluster:       defaultCguClusterName,
+			state:         defaultCguClusterState,
+			exists:        true,
+			inState:       false,
+			valid:         true,
+			expectedError: context.DeadlineExceeded,
+		},
+		{
+			cluster:       defaultCguClusterName,
+			state:         defaultCguClusterState,
+			exists:        true,
+			inState:       true,
+			valid:         false,
+			expectedError: fmt.Errorf("CGU 'nsname' cannot be empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		var (
+			runtimeObjects []runtime.Object
+			cguBuilder     *CguBuilder
+		)
+
+		if testCase.exists {
+			cgu := buildDummyCgu(defaultCguName, defaultCguNsName, defaultCguMaxConcurrency)
+
+			if testCase.inState {
+				cgu.Status.Status.CurrentBatchRemediationProgress = map[string]*v1alpha1.ClusterRemediationProgress{
+					testCase.cluster: {State: testCase.state},
+				}
+			}
+
+			runtimeObjects = append(runtimeObjects, cgu)
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: runtimeObjects,
+		})
+
+		if testCase.valid {
+			cguBuilder = buildValidCguTestBuilder(testSettings)
+		} else {
+			cguBuilder = buildInvalidCguTestBuilder(testSettings)
+		}
+
+		_, err := cguBuilder.WaitUntilClusterInState(testCase.cluster, testCase.state, time.Second)
+		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
+func TestCguWaitUntilClusterComplete(t *testing.T) {
+	testCases := []struct {
+		complete      bool
+		expectedError error
+	}{
+		{
+			complete:      true,
+			expectedError: nil,
+		},
+		{
+			complete:      false,
+			expectedError: context.DeadlineExceeded,
+		},
+	}
+
+	for _, testCase := range testCases {
+		cgu := buildDummyCgu(defaultCguName, defaultCguNsName, defaultCguMaxConcurrency)
+
+		if testCase.complete {
+			cgu.Status.Status.CurrentBatchRemediationProgress = map[string]*v1alpha1.ClusterRemediationProgress{
+				defaultCguClusterName: {State: v1alpha1.Completed},
+			}
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: []runtime.Object{cgu},
+		})
+
+		cguBuilder := buildValidCguTestBuilder(testSettings)
+		_, err := cguBuilder.WaitUntilClusterComplete(defaultCguClusterName, time.Second)
+
+		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
+func TestCguWaitUntilClusterInProgress(t *testing.T) {
+	testCases := []struct {
+		inProgress    bool
+		expectedError error
+	}{
+		{
+			inProgress:    true,
+			expectedError: nil,
+		},
+		{
+			inProgress:    false,
+			expectedError: context.DeadlineExceeded,
+		},
+	}
+
+	for _, testCase := range testCases {
+		cgu := buildDummyCgu(defaultCguName, defaultCguNsName, defaultCguMaxConcurrency)
+
+		if testCase.inProgress {
+			cgu.Status.Status.CurrentBatchRemediationProgress = map[string]*v1alpha1.ClusterRemediationProgress{
+				defaultCguClusterName: {State: v1alpha1.InProgress},
+			}
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: []runtime.Object{cgu},
+		})
+
+		cguBuilder := buildValidCguTestBuilder(testSettings)
+		_, err := cguBuilder.WaitUntilClusterInProgress(defaultCguClusterName, time.Second)
 
 		assert.Equal(t, testCase.expectedError, err)
 	}
