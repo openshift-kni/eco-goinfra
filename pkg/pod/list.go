@@ -208,15 +208,15 @@ func WaitForAllPodsInNamespaceRunning(
 	return true, nil
 }
 
-// WaitForAllPodsInNamespacesHealthy waits until all pods in a list of namespaces that match options
-// are in healthy state.
-// An pod in a healthy state is in running phase and optionally in ready condition.
+// WaitForAllPodsInNamespacesHealthy waits until:
+// - all pods in a list of namespaces that match options are in healthy state.
+// - a pod in a healthy state is in running phase and optionally in ready condition.
 //
-// nsNames lists the list of namespaces to monitor. Monitors all namespaces when empty.
-// timeout is the duration to wait for the pods to be healthy
-// includeSucceeded when true, implies that pods in succeeded phase are running.
-// checkReadiness when true, to also checks that the podConditions are ready.
-// ignoreFailedPods when true, to Ignore failed pods with restart policy set to never.
+// nsNames passes the list of namespaces to monitor. Monitors all namespaces when empty.
+// timeout is the duration in seconds to wait for the pods to be healthy
+// includeSucceeded when true, considers that pods in succeeded phase are healthy.
+// skipReadiness when false, checks that the podCondition is ready.
+// ignoreRestartPolicyNever when true, ignores failed pods with restart policy set to never.
 // ignoreNamespaces is a list of namespaces to ignore.
 // options reduces the list of namespace to only the ones matching options.
 func WaitForAllPodsInNamespacesHealthy(
@@ -236,12 +236,6 @@ func WaitForAllPodsInNamespacesHealthy(
 		glog.V(100).Infof("The apiClient is empty")
 
 		return fmt.Errorf("podList 'apiClient' cannot be empty")
-	}
-
-	if len(options) > 1 {
-		glog.V(100).Infof("'options' parameter must be empty or single-valued")
-
-		return fmt.Errorf("error: more than one ListOptions was passed")
 	}
 
 	if len(options) == 1 {
