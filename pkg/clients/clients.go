@@ -442,9 +442,18 @@ type TestClientParams struct {
 }
 
 // GetTestClients returns a fake clientset for testing.
+func GetTestClients(tcp TestClientParams) *Settings {
+	clientSet, testBuilder := GetModifiableTestClients(tcp)
+	clientSet.Client = testBuilder.Build()
+
+	return clientSet
+}
+
+// GetModifiableTestClients returns a fake clientset
+// and a modifiable clientbuilder for testing.
 //
 //nolint:funlen,gocyclo
-func GetTestClients(tcp TestClientParams) *Settings {
+func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClient.ClientBuilder) {
 	clientSet := &Settings{}
 
 	var k8sClientObjects, genericClientObjects, plumbingObjects, srIovObjects,
@@ -644,7 +653,7 @@ func GetTestClients(tcp TestClientParams) *Settings {
 
 	err := SetScheme(clientSet.scheme)
 	if err != nil {
-		return nil
+		return nil, nil
 	}
 
 	if len(tcp.GVK) > 0 && len(genericClientObjects) > 0 {
@@ -661,13 +670,13 @@ func GetTestClients(tcp TestClientParams) *Settings {
 	for _, attacher := range tcp.SchemeAttachers {
 		err := clientSet.AttachScheme(attacher)
 		if err != nil {
-			return nil
+			return nil, nil
 		}
 	}
 
 	// Add fake runtime client to clientSet runtime client
-	clientSet.Client = fakeRuntimeClient.NewClientBuilder().WithScheme(clientSet.scheme).
-		WithRuntimeObjects(genericClientObjects...).Build()
+	clientBuilder := fakeRuntimeClient.NewClientBuilder().WithScheme(clientSet.scheme).
+		WithRuntimeObjects(genericClientObjects...)
 
-	return clientSet
+	return clientSet, clientBuilder
 }
