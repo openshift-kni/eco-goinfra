@@ -1,0 +1,70 @@
+---
+# Argo CD operator
+- name: argocd-operator
+  sync: true
+  repo_link: "https://github.com/argoproj-labs/argocd-operator"
+  branch: master
+  remote_api_directory: api/v1beta1
+  local_api_directory: schemes/argocd/argocdoperator
+  replace_imports:
+    - old: '"github.com/argoproj-labs/argocd-operator/common"'
+      new: common "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdoperatorcommon"
+  excludes:
+    - "*_test.go"
+    - "testdata"
+
+- name: argocd-operator
+  sync: true
+  repo_link: "https://github.com/argoproj-labs/argocd-operator"
+  branch: master
+  remote_api_directory: common
+  local_api_directory: schemes/argocd/argocdoperatorcommon
+
+# Argo CD applications
+#
+# Refrences to imports not replaced in the sync were manually removed until no
+# more dependencies were added.
+- name: argo-cd
+  sync: false
+  repo_link: "https://github.com/argoproj/argo-cd"
+  branch: master
+  remote_api_directory: pkg/apis/application
+  local_api_directory: schemes/argocd/argocdtypes
+  replace_imports:
+    - old: '"github.com/argoproj/argo-cd/v2/pkg/apis/application"'
+      new: application "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdtypes"
+    - old: synccommon "github.com/argoproj/gitops-engine/pkg/sync/common"
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/synccommon"'
+    - old: '"github.com/argoproj/gitops-engine/pkg/health"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/health"'
+  excludes:
+    - "*_test.go"
+    - "doc.go"
+    - "generated.proto"
+    - "generated.pb.go"
+    - "openapi_generated.go"
+
+# Argo GitOps Engine
+#
+# Refrences to the kube imports were manually removed since they are not
+# necessary for the sync.
+- name: gitops-engine
+  sync: false
+  repo_link: "https://github.com/argoproj/gitops-engine"
+  branch: master
+  remote_api_directory: pkg/sync/common
+  local_api_directory: schemes/argocd/gitopsengine/synccommon
+  excludes:
+    - "*_test.go"
+
+- name: gitops-engine
+  sync: false
+  repo_link: "https://github.com/argoproj/gitops-engine"
+  branch: master
+  remote_api_directory: pkg/health
+  local_api_directory: schemes/argocd/gitopsengine/health
+  excludes:
+    - "testdata"
+    - "*_test.go"
+    - "health_*.go"
+...
