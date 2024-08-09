@@ -1,8 +1,10 @@
 package ocm
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	kacv1 "github.com/stolostron/klusterlet-addon-controller/pkg/apis/agent/v1"
@@ -152,6 +154,38 @@ func TestPullKAC(t *testing.T) {
 	}
 }
 
+func TestKACGet(t *testing.T) {
+	testCases := []struct {
+		testBuilder   *KACBuilder
+		expectedError string
+	}{
+		{
+			testBuilder:   buildValidKACTestBuilder(buildTestClientWithDummyKAC()),
+			expectedError: "",
+		},
+		{
+			testBuilder:   buildInvalidKACTestBuilder(buildTestClientWithDummyKAC()),
+			expectedError: "klusterletAddonConfig 'nsname' cannot be empty",
+		},
+		{
+			testBuilder:   buildValidKACTestBuilder(buildTestClientWithKACScheme()),
+			expectedError: "klusterletaddonconfigs.agent.open-cluster-management.io \"klusterletaddonconfig-test\" not found",
+		},
+	}
+
+	for _, testCase := range testCases {
+		kac, err := testCase.testBuilder.Get()
+
+		if testCase.expectedError == "" {
+			assert.Nil(t, err)
+			assert.Equal(t, testCase.testBuilder.Definition.Name, kac.Name)
+			assert.Equal(t, testCase.testBuilder.Definition.Namespace, kac.Namespace)
+		} else {
+			assert.EqualError(t, err, testCase.expectedError)
+		}
+	}
+}
+
 func TestKACExists(t *testing.T) {
 	testCases := []struct {
 		testBuilder *KACBuilder
@@ -297,6 +331,72 @@ func TestKACDelete(t *testing.T) {
 		} else {
 			assert.EqualError(t, err, testCase.expectedErrorText)
 		}
+	}
+}
+
+func TestKACWaitUntilSearchCollectorEnabled(t *testing.T) {
+	testCases := []struct {
+		exists        bool
+		valid         bool
+		enabled       bool
+		expectedError error
+	}{
+		{
+			exists:        true,
+			valid:         true,
+			enabled:       true,
+			expectedError: nil,
+		},
+		{
+			exists:  false,
+			valid:   true,
+			enabled: true,
+			expectedError: fmt.Errorf(
+				"klusterletAddonConfig object %s does not exist in namespace %s", defaultKACName, defaultKACNamespace),
+		},
+		{
+			exists:        true,
+			valid:         false,
+			enabled:       true,
+			expectedError: fmt.Errorf("klusterletAddonConfig 'nsname' cannot be empty"),
+		},
+		{
+			exists:        true,
+			valid:         true,
+			enabled:       false,
+			expectedError: context.DeadlineExceeded,
+		},
+	}
+
+	for _, testCase := range testCases {
+		var (
+			runtimeObjects []runtime.Object
+			kacBuilder     *KACBuilder
+		)
+
+		if testCase.exists {
+			kac := buildDummyKAC(defaultKACName, defaultKACNamespace)
+
+			if testCase.enabled {
+				kac.Spec.SearchCollectorConfig.Enabled = true
+			}
+
+			runtimeObjects = append(runtimeObjects, kac)
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: kacTestSchemes,
+		})
+
+		if testCase.valid {
+			kacBuilder = buildValidKACTestBuilder(testSettings)
+		} else {
+			kacBuilder = buildInvalidKACTestBuilder(testSettings)
+		}
+
+		_, err := kacBuilder.WaitUntilSearchCollectorEnabled(time.Second)
+		assert.Equal(t, testCase.expectedError, err)
 	}
 }
 
