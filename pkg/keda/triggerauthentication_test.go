@@ -86,7 +86,8 @@ func TestPullTriggerAuthentication(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: kedav2v1alpha1TestSchemes,
 			})
 		}
 
@@ -386,7 +387,8 @@ func buildInValidTriggerAuthBuilder(apiClient *clients.Settings) *TriggerAuthent
 
 func buildTriggerAuthClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyTriggerAuthentication(),
+		K8sMockObjects:  buildDummyTriggerAuthentication(),
+		SchemeAttachers: kedav2v1alpha1TestSchemes,
 	})
 }
 
