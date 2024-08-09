@@ -25,8 +25,6 @@ require (
 	github.com/openshift/local-storage-operator v0.0.0-20240422172451-2a80d7f6681d // release-4.16
 	github.com/openshift/machine-config-operator v0.0.1-0.20230811181556-63d7be1ef18b
 	github.com/openshift/ptp-operator v0.0.0-20240404165119-29a3d7b3d60b
-	github.com/operator-framework/api v0.23.0
-	github.com/operator-framework/operator-lifecycle-manager v0.28.0
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.73.2
 	github.com/rh-ecosystem-edge/kernel-module-management v0.0.0-20240605101434-e1de2798b3c4
 	golang.org/x/exp v0.0.0-20240604190554-fc45aab8b7f8
@@ -57,7 +55,7 @@ require (
 	github.com/aws/aws-sdk-go v1.50.25 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
-	github.com/blang/semver/v4 v4.0.0 // indirect
+	github.com/blang/semver/v4 v4.0.0
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
@@ -96,7 +94,6 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/btree v1.1.2 // indirect
-	github.com/google/cel-go v0.18.2 // indirect
 	github.com/google/gnostic-models v0.6.9-0.20230804172637-c7be7c783f49 // indirect
 	github.com/google/go-cmp v0.6.0
 	github.com/google/gofuzz v1.2.0 // indirect
@@ -105,8 +102,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
-	github.com/h2non/filetype v1.1.3 // indirect
-	github.com/h2non/go-is-svg v0.0.0-20160927212452-35e8c4b0612c // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -148,11 +143,9 @@ require (
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/noobaa/noobaa-operator/v5 v5.0.0-20240319123706-4ee28d614c7c // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
-	github.com/onsi/gomega v1.33.1 // indirect
 	github.com/openshift/custom-resource-status v1.1.3-0.20220503160415-f2fdb4999d87
 	github.com/openshift/elasticsearch-operator v0.0.0-20220613183908-e1648e67c298
 	github.com/openshift/library-go v0.0.0-20240419113445-f1541d628746 // indirect
-	github.com/operator-framework/operator-registry v1.41.0 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
@@ -166,12 +159,11 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
-	github.com/sirupsen/logrus v1.9.3 // indirect
+	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/cobra v1.8.0 // indirect
 	github.com/spf13/pflag v1.0.6-0.20210604193023-d5e0c0615ace // indirect
 	github.com/stmcginnis/gofish v0.15.0
-	github.com/stoewer/go-strcase v1.3.0 // indirect
 	github.com/stretchr/testify v1.9.0
 	github.com/thoas/go-funk v0.9.2
 	github.com/vincent-petithory/dataurl v1.0.0 // indirect
@@ -189,9 +181,6 @@ require (
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.22.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20240401170217-c3f982113cda // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240415180920-8c6c420018be // indirect
-	google.golang.org/grpc v1.63.2 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
@@ -221,10 +210,8 @@ require (
 )
 
 require (
-	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
 	github.com/expr-lang/expr v1.16.5 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.1 // indirect
-	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/stolostron/cluster-lifecycle-api v0.0.0-20240109072430-f5fe6043d1f8 // indirect
 	github.com/vishvananda/netns v0.0.4 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect

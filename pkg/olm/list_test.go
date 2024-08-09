@@ -336,3 +336,69 @@ func TestListInstallPlan(t *testing.T) {
 		}
 	}
 }
+
+func TestListPackageManifest(t *testing.T) {
+	testCases := []struct {
+		packageManifest []*PackageManifestBuilder
+		nsName          string
+		listOptions     []client.ListOptions
+		expectedError   error
+		client          bool
+	}{
+		{
+			packageManifest: []*PackageManifestBuilder{
+				buildValidPackageManifestBuilder(buildPackageManifestTestClientWithDummyObject())},
+			nsName:        "test-namespace",
+			expectedError: nil,
+			client:        true,
+		},
+		{
+			packageManifest: []*PackageManifestBuilder{
+				buildValidPackageManifestBuilder(buildPackageManifestTestClientWithDummyObject())},
+			nsName:        "",
+			expectedError: fmt.Errorf("failed to list packagemanifests, 'nsname' parameter is empty"),
+			client:        true,
+		},
+		{
+			packageManifest: []*PackageManifestBuilder{
+				buildValidPackageManifestBuilder(buildPackageManifestTestClientWithDummyObject())},
+			nsName:        "test-namespace",
+			expectedError: nil,
+			listOptions:   []client.ListOptions{{Continue: "true"}},
+			client:        true,
+		},
+		{
+			packageManifest: []*PackageManifestBuilder{
+				buildValidPackageManifestBuilder(buildPackageManifestTestClientWithDummyObject())},
+			nsName:        "test-namespace",
+			expectedError: fmt.Errorf("error: more than one ListOptions was passed"),
+			listOptions:   []client.ListOptions{{Continue: "true"}, {Limit: 100}},
+			client:        true,
+		},
+		{
+			packageManifest: []*PackageManifestBuilder{
+				buildValidPackageManifestBuilder(buildPackageManifestTestClientWithDummyObject())},
+			nsName:        "test-namespace",
+			expectedError: fmt.Errorf("failed to list packageManifest, 'apiClient' parameter is empty"),
+			listOptions:   []client.ListOptions{},
+			client:        false,
+		},
+	}
+	for _, testCase := range testCases {
+		var testSettings *clients.Settings
+
+		if testCase.client {
+			testSettings = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects:  buildDummyPackageManifest(),
+				SchemeAttachers: operatorsv1Scheme,
+			})
+		}
+
+		packageManifests, err := ListPackageManifest(testSettings, testCase.nsName, testCase.listOptions...)
+		assert.Equal(t, err, testCase.expectedError)
+
+		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
+			assert.Equal(t, len(packageManifests), len(testCase.packageManifest))
+		}
+	}
+}
