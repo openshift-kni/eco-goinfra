@@ -1,0 +1,23 @@
+---
+- name: bmh
+  sync: true
+  repo_link: "https://github.com/metal3-io/baremetal-operator.git"
+  branch: main
+  remote_api_directory: apis/metal3.io/v1alpha1
+  local_api_directory: schemes/baremetal-operator/v1alpha1
+  replace_imports:
+    - old: '"github.com/metal3-io/baremetal-operator/pkg/hardwareutils/bmc"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/baremetal-operator/bmc"'
+    - old: '"github.com/metal3-io/baremetal-operator/apis/metal3.io/v1alpha1"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/baremetal-operator/v1alpha1"'
+  excludes:
+    - "*_test.go"
+
+- name: bmh
+  sync: true
+  repo_link: "https://github.com/metal3-io/baremetal-operator.git"
+  branch: main
+  remote_api_directory: pkg/hardwareutils/bmc
+  local_api_directory: schemes/baremetal-operator/bmc
+  excludes:
+    - "*_test.go"
