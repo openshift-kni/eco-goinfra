@@ -3,7 +3,6 @@ module github.com/openshift-kni/eco-goinfra
 go 1.22
 
 require (
-	github.com/argoproj-labs/argocd-operator v0.10.0
 	github.com/golang/glog v1.2.1
 	github.com/k8snetworkplumbingwg/multi-networkpolicy v0.0.0-20240528155521-f76867e779b8
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v1.7.0

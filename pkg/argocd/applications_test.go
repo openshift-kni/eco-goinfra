@@ -4,23 +4,21 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/argocd/argocdtypes"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	argocdtypes "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdtypes/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-var (
-	applicationGVK = schema.GroupVersionKind{
-		Group:   APIGroup,
-		Version: APIVersion,
-		Kind:    "Application",
-	}
+const (
 	defaultApplicationName   = "application-name"
 	defaultApplicationNsName = "application-ns-name"
 )
+
+var appsTestSchemes = []clients.SchemeAttacher{
+	argocdtypes.AddToScheme,
+}
 
 func TestPullApplication(t *testing.T) {
 	generateApplication := func(name, namespace string) *argocdtypes.Application {
@@ -91,8 +89,8 @@ func TestPullApplication(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
-				GVK:            []schema.GroupVersionKind{applicationGVK},
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: appsTestSchemes,
 			})
 		}
 
@@ -116,7 +114,7 @@ func TestApplicationExist(t *testing.T) {
 			expectedStatus:         true,
 		},
 		{
-			testApplicationBuilder: buildValidApplicationBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testApplicationBuilder: buildValidApplicationBuilder(buildApplicationTestClientWithScheme()),
 			expectedStatus:         false,
 		},
 	}
@@ -137,7 +135,7 @@ func TestApplicationGet(t *testing.T) {
 			expectedError:          nil,
 		},
 		{
-			testApplicationBuilder: buildValidApplicationBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testApplicationBuilder: buildValidApplicationBuilder(buildApplicationTestClientWithScheme()),
 			expectedError:          fmt.Errorf("applications.argoproj.io \"application-name\" not found"),
 		},
 	}
@@ -165,23 +163,21 @@ func TestApplicationUpdate(t *testing.T) {
 			expectedError:          nil,
 		},
 		{
-			testApplicationBuilder: buildValidApplicationBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:          fmt.Errorf("applications.argoproj.io \"application-name\" not found"),
+			testApplicationBuilder: buildValidApplicationBuilder(buildApplicationTestClientWithScheme()),
+			expectedError:          fmt.Errorf("cannot update non-existent Application"),
 		},
 	}
 
 	for _, testCase := range testCases {
 		assert.Equal(t, testCase.testApplicationBuilder.Definition.Spec.Project, "")
 		testCase.testApplicationBuilder.Definition.Spec.Project = "test"
+
 		application, err := testCase.testApplicationBuilder.Update(false)
+		assert.Equal(t, testCase.expectedError, err)
 
-		if testCase.expectedError != nil {
-			assert.Equal(t, testCase.expectedError.Error(), err.Error())
-		} else {
-			assert.Equal(t, testCase.expectedError, err)
+		if testCase.expectedError == nil {
+			assert.Equal(t, application.Object.Spec.Project, "test")
 		}
-
-		assert.Equal(t, application.Object.Spec.Project, "test")
 	}
 }
 
@@ -195,7 +191,7 @@ func TestApplicationDelete(t *testing.T) {
 			expectedError:          nil,
 		},
 		{
-			testApplicationBuilder: buildValidApplicationBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testApplicationBuilder: buildValidApplicationBuilder(buildApplicationTestClientWithScheme()),
 			expectedError:          nil,
 		},
 	}
@@ -223,7 +219,7 @@ func TestApplicationCreate(t *testing.T) {
 			expectedError:          nil,
 		},
 		{
-			testApplicationBuilder: buildValidApplicationBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testApplicationBuilder: buildValidApplicationBuilder(buildApplicationTestClientWithScheme()),
 			expectedError:          nil,
 		},
 	}
@@ -296,24 +292,23 @@ func TestApplicationWithGitDetails(t *testing.T) {
 	}
 }
 
-func TestApplicationGVR(t *testing.T) {
-	assert.Equal(t, GetApplicationsGVR(),
-		schema.GroupVersionResource{
-			Group: APIGroup, Version: APIVersion, Resource: "applications",
-		})
-}
-
 func buildValidApplicationBuilder(apiClient *clients.Settings) *ApplicationBuilder {
 	return &ApplicationBuilder{
-		apiClient:  apiClient,
+		apiClient:  apiClient.Client,
 		Definition: buildDummyApplication(defaultApplicationName, defaultApplicationNsName),
 	}
 }
 
 func buildApplicationTestClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyApplicationRuntime(),
-		GVK:            []schema.GroupVersionKind{applicationGVK},
+		K8sMockObjects:  buildDummyApplicationRuntime(),
+		SchemeAttachers: appsTestSchemes,
+	})
+}
+
+func buildApplicationTestClientWithScheme() *clients.Settings {
+	return clients.GetTestClients(clients.TestClientParams{
+		SchemeAttachers: appsTestSchemes,
 	})
 }
 
