@@ -19,6 +19,9 @@ var (
 	defaultElasticsearchName            = "elasticsearch"
 	defaultElasticsearchNamespace       = "openshift-logging"
 	defaultElasticsearchManagementState = eskv1.ManagementState("")
+	eskv1TestSchemes                    = []clients.SchemeAttacher{
+		eskv1.AddToScheme,
+	}
 )
 
 func TestElasticsearchPull(t *testing.T) {
@@ -92,7 +95,8 @@ func TestElasticsearchPull(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: eskv1TestSchemes,
 			})
 		}
 
@@ -380,7 +384,8 @@ func buildInValidElasticsearchBuilder(apiClient *clients.Settings) *Elasticsearc
 
 func buildElasticsearchClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyElasticsearch(),
+		K8sMockObjects:  buildDummyElasticsearch(),
+		SchemeAttachers: eskv1TestSchemes,
 	})
 }
 

@@ -30,6 +30,9 @@ var (
 		OutputRefs: []string{"elasticsearch-external"},
 		InputRefs:  []string{"application", "infra"},
 	}
+	clov1TestSchemes = []clients.SchemeAttacher{
+		clov1.AddToScheme,
+	}
 )
 
 func TestClusterLogForwarderPull(t *testing.T) {
@@ -104,7 +107,8 @@ func TestClusterLogForwarderPull(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: clov1TestSchemes,
 			})
 		}
 
@@ -412,7 +416,8 @@ func buildInValidClusterLogForwarderBuilder(apiClient *clients.Settings) *Cluste
 
 func buildClusterLogForwarderClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyClusterLogForwarder(),
+		K8sMockObjects:  buildDummyClusterLogForwarder(),
+		SchemeAttachers: clov1TestSchemes,
 	})
 }
 
