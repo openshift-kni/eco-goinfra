@@ -26,6 +26,9 @@ var (
 			Operator: "Exists",
 		}},
 	}
+	lokiv1TestSchemes = []clients.SchemeAttacher{
+		lokiv1.AddToScheme,
+	}
 )
 
 func TestPullLokiStack(t *testing.T) {
@@ -97,7 +100,8 @@ func TestPullLokiStack(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: lokiv1TestSchemes,
 			})
 		}
 
@@ -637,7 +641,8 @@ func buildInValidLokiStackBuilder(apiClient *clients.Settings) *LokiStackBuilder
 
 func buildLokiStackClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyTriggerAuthentication(),
+		K8sMockObjects:  buildDummyTriggerAuthentication(),
+		SchemeAttachers: lokiv1TestSchemes,
 	})
 }
 

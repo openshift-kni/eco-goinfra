@@ -88,7 +88,8 @@ func TestClusterLoggingPull(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: clov1TestSchemes,
 			})
 		}
 
@@ -489,7 +490,8 @@ func buildInValidClusterLoggingBuilder(apiClient *clients.Settings) *Builder {
 
 func buildClusterLoggingClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyClusterLogging(),
+		K8sMockObjects:  buildDummyClusterLogging(),
+		SchemeAttachers: clov1TestSchemes,
 	})
 }
 

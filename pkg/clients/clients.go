@@ -12,11 +12,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	argocdOperatorv1alpha1 "github.com/argoproj-labs/argocd-operator/api/v1alpha1"
-	lokiv1 "github.com/grafana/loki/operator/apis/loki/v1"
-	clov1 "github.com/openshift/cluster-logging-operator/api/logging/v1"
 	performanceV2 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/performanceprofile/v2"
 	tunedv1 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/tuned/v1"
-	eskv1 "github.com/openshift/elasticsearch-operator/apis/logging/v1"
 	monv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 
 	oauthv1 "github.com/openshift/api/oauth/v1"
@@ -244,10 +241,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
-	if err := clov1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
 	if err := lcav1.AddToScheme(crScheme); err != nil {
 		return err
 	}
@@ -337,14 +330,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	}
 
 	if err := odfoperatorv1alpha1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := eskv1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := lokiv1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
@@ -514,14 +499,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 		case *istiov1.ServiceMeshMemberRoll:
 			genericClientObjects = append(genericClientObjects, v)
 		case *istiov2.ServiceMeshControlPlane:
-			genericClientObjects = append(genericClientObjects, v)
-		case *clov1.ClusterLogging:
-			genericClientObjects = append(genericClientObjects, v)
-		case *clov1.ClusterLogForwarder:
-			genericClientObjects = append(genericClientObjects, v)
-		case *eskv1.Elasticsearch:
-			genericClientObjects = append(genericClientObjects, v)
-		case *lokiv1.LokiStack:
 			genericClientObjects = append(genericClientObjects, v)
 		case *hiveextV1Beta1.AgentClusterInstall:
 			genericClientObjects = append(genericClientObjects, v)
