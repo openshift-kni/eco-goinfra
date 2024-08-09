@@ -81,14 +81,11 @@ import (
 	k8sFakeClient "k8s.io/client-go/kubernetes/fake"
 	fakeRuntimeClient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	operatorv1 "github.com/openshift/api/operator/v1"
-	istiov1 "maistra.io/api/core/v1"
-	istiov2 "maistra.io/api/core/v2"
-
 	grafanaV4V1Alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	multinetpolicyclientv1 "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/client/clientset/versioned/typed/k8s.cni.cncf.io/v1beta1"
 	noobaav1alpha1 "github.com/kube-object-storage/lib-bucket-provisioner/pkg/apis/objectbucket.io/v1alpha1"
 	cguapiv1alpha1 "github.com/openshift-kni/cluster-group-upgrades-operator/pkg/api/clustergroupupgrades/v1alpha1"
+	operatorv1 "github.com/openshift/api/operator/v1"
 	machinev1beta1client "github.com/openshift/client-go/machine/clientset/versioned/typed/machine/v1beta1"
 	operatorv1alpha1 "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1"
 	nfdv1 "github.com/openshift/cluster-nfd-operator/api/v1"
@@ -330,14 +327,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
-	if err := istiov1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := istiov2.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
 	if err := performanceV2.AddToScheme(crScheme); err != nil {
 		return err
 	}
@@ -492,10 +481,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 		case *lsov1alpha1.LocalVolumeSet:
 			genericClientObjects = append(genericClientObjects, v)
 		case *odfoperatorv1alpha1.StorageSystem:
-			genericClientObjects = append(genericClientObjects, v)
-		case *istiov1.ServiceMeshMemberRoll:
-			genericClientObjects = append(genericClientObjects, v)
-		case *istiov2.ServiceMeshControlPlane:
 			genericClientObjects = append(genericClientObjects, v)
 		case *hiveextV1Beta1.AgentClusterInstall:
 			genericClientObjects = append(genericClientObjects, v)
