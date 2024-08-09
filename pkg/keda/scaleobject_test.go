@@ -20,6 +20,9 @@ var (
 	minReplicaCount              = int32(1)
 	maxReplicaCount              = int32(8)
 	zeroValue                    = int32(0)
+	kedav2v1alpha1TestSchemes    = []clients.SchemeAttacher{
+		kedav2v1alpha1.AddToScheme,
+	}
 )
 
 func TestPullScaledObject(t *testing.T) {
@@ -91,7 +94,8 @@ func TestPullScaledObject(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: kedav2v1alpha1TestSchemes,
 			})
 		}
 
@@ -569,7 +573,8 @@ func buildInValidScaledObjectBuilder(apiClient *clients.Settings) *ScaledObjectB
 
 func buildScaledObjectClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyScaledObject(),
+		K8sMockObjects:  buildDummyScaledObject(),
+		SchemeAttachers: kedav2v1alpha1TestSchemes,
 	})
 }
 

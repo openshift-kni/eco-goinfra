@@ -15,6 +15,9 @@ import (
 var (
 	defaultKedaControllerName      = "keda"
 	defaultKedaControllerNamespace = "openshift-keda"
+	testSchemes                    = []clients.SchemeAttacher{
+		kedav1alpha1.AddToScheme,
+	}
 )
 
 func TestPullController(t *testing.T) {
@@ -86,7 +89,8 @@ func TestPullController(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
 			})
 		}
 
@@ -447,7 +451,8 @@ func buildInValidControllerBuilder(apiClient *clients.Settings) *ControllerBuild
 
 func buildControllerClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyController(),
+		K8sMockObjects:  buildDummyController(),
+		SchemeAttachers: testSchemes,
 	})
 }
 

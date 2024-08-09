@@ -13,8 +13,6 @@ import (
 
 	argocdOperatorv1alpha1 "github.com/argoproj-labs/argocd-operator/api/v1alpha1"
 	lokiv1 "github.com/grafana/loki/operator/apis/loki/v1"
-	kedav1alpha1 "github.com/kedacore/keda-olm-operator/apis/keda/v1alpha1"
-	kedav2v1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	clov1 "github.com/openshift/cluster-logging-operator/api/logging/v1"
 	performanceV2 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/performanceprofile/v2"
 	tunedv1 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/tuned/v1"
@@ -366,14 +364,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
-	if err := kedav1alpha1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := kedav2v1alpha1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
 	if err := noobaav1alpha1.AddToScheme(crScheme); err != nil {
 		return err
 	}
@@ -538,12 +528,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 		case *performanceV2.PerformanceProfile:
 			genericClientObjects = append(genericClientObjects, v)
 		case *tunedv1.Tuned:
-			genericClientObjects = append(genericClientObjects, v)
-		case *kedav1alpha1.KedaController:
-			genericClientObjects = append(genericClientObjects, v)
-		case *kedav2v1alpha1.TriggerAuthentication:
-			genericClientObjects = append(genericClientObjects, v)
-		case *kedav2v1alpha1.ScaledObject:
 			genericClientObjects = append(genericClientObjects, v)
 		case *noobaav1alpha1.ObjectBucketClaim:
 			genericClientObjects = append(genericClientObjects, v)
