@@ -20,6 +20,9 @@ var (
 	defaultBmHostSecretName = "testsecret"
 	defaultBmHostMacAddress = "AA:BB:CC:11:22:33"
 	defaultBmHostBootMode   = "UEFISecureBoot"
+	testSchemes             = []clients.SchemeAttacher{
+		bmhv1alpha1.AddToScheme,
+	}
 )
 
 func TestBareMetalHostPull(t *testing.T) {
@@ -91,7 +94,8 @@ func TestBareMetalHostPull(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
 			})
 		}
 
@@ -1022,7 +1026,8 @@ func buildBareMetalHostTestClientWithDummyObject(state ...bmhv1alpha1.Provisioni
 	}
 
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyBmHost(provisionState),
+		K8sMockObjects:  buildDummyBmHost(provisionState),
+		SchemeAttachers: testSchemes,
 	})
 }
 
