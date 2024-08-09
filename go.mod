@@ -24,7 +24,6 @@ require (
 	github.com/openshift/cluster-node-tuning-operator v0.0.0-20240606084543-6d2e11aec345
 	github.com/openshift/local-storage-operator v0.0.0-20240422172451-2a80d7f6681d // release-4.16
 	github.com/openshift/machine-config-operator v0.0.1-0.20230811181556-63d7be1ef18b
-	github.com/openshift/ptp-operator v0.0.0-20240404165119-29a3d7b3d60b
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.73.2
 	github.com/rh-ecosystem-edge/kernel-module-management v0.0.0-20240605101434-e1de2798b3c4
 	golang.org/x/exp v0.0.0-20240604190554-fc45aab8b7f8
