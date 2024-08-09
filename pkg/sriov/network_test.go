@@ -22,6 +22,12 @@ var (
 	defaultNetResName      = "resname"
 )
 
+var (
+	testSchemes = []clients.SchemeAttacher{
+		srIovV1.AddToScheme,
+	}
+)
+
 //nolint:funlen
 func TestPullNetwork(t *testing.T) {
 	generateNetwork := func(name, namespace string) *srIovV1.SriovNetwork {
@@ -97,7 +103,8 @@ func TestPullNetwork(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
 			})
 		}
 
@@ -646,6 +653,7 @@ func TestUpdate(t *testing.T) {
 		assert.Equal(t, "", testCase.testNetwork.Definition.Spec.IPAM)
 		assert.Nil(t, nil, testCase.testNetwork.Object)
 		testCase.testNetwork.WithStaticIpam()
+		testCase.testNetwork.Definition.ObjectMeta.ResourceVersion = "999"
 		netBuilder, err := testCase.testNetwork.Update(false)
 		assert.Equal(t, testCase.expectedError, err)
 		assert.Equal(t, `{ "type": "static" }`, testCase.testNetwork.Object.Spec.IPAM)
@@ -667,7 +675,8 @@ func buildInvalidSrIovNetworkTestBuilder(apiClient *clients.Settings) *NetworkBu
 
 func buildTestClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummySrIovNetworkObject(),
+		K8sMockObjects:  buildDummySrIovNetworkObject(),
+		SchemeAttachers: testSchemes,
 	})
 }
 
