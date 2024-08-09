@@ -20,6 +20,7 @@ var (
 	defaultBmHostSecretName = "testsecret"
 	defaultBmHostMacAddress = "AA:BB:CC:11:22:33"
 	defaultBmHostBootMode   = "UEFISecureBoot"
+	defaultBmHostAnnotation = "annotation.openshift.io/test-annotation"
 	testSchemes             = []clients.SchemeAttacher{
 		bmhv1alpha1.AddToScheme,
 	}
@@ -966,6 +967,86 @@ func TestBareMetalHostDeleteAndWaitUntilDeleted(t *testing.T) {
 	}
 }
 
+func TestBareMetalHostWaitUntilAnnotationExists(t *testing.T) {
+	testCases := []struct {
+		annotation    string
+		exists        bool
+		valid         bool
+		annotated     bool
+		expectedError error
+	}{
+		{
+			annotation:    defaultBmHostAnnotation,
+			exists:        true,
+			valid:         true,
+			annotated:     true,
+			expectedError: nil,
+		},
+		{
+			annotation:    "",
+			exists:        true,
+			valid:         true,
+			annotated:     true,
+			expectedError: fmt.Errorf("bmh annotation key cannot be empty"),
+		},
+		{
+			annotation: defaultBmHostAnnotation,
+			exists:     false,
+			valid:      true,
+			annotated:  true,
+			expectedError: fmt.Errorf(
+				"baremetalhost object %s does not exist in namespace %s", defaultBmHostName, defaultBmHostNsName),
+		},
+		{
+			annotation:    defaultBmHostAnnotation,
+			exists:        true,
+			valid:         false,
+			annotated:     true,
+			expectedError: fmt.Errorf("not acceptable 'bootMode' value"),
+		},
+		{
+			annotation:    defaultBmHostAnnotation,
+			exists:        true,
+			valid:         true,
+			annotated:     false,
+			expectedError: context.DeadlineExceeded,
+		},
+	}
+
+	for _, testCase := range testCases {
+		var (
+			runtimeObjects []runtime.Object
+			builder        *BmhBuilder
+		)
+
+		if testCase.exists {
+			bmh := buildDummyBmHost(bmhv1alpha1.StateProvisioned, bmhv1alpha1.OperationalStatusOK)
+
+			if testCase.annotated {
+				bmh.Annotations = map[string]string{
+					defaultBmHostAnnotation: "",
+				}
+			}
+
+			runtimeObjects = append(runtimeObjects, bmh)
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: testSchemes,
+		})
+
+		if testCase.valid {
+			builder = buildValidBmHostBuilder(testSettings)
+		} else {
+			builder = buildInValidBmHostBuilder(testSettings)
+		}
+
+		_, err := builder.WaitUntilAnnotationExists(testCase.annotation, time.Second)
+		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
 func TestBareMetalHostWaitUntilDeleted(t *testing.T) {
 	testCases := []struct {
 		testBmHost    *BmhBuilder
@@ -1026,19 +1107,14 @@ func buildBareMetalHostTestClientWithDummyObject(state ...bmhv1alpha1.Provisioni
 	}
 
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects:  buildDummyBmHost(provisionState),
+		K8sMockObjects:  buildDummyBmHostObject(provisionState),
 		SchemeAttachers: testSchemes,
 	})
 }
 
 func buildDummyBmHost(
-	state bmhv1alpha1.ProvisioningState, operationalStatus ...bmhv1alpha1.OperationalStatus) []runtime.Object {
-	operState := bmhv1alpha1.OperationalStatusOK
-	if len(operationalStatus) > 0 {
-		operState = operationalStatus[0]
-	}
-
-	return append([]runtime.Object{}, &bmhv1alpha1.BareMetalHost{
+	state bmhv1alpha1.ProvisioningState, operState bmhv1alpha1.OperationalStatus) *bmhv1alpha1.BareMetalHost {
+	return &bmhv1alpha1.BareMetalHost{
 		Spec: bmhv1alpha1.BareMetalHostSpec{
 			BMC: bmhv1alpha1.BMCDetails{
 				Address:                        defaultBmHostAddress,
@@ -1061,5 +1137,15 @@ func buildDummyBmHost(
 				State: state,
 			},
 		},
-	})
+	}
+}
+
+func buildDummyBmHostObject(
+	state bmhv1alpha1.ProvisioningState, operationalStatus ...bmhv1alpha1.OperationalStatus) []runtime.Object {
+	operState := bmhv1alpha1.OperationalStatusOK
+	if len(operationalStatus) > 0 {
+		operState = operationalStatus[0]
+	}
+
+	return append([]runtime.Object{}, buildDummyBmHost(state, operState))
 }
