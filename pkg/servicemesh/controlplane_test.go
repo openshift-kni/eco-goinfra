@@ -19,6 +19,9 @@ var (
 	emptyAddonsConfig       = (*istiov2.AddonsConfig)(nil)
 	isTrue                  = true
 	isFalse                 = false
+	istiov2TestSchemes      = []clients.SchemeAttacher{
+		istiov2.AddToScheme,
+	}
 )
 
 func TestPullControlPlane(t *testing.T) {
@@ -89,7 +92,8 @@ func TestPullControlPlane(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: istiov2TestSchemes,
 			})
 		}
 
@@ -788,7 +792,8 @@ func buildInValidControlPlaneBuilder(apiClient *clients.Settings) *ControlPlaneB
 
 func buildControlPlaneClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyControlplane(),
+		K8sMockObjects:  buildDummyControlplane(),
+		SchemeAttachers: istiov2TestSchemes,
 	})
 }
 

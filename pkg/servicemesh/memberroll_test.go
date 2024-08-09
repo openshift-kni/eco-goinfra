@@ -31,6 +31,9 @@ var (
 		Reason:             "ErrSMCPMissing",
 		Message:            "No ServiceMeshControlPlane exists in the namespace",
 	}
+	istiov1TestSchemes = []clients.SchemeAttacher{
+		istiov1.AddToScheme,
+	}
 )
 
 func TestPullMemberRoll(t *testing.T) {
@@ -104,7 +107,8 @@ func TestPullMemberRoll(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: istiov1TestSchemes,
 			})
 		}
 
@@ -426,7 +430,8 @@ func buildInValidMemberRollBuilder(apiClient *clients.Settings) *MemberRollBuild
 
 func buildMemberRollClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyMemberRoll(),
+		K8sMockObjects:  buildDummyMemberRoll(),
+		SchemeAttachers: istiov1TestSchemes,
 	})
 }
 
