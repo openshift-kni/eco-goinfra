@@ -15,18 +15,22 @@ type ImageInfo struct {
 	Tag  string
 }
 
-func BGPType(m *v1beta1.MetalLB, isOpenshift bool) v1beta1.BGPType {
-	if m.Spec.BGPBackend == "" {
-		if isOpenshift {
-			return v1beta1.FRRK8sMode
-		}
-		return v1beta1.FRRMode
+func BGPType(m *v1beta1.MetalLB, env EnvConfig) v1beta1.BGPType {
+	if m.Spec.BGPBackend != "" {
+		return m.Spec.BGPBackend
 	}
-	return m.Spec.BGPBackend
+	if env.IsOpenshift && env.MustDeployFRRK8sFromCNO {
+		return v1beta1.FRRK8sExternalMode
+	}
+	if env.IsOpenshift {
+		return v1beta1.FRRK8sMode
+	}
+	return v1beta1.FRRMode
 }
 
 type EnvConfig struct {
 	Namespace                  string
+	FRRK8sExternalNamespace    string
 	ControllerImage            ImageInfo
 	SpeakerImage               ImageInfo
 	FRRImage                   ImageInfo
@@ -44,6 +48,7 @@ type EnvConfig struct {
 	DeployPodMonitors          bool
 	DeployServiceMonitors      bool
 	IsOpenshift                bool
+	MustDeployFRRK8sFromCNO    bool
 }
 
 func FromEnvironment(isOpenshift bool) (EnvConfig, error) {
@@ -119,6 +124,11 @@ func FromEnvironment(isOpenshift bool) (EnvConfig, error) {
 	}
 	if os.Getenv("DEPLOY_SERVICEMONITORS") == "true" {
 		res.DeployServiceMonitors = true
+	}
+
+	res.FRRK8sExternalNamespace = os.Getenv("FRRK8S_EXTERNAL_NAMESPACE")
+	if os.Getenv("DEPLOY_FRRK8S_FROM_CNO") == "true" {
+		res.MustDeployFRRK8sFromCNO = true
 	}
 
 	// Ignoring the error, if not set we'll consume the image from the chart
