@@ -33,6 +33,13 @@ func PullOAuthClient(apiClient *clients.Settings, name string) (*OAuthClientBuil
 		return nil, fmt.Errorf("apiClient cannot be nil")
 	}
 
+	err := apiClient.AttachScheme(oauthv1.AddToScheme)
+	if err != nil {
+		glog.V(100).Infof("Failed to add oauth v1 scheme to client schemes")
+
+		return nil, err
+	}
+
 	builder := OAuthClientBuilder{
 		apiClient: apiClient.Client,
 		Definition: &oauthv1.OAuthClient{
