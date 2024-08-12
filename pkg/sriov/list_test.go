@@ -7,7 +7,6 @@ import (
 	srIovV1 "github.com/k8snetworkplumbingwg/sriov-network-operator/api/v1"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -218,7 +217,7 @@ func TestListNetworkNodeState(t *testing.T) {
 func TestListPolicy(t *testing.T) {
 	testCases := []struct {
 		testNetworkNodeStates []*srIovV1.SriovNetworkNodePolicy
-		listOptions           []metav1.ListOptions
+		listOptions           []client.ListOptions
 		nsName                string
 		client                bool
 		expectedError         error
@@ -243,7 +242,7 @@ func TestListPolicy(t *testing.T) {
 				buildDummySrIovPolicy("test", "testnamespace"),
 				buildDummySrIovPolicy("test1", "testnamespace")},
 			nsName:      "testnamespace",
-			listOptions: []metav1.ListOptions{{AllowWatchBookmarks: false}},
+			listOptions: []client.ListOptions{{Continue: "false"}},
 			client:      true,
 		},
 		{
@@ -251,7 +250,7 @@ func TestListPolicy(t *testing.T) {
 				buildDummySrIovPolicy("test", "testnamespace"),
 				buildDummySrIovPolicy("test1", "testnamespace")},
 			nsName:        "testnamespace",
-			listOptions:   []metav1.ListOptions{{LabelSelector: "test"}, {Continue: "true"}},
+			listOptions:   []client.ListOptions{{Namespace: "testnamespace"}, {Continue: "true"}},
 			expectedError: fmt.Errorf("error: more than one ListOptions was passed"),
 			client:        true,
 		},
@@ -277,7 +276,8 @@ func TestListPolicy(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
 			})
 		}
 
@@ -293,7 +293,7 @@ func TestListPolicy(t *testing.T) {
 func TestCleanAllNetworkNodePolicies(t *testing.T) {
 	testCases := []struct {
 		testNetworkPolicy []*srIovV1.SriovNetworkNodePolicy
-		listOptions       []metav1.ListOptions
+		listOptions       []client.ListOptions
 		nsName            string
 		client            bool
 		expectedError     error
@@ -318,7 +318,7 @@ func TestCleanAllNetworkNodePolicies(t *testing.T) {
 				buildDummySrIovPolicy("test", "testnamespace"),
 				buildDummySrIovPolicy("test1", "testnamespace")},
 			nsName:      "testnamespace",
-			listOptions: []metav1.ListOptions{{AllowWatchBookmarks: false}},
+			listOptions: []client.ListOptions{{Continue: "false"}},
 			client:      true,
 		},
 		{
@@ -326,7 +326,7 @@ func TestCleanAllNetworkNodePolicies(t *testing.T) {
 				buildDummySrIovPolicy("test", "testnamespace"),
 				buildDummySrIovPolicy("test1", "testnamespace")},
 			nsName:        "testnamespace",
-			listOptions:   []metav1.ListOptions{{LabelSelector: "test"}, {Continue: "true"}},
+			listOptions:   []client.ListOptions{{Namespace: "testnamespace"}, {Continue: "true"}},
 			expectedError: fmt.Errorf("error: more than one ListOptions was passed"),
 			client:        true,
 		},

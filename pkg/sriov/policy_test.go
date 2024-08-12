@@ -95,7 +95,8 @@ func TestPullPolicy(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
 			})
 		}
 
@@ -396,6 +397,31 @@ func TestPolicyWithOptions(t *testing.T) {
 	assert.Equal(t, "error", testBuilder.errorMsg)
 }
 
+func TestPolicyGet(t *testing.T) {
+	testCases := []struct {
+		policyBuilder *PolicyBuilder
+		expectedError error
+	}{
+		{
+			policyBuilder: buildValidSriovPolicyTestBuilder(buildTestClientWithDummyPolicyObject()),
+			expectedError: nil,
+		},
+		{
+			policyBuilder: buildInvalidSriovPolicyTestBuilder(buildTestClientWithDummyPolicyObject()),
+			expectedError: fmt.Errorf("SriovNetworkNodePolicy 'nsname' cannot be empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		policy, err := testCase.policyBuilder.Get()
+		assert.Equal(t, err, testCase.expectedError)
+
+		if testCase.expectedError == nil {
+			assert.Equal(t, policy.Name, testCase.policyBuilder.Definition.Name)
+		}
+	}
+}
+
 func TestPolicyCreate(t *testing.T) {
 	testCases := []struct {
 		testPolicy    *PolicyBuilder
@@ -493,7 +519,8 @@ func buildInvalidSriovPolicyTestBuilder(apiClient *clients.Settings) *PolicyBuil
 
 func buildTestClientWithDummyPolicyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummySrIovPolicyObject(),
+		K8sMockObjects:  buildDummySrIovPolicyObject(),
+		SchemeAttachers: testSchemes,
 	})
 }
 
