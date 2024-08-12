@@ -371,16 +371,25 @@ func TestListPoolConfigs(t *testing.T) {
 		poolConfigs   []*PoolConfigBuilder
 		nsName        string
 		expectedError error
+		client        bool
 	}{
 		{
 			poolConfigs:   []*PoolConfigBuilder{buildValidPoolConfigTestBuilder(buildTestPoolConfigClientWithDummyObject())},
 			nsName:        defaultPoolConfigNsName,
 			expectedError: nil,
+			client:        true,
+		},
+		{
+			poolConfigs:   []*PoolConfigBuilder{buildValidPoolConfigTestBuilder(buildTestPoolConfigClientWithDummyObject())},
+			nsName:        defaultPoolConfigNsName,
+			expectedError: fmt.Errorf("failed to list sriov networks, 'apiClient' parameter is empty"),
+			client:        false,
 		},
 		{
 			poolConfigs:   []*PoolConfigBuilder{buildValidPoolConfigTestBuilder(buildTestPoolConfigClientWithDummyObject())},
 			nsName:        "",
 			expectedError: fmt.Errorf("failed to list sriovNetworkPoolConfigs, 'namespace' parameter is empty"),
+			client:        true,
 		},
 	}
 	for _, testCase := range testCases {
@@ -388,7 +397,23 @@ func TestListPoolConfigs(t *testing.T) {
 			_, _ = poolConfig.Create()
 		}
 
-		poolConfigBuilders, err := ListPoolConfigs(testCase.poolConfigs[0].apiClient, testCase.nsName)
+		var (
+			testSettings   *clients.Settings
+			runtimeObjects []runtime.Object
+		)
+
+		for _, networkNodeState := range testCase.poolConfigs {
+			runtimeObjects = append(runtimeObjects, networkNodeState.Definition)
+		}
+
+		if testCase.client {
+			testSettings = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
+			})
+		}
+
+		poolConfigBuilders, err := ListPoolConfigs(testSettings, testCase.nsName)
 		assert.Equal(t, err, testCase.expectedError)
 
 		if testCase.expectedError == nil {
@@ -402,26 +427,53 @@ func TestCleanPoolConfigs(t *testing.T) {
 		poolConfigs       []*PoolConfigBuilder
 		operatorNamespace string
 		expectedError     error
+		client            bool
 	}{
 		{
 			poolConfigs:       []*PoolConfigBuilder{buildValidPoolConfigTestBuilder(buildTestPoolConfigClientWithDummyObject())},
 			operatorNamespace: defaultNetNsName,
+			client:            true,
+			expectedError:     nil,
 		},
 		{
-			poolConfigs:   []*PoolConfigBuilder{buildValidPoolConfigTestBuilder(buildTestPoolConfigClientWithDummyObject())},
-			expectedError: fmt.Errorf("failed to clean up SriovNetworkPoolConfigs, 'operatornsname' parameter is empty"),
+			poolConfigs:       []*PoolConfigBuilder{buildValidPoolConfigTestBuilder(buildTestPoolConfigClientWithDummyObject())},
+			operatorNamespace: defaultNetNsName,
+			client:            false,
+			expectedError:     fmt.Errorf("failed to list sriov networks, 'apiClient' parameter is empty"),
+		},
+		{
+			poolConfigs:       []*PoolConfigBuilder{buildValidPoolConfigTestBuilder(buildTestPoolConfigClientWithDummyObject())},
+			operatorNamespace: "",
+			expectedError:     fmt.Errorf("failed to clean up SriovNetworkPoolConfigs, 'operatornsname' parameter is empty"),
+			client:            true,
 		},
 	}
 	for _, testCase := range testCases {
+		var (
+			testSettings   *clients.Settings
+			runtimeObjects []runtime.Object
+		)
+
+		for _, networkNodeState := range testCase.poolConfigs {
+			runtimeObjects = append(runtimeObjects, networkNodeState.Definition)
+		}
+
+		if testCase.client {
+			testSettings = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
+			})
+		}
+
 		for _, poolConfig := range testCase.poolConfigs {
 			_, _ = poolConfig.Create()
 		}
 
-		err := CleanAllPoolConfigs(testCase.poolConfigs[0].apiClient, testCase.operatorNamespace)
+		err := CleanAllPoolConfigs(testSettings, testCase.operatorNamespace)
 		assert.Equal(t, err, testCase.expectedError)
 
 		if testCase.expectedError == nil {
-			poolConfigBuilders, err := ListPoolConfigs(testCase.poolConfigs[0].apiClient, testCase.operatorNamespace)
+			poolConfigBuilders, err := ListPoolConfigs(testSettings, testCase.operatorNamespace)
 			assert.Nil(t, err)
 			assert.Zero(t, len(poolConfigBuilders))
 		}

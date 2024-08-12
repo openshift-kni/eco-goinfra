@@ -168,6 +168,7 @@ func TestPoolConfigUpdate(t *testing.T) {
 		assert.Equal(t, int32(2), poolConfigBuilder.Definition.Spec.MaxUnavailable.IntVal)
 		testCase.testPoolConfig.WithMaxUnavailable(intstr.FromString("100%"))
 
+		poolConfigBuilder.Definition.ObjectMeta.ResourceVersion = "999"
 		poolConfigBuilder, err = poolConfigBuilder.Update()
 		assert.Nil(t, err)
 		assert.Equal(t, "100%", poolConfigBuilder.Object.Spec.MaxUnavailable.StrVal)
@@ -281,7 +282,8 @@ func TestPullPoolConfig(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: buildDummyPoolConfigObject(),
+				K8sMockObjects:  buildDummyPoolConfigObject(),
+				SchemeAttachers: testSchemes,
 			})
 			_, _ = buildValidPoolConfigTestBuilder(testSettings).Create()
 		}
@@ -314,7 +316,8 @@ func buildInvalidPoolConfigTestBuilder(apiClient *clients.Settings) *PoolConfigB
 
 func buildTestPoolConfigClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyPoolConfigObject(),
+		K8sMockObjects:  buildDummyPoolConfigObject(),
+		SchemeAttachers: testSchemes,
 	})
 }
 
