@@ -16,6 +16,9 @@ import (
 var (
 	defaultLocalVolumeDiscoveryName      = "auto-discover-devices"
 	defaultLocalVolumeDiscoveryNamespace = "test-lvdspace"
+	v1alpha1testSchemes                  = []clients.SchemeAttacher{
+		lsov1alpha1.AddToScheme,
+	}
 )
 
 func TestPullLocalVolumeDiscovery(t *testing.T) {
@@ -87,7 +90,8 @@ func TestPullLocalVolumeDiscovery(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: v1alpha1testSchemes,
 			})
 		}
 
@@ -100,6 +104,7 @@ func TestPullLocalVolumeDiscovery(t *testing.T) {
 		}
 	}
 }
+
 func TestNewLocalVolumeDiscoveryBuilder(t *testing.T) {
 	testCases := []struct {
 		name          string
@@ -404,7 +409,8 @@ func buildInValidLVDObjectBuilder(apiClient *clients.Settings) *LocalVolumeDisco
 
 func buildLVDClientWithDummyObject(phase ...lsov1alpha1.DiscoveryPhase) *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyLocalVolumeDiscovery(phase...),
+		K8sMockObjects:  buildDummyLocalVolumeDiscovery(phase...),
+		SchemeAttachers: v1alpha1testSchemes,
 	})
 }
 

@@ -83,8 +83,6 @@ import (
 	machinev1beta1client "github.com/openshift/client-go/machine/clientset/versioned/typed/machine/v1beta1"
 	operatorv1alpha1 "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1"
 	nfdv1 "github.com/openshift/cluster-nfd-operator/api/v1"
-	lsov1 "github.com/openshift/local-storage-operator/api/v1"
-	lsov1alpha1 "github.com/openshift/local-storage-operator/api/v1alpha1"
 	mcmV1Beta1 "github.com/rh-ecosystem-edge/kernel-module-management/api-hub/v1beta1"
 	velerov1 "github.com/vmware-tanzu/velero/pkg/apis/velero/v1"
 	veleroClient "github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned"
@@ -112,7 +110,6 @@ type Settings struct {
 	multinetpolicyclientv1.K8sCniCncfIoV1beta1Interface
 	operatorv1alpha1.OperatorV1alpha1Interface
 	grafanaV4V1Alpha1.Grafana
-	LocalVolumeInterface lsov1alpha1.LocalVolumeSet
 	machinev1beta1client.MachineV1beta1Interface
 	storageV1Client.StorageV1Interface
 	VeleroClient veleroClient.Interface
@@ -238,14 +235,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	}
 
 	if err := oauthv1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := lsov1alpha1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := lsov1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
@@ -443,10 +432,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 		case *configV1.ClusterOperator:
 			genericClientObjects = append(genericClientObjects, v)
 		case *cguapiv1alpha1.PreCachingConfig:
-			genericClientObjects = append(genericClientObjects, v)
-		case *lsov1alpha1.LocalVolumeDiscovery:
-			genericClientObjects = append(genericClientObjects, v)
-		case *lsov1alpha1.LocalVolumeSet:
 			genericClientObjects = append(genericClientObjects, v)
 		case *hiveextV1Beta1.AgentClusterInstall:
 			genericClientObjects = append(genericClientObjects, v)
