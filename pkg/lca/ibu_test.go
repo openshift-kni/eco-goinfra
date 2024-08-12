@@ -12,6 +12,12 @@ import (
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 )
 
+var (
+	lcav1TestSchemes = []clients.SchemeAttacher{
+		lcav1.AddToScheme,
+	}
+)
+
 func TestImageBasedUpgradeWithOptions(t *testing.T) {
 	testSettings := buildTestClientWithDummyObject()
 	testBuilder, _ := PullImageBasedUpgrade(testSettings)
@@ -54,7 +60,8 @@ func TestImageBasedUpgradePull(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: lcav1TestSchemes,
 		})
 
 		// Test the PullImageBasedUpgrade function
@@ -94,7 +101,8 @@ func TestImageBasedUpgradeUpdate(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: lcav1TestSchemes,
 		})
 
 		ibuBuilder, err := PullImageBasedUpgrade(testSettings)
@@ -137,7 +145,8 @@ func TestImageBasedUpgradeDelete(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: lcav1TestSchemes,
 		})
 
 		ibuBuilder, err := PullImageBasedUpgrade(testSettings)
@@ -183,7 +192,8 @@ func TestImageBasedUpgradeGet(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: lcav1TestSchemes,
 		})
 
 		ibuBuilder, err := PullImageBasedUpgrade(testSettings)
@@ -231,7 +241,8 @@ func TestImageBasedUpgradeExists(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: lcav1TestSchemes,
 		})
 
 		ibuBuilder, err := PullImageBasedUpgrade(testSettings)
@@ -283,7 +294,8 @@ func TestImageBasedUpgradeWithSeedImage(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: lcav1TestSchemes,
 		})
 
 		ibuBuilder, err := PullImageBasedUpgrade(testSettings)
@@ -335,7 +347,8 @@ func TestImageBasedUpgradeWithExtraManifests(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: lcav1TestSchemes,
 		})
 
 		ibuBuilder, err := PullImageBasedUpgrade(testSettings)
@@ -388,7 +401,8 @@ func TestImageBasedUpgradeWithOadpContent(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: lcav1TestSchemes,
 		})
 
 		ibuBuilder, err := PullImageBasedUpgrade(testSettings)
@@ -438,7 +452,8 @@ func TestImageBasedUpgradeWithSeedImageVersion(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: lcav1TestSchemes,
 		})
 
 		ibuBuilder, err := PullImageBasedUpgrade(testSettings)
@@ -488,7 +503,8 @@ func TestImageBasedUpgradeWithSeedImagePullSecretRef(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: lcav1TestSchemes,
 		})
 
 		ibuBuilder, err := PullImageBasedUpgrade(testSettings)
@@ -583,7 +599,8 @@ func TestImageBasedUpgradeWithStage(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: lcav1TestSchemes,
 		})
 
 		ibuBuilder, err := PullImageBasedUpgrade(testSettings)
@@ -612,7 +629,8 @@ func generateImageBasedUpgrade() *lcav1.ImageBasedUpgrade {
 
 func buildTestClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyIBU(),
+		K8sMockObjects:  buildDummyIBU(),
+		SchemeAttachers: lcav1TestSchemes,
 	})
 }
 
