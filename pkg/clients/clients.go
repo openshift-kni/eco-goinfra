@@ -42,8 +42,6 @@ import (
 	hiveextV1Beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/hiveextension/v1beta1"
 	agentInstallV1Beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/v1beta1"
 	hiveV1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1"
-	lcav1 "github.com/openshift-kni/lifecycle-agent/api/imagebasedupgrade/v1"
-	lcasgv1 "github.com/openshift-kni/lifecycle-agent/api/seedgenerator/v1"
 	configV1 "github.com/openshift/api/config/v1"
 	imageregistryV1 "github.com/openshift/api/imageregistry/v1"
 	routev1 "github.com/openshift/api/route/v1"
@@ -188,8 +186,6 @@ func New(kubeconfig string) *Settings {
 }
 
 // SetScheme returns mutated apiClient's scheme.
-//
-//nolint:funlen
 func SetScheme(crScheme *runtime.Scheme) error {
 	if err := scheme.AddToScheme(crScheme); err != nil {
 		return err
@@ -204,14 +200,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	}
 
 	if err := apiExt.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := lcav1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := lcasgv1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
@@ -410,11 +398,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 		case *argocdOperatorv1alpha1.ArgoCD:
 			genericClientObjects = append(genericClientObjects, v)
 		case *argocdtypes.Application:
-			genericClientObjects = append(genericClientObjects, v)
-		// LCA Client Objects
-		case *lcav1.ImageBasedUpgrade:
-			genericClientObjects = append(genericClientObjects, v)
-		case *lcasgv1.SeedGenerator:
 			genericClientObjects = append(genericClientObjects, v)
 		// Hive Client Objects
 		case *hiveV1.HiveConfig:

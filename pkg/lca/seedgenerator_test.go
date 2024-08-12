@@ -12,6 +12,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+var (
+	lcasgv1TestSchemes = []clients.SchemeAttacher{
+		lcasgv1.AddToScheme,
+	}
+)
+
 func TestNewSeedGeneratorBuilder(t *testing.T) {
 	testCases := []struct {
 		name        string
@@ -139,7 +145,8 @@ func TestSeedGeneratorPull(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: lcasgv1TestSchemes,
 			})
 		}
 
@@ -355,7 +362,8 @@ func buildInValidSeedGeneratorBuilder(apiClient *clients.Settings) *SeedGenerato
 
 func buildSeedGeneratorTestClientWithDummyObject(objects []runtime.Object) *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: objects,
+		K8sMockObjects:  objects,
+		SchemeAttachers: lcasgv1TestSchemes,
 	})
 }
 
