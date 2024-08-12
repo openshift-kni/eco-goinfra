@@ -16,6 +16,9 @@ import (
 var (
 	defaultLocalVolumeSetName      = "ocs-deviceset"
 	defaultLocalVolumeSetNamespace = "test-lvsspace"
+	lsov1alpha1testSchemes         = []clients.SchemeAttacher{
+		lsov1alpha1.AddToScheme,
+	}
 )
 
 func TestPullLocalVolumeSet(t *testing.T) {
@@ -87,7 +90,8 @@ func TestPullLocalVolumeSet(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: lsov1alpha1testSchemes,
 			})
 		}
 
@@ -598,7 +602,8 @@ func buildInValidLocalVolumeSetObjectBuilder(apiClient *clients.Settings) *Local
 
 func buildLocalVolumeSetClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyLocalVolumeSet(),
+		K8sMockObjects:  buildDummyLocalVolumeSet(),
+		SchemeAttachers: lsov1alpha1testSchemes,
 	})
 }
 
