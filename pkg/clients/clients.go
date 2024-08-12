@@ -78,7 +78,6 @@ import (
 
 	grafanaV4V1Alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	multinetpolicyclientv1 "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/client/clientset/versioned/typed/k8s.cni.cncf.io/v1beta1"
-	noobaav1alpha1 "github.com/kube-object-storage/lib-bucket-provisioner/pkg/apis/objectbucket.io/v1alpha1"
 	cguapiv1alpha1 "github.com/openshift-kni/cluster-group-upgrades-operator/pkg/api/clustergroupupgrades/v1alpha1"
 	operatorv1 "github.com/openshift/api/operator/v1"
 	machinev1beta1client "github.com/openshift/client-go/machine/clientset/versioned/typed/machine/v1beta1"
@@ -86,8 +85,6 @@ import (
 	nfdv1 "github.com/openshift/cluster-nfd-operator/api/v1"
 	lsov1 "github.com/openshift/local-storage-operator/api/v1"
 	lsov1alpha1 "github.com/openshift/local-storage-operator/api/v1alpha1"
-	ocsoperatorv1 "github.com/red-hat-storage/ocs-operator/api/v1"
-	odfoperatorv1alpha1 "github.com/red-hat-storage/odf-operator/api/v1alpha1"
 	mcmV1Beta1 "github.com/rh-ecosystem-edge/kernel-module-management/api-hub/v1beta1"
 	velerov1 "github.com/vmware-tanzu/velero/pkg/apis/velero/v1"
 	veleroClient "github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned"
@@ -202,7 +199,7 @@ func New(kubeconfig string) *Settings {
 
 // SetScheme returns mutated apiClient's scheme.
 //
-//nolint:funlen, gocyclo, gocognit
+//nolint:funlen
 func SetScheme(crScheme *runtime.Scheme) error {
 	if err := scheme.AddToScheme(crScheme); err != nil {
 		return err
@@ -304,23 +301,11 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
-	if err := ocsoperatorv1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := odfoperatorv1alpha1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
 	if err := performanceV2.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
 	if err := tunedv1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := noobaav1alpha1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
@@ -459,21 +444,15 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 			genericClientObjects = append(genericClientObjects, v)
 		case *cguapiv1alpha1.PreCachingConfig:
 			genericClientObjects = append(genericClientObjects, v)
-		case *ocsoperatorv1.StorageCluster:
-			genericClientObjects = append(genericClientObjects, v)
 		case *lsov1alpha1.LocalVolumeDiscovery:
 			genericClientObjects = append(genericClientObjects, v)
 		case *lsov1alpha1.LocalVolumeSet:
-			genericClientObjects = append(genericClientObjects, v)
-		case *odfoperatorv1alpha1.StorageSystem:
 			genericClientObjects = append(genericClientObjects, v)
 		case *hiveextV1Beta1.AgentClusterInstall:
 			genericClientObjects = append(genericClientObjects, v)
 		case *performanceV2.PerformanceProfile:
 			genericClientObjects = append(genericClientObjects, v)
 		case *tunedv1.Tuned:
-			genericClientObjects = append(genericClientObjects, v)
-		case *noobaav1alpha1.ObjectBucketClaim:
 			genericClientObjects = append(genericClientObjects, v)
 		case *agentInstallV1Beta1.AgentServiceConfig:
 			genericClientObjects = append(genericClientObjects, v)
