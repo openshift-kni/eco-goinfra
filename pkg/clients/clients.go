@@ -522,9 +522,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 			veleroClientObjects = append(veleroClientObjects, v)
 		case *velerov1.BackupStorageLocation:
 			veleroClientObjects = append(veleroClientObjects, v)
-		// SrIov Client Objects
-		case *srIovV1.SriovNetworkNodePolicy:
-			srIovObjects = append(srIovObjects, v)
 		case *cguapiv1alpha1.ClusterGroupUpgrade:
 			cguObjects = append(cguObjects, v)
 		case *srIovV1.SriovNetworkPoolConfig:
