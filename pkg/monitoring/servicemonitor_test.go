@@ -15,6 +15,9 @@ import (
 var (
 	defaultServiceMonitorName      = "test-monitor-name"
 	defaultServiceMonitorNamespace = "test-monitor-namespace"
+	testSchemes                    = []clients.SchemeAttacher{
+		monv1.AddToScheme,
+	}
 )
 
 func TestPullServiceMonitor(t *testing.T) {
@@ -86,7 +89,8 @@ func TestPullServiceMonitor(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
 			})
 		}
 
@@ -479,7 +483,8 @@ func buildInValidServiceMonitorBuilder(apiClient *clients.Settings) *Builder {
 
 func buildServiceMonitorClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyServiceMonitor(),
+		K8sMockObjects:  buildDummyServiceMonitor(),
+		SchemeAttachers: testSchemes,
 	})
 }
 

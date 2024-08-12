@@ -12,8 +12,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	argocdOperatorv1alpha1 "github.com/argoproj-labs/argocd-operator/api/v1alpha1"
-	monv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-
 	oauthv1 "github.com/openshift/api/oauth/v1"
 	clientConfigV1 "github.com/openshift/client-go/config/clientset/versioned/typed/config/v1"
 	v1security "github.com/openshift/client-go/security/clientset/versioned/typed/security/v1"
@@ -288,10 +286,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
-	if err := monv1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -426,8 +420,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 		case *hiveextV1Beta1.AgentClusterInstall:
 			genericClientObjects = append(genericClientObjects, v)
 		case *agentInstallV1Beta1.AgentServiceConfig:
-			genericClientObjects = append(genericClientObjects, v)
-		case *monv1.ServiceMonitor:
 			genericClientObjects = append(genericClientObjects, v)
 		// ArgoCD Client Objects
 		case *argocdOperatorv1alpha1.ArgoCD:
