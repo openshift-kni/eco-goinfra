@@ -147,7 +147,7 @@ func TestNetworkCleanAllNetworksByTargetNamespace(t *testing.T) {
 func TestListNetworkNodeState(t *testing.T) {
 	testCases := []struct {
 		testNetworkNodeStates []*srIovV1.SriovNetworkNodeState
-		listOptions           []metav1.ListOptions
+		listOptions           []client.ListOptions
 		nsName                string
 		client                bool
 		expectedError         error
@@ -169,14 +169,14 @@ func TestListNetworkNodeState(t *testing.T) {
 			testNetworkNodeStates: []*srIovV1.SriovNetworkNodeState{buildNodeNetworkState("test", "testnamespace"),
 				buildNodeNetworkState("test2", "testnamespace")},
 			nsName:      "testnamespace",
-			listOptions: []metav1.ListOptions{{AllowWatchBookmarks: false}},
+			listOptions: []client.ListOptions{{Continue: "true"}},
 			client:      true,
 		},
 		{
 			testNetworkNodeStates: []*srIovV1.SriovNetworkNodeState{buildNodeNetworkState("test", "testnamespace"),
 				buildNodeNetworkState("test2", "testnamespace")},
 			nsName:        "testnamespace",
-			listOptions:   []metav1.ListOptions{{LabelSelector: "test"}, {Continue: "true"}},
+			listOptions:   []client.ListOptions{{Namespace: "testnamespace"}, {Continue: "true"}},
 			expectedError: fmt.Errorf("error: more than one ListOptions was passed"),
 			client:        true,
 		},
@@ -201,7 +201,8 @@ func TestListNetworkNodeState(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
 			})
 		}
 
