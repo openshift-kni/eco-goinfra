@@ -126,7 +126,7 @@ func TestPooConfigExist(t *testing.T) {
 	}
 }
 
-func TestGet(t *testing.T) {
+func TestTestPooConfigGet(t *testing.T) {
 	testCases := []struct {
 		testPoolConfig *PoolConfigBuilder
 		expectedError  error

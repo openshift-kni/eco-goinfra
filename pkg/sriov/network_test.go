@@ -503,6 +503,31 @@ func TestWithOptions(t *testing.T) {
 	assert.Equal(t, "error", testBuilder.errorMsg)
 }
 
+func TestGet(t *testing.T) {
+	testCases := []struct {
+		networkBuilder *NetworkBuilder
+		expectedError  error
+	}{
+		{
+			networkBuilder: buildValidSriovNetworkTestBuilder(buildTestClientWithDummyObject()),
+			expectedError:  nil,
+		},
+		{
+			networkBuilder: buildInvalidSrIovNetworkTestBuilder(buildTestClientWithDummyObject()),
+			expectedError:  fmt.Errorf("SrIovNetwork 'resName' cannot be empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		network, err := testCase.networkBuilder.Get()
+		assert.Equal(t, err, testCase.expectedError)
+
+		if testCase.expectedError == nil {
+			assert.Equal(t, network.Name, testCase.networkBuilder.Definition.Name)
+		}
+	}
+}
+
 func TestCreate(t *testing.T) {
 	testCases := []struct {
 		testNetwork   *NetworkBuilder

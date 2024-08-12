@@ -76,7 +76,8 @@ func TestPullOperatorConfig(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
 			})
 		}
 
@@ -145,9 +146,36 @@ func TestOperatorConfigCreate(t *testing.T) {
 
 		if testCase.expectedError == nil {
 			assert.Nil(t, err)
-			assert.Equal(t, oCBuilder.Definition, oCBuilder.Object)
+			assert.Equal(t, oCBuilder.Definition.Name, oCBuilder.Object.Name)
 		} else {
 			assert.Equal(t, err, testCase.expectedError)
+		}
+	}
+}
+
+func TestOperatorConfigExistGet(t *testing.T) {
+	testCases := []struct {
+		operatorConfig *OperatorConfigBuilder
+		expectedError  error
+	}{
+		{
+			operatorConfig: NewOperatorConfigBuilder(
+				buildTestClientWithDummyOperatorConfigObject(),
+				defaultOperatorConfigNsName),
+			expectedError: nil,
+		},
+		{
+			operatorConfig: NewOperatorConfigBuilder(buildTestClientWithDummyOperatorConfigObject(), ""),
+			expectedError:  fmt.Errorf("SriovOperatorConfig 'nsname' is empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		operatorConfig, err := testCase.operatorConfig.Get()
+		assert.Equal(t, err, testCase.expectedError)
+
+		if testCase.expectedError == nil {
+			assert.Equal(t, operatorConfig.Name, testCase.operatorConfig.Definition.Name)
 		}
 	}
 }
@@ -281,6 +309,7 @@ func TestOperatorConfigUpdate(t *testing.T) {
 			testCase.webhook = true
 		}
 
+		operatorConfigBuilder.Definition.ObjectMeta.ResourceVersion = "999"
 		operatorConfigBuilder, err = operatorConfigBuilder.WithOperatorWebhook(testCase.webhook).Update()
 		assert.Equal(t, nil, err)
 		assert.Equal(t, testCase.webhook, testCase.testOperatorConfig.Object.Spec.EnableOperatorWebhook)
@@ -321,7 +350,8 @@ func TestOperatorConfigDelete(t *testing.T) {
 
 func buildTestClientWithDummyOperatorConfigObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummySrIovOperatorConfigObject(),
+		K8sMockObjects:  buildDummySrIovOperatorConfigObject(),
+		SchemeAttachers: testSchemes,
 	})
 }
 
