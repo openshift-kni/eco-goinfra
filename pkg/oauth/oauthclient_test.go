@@ -14,6 +14,9 @@ import (
 
 var (
 	oauthClientName = "oauth"
+	testSchemes     = []clients.SchemeAttacher{
+		oauthv1.AddToScheme,
+	}
 )
 
 func TestOAuthClientPull(t *testing.T) {
@@ -53,7 +56,8 @@ func TestOAuthClientPull(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: testSchemes,
 		})
 
 		// Test the PullOAuthClient function
@@ -92,7 +96,8 @@ func TestOAuthClientUpdate(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: testSchemes,
 		})
 
 		oauthClientBuilder, err := PullOAuthClient(testSettings, oauthClientName)
@@ -142,7 +147,8 @@ func TestOAuthClientCreate(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: testSchemes,
 		})
 
 		testBuilder, client := generateOAuthClientBuilder(testSettings, oauthClientName)
@@ -184,7 +190,8 @@ func TestOAuthClientDelete(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: testSchemes,
 		})
 
 		testBuilder, client := generateOAuthClientBuilder(testSettings, oauthClientName)
@@ -227,7 +234,8 @@ func TestOAuthClientGet(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: testSchemes,
 		})
 
 		oauthClientBuilder, err := PullOAuthClient(testSettings, oauthClientName)
@@ -274,7 +282,8 @@ func TestOAuthClientExists(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: testSchemes,
 		})
 
 		testOAuthClientBuilder, _ := generateOAuthClientBuilder(testSettings, oauthClientName)
@@ -329,7 +338,8 @@ func TestMultiClusterHubValidate(t *testing.T) {
 		runtimeObjects = append(runtimeObjects, testMultiClusterHub)
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: testSchemes,
 		})
 
 		testBuilder, err := PullOAuthClient(testSettings, oauthClientName)

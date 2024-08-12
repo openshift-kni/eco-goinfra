@@ -12,7 +12,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	argocdOperatorv1alpha1 "github.com/argoproj-labs/argocd-operator/api/v1alpha1"
-	oauthv1 "github.com/openshift/api/oauth/v1"
 	clientConfigV1 "github.com/openshift/client-go/config/clientset/versioned/typed/config/v1"
 	v1security "github.com/openshift/client-go/security/clientset/versioned/typed/security/v1"
 	mcv1 "github.com/openshift/machine-config-operator/pkg/apis/machineconfiguration.openshift.io/v1"
@@ -230,10 +229,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
-	if err := oauthv1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
 	if err := hiveextV1Beta1.AddToScheme(crScheme); err != nil {
 		return err
 	}
@@ -430,9 +425,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 		case *lcav1.ImageBasedUpgrade:
 			genericClientObjects = append(genericClientObjects, v)
 		case *lcasgv1.SeedGenerator:
-			genericClientObjects = append(genericClientObjects, v)
-		// OAuthClient Objects
-		case *oauthv1.OAuthClient:
 			genericClientObjects = append(genericClientObjects, v)
 		// Hive Client Objects
 		case *hiveV1.HiveConfig:
