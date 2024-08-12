@@ -33,11 +33,6 @@ import (
 
 	netAttDefV1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
 	clientNetAttDefV1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned/typed/k8s.cni.cncf.io/v1"
-	srIovV1 "github.com/k8snetworkplumbingwg/sriov-network-operator/api/v1"
-
-	clientSrIov "github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/client/clientset/versioned"
-	clientSrIovFake "github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/client/clientset/versioned/fake"
-	clientSrIovV1 "github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/client/clientset/versioned/typed/sriovnetwork/v1"
 
 	clientCgu "github.com/openshift-kni/cluster-group-upgrades-operator/pkg/generated/clientset/versioned"
 	clientCguFake "github.com/openshift-kni/cluster-group-upgrades-operator/pkg/generated/clientset/versioned/fake"
@@ -111,8 +106,6 @@ type Settings struct {
 	networkV1Client.NetworkingV1Interface
 	appsV1Client.AppsV1Interface
 	rbacV1Client.RbacV1Interface
-	ClientSrIov clientSrIov.Interface
-	clientSrIovV1.SriovnetworkV1Interface
 	Config *rest.Config
 	runtimeClient.Client
 	v1security.SecurityV1Interface
@@ -138,8 +131,6 @@ type Settings struct {
 type SchemeAttacher func(*runtime.Scheme) error
 
 // New returns a *Settings with the given kubeconfig.
-//
-//nolint:funlen
 func New(kubeconfig string) *Settings {
 	var (
 		config *rest.Config
@@ -169,8 +160,6 @@ func New(kubeconfig string) *Settings {
 	clientSet.ConfigV1Interface = clientConfigV1.NewForConfigOrDie(config)
 	clientSet.MachineconfigurationV1Interface = clientMachineConfigV1.NewForConfigOrDie(config)
 	clientSet.AppsV1Interface = appsV1Client.NewForConfigOrDie(config)
-	clientSet.ClientSrIov = clientSrIov.NewForConfigOrDie(config)
-	clientSet.SriovnetworkV1Interface = clientSrIovV1.NewForConfigOrDie(config)
 	clientSet.NetworkingV1Interface = networkV1Client.NewForConfigOrDie(config)
 	clientSet.RbacV1Interface = rbacV1Client.NewForConfigOrDie(config)
 	clientSet.K8sCniCncfIoV1Interface = clientNetAttDefV1.NewForConfigOrDie(config)
@@ -220,10 +209,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	}
 
 	if err := netAttDefV1.SchemeBuilder.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := srIovV1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
@@ -397,7 +382,7 @@ func GetTestClients(tcp TestClientParams) *Settings {
 func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClient.ClientBuilder) {
 	clientSet := &Settings{}
 
-	var k8sClientObjects, genericClientObjects, plumbingObjects, srIovObjects,
+	var k8sClientObjects, genericClientObjects, plumbingObjects,
 		veleroClientObjects, cguObjects, ocmObjects, mcoObjects []runtime.Object
 
 	//nolint:varnamelen
@@ -524,8 +509,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 			veleroClientObjects = append(veleroClientObjects, v)
 		case *cguapiv1alpha1.ClusterGroupUpgrade:
 			cguObjects = append(cguObjects, v)
-		case *srIovV1.SriovNetworkPoolConfig:
-			srIovObjects = append(srIovObjects, v)
 		// MultiNetworkPolicy Client Objects
 		case *plumbingv1.MultiNetworkPolicy:
 			plumbingObjects = append(plumbingObjects, v)
@@ -542,7 +525,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 	clientSet.NetworkingV1Interface = clientSet.K8sClient.NetworkingV1()
 	clientSet.RbacV1Interface = clientSet.K8sClient.RbacV1()
 	clientSet.StorageV1Interface = clientSet.K8sClient.StorageV1()
-	clientSet.ClientSrIov = clientSrIovFake.NewSimpleClientset(srIovObjects...)
 	clientSet.ClusterClient = clusterClientFake.NewSimpleClientset(ocmObjects...)
 	clientSet.ClusterV1Interface = clientSet.ClusterClient.ClusterV1()
 	clientSet.MachineconfigurationV1Interface = clientMachineConfigFake.NewSimpleClientset(
