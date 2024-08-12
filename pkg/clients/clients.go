@@ -525,8 +525,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 		// SrIov Client Objects
 		case *srIovV1.SriovNetworkNodePolicy:
 			srIovObjects = append(srIovObjects, v)
-		case *srIovV1.SriovOperatorConfig:
-			srIovObjects = append(srIovObjects, v)
 		case *cguapiv1alpha1.ClusterGroupUpgrade:
 			cguObjects = append(cguObjects, v)
 		case *srIovV1.SriovNetworkPoolConfig:
