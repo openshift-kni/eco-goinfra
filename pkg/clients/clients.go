@@ -12,8 +12,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	argocdOperatorv1alpha1 "github.com/argoproj-labs/argocd-operator/api/v1alpha1"
-	performanceV2 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/performanceprofile/v2"
-	tunedv1 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/tuned/v1"
 	monv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 
 	oauthv1 "github.com/openshift/api/oauth/v1"
@@ -290,14 +288,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
-	if err := performanceV2.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := tunedv1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
 	if err := monv1.AddToScheme(crScheme); err != nil {
 		return err
 	}
@@ -434,10 +424,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 		case *cguapiv1alpha1.PreCachingConfig:
 			genericClientObjects = append(genericClientObjects, v)
 		case *hiveextV1Beta1.AgentClusterInstall:
-			genericClientObjects = append(genericClientObjects, v)
-		case *performanceV2.PerformanceProfile:
-			genericClientObjects = append(genericClientObjects, v)
-		case *tunedv1.Tuned:
 			genericClientObjects = append(genericClientObjects, v)
 		case *agentInstallV1Beta1.AgentServiceConfig:
 			genericClientObjects = append(genericClientObjects, v)

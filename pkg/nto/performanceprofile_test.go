@@ -46,6 +46,9 @@ var (
 	defaultVendorID            = "123456"
 	defaultDeviceID            = "7654321"
 	emptyString                = ""
+	paoTestSchemes             = []clients.SchemeAttacher{
+		v2.AddToScheme,
+	}
 )
 
 func TestPullPerformanceProfile(t *testing.T) {
@@ -103,7 +106,8 @@ func TestPullPerformanceProfile(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: paoTestSchemes,
 			})
 		}
 
@@ -813,7 +817,8 @@ func buildInValidPerformanceProfileBuilder(apiClient *clients.Settings) *Builder
 
 func buildPerformanceProfileWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyPerformanceProfile(),
+		K8sMockObjects:  buildDummyPerformanceProfile(),
+		SchemeAttachers: paoTestSchemes,
 	})
 }
 
