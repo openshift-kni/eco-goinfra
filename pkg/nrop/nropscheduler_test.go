@@ -87,7 +87,8 @@ func TestNROSchedulerPull(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
 			})
 		}
 
@@ -365,7 +366,8 @@ func buildInValidNROSchedulerBuilder(apiClient *clients.Settings) *SchedulerBuil
 
 func buildNROSchedulerClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyNROScheduler(),
+		K8sMockObjects:  buildDummyNROScheduler(),
+		SchemeAttachers: testSchemes,
 	})
 }
 

@@ -39,8 +39,6 @@ import (
 	nmstatev1 "github.com/nmstate/kubernetes-nmstate/api/v1"
 	nmstateV1alpha1 "github.com/nmstate/kubernetes-nmstate/api/v1alpha1"
 
-	nropv1 "github.com/openshift-kni/numaresources-operator/api/numaresourcesoperator/v1"
-
 	hiveextV1Beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/hiveextension/v1beta1"
 	agentInstallV1Beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/v1beta1"
 	hiveV1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1"
@@ -265,10 +263,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
-	if err := nropv1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
 	if err := argocdOperatorv1alpha1.AddToScheme(crScheme); err != nil {
 		return err
 	}
@@ -403,10 +397,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 		case *operatorv1.Console:
 			genericClientObjects = append(genericClientObjects, v)
 		case *imageregistryV1.Config:
-			genericClientObjects = append(genericClientObjects, v)
-		case *nropv1.NUMAResourcesOperator:
-			genericClientObjects = append(genericClientObjects, v)
-		case *nropv1.NUMAResourcesScheduler:
 			genericClientObjects = append(genericClientObjects, v)
 		case *configV1.ClusterOperator:
 			genericClientObjects = append(genericClientObjects, v)

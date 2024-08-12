@@ -17,6 +17,9 @@ var (
 	infoRefreshPeriodic          = nropv1.InfoRefreshPeriodic
 	infoRefreshEvents            = nropv1.InfoRefreshEvents
 	infoRefreshPeriodicAndEvents = nropv1.InfoRefreshPeriodicAndEvents
+	testSchemes                  = []clients.SchemeAttacher{
+		nropv1.AddToScheme,
+	}
 )
 
 func TestPull(t *testing.T) {
@@ -74,7 +77,8 @@ func TestPull(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
 			})
 		}
 
@@ -418,13 +422,15 @@ func buildInValidNROPBuilder(apiClient *clients.Settings) *Builder {
 
 func buildNROPClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyNROP(),
+		K8sMockObjects:  buildDummyNROP(),
+		SchemeAttachers: testSchemes,
 	})
 }
 
 func buildNROPWithMCPSelectorClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyNROPWithMCPSelector(),
+		K8sMockObjects:  buildDummyNROPWithMCPSelector(),
+		SchemeAttachers: testSchemes,
 	})
 }
 
