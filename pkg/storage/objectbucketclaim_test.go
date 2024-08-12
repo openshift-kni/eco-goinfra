@@ -15,6 +15,9 @@ import (
 var (
 	defaultObjectBucketClaimName      = "obc-test"
 	defaultObjectBucketClaimNamespace = "obc-space"
+	bucketTestSchemes                 = []clients.SchemeAttacher{
+		noobaav1alpha1.AddToScheme,
+	}
 )
 
 func TestPullObjectBucketClaim(t *testing.T) {
@@ -86,7 +89,8 @@ func TestPullObjectBucketClaim(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: bucketTestSchemes,
 			})
 		}
 
@@ -372,7 +376,8 @@ func buildInValidObjectBucketClaimBuilder(apiClient *clients.Settings) *ObjectBu
 
 func buildObjectBucketClaimClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyObjectBucketClaim(),
+		K8sMockObjects:  buildDummyObjectBucketClaim(),
+		SchemeAttachers: bucketTestSchemes,
 	})
 }
 

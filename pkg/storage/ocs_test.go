@@ -22,6 +22,9 @@ var (
 	defaultVolumeMode              = corev1.PersistentVolumeBlock
 	errStorageClusterNotExists     = fmt.Errorf("storageCluster object ocs-storagecluster does not exist in " +
 		"namespace openshift-storage")
+	ocsTestSchemes = []clients.SchemeAttacher{
+		ocsoperatorv1.AddToScheme,
+	}
 )
 
 //nolint:funlen
@@ -115,7 +118,8 @@ func TestSorageClusterPull(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: ocsTestSchemes,
 			})
 		}
 
@@ -733,7 +737,8 @@ func buildInValidStorageClusterBuilder(apiClient *clients.Settings) *StorageClus
 
 func buildStorageClusterClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyStorageCluster(),
+		K8sMockObjects:  buildDummyStorageCluster(),
+		SchemeAttachers: ocsTestSchemes,
 	})
 }
 

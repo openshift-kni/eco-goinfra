@@ -15,6 +15,9 @@ import (
 var (
 	defaultSystemODFName      = "ocs-cluster-system"
 	defaultSystemODFNamespace = "openshift-odf"
+	odfTestSchemes            = []clients.SchemeAttacher{
+		odfoperatorv1alpha1.AddToScheme,
+	}
 )
 
 func TestPullSystemODF(t *testing.T) {
@@ -85,7 +88,8 @@ func TestPullSystemODF(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: odfTestSchemes,
 			})
 		}
 
@@ -337,7 +341,8 @@ func buildInValidSystemODFBuilder(apiClient *clients.Settings) *SystemODFBuilder
 
 func buildSystemODFClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummySystemODF(),
+		K8sMockObjects:  buildDummySystemODF(),
+		SchemeAttachers: odfTestSchemes,
 	})
 }
 
