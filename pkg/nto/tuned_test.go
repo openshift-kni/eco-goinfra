@@ -21,6 +21,9 @@ var (
 	defaultTunedProfileName = "openshift"
 	defaultTunedProfileData = "[main]\nsummary=Optimize systems running OpenShift (provider specific parent profile)" +
 		"\ninclude=-provider-${f:exec:cat:/var/lib/ocp-tuned/provider},openshift\n"
+	tunedTestSchemes = []clients.SchemeAttacher{
+		tunedv1.AddToScheme,
+	}
 )
 
 func TestPullTuned(t *testing.T) {
@@ -92,7 +95,8 @@ func TestPullTuned(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: tunedTestSchemes,
 			})
 		}
 
@@ -364,7 +368,8 @@ func buildInValidTunedBuilder(apiClient *clients.Settings) *TunedBuilder {
 
 func buildTunedClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyTuned(),
+		K8sMockObjects:  buildDummyTuned(),
+		SchemeAttachers: tunedTestSchemes,
 	})
 }
 
