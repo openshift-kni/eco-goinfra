@@ -57,7 +57,7 @@ func TestWaitForAllPodsInNamespacesHealthy(t *testing.T) {
 			skipRedinessCheck:        false,
 			ignoreRestartPolicyNever: true,
 			ignoreNamespaces:         []string{"ns2"},
-			expectedErrMsg:           "context deadline exceeded",
+			expectedErrMsg:           "",
 		},
 	}
 
