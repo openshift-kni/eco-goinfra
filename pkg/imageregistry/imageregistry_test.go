@@ -1,8 +1,10 @@
 package imageregistry
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/golang/glog"
 
@@ -21,8 +23,13 @@ var (
 		Version: APIVersion,
 		Kind:    APIKind,
 	}
-	defaultImageRegistryName = "cluster"
-	defaultManagementState   = operatorV1.Managed
+	defaultImageRegistryName      = "cluster"
+	defaultManagementState        = operatorV1.Managed
+	defaultImageRegistryCondition = operatorV1.OperatorCondition{
+		Type:   "Available",
+		Status: operatorV1.ConditionTrue,
+		Reason: "Ready",
+	}
 )
 
 func TestImageRegistryPull(t *testing.T) {
@@ -314,6 +321,70 @@ func TestImageRegistryGetStorageConfig(t *testing.T) {
 	}
 }
 
+func TestImageRegistryWaitForCondition(t *testing.T) {
+	testCases := []struct {
+		exists        bool
+		conditionMet  bool
+		valid         bool
+		expectedError error
+	}{
+		{
+			exists:        true,
+			conditionMet:  true,
+			valid:         true,
+			expectedError: nil,
+		},
+		{
+			exists:        false,
+			conditionMet:  true,
+			valid:         true,
+			expectedError: fmt.Errorf("imageRegistry object %s does not exist", defaultImageRegistryName),
+		},
+		{
+			exists:        true,
+			conditionMet:  false,
+			valid:         true,
+			expectedError: context.DeadlineExceeded,
+		},
+		{
+			exists:        true,
+			conditionMet:  true,
+			valid:         false,
+			expectedError: fmt.Errorf("the imageRegistry 'name' cannot be empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		var (
+			runtimeObjects []runtime.Object
+			testBuilder    *Builder
+		)
+
+		if testCase.exists {
+			imageRegistry := buildDummyImageRegistry(defaultImageRegistryName, defaultManagementState)
+
+			if testCase.conditionMet {
+				imageRegistry.Status.Conditions = append(imageRegistry.Status.Conditions, defaultImageRegistryCondition)
+			}
+
+			runtimeObjects = append(runtimeObjects, imageRegistry)
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: runtimeObjects,
+		})
+
+		if testCase.valid {
+			testBuilder = buildValidImageRegistryBuilder(testSettings)
+		} else {
+			testBuilder = buildInValidImageRegistryBuilder(testSettings)
+		}
+
+		_, err := testBuilder.WaitForCondition(defaultImageRegistryCondition, time.Second)
+		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
 func buildValidImageRegistryBuilder(apiClient *clients.Settings) *Builder {
 	return newBuilder(apiClient, defaultImageRegistryName, defaultManagementState)
 }
@@ -324,23 +395,27 @@ func buildInValidImageRegistryBuilder(apiClient *clients.Settings) *Builder {
 
 func buildImageRegistryClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyImageRegistry(),
+		K8sMockObjects: buildDummyImageRegistryObject(),
 		GVK:            []schema.GroupVersionKind{imageRegistryGVK},
 	})
 }
 
-func buildDummyImageRegistry() []runtime.Object {
-	return append([]runtime.Object{}, &imageregistryV1.Config{
+func buildDummyImageRegistry(name string, managementState operatorV1.ManagementState) *imageregistryV1.Config {
+	return &imageregistryV1.Config{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: defaultImageRegistryName,
+			Name: name,
 		},
 		Spec: imageregistryV1.ImageRegistrySpec{
 			OperatorSpec: operatorV1.OperatorSpec{
-				ManagementState: imageregistryV1.StorageManagementStateManaged,
+				ManagementState: managementState,
 			},
 			Storage: imageregistryV1.ImageRegistryConfigStorage{},
 		},
-	})
+	}
+}
+
+func buildDummyImageRegistryObject() []runtime.Object {
+	return append([]runtime.Object{}, buildDummyImageRegistry(defaultImageRegistryName, defaultManagementState))
 }
 
 // newBuilder method creates new instance of builder (for the unit test propose only).
@@ -348,20 +423,11 @@ func newBuilder(apiClient *clients.Settings, name string, managementState operat
 	glog.V(100).Infof("Initializing new Builder structure with the name: %s", name)
 
 	builder := &Builder{
-		apiClient: apiClient.Client,
-		Definition: &imageregistryV1.Config{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:            name,
-				ResourceVersion: "999",
-			},
-			Spec: imageregistryV1.ImageRegistrySpec{
-				OperatorSpec: operatorV1.OperatorSpec{
-					ManagementState: managementState,
-				},
-				Storage: imageregistryV1.ImageRegistryConfigStorage{},
-			},
-		},
+		apiClient:  apiClient.Client,
+		Definition: buildDummyImageRegistry(name, managementState),
 	}
+
+	builder.Definition.ResourceVersion = "999"
 
 	if name == "" {
 		glog.V(100).Infof("The name of the imageRegistry is empty")
