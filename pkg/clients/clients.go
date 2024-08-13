@@ -67,7 +67,6 @@ import (
 	k8sFakeClient "k8s.io/client-go/kubernetes/fake"
 	fakeRuntimeClient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	grafanaV4V1Alpha1 "github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1"
 	multinetpolicyclientv1 "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/client/clientset/versioned/typed/k8s.cni.cncf.io/v1beta1"
 	cguapiv1alpha1 "github.com/openshift-kni/cluster-group-upgrades-operator/pkg/api/clustergroupupgrades/v1alpha1"
 	operatorv1 "github.com/openshift/api/operator/v1"
@@ -100,7 +99,6 @@ type Settings struct {
 	MultiNetworkPolicyClient multinetpolicyclientv1.K8sCniCncfIoV1beta1Interface
 	multinetpolicyclientv1.K8sCniCncfIoV1beta1Interface
 	operatorv1alpha1.OperatorV1alpha1Interface
-	grafanaV4V1Alpha1.Grafana
 	machinev1beta1client.MachineV1beta1Interface
 	storageV1Client.StorageV1Interface
 	VeleroClient veleroClient.Interface
@@ -236,10 +234,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	}
 
 	if err := nfdv1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := grafanaV4V1Alpha1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 

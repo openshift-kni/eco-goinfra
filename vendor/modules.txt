@@ -31,9 +31,6 @@ github.com/aws/aws-sdk-go/aws/arn
 # github.com/beorn7/perks v1.0.1
 ## explicit; go 1.11
 github.com/beorn7/perks/quantile
-# github.com/blang/semver v3.5.1+incompatible
-## explicit
-github.com/blang/semver
 # github.com/blang/semver/v4 v4.0.0
 ## explicit; go 1.14
 github.com/blang/semver/v4
@@ -282,9 +279,6 @@ github.com/google/uuid
 # github.com/gorilla/websocket v1.5.1
 ## explicit; go 1.20
 github.com/gorilla/websocket
-# github.com/grafana-operator/grafana-operator/v4 v4.10.1
-## explicit; go 1.18
-github.com/grafana-operator/grafana-operator/v4/api/integreatly/v1alpha1
 # github.com/grafana/loki/operator/apis/loki v0.0.0-20240627192641-91a34868db61
 ## explicit; go 1.19
 github.com/grafana/loki/operator/apis/loki/v1
@@ -378,11 +372,6 @@ github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/utils
 # github.com/k8snetworkplumbingwg/sriov-network-operator v1.2.0 => github.com/openshift/sriov-network-operator v0.0.0-20240508132640-2b61056c9758
 ## explicit; go 1.21
 github.com/k8snetworkplumbingwg/sriov-network-operator/api/v1
-github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/client/clientset/versioned
-github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/client/clientset/versioned/fake
-github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/client/clientset/versioned/scheme
-github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/client/clientset/versioned/typed/sriovnetwork/v1
-github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/client/clientset/versioned/typed/sriovnetwork/v1/fake
 github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/consts
 github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/render
 github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/vars
