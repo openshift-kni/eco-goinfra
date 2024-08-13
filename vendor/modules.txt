@@ -1508,21 +1508,7 @@ maistra.io/api/core/v1
 maistra.io/api/core/v2
 # open-cluster-management.io/api v0.13.0
 ## explicit; go 1.21
-open-cluster-management.io/api/client/cluster/clientset/versioned
-open-cluster-management.io/api/client/cluster/clientset/versioned/fake
-open-cluster-management.io/api/client/cluster/clientset/versioned/scheme
-open-cluster-management.io/api/client/cluster/clientset/versioned/typed/cluster/v1
-open-cluster-management.io/api/client/cluster/clientset/versioned/typed/cluster/v1/fake
-open-cluster-management.io/api/client/cluster/clientset/versioned/typed/cluster/v1alpha1
-open-cluster-management.io/api/client/cluster/clientset/versioned/typed/cluster/v1alpha1/fake
-open-cluster-management.io/api/client/cluster/clientset/versioned/typed/cluster/v1beta1
-open-cluster-management.io/api/client/cluster/clientset/versioned/typed/cluster/v1beta1/fake
-open-cluster-management.io/api/client/cluster/clientset/versioned/typed/cluster/v1beta2
-open-cluster-management.io/api/client/cluster/clientset/versioned/typed/cluster/v1beta2/fake
 open-cluster-management.io/api/cluster/v1
-open-cluster-management.io/api/cluster/v1alpha1
-open-cluster-management.io/api/cluster/v1beta1
-open-cluster-management.io/api/cluster/v1beta2
 # open-cluster-management.io/governance-policy-propagator v0.13.0
 ## explicit; go 1.21
 open-cluster-management.io/governance-policy-propagator/api/v1

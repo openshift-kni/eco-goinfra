@@ -53,10 +53,6 @@ import (
 	plumbingv1 "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/apis/k8s.cni.cncf.io/v1beta1"
 	fakeMultiNetPolicyClient "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/client/clientset/versioned/fake"
 
-	clusterClient "open-cluster-management.io/api/client/cluster/clientset/versioned"
-	clusterClientFake "open-cluster-management.io/api/client/cluster/clientset/versioned/fake"
-	clusterV1Client "open-cluster-management.io/api/client/cluster/clientset/versioned/typed/cluster/v1"
-
 	appsv1 "k8s.io/api/apps/v1"
 	scalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -105,8 +101,6 @@ type Settings struct {
 	veleroV1Client.VeleroV1Interface
 	ClientCgu clientCgu.Interface
 	clientCguV1.RanV1alpha1Interface
-	ClusterClient clusterClient.Interface
-	clusterV1Client.ClusterV1Interface
 	scheme *runtime.Scheme
 }
 
@@ -312,7 +306,7 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 	clientSet := &Settings{}
 
 	var k8sClientObjects, genericClientObjects, plumbingObjects,
-		veleroClientObjects, cguObjects, ocmObjects, mcoObjects []runtime.Object
+		veleroClientObjects, cguObjects, mcoObjects []runtime.Object
 
 	//nolint:varnamelen
 	for _, v := range tcp.K8sMockObjects {
@@ -426,8 +420,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 	clientSet.NetworkingV1Interface = clientSet.K8sClient.NetworkingV1()
 	clientSet.RbacV1Interface = clientSet.K8sClient.RbacV1()
 	clientSet.StorageV1Interface = clientSet.K8sClient.StorageV1()
-	clientSet.ClusterClient = clusterClientFake.NewSimpleClientset(ocmObjects...)
-	clientSet.ClusterV1Interface = clientSet.ClusterClient.ClusterV1()
 	clientSet.MachineconfigurationV1Interface = clientMachineConfigFake.NewSimpleClientset(
 		mcoObjects...).MachineconfigurationV1()
 
