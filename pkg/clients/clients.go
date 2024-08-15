@@ -33,9 +33,6 @@ import (
 	clientMachineConfigFake "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/fake"
 	clientMachineConfigV1 "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/typed/machineconfiguration.openshift.io/v1"
 
-	nmstatev1 "github.com/nmstate/kubernetes-nmstate/api/v1"
-	nmstateV1alpha1 "github.com/nmstate/kubernetes-nmstate/api/v1alpha1"
-
 	hiveextV1Beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/hiveextension/v1beta1"
 	agentInstallV1Beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/v1beta1"
 	hiveV1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1"
@@ -225,14 +222,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	}
 
 	if err := nfdv1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := nmstatev1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := nmstateV1alpha1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
