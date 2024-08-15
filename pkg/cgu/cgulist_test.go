@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"testing"
 
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestCguListInAllNamespaces(t *testing.T) {
 	testCases := []struct {
 		testCGU       []*CguBuilder
-		listOptions   []metav1.ListOptions
+		listOptions   []client.ListOptions
 		expectedError error
 		client        bool
 	}{
@@ -24,13 +25,13 @@ func TestCguListInAllNamespaces(t *testing.T) {
 		},
 		{
 			testCGU:       []*CguBuilder{buildValidCguTestBuilder(buildTestClientWithDummyCguObject())},
-			listOptions:   []metav1.ListOptions{{LabelSelector: "test"}},
+			listOptions:   []client.ListOptions{{Namespace: "test"}},
 			expectedError: nil,
 			client:        true,
 		},
 		{
 			testCGU:       []*CguBuilder{buildValidCguTestBuilder(buildTestClientWithDummyCguObject())},
-			listOptions:   []metav1.ListOptions{{LabelSelector: "test"}, {Continue: "true"}},
+			listOptions:   []client.ListOptions{{Namespace: "test"}, {Continue: "true"}},
 			expectedError: fmt.Errorf("error: more than one ListOptions was passed"),
 			client:        true,
 		},
@@ -46,7 +47,8 @@ func TestCguListInAllNamespaces(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: buildDummyCguObject(),
+				K8sMockObjects:  buildDummyCguObject(),
+				SchemeAttachers: testSchemes,
 			})
 		}
 
