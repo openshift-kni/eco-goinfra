@@ -26,10 +26,6 @@ import (
 	netAttDefV1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
 	clientNetAttDefV1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned/typed/k8s.cni.cncf.io/v1"
 
-	clientCgu "github.com/openshift-kni/cluster-group-upgrades-operator/pkg/generated/clientset/versioned"
-	clientCguFake "github.com/openshift-kni/cluster-group-upgrades-operator/pkg/generated/clientset/versioned/fake"
-	clientCguV1 "github.com/openshift-kni/cluster-group-upgrades-operator/pkg/generated/clientset/versioned/typed/clustergroupupgrades/v1alpha1"
-
 	clientMachineConfigFake "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/fake"
 	clientMachineConfigV1 "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/typed/machineconfiguration.openshift.io/v1"
 
@@ -58,7 +54,6 @@ import (
 	fakeRuntimeClient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	multinetpolicyclientv1 "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/client/clientset/versioned/typed/k8s.cni.cncf.io/v1beta1"
-	cguapiv1alpha1 "github.com/openshift-kni/cluster-group-upgrades-operator/pkg/api/clustergroupupgrades/v1alpha1"
 	operatorv1 "github.com/openshift/api/operator/v1"
 	machinev1beta1client "github.com/openshift/client-go/machine/clientset/versioned/typed/machine/v1beta1"
 	operatorv1alpha1 "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1"
@@ -93,8 +88,6 @@ type Settings struct {
 	storageV1Client.StorageV1Interface
 	VeleroClient veleroClient.Interface
 	veleroV1Client.VeleroV1Interface
-	ClientCgu clientCgu.Interface
-	clientCguV1.RanV1alpha1Interface
 	scheme *runtime.Scheme
 }
 
@@ -143,8 +136,6 @@ func New(kubeconfig string) *Settings {
 	clientSet.K8sClient = kubernetes.NewForConfigOrDie(config)
 	clientSet.VeleroClient = veleroClient.NewForConfigOrDie(config)
 	clientSet.VeleroV1Interface = veleroV1Client.NewForConfigOrDie(config)
-	clientSet.ClientCgu = clientCgu.NewForConfigOrDie(config)
-	clientSet.RanV1alpha1Interface = clientCguV1.NewForConfigOrDie(config)
 	clientSet.Config = config
 
 	clientSet.scheme = runtime.NewScheme()
@@ -225,10 +216,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
-	if err := cguapiv1alpha1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
 	if err := routev1.AddToScheme(crScheme); err != nil {
 		return err
 	}
@@ -287,8 +274,7 @@ func GetTestClients(tcp TestClientParams) *Settings {
 func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClient.ClientBuilder) {
 	clientSet := &Settings{}
 
-	var k8sClientObjects, genericClientObjects, plumbingObjects,
-		veleroClientObjects, cguObjects, mcoObjects []runtime.Object
+	var k8sClientObjects, genericClientObjects, plumbingObjects, veleroClientObjects, mcoObjects []runtime.Object
 
 	//nolint:varnamelen
 	for _, v := range tcp.K8sMockObjects {
@@ -358,8 +344,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 			genericClientObjects = append(genericClientObjects, v)
 		case *configV1.ClusterOperator:
 			genericClientObjects = append(genericClientObjects, v)
-		case *cguapiv1alpha1.PreCachingConfig:
-			genericClientObjects = append(genericClientObjects, v)
 		case *hiveextV1Beta1.AgentClusterInstall:
 			genericClientObjects = append(genericClientObjects, v)
 		case *agentInstallV1Beta1.AgentServiceConfig:
@@ -379,8 +363,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 			veleroClientObjects = append(veleroClientObjects, v)
 		case *velerov1.BackupStorageLocation:
 			veleroClientObjects = append(veleroClientObjects, v)
-		case *cguapiv1alpha1.ClusterGroupUpgrade:
-			cguObjects = append(cguObjects, v)
 		// MultiNetworkPolicy Client Objects
 		case *plumbingv1.MultiNetworkPolicy:
 			plumbingObjects = append(plumbingObjects, v)
@@ -409,8 +391,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 	// Assign the fake velero clientset to the clientSet
 	clientSet.VeleroClient = veleroFakeClient.NewSimpleClientset(veleroClientObjects...)
 	clientSet.VeleroV1Interface = clientSet.VeleroClient.VeleroV1()
-
-	clientSet.ClientCgu = clientCguFake.NewSimpleClientset(cguObjects...)
 
 	// Update the generic client with schemes of generic resources
 	clientSet.scheme = runtime.NewScheme()
