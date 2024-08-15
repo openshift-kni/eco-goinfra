@@ -110,7 +110,8 @@ func TestPullPreCachingConfig(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
 			})
 		}
 
@@ -374,6 +375,7 @@ func buildTestClientWithDummyPreCachingConfig() *clients.Settings {
 		K8sMockObjects: []runtime.Object{
 			buildDummyPreCachingConfig(defaultPreCachingConfigName, defaultPreCachingConfigNsName),
 		},
+		SchemeAttachers: testSchemes,
 	})
 }
 
