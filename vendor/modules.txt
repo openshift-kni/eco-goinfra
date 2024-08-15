@@ -759,14 +759,6 @@ github.com/stmcginnis/gofish
 github.com/stmcginnis/gofish/common
 github.com/stmcginnis/gofish/redfish
 github.com/stmcginnis/gofish/swordfish
-# github.com/stolostron/cluster-lifecycle-api v0.0.0-20240109072430-f5fe6043d1f8
-## explicit; go 1.19
-github.com/stolostron/cluster-lifecycle-api/helpers/imageregistry
-github.com/stolostron/cluster-lifecycle-api/imageregistry/v1alpha1
-# github.com/stolostron/klusterlet-addon-controller v0.0.0-20240606130554-01338045271a
-## explicit; go 1.21
-github.com/stolostron/klusterlet-addon-controller/pkg/apis/agent/v1
-github.com/stolostron/klusterlet-addon-controller/version
 # github.com/stretchr/testify v1.9.0
 ## explicit; go 1.17
 github.com/stretchr/testify/assert
