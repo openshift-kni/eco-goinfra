@@ -1,7 +1,6 @@
 package velero
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
@@ -113,7 +112,6 @@ func TestPullBackup(t *testing.T) {
 
 		// Test the Pull method
 		builderResult, err := PullBackup(testSettings, testCase.name, testCase.namespace)
-		fmt.Print(builderResult)
 		// Check the error
 		if testCase.expectedError {
 			assert.NotNil(t, err)

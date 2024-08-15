@@ -3,6 +3,7 @@ package velero
 import (
 	"context"
 	"fmt"
+
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
@@ -38,7 +39,7 @@ func NewBackupBuilder(apiClient *clients.Settings, name, nsname string) *BackupB
 
 	err := apiClient.AttachScheme(velerov1.AddToScheme)
 	if err != nil {
-		glog.V(100).Infof("Failed to add nmstate v1 scheme to client schemes")
+		glog.V(100).Infof("Failed to add velero v1 scheme to client schemes")
 
 		return nil
 	}
