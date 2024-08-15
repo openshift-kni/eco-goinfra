@@ -22,6 +22,12 @@ var (
 	defaultCguCondition      = conditionComplete
 )
 
+var (
+	testSchemes = []clients.SchemeAttacher{
+		v1alpha1.AddToScheme,
+	}
+)
+
 //nolint:funlen
 func TestPullCgu(t *testing.T) {
 	generateCgu := func(name, namespace string) *v1alpha1.ClusterGroupUpgrade {
@@ -96,7 +102,8 @@ func TestPullCgu(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
 			})
 		}
 
@@ -179,8 +186,12 @@ func TestNewCguBuilder(t *testing.T) {
 			testCase.cguNamespace,
 			testCase.cguMaxConcurrency)
 
-		assert.NotNil(t, testCguStructure)
-		assert.Equal(t, testCguStructure.errorMsg, testCase.expectedErrorText)
+		if testCase.client {
+			assert.NotNil(t, testCguStructure)
+			assert.Equal(t, testCguStructure.errorMsg, testCase.expectedErrorText)
+		} else {
+			assert.Nil(t, testCguStructure)
+		}
 	}
 }
 
@@ -506,7 +517,8 @@ func TestCguWaitForCondition(t *testing.T) {
 		}
 
 		testSettings := clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: testSchemes,
 		})
 
 		if testCase.valid {
@@ -543,7 +555,8 @@ func TestCguWaitUntilComplete(t *testing.T) {
 		}
 
 		testSettings := clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: []runtime.Object{cgu},
+			K8sMockObjects:  []runtime.Object{cgu},
+			SchemeAttachers: testSchemes,
 		})
 
 		cguBuilder := buildValidCguTestBuilder(testSettings)
@@ -631,7 +644,8 @@ func TestCguWaitUntilClusterInState(t *testing.T) {
 		}
 
 		testSettings := clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: testSchemes,
 		})
 
 		if testCase.valid {
@@ -670,7 +684,8 @@ func TestCguWaitUntilClusterComplete(t *testing.T) {
 		}
 
 		testSettings := clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: []runtime.Object{cgu},
+			K8sMockObjects:  []runtime.Object{cgu},
+			SchemeAttachers: testSchemes,
 		})
 
 		cguBuilder := buildValidCguTestBuilder(testSettings)
@@ -705,7 +720,8 @@ func TestCguWaitUntilClusterInProgress(t *testing.T) {
 		}
 
 		testSettings := clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: []runtime.Object{cgu},
+			K8sMockObjects:  []runtime.Object{cgu},
+			SchemeAttachers: testSchemes,
 		})
 
 		cguBuilder := buildValidCguTestBuilder(testSettings)
@@ -720,7 +736,8 @@ func TestWaitUntilBackupStarts(t *testing.T) {
 	cguObject.Status.Backup = &v1alpha1.BackupStatus{}
 
 	cguBuilder := buildValidCguTestBuilder(clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: []runtime.Object{cguObject},
+		K8sMockObjects:  []runtime.Object{cguObject},
+		SchemeAttachers: testSchemes,
 	}))
 	cguBuilder, err := cguBuilder.WaitUntilBackupStarts(5 * time.Second)
 
@@ -806,7 +823,8 @@ func TestCguBuilderValidate(t *testing.T) {
 
 func buildTestClientWithDummyCguObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyCguObject(),
+		K8sMockObjects:  buildDummyCguObject(),
+		SchemeAttachers: testSchemes,
 	})
 }
 
