@@ -1,6 +1,7 @@
 package velero
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
@@ -9,7 +10,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	velerov1 "github.com/vmware-tanzu/velero/pkg/apis/velero/v1"
-	veleroClient "github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned"
+)
+
+var (
+	v1TestSchemes = []clients.SchemeAttacher{
+		velerov1.AddToScheme,
+	}
 )
 
 func TestNewBackupBuilder(t *testing.T) {
@@ -37,7 +43,7 @@ func TestNewBackupBuilder(t *testing.T) {
 	}
 
 	for _, test := range testcases {
-		testBuilder := NewBackupBuilder(&clients.Settings{VeleroClient: &veleroClient.Clientset{}}, test.name, test.namespace)
+		testBuilder := NewBackupBuilder(clients.GetTestClients(clients.TestClientParams{}), test.name, test.namespace)
 		assert.Equal(t, testBuilder.errorMsg, test.expectedErrMsg)
 	}
 }
@@ -101,12 +107,13 @@ func TestPullBackup(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: v1TestSchemes,
 		})
 
 		// Test the Pull method
 		builderResult, err := PullBackup(testSettings, testCase.name, testCase.namespace)
-
+		fmt.Print(builderResult)
 		// Check the error
 		if testCase.expectedError {
 			assert.NotNil(t, err)
@@ -125,7 +132,7 @@ func TestPullBackup(t *testing.T) {
 
 // buildValidBackupTestBuilder returns a valid Builder for testing purposes.
 func buildValidBackupTestBuilder() *BackupBuilder {
-	return NewBackupBuilder(&clients.Settings{VeleroClient: &veleroClient.Clientset{}},
+	return NewBackupBuilder(clients.GetTestClients(clients.TestClientParams{}),
 		"backup-test-name", "backup-test-namespace")
 }
 
