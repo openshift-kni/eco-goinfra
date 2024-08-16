@@ -181,7 +181,8 @@ func TestPullBackupStorageLocation(t *testing.T) {
 
 		if testCase.client {
 			testClient = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: v1TestSchemes,
 			})
 		}
 
@@ -244,7 +245,8 @@ func TestListBackupStorageLocationBuilder(t *testing.T) {
 		}
 
 		if testCase.client {
-			testClient = clients.GetTestClients(clients.TestClientParams{K8sMockObjects: runtimeObject})
+			testClient = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects: runtimeObject, SchemeAttachers: v1TestSchemes})
 		}
 
 		testBuilders, err := ListBackupStorageLocationBuilder(testClient, testCase.namespace)
@@ -429,6 +431,7 @@ func TestBackupStorageLocationUpdate(t *testing.T) {
 
 		testBuilder.Definition.Spec.Provider = "testProvider"
 
+		testBuilder.Definition.ObjectMeta.ResourceVersion = "999"
 		bsl, err := testBuilder.Update()
 		assert.Equal(t, testCase.expectedError, err)
 
@@ -535,7 +538,8 @@ func TestBackupStorageLocationValidate(t *testing.T) {
 
 func generateBackupStorageLocationBuilderWithFakeObjects(objects []runtime.Object) *BackupStorageLocationBuilder {
 	return &BackupStorageLocationBuilder{
-		apiClient:  clients.GetTestClients(clients.TestClientParams{K8sMockObjects: objects}).VeleroClient,
+		apiClient: clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: objects, SchemeAttachers: v1TestSchemes}),
 		Definition: generateBackupStorageLocation(),
 	}
 }
@@ -545,7 +549,8 @@ func generateBackupStorageLocationBuilder() *BackupStorageLocationBuilder {
 	runtimeObjects = append(runtimeObjects, generateBackupStorageLocation())
 
 	return &BackupStorageLocationBuilder{
-		apiClient:  clients.GetTestClients(clients.TestClientParams{K8sMockObjects: runtimeObjects}).VeleroClient,
+		apiClient: clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: runtimeObjects, SchemeAttachers: v1TestSchemes}),
 		Definition: generateBackupStorageLocation(),
 	}
 }

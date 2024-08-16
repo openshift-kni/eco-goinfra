@@ -9,7 +9,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	velerov1 "github.com/vmware-tanzu/velero/pkg/apis/velero/v1"
-	veleroClient "github.com/vmware-tanzu/velero/pkg/generated/clientset/versioned"
 )
 
 func TestNewRestoreBuilder(t *testing.T) {
@@ -46,8 +45,8 @@ func TestNewRestoreBuilder(t *testing.T) {
 	}
 
 	for _, test := range testcases {
-		testBuilder := NewRestoreBuilder(&clients.Settings{VeleroClient: &veleroClient.Clientset{}},
-			test.name, test.namespace, test.backupName)
+		testBuilder := NewRestoreBuilder(
+			clients.GetTestClients(clients.TestClientParams{}), test.name, test.namespace, test.backupName)
 		assert.Equal(t, testBuilder.errorMsg, test.expectedErrMsg)
 	}
 }
@@ -111,7 +110,8 @@ func TestPullRestore(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: v1TestSchemes,
 		})
 
 		// Test the Pull method
@@ -135,7 +135,7 @@ func TestPullRestore(t *testing.T) {
 
 // buildValidRestoreTestBuilder returns a valid RestoreBuilder for testing purposes.
 func buildValidRestoreTestBuilder() *RestoreBuilder {
-	return NewRestoreBuilder(&clients.Settings{VeleroClient: &veleroClient.Clientset{}},
+	return NewRestoreBuilder(clients.GetTestClients(clients.TestClientParams{}),
 		"restore-test-name", "restore-test-namespace", "backupName-test-name")
 }
 
