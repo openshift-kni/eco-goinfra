@@ -15,13 +15,16 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	fakeRuntimeClient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
 const (
 	aciTestName      = "aci-test-name"
 	aciTestNamespace = "aci-test-namespace"
 )
+
+var testSchemes = []clients.SchemeAttacher{
+	hiveextV1Beta1.AddToScheme,
+}
 
 func TestNewAgentClusterInstallBuilder(t *testing.T) {
 	testCases := []struct {
@@ -167,7 +170,8 @@ func TestPullAgentClusterInstall(t *testing.T) {
 		}
 
 		if testCase.client {
-			testSettings = clients.GetTestClients(clients.TestClientParams{K8sMockObjects: runtimeObjects})
+			testSettings = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects: runtimeObjects, SchemeAttachers: testSchemes})
 		}
 
 		testBuilder, err := PullAgentClusterInstall(testSettings, testCase.name, testCase.namespace)
@@ -1157,9 +1161,19 @@ func buildTestBuilderWithFakeObjects(objects []runtime.Object) *AgentClusterInst
 		return nil
 	}
 
-	testBuilder := NewAgentClusterInstallBuilder(&clients.Settings{
-		Client: fakeRuntimeClient.NewClientBuilder().WithScheme(fakeClientScheme).WithRuntimeObjects(objects...).Build(),
-	}, aciTestName, aciTestNamespace, "aci-test-clusterdeployment", 3, 2, dummyTestNetwork())
+	apiClient := clients.GetTestClients(clients.TestClientParams{
+		K8sMockObjects:  objects,
+		SchemeAttachers: testSchemes,
+	})
+
+	testBuilder := NewAgentClusterInstallBuilder(
+		apiClient,
+		aciTestName,
+		aciTestNamespace,
+		"aci-test-clusterdeployment",
+		3,
+		2,
+		dummyTestNetwork())
 
 	return testBuilder
 }

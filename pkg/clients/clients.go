@@ -29,7 +29,6 @@ import (
 	clientMachineConfigFake "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/fake"
 	clientMachineConfigV1 "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/typed/machineconfiguration.openshift.io/v1"
 
-	hiveextV1Beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/hiveextension/v1beta1"
 	agentInstallV1Beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/v1beta1"
 	configV1 "github.com/openshift/api/config/v1"
 	imageregistryV1 "github.com/openshift/api/imageregistry/v1"
@@ -183,10 +182,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
-	if err := hiveextV1Beta1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
 	if err := agentInstallV1Beta1.AddToScheme(crScheme); err != nil {
 		return err
 	}
@@ -330,8 +325,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 		case *imageregistryV1.Config:
 			genericClientObjects = append(genericClientObjects, v)
 		case *configV1.ClusterOperator:
-			genericClientObjects = append(genericClientObjects, v)
-		case *hiveextV1Beta1.AgentClusterInstall:
 			genericClientObjects = append(genericClientObjects, v)
 		case *agentInstallV1Beta1.AgentServiceConfig:
 			genericClientObjects = append(genericClientObjects, v)
