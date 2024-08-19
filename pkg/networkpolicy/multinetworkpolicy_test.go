@@ -10,6 +10,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+var testSchemesV1beta1 = []clients.SchemeAttacher{
+	v1beta1.AddToScheme,
+}
+
 func TestMultiNetworkPolicyPull(t *testing.T) {
 	generateMultiNetworkPolicy := func(name, namespace string) *v1beta1.MultiNetworkPolicy {
 		return &v1beta1.MultiNetworkPolicy{
@@ -243,21 +247,21 @@ func TestMultiNetworkPolicyUpdate(t *testing.T) {
 			policyNamespace:     "test-namespace",
 			expectedError:       true,
 			addToRuntimeObjects: false,
-			expectedErrorText:   "multi-networkpolicies.k8s.cni.cncf.io \"test-policy\" not found",
+			expectedErrorText:   "failed to update MultiNetworkPolicy, object does not exist on cluster",
 		},
 		{
 			policyName:          "",
 			policyNamespace:     "test-namespace",
 			expectedError:       true,
 			addToRuntimeObjects: false,
-			expectedErrorText:   "multi-networkpolicies.k8s.cni.cncf.io \"\" not found",
+			expectedErrorText:   "failed to update MultiNetworkPolicy, object does not exist on cluster",
 		},
 		{
 			policyName:          "test-policy",
 			policyNamespace:     "",
 			expectedError:       true,
 			addToRuntimeObjects: false,
-			expectedErrorText:   "multi-networkpolicies.k8s.cni.cncf.io \"test-policy\" not found",
+			expectedErrorText:   "failed to update MultiNetworkPolicy, object does not exist on cluster",
 		},
 	}
 
@@ -281,6 +285,7 @@ func TestMultiNetworkPolicyUpdate(t *testing.T) {
 			testBuilder.Definition.Spec.PodSelector = metav1.LabelSelector{MatchLabels: map[string]string{"test": "test"}}
 		}
 
+		testBuilder.Definition.ObjectMeta.ResourceVersion = "999"
 		builder, err := testBuilder.Update()
 
 		if testCase.expectedError {
@@ -386,7 +391,9 @@ func TestNewMultiNetworkPolicyBuilder(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := NewMultiNetworkPolicyBuilder(&clients.Settings{}, testCase.name, testCase.namespace)
+		testBuilder := NewMultiNetworkPolicyBuilder(clients.GetTestClients(clients.TestClientParams{
+			SchemeAttachers: testSchemes,
+		}), testCase.name, testCase.namespace)
 
 		if testCase.expectedError {
 			assert.NotNil(t, testBuilder)
@@ -536,11 +543,12 @@ func TestMultiNetworkPolicyExists(t *testing.T) {
 func buildTestMultiNetworkPolicyBuilderWithFakeObjects(runtimeObjects []runtime.Object,
 	name, nsname string) (*MultiNetworkPolicyBuilder, *clients.Settings) {
 	testSettings := clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: runtimeObjects,
+		K8sMockObjects:  runtimeObjects,
+		SchemeAttachers: testSchemesV1beta1,
 	})
 
 	return &MultiNetworkPolicyBuilder{
-		apiClient: testSettings.K8sCniCncfIoV1beta1Interface,
+		apiClient: testSettings.Client,
 		Definition: &v1beta1.MultiNetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,

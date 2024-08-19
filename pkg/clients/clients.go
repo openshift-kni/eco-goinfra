@@ -35,9 +35,6 @@ import (
 	coreV1Client "k8s.io/client-go/kubernetes/typed/core/v1"
 	storageV1Client "k8s.io/client-go/kubernetes/typed/storage/v1"
 
-	plumbingv1 "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/apis/k8s.cni.cncf.io/v1beta1"
-	fakeMultiNetPolicyClient "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/client/clientset/versioned/fake"
-
 	appsv1 "k8s.io/api/apps/v1"
 	scalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -48,7 +45,6 @@ import (
 	k8sFakeClient "k8s.io/client-go/kubernetes/fake"
 	fakeRuntimeClient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	multinetpolicyclientv1 "github.com/k8snetworkplumbingwg/multi-networkpolicy/pkg/client/clientset/versioned/typed/k8s.cni.cncf.io/v1beta1"
 	operatorv1 "github.com/openshift/api/operator/v1"
 	machinev1beta1client "github.com/openshift/client-go/machine/clientset/versioned/typed/machine/v1beta1"
 	operatorv1alpha1 "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1"
@@ -71,8 +67,6 @@ type Settings struct {
 	runtimeClient.Client
 	v1security.SecurityV1Interface
 	dynamic.Interface
-	MultiNetworkPolicyClient multinetpolicyclientv1.K8sCniCncfIoV1beta1Interface
-	multinetpolicyclientv1.K8sCniCncfIoV1beta1Interface
 	operatorv1alpha1.OperatorV1alpha1Interface
 	machinev1beta1client.MachineV1beta1Interface
 	storageV1Client.StorageV1Interface
@@ -118,7 +112,6 @@ func New(kubeconfig string) *Settings {
 	clientSet.SecurityV1Interface = v1security.NewForConfigOrDie(config)
 	clientSet.OperatorV1alpha1Interface = operatorv1alpha1.NewForConfigOrDie(config)
 	clientSet.MachineV1beta1Interface = machinev1beta1client.NewForConfigOrDie(config)
-	clientSet.K8sCniCncfIoV1beta1Interface = multinetpolicyclientv1.NewForConfigOrDie(config)
 	clientSet.StorageV1Interface = storageV1Client.NewForConfigOrDie(config)
 	clientSet.K8sClient = kubernetes.NewForConfigOrDie(config)
 	clientSet.Config = config
@@ -247,7 +240,7 @@ func GetTestClients(tcp TestClientParams) *Settings {
 func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClient.ClientBuilder) {
 	clientSet := &Settings{}
 
-	var k8sClientObjects, genericClientObjects, plumbingObjects, mcoObjects []runtime.Object
+	var k8sClientObjects, genericClientObjects, mcoObjects []runtime.Object
 
 	//nolint:varnamelen
 	for _, v := range tcp.K8sMockObjects {
@@ -322,9 +315,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 		// KMM Client Objects
 		case *moduleV1Beta1.PreflightValidationOCP:
 			genericClientObjects = append(genericClientObjects, v)
-		// MultiNetworkPolicy Client Objects
-		case *plumbingv1.MultiNetworkPolicy:
-			plumbingObjects = append(plumbingObjects, v)
 		// MCO Client Objects
 		case *mcv1.MachineConfig:
 			mcoObjects = append(mcoObjects, v)
@@ -340,12 +330,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 	clientSet.StorageV1Interface = clientSet.K8sClient.StorageV1()
 	clientSet.MachineconfigurationV1Interface = clientMachineConfigFake.NewSimpleClientset(
 		mcoObjects...).MachineconfigurationV1()
-
-	// Assign the fake multi-networkpolicy clientset to the clientSet
-	// Note: We are not entirely sure that these functions actually work as expected.
-	multiClient := fakeMultiNetPolicyClient.NewSimpleClientset(plumbingObjects...)
-	clientSet.MultiNetworkPolicyClient = multiClient.K8sCniCncfIoV1beta1()
-	clientSet.K8sCniCncfIoV1beta1Interface = multiClient.K8sCniCncfIoV1beta1()
 
 	// Update the generic client with schemes of generic resources
 	clientSet.scheme = runtime.NewScheme()
