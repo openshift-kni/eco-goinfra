@@ -23,9 +23,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	netAttDefV1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
-	clientNetAttDefV1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned/typed/k8s.cni.cncf.io/v1"
-
 	clientMachineConfigFake "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/fake"
 	clientMachineConfigV1 "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/typed/machineconfiguration.openshift.io/v1"
 
@@ -73,7 +70,6 @@ type Settings struct {
 	Config *rest.Config
 	runtimeClient.Client
 	v1security.SecurityV1Interface
-	clientNetAttDefV1.K8sCniCncfIoV1Interface
 	dynamic.Interface
 	MultiNetworkPolicyClient multinetpolicyclientv1.K8sCniCncfIoV1beta1Interface
 	multinetpolicyclientv1.K8sCniCncfIoV1beta1Interface
@@ -118,7 +114,6 @@ func New(kubeconfig string) *Settings {
 	clientSet.AppsV1Interface = appsV1Client.NewForConfigOrDie(config)
 	clientSet.NetworkingV1Interface = networkV1Client.NewForConfigOrDie(config)
 	clientSet.RbacV1Interface = rbacV1Client.NewForConfigOrDie(config)
-	clientSet.K8sCniCncfIoV1Interface = clientNetAttDefV1.NewForConfigOrDie(config)
 	clientSet.Interface = dynamic.NewForConfigOrDie(config)
 	clientSet.SecurityV1Interface = v1security.NewForConfigOrDie(config)
 	clientSet.OperatorV1alpha1Interface = operatorv1alpha1.NewForConfigOrDie(config)
@@ -155,10 +150,6 @@ func New(kubeconfig string) *Settings {
 // SetScheme returns mutated apiClient's scheme.
 func SetScheme(crScheme *runtime.Scheme) error {
 	if err := scheme.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := netAttDefV1.SchemeBuilder.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
