@@ -108,7 +108,8 @@ func TestPullClusterImageSet(t *testing.T) {
 		}
 
 		if testCase.client {
-			testSettings = clients.GetTestClients(clients.TestClientParams{K8sMockObjects: runtimeObjects})
+			testSettings = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects: runtimeObjects, SchemeAttachers: testSchemes})
 		}
 
 		builderResult, err := PullClusterImageSet(testSettings, testCase.name)
@@ -327,7 +328,8 @@ func buildInValidClusterImageSetBuilder(apiClient *clients.Settings) *ClusterIma
 
 func buildClusterImageSetClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyClusterImageSetConfig(),
+		K8sMockObjects:  buildDummyClusterImageSetConfig(),
+		SchemeAttachers: testSchemes,
 	})
 }
 

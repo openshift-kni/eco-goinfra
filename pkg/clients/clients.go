@@ -31,7 +31,6 @@ import (
 
 	hiveextV1Beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/hiveextension/v1beta1"
 	agentInstallV1Beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/v1beta1"
-	hiveV1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1"
 	configV1 "github.com/openshift/api/config/v1"
 	imageregistryV1 "github.com/openshift/api/imageregistry/v1"
 	routev1 "github.com/openshift/api/route/v1"
@@ -188,10 +187,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 		return err
 	}
 
-	if err := hiveV1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
 	if err := agentInstallV1Beta1.AddToScheme(crScheme); err != nil {
 		return err
 	}
@@ -339,11 +334,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 		case *hiveextV1Beta1.AgentClusterInstall:
 			genericClientObjects = append(genericClientObjects, v)
 		case *agentInstallV1Beta1.AgentServiceConfig:
-			genericClientObjects = append(genericClientObjects, v)
-		// Hive Client Objects
-		case *hiveV1.HiveConfig:
-			genericClientObjects = append(genericClientObjects, v)
-		case *hiveV1.ClusterImageSet:
 			genericClientObjects = append(genericClientObjects, v)
 		// KMM Client Objects
 		case *moduleV1Beta1.PreflightValidationOCP:

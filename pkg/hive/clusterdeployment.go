@@ -22,7 +22,7 @@ type ClusterDeploymentBuilder struct {
 	Definition *hiveV1.ClusterDeployment
 	Object     *hiveV1.ClusterDeployment
 	errorMsg   string
-	apiClient  *clients.Settings
+	apiClient  goclient.Client
 }
 
 // ClusterDeploymentAdditionalOptions additional options for ClusterDeployment object.
@@ -57,7 +57,7 @@ func NewABMClusterDeploymentBuilder(
 	}
 
 	builder := ClusterDeploymentBuilder{
-		apiClient: apiClient,
+		apiClient: apiClient.Client,
 		Definition: &hiveV1.ClusterDeployment{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
@@ -208,7 +208,7 @@ func PullClusterDeployment(apiClient *clients.Settings, name, nsname string) (*C
 	}
 
 	builder := ClusterDeploymentBuilder{
-		apiClient: apiClient,
+		apiClient: apiClient.Client,
 		Definition: &hiveV1.ClusterDeployment{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,

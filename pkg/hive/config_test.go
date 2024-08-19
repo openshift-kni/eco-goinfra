@@ -99,7 +99,8 @@ func TestPullConfig(t *testing.T) {
 		}
 
 		if testCase.client {
-			testSettings = clients.GetTestClients(clients.TestClientParams{K8sMockObjects: runtimeObjects})
+			testSettings = clients.GetTestClients(
+				clients.TestClientParams{K8sMockObjects: runtimeObjects, SchemeAttachers: testSchemes})
 		}
 
 		builderResult, err := PullConfig(testSettings, testCase.name)
@@ -264,7 +265,8 @@ func buildInValidConfigBuilder(apiClient *clients.Settings) *ConfigBuilder {
 
 func buildHiveConfigTestClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyHiveConfig(),
+		K8sMockObjects:  buildDummyHiveConfig(),
+		SchemeAttachers: testSchemes,
 	})
 }
 

@@ -57,7 +57,7 @@ func ListClusterDeploymentsInAllNamespaces(
 	for _, clusterDeployment := range clusterDeployments.Items {
 		copiedClusterDeployment := clusterDeployment
 		clusterDeploymentBuilder := &ClusterDeploymentBuilder{
-			apiClient:  apiClient,
+			apiClient:  apiClient.Client,
 			Object:     &copiedClusterDeployment,
 			Definition: &copiedClusterDeployment,
 		}
