@@ -306,6 +306,7 @@ func (builder *CguBuilder) Update(force bool) (*CguBuilder, error) {
 		// Deleting the cgu may take time, so wait for it to be deleted before recreating. Otherwise,
 		// the create happens before the delete finishes and this update results in just deletion.
 		builder, err := builder.DeleteAndWait(time.Minute)
+		builder.Definition.ResourceVersion = ""
 
 		if err != nil {
 			glog.V(100).Infof(
