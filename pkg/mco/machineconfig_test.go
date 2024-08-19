@@ -9,6 +9,10 @@ import (
 
 const defaultMachineConfigName = "test-machine-config"
 
+var testSchemes = []clients.SchemeAttacher{
+	mcv1.Install,
+}
+
 // buildDummyMachineConfig returns a MachineConfig with the provided name.
 func buildDummyMachineConfig(name string) *mcv1.MachineConfig {
 	return &mcv1.MachineConfig{
