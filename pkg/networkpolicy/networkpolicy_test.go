@@ -8,8 +8,11 @@ import (
 	netv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	k8sfake "k8s.io/client-go/kubernetes/fake"
 )
+
+var testSchemes = []clients.SchemeAttacher{
+	netv1.AddToScheme,
+}
 
 func TestNetworkPolicyPull(t *testing.T) {
 	generateNetworkPolicy := func(name, namespace string) *netv1.NetworkPolicy {
@@ -71,7 +74,8 @@ func TestNetworkPolicyPull(t *testing.T) {
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: testSchemes,
 		})
 
 		result, err := Pull(testSettings, testCase.policyName, testCase.policyNamespace)
@@ -385,7 +389,7 @@ func TestNetworkPolicyUpdate(t *testing.T) {
 		{ // Test Case 2 - update with no existing object
 			addToRuntimeObjects: false,
 			expectedError:       true,
-			expectedErrorText:   "networkpolicies.networking.k8s.io \"test-name\" not found",
+			expectedErrorText:   "failed to update NetworkPolicy, object does not exist on cluster",
 		},
 	}
 
@@ -401,6 +405,7 @@ func TestNetworkPolicyUpdate(t *testing.T) {
 		// Set some arbitrary values to update
 		testBuilder.Definition.Labels = map[string]string{"test": "test"}
 
+		testBuilder.Definition.ObjectMeta.ResourceVersion = "999"
 		builder, err := testBuilder.Update()
 
 		if testCase.expectedError {
@@ -504,12 +509,9 @@ func TestNewNetworkPolicyBuilder(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testNBP := NewNetworkPolicyBuilder(&clients.Settings{
-			K8sClient:             nil,
-			CoreV1Interface:       nil,
-			AppsV1Interface:       nil,
-			NetworkingV1Interface: nil,
-		}, testCase.testName, testCase.testNamespace)
+		testNBP := NewNetworkPolicyBuilder(clients.GetTestClients(clients.TestClientParams{
+			SchemeAttachers: testSchemes,
+		}), testCase.testName, testCase.testNamespace)
 
 		if testCase.expectedError {
 			assert.Equal(t, testNBP.errorMsg, testCase.expectedErrorText)
@@ -520,12 +522,10 @@ func TestNewNetworkPolicyBuilder(t *testing.T) {
 }
 
 func buildTestBuilderWithFakeObjects(objects []runtime.Object, name, namespace string) *NetworkPolicyBuilder {
-	fakeClient := k8sfake.NewSimpleClientset(objects...)
+	testSettings := clients.GetTestClients(clients.TestClientParams{
+		K8sMockObjects:  objects,
+		SchemeAttachers: testSchemes,
+	})
 
-	return NewNetworkPolicyBuilder(&clients.Settings{
-		K8sClient:             fakeClient,
-		CoreV1Interface:       fakeClient.CoreV1(),
-		AppsV1Interface:       fakeClient.AppsV1(),
-		NetworkingV1Interface: fakeClient.NetworkingV1(),
-	}, name, namespace)
+	return NewNetworkPolicyBuilder(testSettings, name, namespace)
 }
