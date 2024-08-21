@@ -6,15 +6,13 @@ import (
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
-
-const defaultLabelSelector = "test-label-selector"
 
 func TestListMC(t *testing.T) {
 	testCases := []struct {
 		machineConfigs []*MCBuilder
-		listOptions    []metav1.ListOptions
+		listOptions    []runtimeclient.ListOptions
 		expectedError  error
 		client         bool
 	}{
@@ -26,19 +24,19 @@ func TestListMC(t *testing.T) {
 		},
 		{
 			machineConfigs: []*MCBuilder{buildValidMachineConfigTestBuilder(buildTestClientWithDummyMachineConfig())},
-			listOptions:    []metav1.ListOptions{{LabelSelector: defaultLabelSelector}},
+			listOptions:    []runtimeclient.ListOptions{{Continue: "test"}},
 			expectedError:  nil,
 			client:         true,
 		},
 		{
 			machineConfigs: []*MCBuilder{buildValidMachineConfigTestBuilder(buildTestClientWithDummyMachineConfig())},
-			listOptions:    []metav1.ListOptions{{LabelSelector: defaultLabelSelector}, {LabelSelector: defaultLabelSelector}},
+			listOptions:    []runtimeclient.ListOptions{{Continue: "test"}, {Continue: "test"}},
 			expectedError:  fmt.Errorf("error: more than one ListOptions was passed"),
 			client:         true,
 		},
 		{
 			machineConfigs: []*MCBuilder{buildValidMachineConfigTestBuilder(buildTestClientWithDummyMachineConfig())},
-			listOptions:    []metav1.ListOptions{{LabelSelector: defaultLabelSelector}},
+			listOptions:    []runtimeclient.ListOptions{{Continue: "test"}},
 			expectedError:  fmt.Errorf("failed to list MachineConfigs, 'apiClient' parameter is empty"),
 			client:         false,
 		},

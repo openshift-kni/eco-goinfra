@@ -23,7 +23,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	clientMachineConfigFake "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/fake"
 	clientMachineConfigV1 "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/typed/machineconfiguration.openshift.io/v1"
 
 	agentInstallV1Beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/v1beta1"
@@ -230,7 +229,7 @@ func GetTestClients(tcp TestClientParams) *Settings {
 func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClient.ClientBuilder) {
 	clientSet := &Settings{}
 
-	var k8sClientObjects, genericClientObjects, mcoObjects []runtime.Object
+	var k8sClientObjects, genericClientObjects []runtime.Object
 
 	//nolint:varnamelen
 	for _, v := range tcp.K8sMockObjects {
@@ -302,9 +301,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 			genericClientObjects = append(genericClientObjects, v)
 		case *agentInstallV1Beta1.AgentServiceConfig:
 			genericClientObjects = append(genericClientObjects, v)
-		// MCO Client Objects
-		case *mcv1.MachineConfig:
-			mcoObjects = append(mcoObjects, v)
 		}
 	}
 
@@ -315,8 +311,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 	clientSet.NetworkingV1Interface = clientSet.K8sClient.NetworkingV1()
 	clientSet.RbacV1Interface = clientSet.K8sClient.RbacV1()
 	clientSet.StorageV1Interface = clientSet.K8sClient.StorageV1()
-	clientSet.MachineconfigurationV1Interface = clientMachineConfigFake.NewSimpleClientset(
-		mcoObjects...).MachineconfigurationV1()
 
 	// Update the generic client with schemes of generic resources
 	clientSet.scheme = runtime.NewScheme()
