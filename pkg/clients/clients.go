@@ -30,7 +30,6 @@ import (
 	configV1 "github.com/openshift/api/config/v1"
 	imageregistryV1 "github.com/openshift/api/imageregistry/v1"
 	routev1 "github.com/openshift/api/route/v1"
-	moduleV1Beta1 "github.com/rh-ecosystem-edge/kernel-module-management/api/v1beta1"
 	"k8s.io/client-go/kubernetes/scheme"
 	coreV1Client "k8s.io/client-go/kubernetes/typed/core/v1"
 	storageV1Client "k8s.io/client-go/kubernetes/typed/storage/v1"
@@ -49,7 +48,6 @@ import (
 	machinev1beta1client "github.com/openshift/client-go/machine/clientset/versioned/typed/machine/v1beta1"
 	operatorv1alpha1 "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1"
 	nfdv1 "github.com/openshift/cluster-nfd-operator/api/v1"
-	mcmV1Beta1 "github.com/rh-ecosystem-edge/kernel-module-management/api-hub/v1beta1"
 	dynamicFake "k8s.io/client-go/dynamic/fake"
 )
 
@@ -167,14 +165,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	}
 
 	if err := agentInstallV1Beta1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := moduleV1Beta1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := mcmV1Beta1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
@@ -311,9 +301,6 @@ func GetModifiableTestClients(tcp TestClientParams) (*Settings, *fakeRuntimeClie
 		case *configV1.ClusterOperator:
 			genericClientObjects = append(genericClientObjects, v)
 		case *agentInstallV1Beta1.AgentServiceConfig:
-			genericClientObjects = append(genericClientObjects, v)
-		// KMM Client Objects
-		case *moduleV1Beta1.PreflightValidationOCP:
 			genericClientObjects = append(genericClientObjects, v)
 		// MCO Client Objects
 		case *mcv1.MachineConfig:

@@ -204,7 +204,8 @@ func TestPullPreflightValidationOCP(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemesV1beta1,
 			})
 		}
 
@@ -386,7 +387,8 @@ func buildInValidTestPreflight(apiClient *clients.Settings) *PreflightValidation
 
 func buildPreflightTestClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyPreflight(),
+		K8sMockObjects:  buildDummyPreflight(),
+		SchemeAttachers: testSchemesV1beta1,
 	})
 }
 
