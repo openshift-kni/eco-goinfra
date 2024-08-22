@@ -104,10 +104,10 @@ func TestPullKubeletConfig(t *testing.T) {
 			testSettings   *clients.Settings
 		)
 
-		testKAC := buildDummyKubeletConfig(testCase.name)
+		testKubeletConfig := buildDummyKubeletConfig(testCase.name)
 
 		if testCase.addToRuntimeObjects {
-			runtimeObjects = append(runtimeObjects, testKAC)
+			runtimeObjects = append(runtimeObjects, testKubeletConfig)
 		}
 
 		if testCase.client {
@@ -121,7 +121,7 @@ func TestPullKubeletConfig(t *testing.T) {
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, testKAC.Name, testBuilder.Definition.Name)
+			assert.Equal(t, testKubeletConfig.Name, testBuilder.Definition.Name)
 		}
 	}
 }
