@@ -60,7 +60,7 @@ func TestBareMetalHostList(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects:  buildDummyBmHost(bmhv1alpha1.StateProvisioned),
+				K8sMockObjects:  buildDummyBmHostObject(bmhv1alpha1.StateProvisioned),
 				SchemeAttachers: testSchemes,
 			})
 		}
@@ -194,7 +194,7 @@ func TestBareMetalWaitForAllBareMetalHostsInGoodOperationalState(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects:  buildDummyBmHost(bmhv1alpha1.StateProvisioned, testCase.operationalState),
+				K8sMockObjects:  buildDummyBmHostObject(bmhv1alpha1.StateProvisioned, testCase.operationalState),
 				SchemeAttachers: testSchemes,
 			})
 		}
