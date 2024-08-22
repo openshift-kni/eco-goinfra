@@ -46,7 +46,6 @@ import (
 	operatorv1 "github.com/openshift/api/operator/v1"
 	machinev1beta1client "github.com/openshift/client-go/machine/clientset/versioned/typed/machine/v1beta1"
 	operatorv1alpha1 "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1"
-	nfdv1 "github.com/openshift/cluster-nfd-operator/api/v1"
 	dynamicFake "k8s.io/client-go/dynamic/fake"
 )
 
@@ -164,10 +163,6 @@ func SetScheme(crScheme *runtime.Scheme) error {
 	}
 
 	if err := agentInstallV1Beta1.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := nfdv1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 
