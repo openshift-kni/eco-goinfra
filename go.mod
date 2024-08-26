@@ -16,7 +16,6 @@ require (
 	github.com/openshift-kni/lifecycle-agent v0.0.0-20240606123201-0c45cd13c2f1
 	github.com/openshift-kni/numaresources-operator v0.4.16-0rc0
 	github.com/openshift/api v3.9.1-0.20191111211345-a27ff30ebf09+incompatible
-	github.com/openshift/client-go v0.0.1
 	github.com/openshift/cluster-logging-operator v0.0.0-20240606085930-750f369019d4 // release-5.8
 	github.com/openshift/cluster-nfd-operator v0.0.0-20240604082319-19bf50784aa7
 	github.com/openshift/cluster-node-tuning-operator v0.0.0-20240606084543-6d2e11aec345
@@ -32,7 +31,7 @@ require (
 	k8s.io/apiextensions-apiserver v0.29.4
 	k8s.io/apimachinery v0.29.5
 	k8s.io/client-go v12.0.0+incompatible
-	k8s.io/kubectl v0.29.3
+	k8s.io/kubectl v0.29.4
 	k8s.io/kubelet v0.29.4
 	k8s.io/utils v0.0.0-20240310230437-4693a0247e57
 	maistra.io/api v0.0.0-20230704084350-dfc96815fb16
@@ -201,6 +200,7 @@ require (
 
 require (
 	github.com/grafana/loki/operator/apis/loki v0.0.0-20240627192641-91a34868db61
+	github.com/openshift/client-go v0.0.0-20240415214935-be70f772f157
 	github.com/red-hat-storage/odf-operator v0.0.0-20240703093545-0e22236e2160
 	github.com/stolostron/klusterlet-addon-controller v0.0.0-20240606130554-01338045271a
 )
@@ -218,34 +218,8 @@ replace (
 	github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
 	github.com/k8snetworkplumbingwg/sriov-network-operator => github.com/openshift/sriov-network-operator v0.0.0-20240508132640-2b61056c9758 // release-4.16
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20240605153344-636e2c17106f // release-4.16
-	github.com/openshift/client-go => github.com/openshift/client-go v0.0.1
 	github.com/portworx/sched-ops => github.com/portworx/sched-ops v1.20.4-rc1
-	k8s.io/api => k8s.io/api v0.29.4
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.29.4
-	k8s.io/apimachinery => k8s.io/apimachinery v0.29.4
-	k8s.io/apiserver => k8s.io/apiserver v0.29.4
-	k8s.io/cli-runtime => k8s.io/cli-runtime v0.29.4
 	k8s.io/client-go => k8s.io/client-go v0.29.4
-	k8s.io/cloud-provider => k8s.io/cloud-provider v0.29.4
-	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.29.4
-	k8s.io/code-generator => k8s.io/code-generator v0.29.4
-	k8s.io/component-base => k8s.io/component-base v0.29.4
-	k8s.io/component-helpers => k8s.io/component-helpers v0.29.4
-	k8s.io/controller-manager => k8s.io/controller-manager v0.29.4
-	k8s.io/cri-api => k8s.io/cri-api v0.29.4
-	k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.29.4
-	k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.29.4
-	k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.29.4
-	k8s.io/kube-proxy => k8s.io/kube-proxy v0.29.4
-	k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.29.4
-	k8s.io/kubectl => k8s.io/kubectl v0.29.4
-	k8s.io/kubernetes => k8s.io/kubernetes v1.29.4
-	k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.29.4
-	k8s.io/metrics => k8s.io/metrics v0.29.4
-	k8s.io/mount-utils => k8s.io/mount-utils v0.29.4
-	k8s.io/pod-security-admission => k8s.io/pod-security-admission v0.29.4
-	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.29.4
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.17.5
 )
 
 exclude github.com/kubernetes-incubator/external-storage v0.20.4-openstorage-rc2
