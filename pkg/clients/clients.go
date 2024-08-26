@@ -11,7 +11,6 @@ import (
 
 	clientConfigV1 "github.com/openshift/client-go/config/clientset/versioned/typed/config/v1"
 	v1security "github.com/openshift/client-go/security/clientset/versioned/typed/security/v1"
-	mcv1 "github.com/openshift/machine-config-operator/pkg/apis/machineconfiguration.openshift.io/v1"
 
 	apiExt "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -22,8 +21,6 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
-
-	clientMachineConfigV1 "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/typed/machineconfiguration.openshift.io/v1"
 
 	agentInstallV1Beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/v1beta1"
 	configV1 "github.com/openshift/api/config/v1"
@@ -55,7 +52,6 @@ type Settings struct {
 	K8sClient      kubernetes.Interface
 	coreV1Client.CoreV1Interface
 	clientConfigV1.ConfigV1Interface
-	clientMachineConfigV1.MachineconfigurationV1Interface
 	networkV1Client.NetworkingV1Interface
 	appsV1Client.AppsV1Interface
 	rbacV1Client.RbacV1Interface
@@ -100,7 +96,6 @@ func New(kubeconfig string) *Settings {
 	clientSet := &Settings{}
 	clientSet.CoreV1Interface = coreV1Client.NewForConfigOrDie(config)
 	clientSet.ConfigV1Interface = clientConfigV1.NewForConfigOrDie(config)
-	clientSet.MachineconfigurationV1Interface = clientMachineConfigV1.NewForConfigOrDie(config)
 	clientSet.AppsV1Interface = appsV1Client.NewForConfigOrDie(config)
 	clientSet.NetworkingV1Interface = networkV1Client.NewForConfigOrDie(config)
 	clientSet.RbacV1Interface = rbacV1Client.NewForConfigOrDie(config)
@@ -139,10 +134,6 @@ func New(kubeconfig string) *Settings {
 // SetScheme returns mutated apiClient's scheme.
 func SetScheme(crScheme *runtime.Scheme) error {
 	if err := scheme.AddToScheme(crScheme); err != nil {
-		return err
-	}
-
-	if err := mcv1.AddToScheme(crScheme); err != nil {
 		return err
 	}
 

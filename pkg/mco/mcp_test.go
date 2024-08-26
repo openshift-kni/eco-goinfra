@@ -1,8 +1,10 @@
 package mco
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	mcv1 "github.com/openshift/machine-config-operator/pkg/apis/machineconfiguration.openshift.io/v1"
@@ -14,10 +16,12 @@ import (
 
 const defaultMCPName = "test-machine-config-pool"
 
-var defaultMCPCondition = mcv1.MachineConfigPoolCondition{
-	Type:   mcv1.MachineConfigPoolBuildSuccess,
-	Status: corev1.ConditionTrue,
-}
+var (
+	updatingMCPCondition = mcv1.MachineConfigPoolCondition{
+		Type:   mcv1.MachineConfigPoolUpdating,
+		Status: corev1.ConditionTrue,
+	}
+)
 
 func TestNewMCPBuilder(t *testing.T) {
 	testCases := []struct {
@@ -265,6 +269,158 @@ func TestMachineConfigPoolWithMCSelector(t *testing.T) {
 	}
 }
 
+func TestMachineConfigPoolWaitToBeInCondition(t *testing.T) {
+	testCases := []struct {
+		exists        bool
+		valid         bool
+		hasCondition  bool
+		expectedError error
+	}{
+		{
+			exists:        true,
+			valid:         true,
+			hasCondition:  true,
+			expectedError: nil,
+		},
+		{
+			exists:        false,
+			valid:         true,
+			hasCondition:  true,
+			expectedError: context.DeadlineExceeded,
+		},
+		{
+			exists:        true,
+			valid:         false,
+			hasCondition:  true,
+			expectedError: fmt.Errorf("machineconfigpool 'name' cannot be empty"),
+		},
+		{
+			exists:        true,
+			valid:         true,
+			hasCondition:  false,
+			expectedError: context.DeadlineExceeded,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildMCPBuilderWithUpdatingCondition(testCase.exists, testCase.hasCondition, testCase.valid)
+		err := testBuilder.WaitToBeInCondition(updatingMCPCondition.Type, updatingMCPCondition.Status, time.Second)
+
+		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
+func TestMachineConfigPoolWaitForUpdate(t *testing.T) {
+	testCases := []struct {
+		valid         bool
+		exists        bool
+		updating      bool
+		expectedError error
+	}{
+		{
+			valid:         true,
+			exists:        true,
+			updating:      false,
+			expectedError: nil,
+		},
+		{
+			valid:         true,
+			exists:        true,
+			updating:      true,
+			expectedError: context.DeadlineExceeded,
+		},
+		{
+			valid:         false,
+			exists:        true,
+			updating:      true,
+			expectedError: fmt.Errorf("machineconfigpool 'name' cannot be empty"),
+		},
+		{
+			valid:    true,
+			exists:   false,
+			updating: true,
+			expectedError: fmt.Errorf(
+				"machineconfigpools.machineconfiguration.openshift.io \"test-machine-config-pool\" not found"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildMCPBuilderWithUpdatingCondition(testCase.exists, testCase.updating, testCase.valid)
+		err := testBuilder.WaitForUpdate(time.Second)
+
+		if testCase.expectedError == nil {
+			assert.Nil(t, err)
+		} else {
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
+		}
+	}
+}
+
+func TestMachineConfigPoolWaitToBeStableFor(t *testing.T) {
+	testCases := []struct {
+		valid         bool
+		exists        bool
+		stable        bool
+		expectedError error
+	}{
+		{
+			valid:         true,
+			exists:        true,
+			stable:        true,
+			expectedError: nil,
+		},
+		{
+			valid:         false,
+			exists:        true,
+			stable:        true,
+			expectedError: fmt.Errorf("machineconfigpool 'name' cannot be empty"),
+		},
+		{
+			valid:         true,
+			exists:        false,
+			stable:        true,
+			expectedError: nil,
+		},
+		{
+			valid:         true,
+			exists:        true,
+			stable:        false,
+			expectedError: context.DeadlineExceeded,
+		},
+	}
+
+	for _, testCase := range testCases {
+		var (
+			runtimeObjects []runtime.Object
+			testBuilder    *MCPBuilder
+		)
+
+		if testCase.exists {
+			mcp := buildDummyMCP(defaultMCPName)
+
+			if !testCase.stable {
+				mcp.Status.DegradedMachineCount = 1
+			}
+
+			runtimeObjects = append(runtimeObjects, mcp)
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: testSchemes,
+		})
+
+		if testCase.valid {
+			testBuilder = buildValidMCPTestBuilder(testSettings)
+		} else {
+			testBuilder = buildInvalidMCPTestBuilder(testSettings)
+		}
+
+		err := testBuilder.WaitToBeStableFor(500*time.Millisecond, time.Second)
+		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
 func TestMachineConfigPoolWithOptions(t *testing.T) {
 	testCases := []struct {
 		testBuilder   *MCPBuilder
@@ -340,33 +496,9 @@ func TestMachineConfigPoolIsInCondition(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		var (
-			runtimeObjects []runtime.Object
-			testBuilder    *MCPBuilder
-		)
+		testBuilder := buildMCPBuilderWithUpdatingCondition(testCase.exists, testCase.hasCondition, testCase.valid)
+		isInCondition := testBuilder.IsInCondition(updatingMCPCondition.Type)
 
-		if testCase.exists {
-			mcp := buildDummyMCP(defaultMCPName)
-
-			if testCase.hasCondition {
-				mcp.Status.Conditions = []mcv1.MachineConfigPoolCondition{defaultMCPCondition}
-			}
-
-			runtimeObjects = append(runtimeObjects, mcp)
-		}
-
-		testSettings := clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects:  runtimeObjects,
-			SchemeAttachers: testSchemes,
-		})
-
-		if testCase.valid {
-			testBuilder = buildValidMCPTestBuilder(testSettings)
-		} else {
-			testBuilder = buildInvalidMCPTestBuilder(testSettings)
-		}
-
-		isInCondition := testBuilder.IsInCondition(defaultMCPCondition.Type)
 		assert.Equal(t, testCase.isInCondition, isInCondition)
 	}
 }
@@ -398,4 +530,36 @@ func buildValidMCPTestBuilder(apiClient *clients.Settings) *MCPBuilder {
 // buildInvalidMCPTestBuilder returns a valid MCPBuilder for testing.
 func buildInvalidMCPTestBuilder(apiClient *clients.Settings) *MCPBuilder {
 	return NewMCPBuilder(apiClient, "")
+}
+
+// buildMCPBuilderWithUpdatingCondition returns an MCPBuilder for testing, with the ability to configure whether it
+// exists on the test client, has the updating condition, and is valid.
+func buildMCPBuilderWithUpdatingCondition(exists, hasCondition, valid bool) *MCPBuilder {
+	var (
+		runtimeObjects []runtime.Object
+		testBuilder    *MCPBuilder
+	)
+
+	if exists {
+		mcp := buildDummyMCP(defaultMCPName)
+
+		if hasCondition {
+			mcp.Status.Conditions = []mcv1.MachineConfigPoolCondition{updatingMCPCondition}
+		}
+
+		runtimeObjects = append(runtimeObjects, mcp)
+	}
+
+	testSettings := clients.GetTestClients(clients.TestClientParams{
+		K8sMockObjects:  runtimeObjects,
+		SchemeAttachers: testSchemes,
+	})
+
+	if valid {
+		testBuilder = buildValidMCPTestBuilder(testSettings)
+	} else {
+		testBuilder = buildInvalidMCPTestBuilder(testSettings)
+	}
+
+	return testBuilder
 }
