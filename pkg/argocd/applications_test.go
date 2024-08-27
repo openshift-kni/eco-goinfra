@@ -1,8 +1,10 @@
 package argocd
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	argocdtypes "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdtypes/v1alpha1"
@@ -16,9 +18,15 @@ const (
 	defaultApplicationNsName = "application-ns-name"
 )
 
-var appsTestSchemes = []clients.SchemeAttacher{
-	argocdtypes.AddToScheme,
-}
+var (
+	defaultApplicationCondition = argocdtypes.ApplicationCondition{
+		Type:    argocdtypes.ApplicationConditionSyncError,
+		Message: "test-message",
+	}
+	appsTestSchemes = []clients.SchemeAttacher{
+		argocdtypes.AddToScheme,
+	}
+)
 
 func TestPullApplication(t *testing.T) {
 	generateApplication := func(name, namespace string) *argocdtypes.Application {
@@ -289,6 +297,55 @@ func TestApplicationWithGitDetails(t *testing.T) {
 			assert.Equal(t, applicationBuilder.Definition.Spec.Source.RepoURL, testCase.gitRepo)
 			assert.Equal(t, applicationBuilder.Definition.Spec.Source.Path, testCase.gitPath)
 		}
+	}
+}
+
+func TestImageRegistryWaitForCondition(t *testing.T) {
+	testCases := []struct {
+		exists        bool
+		conditionMet  bool
+		expectedError error
+	}{
+		{
+			exists:        true,
+			conditionMet:  true,
+			expectedError: nil,
+		},
+		{
+			exists:       false,
+			conditionMet: true,
+			expectedError: fmt.Errorf(
+				"application object %s in namespace %s does not exist", defaultApplicationName, defaultApplicationNsName),
+		},
+		{
+			exists:        true,
+			conditionMet:  false,
+			expectedError: context.DeadlineExceeded,
+		},
+	}
+
+	for _, testCase := range testCases {
+		var runtimeObjects []runtime.Object
+
+		if testCase.exists {
+			application := buildDummyApplication(defaultApplicationName, defaultApplicationNsName)
+
+			if testCase.conditionMet {
+				application.Status.Conditions = append(application.Status.Conditions, defaultApplicationCondition)
+			}
+
+			runtimeObjects = append(runtimeObjects, application)
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: appsTestSchemes,
+		})
+
+		testBuilder := buildValidApplicationBuilder(testSettings)
+
+		_, err := testBuilder.WaitForCondition(defaultApplicationCondition, time.Second)
+		assert.Equal(t, testCase.expectedError, err)
 	}
 }
 
