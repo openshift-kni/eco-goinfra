@@ -286,6 +286,7 @@ func TestPolicySetUpdate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		var err error
+
 		testBuilder := buildValidPolicySetTestBuilder(buildTestClientWithPolicySetScheme())
 		testBuilder, err = testBuilder.Create()
 		assert.Nil(t, err)

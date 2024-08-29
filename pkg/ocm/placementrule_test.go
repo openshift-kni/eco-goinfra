@@ -268,13 +268,11 @@ func TestPlacementRuleUpdate(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidPlacementRuleTestBuilder(buildTestClientWithPlacementRuleScheme())
-
 		// Create the builder rather than just adding it to the client so that the proper metadata is added and
 		// the update will not fail.
 		var err error
 
-		testBuilder = buildValidPlacementRuleTestBuilder(buildTestClientWithPlacementRuleScheme())
+		testBuilder := buildValidPlacementRuleTestBuilder(buildTestClientWithPlacementRuleScheme())
 		testBuilder, err = testBuilder.Create()
 		assert.Nil(t, err)
 
