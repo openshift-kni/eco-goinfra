@@ -127,7 +127,7 @@ func buildValidTestBuilder() *Builder {
 		AppsV1Interface: k8sfake.NewSimpleClientset().AppsV1(),
 	}, "test-name", "test-namespace", map[string]string{
 		"test-key": "test-value",
-	}, &corev1.Container{
+	}, corev1.Container{
 		Name: "test-container",
 	})
 }
@@ -141,7 +141,7 @@ func buildTestBuilderWithFakeObjects(objects []runtime.Object) *Builder {
 		AppsV1Interface: fakeClient.AppsV1(),
 	}, "test-name", "test-namespace", map[string]string{
 		"test-key": "test-value",
-	}, &corev1.Container{
+	}, corev1.Container{
 		Name: "test-container",
 	})
 }
