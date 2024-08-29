@@ -1,6 +1,5 @@
 run:
-  skip-dirs:
-    - pkg/schemes
+  go: 1.22
   timeout: 15m0s
   skip-dirs-use-default: true
   fast: false
@@ -51,6 +50,9 @@ linters-settings:
           - "github.com/red-hat-storage/odf-operator"
           - "github.com/stmcginnis/gofish"
           - "github.com/prometheus-operator/prometheus-operator"
+  govet:
+    disable:
+      - printf
   revive:
     rules:
       - name: indent-error-flow
@@ -69,17 +71,18 @@ linters-settings:
   unused:
     check-exported: true
     go: "1.22"
+  staticcheck:
+    # https://staticcheck.io/docs/options#checks
+    checks:
+      - all
+      - "-SA1006"
   stylecheck:
-    # Select the Go version to target. The default is '1.13'.
-    go: "1.22"
     # https://staticcheck.io/docs/options#checks
     checks:
       - all
       - ST1001
 
 linters:
-  disable:
-    - structcheck
   enable:
     - asciicheck
     - bidichk
@@ -130,8 +133,10 @@ linters:
     - nlreturn
 
 output:
-  format: colored-line-number
+  formats: colored-line-number
 issues:
+  exclude-dirs:
+    - pkg/schemes
   include:
     - EXC0002 # disable excluding of issues about comments from golint
     - EXC0012  # EXC0012 revive: Annoying issue about not having a comment. The rare codebase has such comments
