@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	kacv1 "github.com/stolostron/klusterlet-addon-controller/pkg/apis/agent/v1"
+	"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocm/kacv1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"

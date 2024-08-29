@@ -202,13 +202,11 @@ require (
 	github.com/grafana/loki/operator/apis/loki v0.0.0-20240627192641-91a34868db61
 	github.com/openshift/client-go v0.0.0-20240415214935-be70f772f157
 	github.com/red-hat-storage/odf-operator v0.0.0-20240703093545-0e22236e2160
-	github.com/stolostron/klusterlet-addon-controller v0.0.0-20240606130554-01338045271a
 )
 
 require (
 	github.com/expr-lang/expr v1.16.5 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.1 // indirect
-	github.com/stolostron/cluster-lifecycle-api v0.0.0-20240109072430-f5fe6043d1f8 // indirect
 	github.com/vishvananda/netns v0.0.4 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	knative.dev/pkg v0.0.0-20240423132823-3c6badc82748 // indirect

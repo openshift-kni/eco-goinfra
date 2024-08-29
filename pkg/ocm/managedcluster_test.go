@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocm/clusterv1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	clusterv1 "open-cluster-management.io/api/cluster/v1"
 )
 
 const defaultManagedClusterName = "managedcluster-test"

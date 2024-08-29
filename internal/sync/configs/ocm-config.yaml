@@ -1,0 +1,18 @@
+---
+- name: managed-cluster
+  sync: true
+  repo_link: "https://github.com/open-cluster-management-io/api"
+  branch: main
+  remote_api_directory: cluster/v1
+  local_api_directory: schemes/ocm/clusterv1
+  excludes:
+    - "*.yaml"
+- name: klusterlet-addon-config
+  sync: true
+  repo_link: https://github.com/stolostron/klusterlet-addon-controller
+  branch: main
+  remote_api_directory: pkg/apis/agent/v1
+  local_api_directory: schemes/ocm/kacv1
+  excludes:
+    - "image_*.go"
+...
