@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -27,6 +28,12 @@ import (
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 )
+
+// GetRestURL Function to use to get the Executor REST URL.
+var GetRestURL = getRestExecutorURL
+
+// NewSPDYExecutor Function to use for the pod remote executor.
+var NewSPDYExecutor = remotecommand.NewSPDYExecutor
 
 // Builder provides a struct for pod object from the cluster and a pod definition.
 type Builder struct {
@@ -463,15 +470,14 @@ func (builder *Builder) WaitUntilCondition(condition corev1.PodConditionType, ti
 		})
 }
 
-// ExecCommand runs command in the pod and returns the buffer output.
-func (builder *Builder) ExecCommand(command []string, containerName ...string) (bytes.Buffer, error) {
+// getRestExecutorURL Gets a executor REST URL in the real cluster.
+func getRestExecutorURL(builder *Builder, command []string, containerName ...string) (*url.URL, error) {
 	if valid, err := builder.validate(); !valid {
-		return bytes.Buffer{}, err
+		return &url.URL{}, err
 	}
 
 	var (
-		buffer bytes.Buffer
-		cName  string
+		cName string
 	)
 
 	if len(containerName) > 0 {
@@ -498,10 +504,22 @@ func (builder *Builder) ExecCommand(command []string, containerName ...string) (
 			TTY:       true,
 		}, scheme.ParameterCodec)
 
-	exec, err := remotecommand.NewSPDYExecutor(builder.apiClient.Config, "POST", req.URL())
+	return req.URL(), nil
+}
+
+// ExecCommand runs command in the pod and returns the buffer output.
+func (builder *Builder) ExecCommand(command []string, containerName ...string) (bytes.Buffer, error) {
+	url, err := GetRestURL(builder, command, containerName...)
+	if err != nil {
+		return bytes.Buffer{}, err
+	}
+
+	var buffer bytes.Buffer
+
+	exec, err := NewSPDYExecutor(builder.apiClient.Config, "POST", url)
 
 	if err != nil {
-		return buffer, err
+		return bytes.Buffer{}, err
 	}
 
 	err = exec.StreamWithContext(context.TODO(), remotecommand.StreamOptions{

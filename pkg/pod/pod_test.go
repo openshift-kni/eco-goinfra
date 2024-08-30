@@ -1,6 +1,10 @@
 package pod
 
 import (
+	"bytes"
+	"context"
+	"net/url"
+	"reflect"
 	"testing"
 	"time"
 
@@ -10,6 +14,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	k8sfake "k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/remotecommand"
 )
 
 func buildValidContainterBuilder() *ContainerBuilder {
@@ -239,4 +245,86 @@ func getErrorString(err error) string {
 	}
 
 	return err.Error()
+}
+
+func TestBuilder_ExecCommand(t *testing.T) {
+	type args struct {
+		command       []string
+		containerName []string
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		pod     *corev1.Pod
+		want    bytes.Buffer
+		wantErr bool
+	}{
+		{
+			name: "ok",
+			args: args{
+				command:       []string{"ls"},
+				containerName: []string{"test"},
+			},
+			pod:     generateTestPod("test1", "ns1", corev1.PodRunning, corev1.PodReady, false),
+			want:    *bytes.NewBufferString("Command fake output"),
+			wantErr: false,
+		},
+	}
+	for _, testcase := range tests {
+		t.Run(testcase.name, func(t *testing.T) {
+			var runtimeObjects []runtime.Object
+			runtimeObjects = append(runtimeObjects, testcase.pod)
+			builder, err := buildPodTestBuilderWithFakeObjects(runtimeObjects, testcase.pod.Name, testcase.pod.Namespace)
+			assert.Nil(t, err)
+
+			NewSPDYExecutor = fakeNewSPDYExecutor
+			GetRestURL = getFakeRestURL
+			got, err := builder.ExecCommand(testcase.args.command, testcase.args.containerName...)
+
+			if (err != nil) != testcase.wantErr {
+				t.Errorf("Builder.ExecCommand() error = %v, wantErr %v", err, testcase.wantErr)
+
+				return
+			}
+
+			if !reflect.DeepEqual(got, testcase.want) {
+				t.Errorf("Builder.ExecCommand() = %v, want %v", got, testcase.want)
+			}
+		})
+	}
+}
+
+func getFakeRestURL(builder *Builder, command []string, containerName ...string) (*url.URL, error) {
+	if valid, err := builder.validate(); !valid {
+		return &url.URL{}, err
+	}
+
+	return &url.URL{}, nil
+}
+
+var fakeNewSPDYExecutor = func(config *rest.Config, method string, url *url.URL) (remotecommand.Executor, error) {
+	return &fakeExecutor{method: method, url: url}, nil
+}
+
+type fakeExecutor struct {
+	method string
+	url    *url.URL
+}
+
+func (f *fakeExecutor) StreamWithContext(ctx context.Context, options remotecommand.StreamOptions) error {
+	if options.Stdout != nil {
+		buf := new(bytes.Buffer)
+		buf.WriteString("Command fake output")
+
+		if _, err := options.Stdout.Write(buf.Bytes()); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (f *fakeExecutor) Stream(options remotecommand.StreamOptions) error {
+	return nil
 }
