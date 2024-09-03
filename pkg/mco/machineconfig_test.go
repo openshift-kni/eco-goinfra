@@ -394,6 +394,32 @@ func TestMachineConfigWithExtensions(t *testing.T) {
 	}
 }
 
+func TestMachineConfigWithRawConfig(t *testing.T) {
+	testCases := []struct {
+		rawConfig     []byte
+		expectedError string
+	}{
+		{
+			rawConfig:     []byte{0, 0, 0},
+			expectedError: "",
+		},
+		{
+			rawConfig:     []byte{},
+			expectedError: "'Config.Raw' cannot be empty",
+		},
+	}
+	for _, testCase := range testCases {
+		testBuilder := buildValidMachineConfigTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+		testBuilder = testBuilder.WithRawConfig(testCase.rawConfig)
+
+		assert.Equal(t, testCase.expectedError, testBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, testCase.rawConfig, testBuilder.Definition.Spec.Config.Raw)
+		}
+	}
+}
+
 func TestMachineConfigWithFIPS(t *testing.T) {
 	testBuilder := buildValidMachineConfigTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
 	testBuilder = testBuilder.WithFIPS(true)
