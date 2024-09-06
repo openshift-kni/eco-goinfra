@@ -27,7 +27,7 @@ func TestWithCustomResourcesRequests(t *testing.T) {
 	}{
 		{
 			testRequests:   corev1.ResourceList{},
-			expectedErrMsg: "container's resource limit var 'resourceList' is empty",
+			expectedErrMsg: "container's resource requests var 'resourceList' is empty",
 		},
 		{
 			testRequests: corev1.ResourceList{
