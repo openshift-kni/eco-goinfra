@@ -1,6 +1,7 @@
 package pod
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -11,13 +12,21 @@ import (
 )
 
 func TestWaitForAllPodsInNamespacesHealthy(t *testing.T) {
+	generateTestPod := func(namespace string, conditionType corev1.PodConditionType) *corev1.Pod {
+		pod := buildDummyPodWithPhaseAndCondition(corev1.PodRunning, conditionType, false)
+		pod.Namespace = namespace
+
+		return pod
+	}
+
 	testCases := []struct {
 		namespaces               []string
 		includeSucceeded         bool
 		skipRedinessCheck        bool
 		ignoreRestartPolicyNever bool
 		ignoreNamespaces         []string
-		expectedErrMsg           string
+		pods                     []runtime.Object
+		expectedError            error
 	}{
 		{
 			namespaces:               []string{"ns1"},
@@ -25,7 +34,9 @@ func TestWaitForAllPodsInNamespacesHealthy(t *testing.T) {
 			skipRedinessCheck:        true,
 			ignoreRestartPolicyNever: true,
 			ignoreNamespaces:         []string{},
-			expectedErrMsg:           "",
+			pods: []runtime.Object{
+				generateTestPod("ns1", corev1.PodReady), generateTestPod("ns2", corev1.PodInitialized)},
+			expectedError: nil,
 		},
 		{
 			namespaces:               []string{"ns1"},
@@ -33,7 +44,8 @@ func TestWaitForAllPodsInNamespacesHealthy(t *testing.T) {
 			skipRedinessCheck:        false,
 			ignoreRestartPolicyNever: true,
 			ignoreNamespaces:         []string{},
-			expectedErrMsg:           "",
+			pods:                     []runtime.Object{generateTestPod("ns1", corev1.PodReady)},
+			expectedError:            nil,
 		},
 		{
 			namespaces:               []string{"ns2"},
@@ -41,7 +53,8 @@ func TestWaitForAllPodsInNamespacesHealthy(t *testing.T) {
 			skipRedinessCheck:        false,
 			ignoreRestartPolicyNever: true,
 			ignoreNamespaces:         []string{},
-			expectedErrMsg:           "context deadline exceeded",
+			pods:                     []runtime.Object{generateTestPod("ns2", corev1.PodInitialized)},
+			expectedError:            context.DeadlineExceeded,
 		},
 		{
 			namespaces:               []string{},
@@ -49,7 +62,9 @@ func TestWaitForAllPodsInNamespacesHealthy(t *testing.T) {
 			skipRedinessCheck:        false,
 			ignoreRestartPolicyNever: true,
 			ignoreNamespaces:         []string{},
-			expectedErrMsg:           "context deadline exceeded",
+			pods: []runtime.Object{
+				generateTestPod("ns1", corev1.PodReady), generateTestPod("ns2", corev1.PodInitialized)},
+			expectedError: context.DeadlineExceeded,
 		},
 		{
 			namespaces:               []string{},
@@ -57,29 +72,25 @@ func TestWaitForAllPodsInNamespacesHealthy(t *testing.T) {
 			skipRedinessCheck:        false,
 			ignoreRestartPolicyNever: true,
 			ignoreNamespaces:         []string{"ns2"},
-			expectedErrMsg:           "",
+			pods:                     []runtime.Object{generateTestPod("ns1", corev1.PodReady)},
+			expectedError:            nil,
 		},
 	}
 
-	var runtimeObjects []runtime.Object
-	runtimeObjects = append(runtimeObjects, generateTestPod("test1", "ns1", corev1.PodRunning, corev1.PodReady, false))
-	runtimeObjects = append(runtimeObjects, generateTestPod("test2", "ns1", corev1.PodRunning, corev1.PodReady, false))
-	runtimeObjects = append(runtimeObjects, generateTestPod("test3", "ns1", corev1.PodRunning, corev1.PodReady, false))
-	runtimeObjects = append(runtimeObjects, generateTestPod("test4", "ns1", corev1.PodRunning, corev1.PodReady, false))
-	runtimeObjects = append(runtimeObjects, generateTestPod("test5", "ns1", corev1.PodRunning, corev1.PodReady, false))
-	runtimeObjects = append(runtimeObjects, generateTestPod("test1", "ns2", corev1.PodRunning, corev1.PodReady, false))
-	runtimeObjects = append(runtimeObjects, generateTestPod("test2", "ns2", corev1.PodRunning, corev1.PodInitialized,
-		false))
-
-	testSettings := clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: runtimeObjects,
-	})
-
 	for _, testCase := range testCases {
-		err := WaitForAllPodsInNamespacesHealthy(testSettings, testCase.namespaces, 2*time.Second, testCase.includeSucceeded,
-			testCase.skipRedinessCheck,
-			testCase.ignoreRestartPolicyNever, testCase.ignoreNamespaces)
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: testCase.pods,
+		})
 
-		assert.Equal(t, testCase.expectedErrMsg, getErrorString(err))
+		err := WaitForAllPodsInNamespacesHealthy(
+			testSettings,
+			testCase.namespaces,
+			time.Second,
+			testCase.includeSucceeded,
+			testCase.skipRedinessCheck,
+			testCase.ignoreRestartPolicyNever,
+			testCase.ignoreNamespaces)
+
+		assert.Equal(t, testCase.expectedError, err)
 	}
 }
