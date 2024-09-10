@@ -345,6 +345,22 @@ func TestWithMetaPluginAllMultiFlag(t *testing.T) {
 	}
 }
 
+func TestSriovNetworkWithMetaPluginRdma(t *testing.T) {
+	testCases := []struct {
+		metaPlugin string
+	}{
+		{
+			metaPlugin: `{ "type": "rdma" }`,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyObject()
+		netBuilder := buildValidSriovNetworkTestBuilder(testSettings).WithMetaPluginRdma()
+		assert.Equal(t, netBuilder.Definition.Spec.MetaPluginsConfig, testCase.metaPlugin)
+	}
+}
+
 func TestWithLinkState(t *testing.T) {
 	testCases := []struct {
 		linkState           string
