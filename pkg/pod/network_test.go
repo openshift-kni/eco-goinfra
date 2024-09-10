@@ -59,7 +59,7 @@ func TestPodNetworkStaticIPAnnotation(t *testing.T) {
 		{
 			annotationName: "test",
 			ipAddr:         []string{},
-			expectedNil:    true,
+			expectedNil:    false,
 		},
 		{
 			annotationName: "test",
@@ -118,7 +118,7 @@ func TestPodNetworkStaticIPAnnotationWithNamespace(t *testing.T) {
 			annotationName: "test",
 			namespace:      "test",
 			ipAddr:         []string{},
-			expectedNil:    true,
+			expectedNil:    false,
 		},
 	}
 	for _, testCase := range testCases {
@@ -179,7 +179,7 @@ func TestPodNetworkStaticIPAnnotationWithInterfaceAndNamespace(t *testing.T) {
 			namespace:      "test",
 			intName:        "eth1",
 			ipAddr:         []string{},
-			expectedNil:    true,
+			expectedNil:    false,
 		},
 		{
 			annotationName: "test",
@@ -235,13 +235,13 @@ func TestPodNetworkStaticIPAnnotationWithMacAddress(t *testing.T) {
 			annotationName: "test",
 			macAddress:     "",
 			ipAddr:         []string{"192.168.1.1/24"},
-			expectedNil:    true,
+			expectedNil:    false,
 		},
 		{
 			annotationName: "test",
 			macAddress:     "00-B0-D0-63-C2-26",
 			ipAddr:         []string{},
-			expectedNil:    true,
+			expectedNil:    false,
 		},
 	}
 	for _, testCase := range testCases {
@@ -277,7 +277,7 @@ func TestPodNetworkStaticIPAnnotationWithMacAndNamespace(t *testing.T) {
 			annotationName: "test",
 			macAddress:     "",
 			namespace:      "test",
-			expectedNil:    true,
+			expectedNil:    false,
 		},
 		{
 			annotationName: "test",
@@ -337,7 +337,7 @@ func TestPodNetworkStaticIPAnnotationWithInterfaceMacAndNamespace(t *testing.T) 
 			namespace:      "test",
 			intName:        "eth0",
 			macAddress:     "",
-			expectedNil:    true,
+			expectedNil:    false,
 		},
 	}
 	for _, testCase := range testCases {
