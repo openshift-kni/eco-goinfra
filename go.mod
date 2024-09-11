@@ -27,7 +27,6 @@ require (
 	github.com/nmstate/kubernetes-nmstate/api v0.0.0-20240605150941-df565dd7bf35
 	github.com/onsi/ginkgo/v2 v2.19.0
 	github.com/openshift-kni/cluster-group-upgrades-operator v0.0.0-20240423171335-f07cdbf8af2c
-	github.com/openshift-kni/k8sreporter v1.0.5
 	github.com/openshift-kni/lifecycle-agent v0.0.0-20240606123201-0c45cd13c2f1
 	github.com/openshift-kni/numaresources-operator v0.4.16-0rc0
 	github.com/openshift/api v3.9.1-0.20191111211345-a27ff30ebf09+incompatible
