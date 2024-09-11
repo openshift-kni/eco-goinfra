@@ -62,10 +62,6 @@ type ImageClusterInstallSpec struct {
 	// +optional
 	ClusterMetadata *hivev1.ClusterMetadata `json:"clusterMetadata"`
 
-	// Version is the target OCP version for the cluster
-	// TODO: should this use ImageSetRef?
-	Version string `json:"version,omitempty"`
-
 	// NodeIP is the desired IP for the host
 	// +optional
 	// Deprecated: this field is ignored (will be removed in a future release).
