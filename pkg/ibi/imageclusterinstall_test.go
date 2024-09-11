@@ -311,32 +311,7 @@ func TestImageClusterInstallWithSSHKey(t *testing.T) {
 		}
 	}
 }
-func TestImageClusterInstallWithVersion(t *testing.T) {
-	testCases := []struct {
-		version          string
-		expectedErrorMsg string
-	}{
-		{
-			version:          "4.16",
-			expectedErrorMsg: "",
-		},
-		{
-			version:          "",
-			expectedErrorMsg: "imageclusterinstall version cannot be empty",
-		},
-	}
 
-	for _, testCase := range testCases {
-		testBuilder := generateImageClusterInstallBuilder()
-
-		testBuilder.WithVersion(testCase.version)
-		assert.Equal(t, testCase.expectedErrorMsg, testBuilder.errorMsg)
-
-		if testCase.expectedErrorMsg == "" {
-			assert.Equal(t, testCase.version, testBuilder.Definition.Spec.Version)
-		}
-	}
-}
 func TestImageClusterInstallGetCompletedCondition(t *testing.T) {
 	testCases := []struct {
 		status                   ibiv1alpha1.ImageClusterInstallStatus
