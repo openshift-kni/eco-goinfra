@@ -234,25 +234,6 @@ func (builder *ImageClusterInstallBuilder) WithSSHKey(sshKey string) *ImageClust
 	return builder
 }
 
-// WithVersion sets the seedimage version for the imageclusterinstall.
-func (builder *ImageClusterInstallBuilder) WithVersion(version string) *ImageClusterInstallBuilder {
-	if valid, _ := builder.validate(); !valid {
-		return nil
-	}
-
-	if version == "" {
-		glog.V(100).Infof("The imageclusterinstall version is empty")
-
-		builder.errorMsg = "imageclusterinstall version cannot be empty"
-
-		return builder
-	}
-
-	builder.Definition.Spec.Version = version
-
-	return builder
-}
-
 // GetCompletedCondition returns Completed condition from imageclusterinstall.
 func (builder *ImageClusterInstallBuilder) GetCompletedCondition() (*hivev1.ClusterInstallCondition, error) {
 	if valid, err := builder.validate(); !valid {
