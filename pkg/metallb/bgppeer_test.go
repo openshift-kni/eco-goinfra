@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/metallb/mlbtypes"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -281,6 +280,45 @@ func TestBGPPeerWithKeepalive(t *testing.T) {
 	}
 }
 
+func TestBGPPeerWithConnectTime(t *testing.T) {
+	testCases := []struct {
+		testBGPPeer   *BGPPeerBuilder
+		connectTimer  *metav1.Duration
+		expectedError string
+	}{
+		{
+			testBGPPeer: buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
+			connectTimer: &metav1.Duration{
+				Duration: 10 * time.Second,
+			},
+			expectedError: "",
+		},
+		{
+			testBGPPeer: buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
+			connectTimer: &metav1.Duration{
+				Duration: 0 * time.Second,
+			},
+			expectedError: "bgppeer 'connectTime' value is not valid",
+		},
+		{
+			testBGPPeer: buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
+			connectTimer: &metav1.Duration{
+				Duration: 65555 * time.Second,
+			},
+			expectedError: "bgppeer 'connectTime' value is not valid",
+		},
+	}
+
+	for _, testCase := range testCases {
+		bgpPeerBuilder := testCase.testBGPPeer.WithConnectTime(*testCase.connectTimer)
+		assert.Equal(t, testCase.expectedError, bgpPeerBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, testCase.connectTimer, bgpPeerBuilder.Definition.Spec.ConnectTime)
+		}
+	}
+}
+
 func TestBGPPeerWithNodeSelector(t *testing.T) {
 	testCases := []struct {
 		testBGPPeer   *BGPPeerBuilder
@@ -308,7 +346,7 @@ func TestBGPPeerWithNodeSelector(t *testing.T) {
 		assert.Equal(t, testCase.expectedError, bgpPeerBuilder.errorMsg)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, mlbtypes.NodeSelector{MatchLabels: testCase.nodeSelector},
+			assert.Equal(t, metav1.LabelSelector{MatchLabels: testCase.nodeSelector},
 				bgpPeerBuilder.Definition.Spec.NodeSelectors[0])
 		}
 	}
