@@ -14,10 +14,15 @@ import (
 )
 
 const (
-	defaultPodName   = "test-pod"
-	defaultPodNsName = "test-ns"
-	defaultPodImage  = "test-image"
+	defaultPodName     = "test-pod"
+	defaultPodNsName   = "test-ns"
+	defaultPodImage    = "test-image"
+	defaultPodNodeName = "test-node"
+	defaultVolumeName  = "test-volume"
+	defaultMountPath   = "/test"
 )
+
+var podRunningErrorMsg = fmt.Sprintf("can not redefine running pod. pod already running on node %s", defaultPodNodeName)
 
 func TestPodNewBuilder(t *testing.T) {
 	testCases := []struct {
@@ -161,6 +166,46 @@ func TestPodPull(t *testing.T) {
 	}
 }
 
+func TestPodDefineOnNode(t *testing.T) {
+	testCases := []struct {
+		nodeName      string
+		hasObject     bool
+		expectedError string
+	}{
+		{
+			nodeName:      defaultPodNodeName,
+			hasObject:     false,
+			expectedError: "",
+		},
+		{
+			nodeName:      "",
+			hasObject:     false,
+			expectedError: "can not define pod on empty node",
+		},
+		{
+			nodeName:      defaultPodNodeName,
+			hasObject:     true,
+			expectedError: podRunningErrorMsg,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidPodTestBuilder(buildTestClientWithDummyPod())
+
+		if testCase.hasObject {
+			testBuilder.Object = testBuilder.Definition
+			testBuilder.Object.Spec.NodeName = defaultPodNodeName
+		}
+
+		testBuilder = testBuilder.DefineOnNode(testCase.nodeName)
+		assert.Equal(t, testCase.expectedError, testBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, testCase.nodeName, testBuilder.Definition.Spec.NodeName)
+		}
+	}
+}
+
 func TestPodCreate(t *testing.T) {
 	testCases := []struct {
 		testBuilder   *Builder
@@ -193,32 +238,58 @@ func TestPodCreate(t *testing.T) {
 }
 
 func TestPodDelete(t *testing.T) {
+	testPodDeleteHelper(t, func(builder *Builder) (*Builder, error) {
+		return builder.Delete()
+	})
+}
+
+func TestPodDeleteAndWait(t *testing.T) {
+	testPodDeleteHelper(t, func(builder *Builder) (*Builder, error) {
+		return builder.DeleteAndWait(time.Second)
+	})
+}
+
+func TestPodDeleteImmediate(t *testing.T) {
+	testPodDeleteHelper(t, func(builder *Builder) (*Builder, error) {
+		return builder.DeleteImmediate()
+	})
+}
+
+func TestPodWaitUntilDeleted(t *testing.T) {
 	testCases := []struct {
 		testBuilder   *Builder
 		expectedError error
 	}{
 		{
-			testBuilder:   buildValidPodTestBuilder(buildTestClientWithDummyPod()),
+			testBuilder:   buildValidPodTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError: nil,
 		},
 		{
-			testBuilder:   buildInvalidPodTestBuilder(buildTestClientWithDummyPod()),
+			testBuilder:   buildInvalidPodTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError: fmt.Errorf("pod 'namespace' cannot be empty"),
 		},
 		{
-			testBuilder:   buildValidPodTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: nil,
+			testBuilder:   buildValidPodTestBuilder(buildTestClientWithDummyPod()),
+			expectedError: context.DeadlineExceeded,
 		},
 	}
 
 	for _, testCase := range testCases {
-		testBuilder, err := testCase.testBuilder.Delete()
+		err := testCase.testBuilder.WaitUntilDeleted(time.Second)
 		assert.Equal(t, testCase.expectedError, err)
-
-		if testCase.expectedError == nil {
-			assert.Nil(t, testBuilder.Object)
-		}
 	}
+}
+
+func TestPodWaitUntilReady(t *testing.T) {
+	testPodWaitUntilConditionHelper(t, func(builder *Builder) error {
+		return builder.WaitUntilReady(time.Second)
+	})
+}
+
+func TestPodWaitUntilCondition(t *testing.T) {
+	testPodWaitUntilConditionHelper(t, func(builder *Builder) error {
+		return builder.WaitUntilCondition(corev1.PodReady, time.Second)
+	})
 }
 
 func TestPodExists(t *testing.T) {
@@ -243,6 +314,288 @@ func TestPodExists(t *testing.T) {
 	for _, testCase := range testCases {
 		exists := testCase.testBuilder.Exists()
 		assert.Equal(t, testCase.exists, exists)
+	}
+}
+
+func TestPodRedefineDefaultCMD(t *testing.T) {
+	testCases := []struct {
+		command       []string
+		hasObject     bool
+		expectedError string
+	}{
+		{
+			command:       []string{"test"},
+			hasObject:     false,
+			expectedError: "",
+		},
+		{
+			command:       []string{},
+			hasObject:     false,
+			expectedError: "",
+		},
+		{
+			command:       []string{"test"},
+			hasObject:     true,
+			expectedError: podRunningErrorMsg,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidPodTestBuilder(buildTestClientWithDummyPod())
+
+		if testCase.hasObject {
+			testBuilder.Object = testBuilder.Definition
+			testBuilder.Object.Spec.NodeName = defaultPodNodeName
+		}
+
+		testBuilder = testBuilder.RedefineDefaultCMD(testCase.command)
+		assert.Equal(t, testCase.expectedError, testBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, testCase.command, testBuilder.Definition.Spec.Containers[0].Command)
+		}
+	}
+}
+
+func TestPodWithRestartPolicy(t *testing.T) {
+	testCases := []struct {
+		restartPolicy corev1.RestartPolicy
+		hasObject     bool
+		expectedError string
+	}{
+		{
+			restartPolicy: corev1.RestartPolicyAlways,
+			hasObject:     false,
+			expectedError: "",
+		},
+		{
+			restartPolicy: "",
+			hasObject:     false,
+			expectedError: "can not define pod with empty restart policy",
+		},
+		{
+			restartPolicy: corev1.RestartPolicyAlways,
+			hasObject:     true,
+			expectedError: podRunningErrorMsg,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidPodTestBuilder(buildTestClientWithDummyPod())
+
+		if testCase.hasObject {
+			testBuilder.Object = testBuilder.Definition
+			testBuilder.Object.Spec.NodeName = defaultPodNodeName
+		}
+
+		testBuilder = testBuilder.WithRestartPolicy(testCase.restartPolicy)
+		assert.Equal(t, testCase.expectedError, testBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, testCase.restartPolicy, testBuilder.Definition.Spec.RestartPolicy)
+		}
+	}
+}
+
+func TestPodWithTolerationToMaster(t *testing.T) {
+	toleration := corev1.Toleration{
+		Key:    "node-role.kubernetes.io/master",
+		Effect: "NoSchedule",
+	}
+
+	testPodWithTolerationHelper(t, toleration, func(builder *Builder, toleration corev1.Toleration) *Builder {
+		return builder.WithTolerationToMaster()
+	})
+}
+
+func TestPodWithTolerationToControlPlane(t *testing.T) {
+	toleration := corev1.Toleration{
+		Key:    "node-role.kubernetes.io/control-plane",
+		Effect: "NoSchedule",
+	}
+
+	testPodWithTolerationHelper(t, toleration, func(builder *Builder, toleration corev1.Toleration) *Builder {
+		return builder.WithTolerationToControlPlane()
+	})
+}
+
+func TestPodWithToleration(t *testing.T) {
+	toleration := corev1.Toleration{
+		Key:    "node-role.kubernetes.io/control-plane",
+		Effect: "NoSchedule",
+	}
+
+	testPodWithTolerationHelper(t, toleration, func(builder *Builder, toleration corev1.Toleration) *Builder {
+		return builder.WithToleration(toleration)
+	})
+}
+
+func TestPodWithNodeSelector(t *testing.T) {
+	testCases := []struct {
+		nodeSelector  map[string]string
+		hasObject     bool
+		expectedError string
+	}{
+		{
+			nodeSelector:  map[string]string{"test": "test"},
+			hasObject:     false,
+			expectedError: "",
+		},
+		{
+			nodeSelector:  map[string]string{},
+			hasObject:     false,
+			expectedError: "can not define pod with empty nodeSelector",
+		},
+		{
+			nodeSelector:  map[string]string{"test": "test"},
+			hasObject:     true,
+			expectedError: podRunningErrorMsg,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidPodTestBuilder(buildTestClientWithDummyPod())
+
+		if testCase.hasObject {
+			testBuilder.Object = testBuilder.Definition
+			testBuilder.Object.Spec.NodeName = defaultPodNodeName
+		}
+
+		testBuilder = testBuilder.WithNodeSelector(testCase.nodeSelector)
+		assert.Equal(t, testCase.expectedError, testBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, testCase.nodeSelector, testBuilder.Definition.Spec.NodeSelector)
+		}
+	}
+}
+
+func TestPodWithPrivilegedFlag(t *testing.T) {
+	testCases := []struct {
+		hasObject     bool
+		expectedError string
+	}{
+		{
+			hasObject:     false,
+			expectedError: "",
+		},
+		{
+			hasObject:     true,
+			expectedError: podRunningErrorMsg,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidPodTestBuilder(buildTestClientWithDummyPod())
+
+		if testCase.hasObject {
+			testBuilder.Object = testBuilder.Definition
+			testBuilder.Object.Spec.NodeName = defaultPodNodeName
+		}
+
+		testBuilder = testBuilder.WithPrivilegedFlag()
+		assert.Equal(t, testCase.expectedError, testBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.True(t, *testBuilder.Definition.Spec.Containers[0].SecurityContext.Privileged)
+		}
+	}
+}
+
+func TestPodWithVolume(t *testing.T) {
+	testCases := []struct {
+		volume        corev1.Volume
+		expectedError string
+	}{
+		{
+			volume:        corev1.Volume{Name: defaultVolumeName},
+			expectedError: "",
+		},
+		{
+			volume:        corev1.Volume{},
+			expectedError: "the volume's name cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidPodTestBuilder(buildTestClientWithDummyPod())
+		testBuilder = testBuilder.WithVolume(testCase.volume)
+		assert.Equal(t, testCase.expectedError, testBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, []corev1.Volume{testCase.volume}, testBuilder.Definition.Spec.Volumes)
+		}
+	}
+}
+
+func TestPodWithLocalVolume(t *testing.T) {
+	testCases := []struct {
+		volumeName    string
+		mountPath     string
+		alreadyUsed   bool
+		hasObject     bool
+		expectedError string
+	}{
+		{
+			volumeName:    defaultVolumeName,
+			mountPath:     defaultMountPath,
+			alreadyUsed:   false,
+			hasObject:     false,
+			expectedError: "",
+		},
+		{
+			volumeName:    "",
+			mountPath:     defaultMountPath,
+			alreadyUsed:   false,
+			hasObject:     false,
+			expectedError: "'volumeName' parameter is empty",
+		},
+		{
+			volumeName:    defaultVolumeName,
+			mountPath:     "",
+			alreadyUsed:   false,
+			hasObject:     false,
+			expectedError: "'mountPath' parameter is empty",
+		},
+		{
+			volumeName:    defaultVolumeName,
+			mountPath:     defaultMountPath,
+			alreadyUsed:   true,
+			hasObject:     false,
+			expectedError: fmt.Sprintf("given mount %s already mounted to pod's container test", defaultVolumeName),
+		},
+		{
+			volumeName:    defaultVolumeName,
+			mountPath:     defaultMountPath,
+			alreadyUsed:   false,
+			hasObject:     true,
+			expectedError: podRunningErrorMsg,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidPodTestBuilder(buildTestClientWithDummyPod())
+
+		if testCase.hasObject {
+			testBuilder.Object = testBuilder.Definition
+			testBuilder.Object.Spec.NodeName = defaultPodNodeName
+		}
+
+		if testCase.alreadyUsed {
+			testBuilder.Definition.Spec.Containers[0].VolumeMounts = []corev1.VolumeMount{{
+				Name:      testCase.volumeName,
+				MountPath: testCase.mountPath,
+			}}
+		}
+
+		testBuilder = testBuilder.WithLocalVolume(testCase.volumeName, testCase.mountPath)
+		assert.Equal(t, testCase.expectedError, testBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, testCase.volumeName, testBuilder.Definition.Spec.Containers[0].VolumeMounts[0].Name)
+			assert.Equal(t, testCase.mountPath, testBuilder.Definition.Spec.Containers[0].VolumeMounts[0].MountPath)
+			assert.Equal(t, testCase.volumeName, testBuilder.Definition.Spec.Volumes[0].Name)
+		}
 	}
 }
 
@@ -371,6 +724,122 @@ func TestPodWaitUntilHealthy(t *testing.T) {
 			time.Second, testCase.includeSucceeded, testCase.skipReadiness, testCase.ignoreFailedPods)
 
 		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
+func testPodDeleteHelper(t *testing.T, deleteFunc func(builder *Builder) (*Builder, error)) {
+	t.Helper()
+
+	testCases := []struct {
+		testBuilder   *Builder
+		expectedError error
+	}{
+		{
+			testBuilder:   buildValidPodTestBuilder(buildTestClientWithDummyPod()),
+			expectedError: nil,
+		},
+		{
+			testBuilder:   buildInvalidPodTestBuilder(buildTestClientWithDummyPod()),
+			expectedError: fmt.Errorf("pod 'namespace' cannot be empty"),
+		},
+		{
+			testBuilder:   buildValidPodTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: nil,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder, err := deleteFunc(testCase.testBuilder)
+		assert.Equal(t, testCase.expectedError, err)
+
+		if testCase.expectedError == nil {
+			assert.Nil(t, testBuilder.Object)
+		}
+	}
+}
+
+// testPodWaitUntilConditionHelper handles the test cases where a function waits for a condition. This helper uses
+// corev1.PodReady so that it can also be used for testing WaitUntilReady.
+func testPodWaitUntilConditionHelper(t *testing.T, waitFunc func(builder *Builder) error) {
+	t.Helper()
+
+	testCases := []struct {
+		valid         bool
+		ready         bool
+		expectedError error
+	}{
+		{
+			valid:         true,
+			ready:         true,
+			expectedError: nil,
+		},
+		{
+			valid:         false,
+			ready:         true,
+			expectedError: fmt.Errorf("pod 'namespace' cannot be empty"),
+		},
+		{
+			valid:         true,
+			ready:         false,
+			expectedError: context.DeadlineExceeded,
+		},
+	}
+
+	for _, testCase := range testCases {
+		var testBuilder *Builder
+
+		if testCase.valid {
+			pod := buildDummyPodWithPhaseAndCondition(corev1.PodRunning, corev1.PodReady, false)
+
+			if !testCase.ready {
+				pod.Status.Conditions[0].Status = corev1.ConditionFalse
+			}
+
+			testBuilder = buildValidPodTestBuilder(clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects: []runtime.Object{pod},
+			}))
+		} else {
+			testBuilder = buildInvalidPodTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+		}
+
+		err := waitFunc(testBuilder)
+		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
+// testPodWithTolerationHelper handles the test cases where a function applies the specified toleration to a pod.
+func testPodWithTolerationHelper(
+	t *testing.T, toleration corev1.Toleration, testFunc func(builder *Builder, toleration corev1.Toleration) *Builder) {
+	t.Helper()
+
+	testCases := []struct {
+		hasObject     bool
+		expectedError string
+	}{
+		{
+			hasObject:     false,
+			expectedError: "",
+		},
+		{
+			hasObject:     true,
+			expectedError: podRunningErrorMsg,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidPodTestBuilder(buildTestClientWithDummyPod())
+
+		if testCase.hasObject {
+			testBuilder.Object = testBuilder.Definition
+			testBuilder.Object.Spec.NodeName = defaultPodNodeName
+		}
+
+		testBuilder = testFunc(testBuilder, toleration)
+		assert.Equal(t, testCase.expectedError, testBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, []corev1.Toleration{toleration}, testBuilder.Definition.Spec.Tolerations)
+		}
 	}
 }
 
