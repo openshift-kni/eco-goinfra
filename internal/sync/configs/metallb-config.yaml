@@ -35,4 +35,11 @@
   replace_imports:
     - old: '"github.com/metallb/metallb-operator/api/v1beta1"'
       new: v1beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/metallb/mlboperator"
+
+- name: metallb-frr
+  sync: true
+  repo_link: "https://github.com/metallb/frr-k8s"
+  branch: main
+  remote_api_directory: api/v1beta1
+  local_api_directory: schemes/metallb/frrtypes
 ...
