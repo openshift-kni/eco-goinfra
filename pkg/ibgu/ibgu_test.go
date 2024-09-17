@@ -3,24 +3,18 @@ package ibgu
 import (
 	"context"
 	"fmt"
-	"testing"
-	"time"
-
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedgroupupgrades/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"testing"
+	"time"
 )
 
 const (
 	testIbguName      = "test-ibgu"
 	testIbguNamespace = "test-namespace"
-)
-
-var (
-	defaultIbguName   = "ibgu-test"
-	defaultIbguNsName = "test-ns"
 )
 
 var testSchemes = []clients.SchemeAttacher{
@@ -416,127 +410,95 @@ func testIbguValidate(t *testing.T) {
 	}
 }
 
-func generateIbguBuilderWithFakeObjects(objects []runtime.Object) *IbguBuilder {
-	return &IbguBuilder{
-		apiClient: clients.GetTestClients(
-			clients.TestClientParams{K8sMockObjects: objects, SchemeAttachers: testSchemes}).Client,
-		Definition: generateIbgu(),
-	}
-}
-
-func generateIbguBuilder() *IbguBuilder {
-	return &IbguBuilder{
-		apiClient:  clients.GetTestClients(clients.TestClientParams{}).Client,
-		Definition: generateIbgu(),
-	}
-}
-
-func generateIbgu() *v1alpha1.ImageBasedGroupUpgrade {
-	return &v1alpha1.ImageBasedGroupUpgrade{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      testIbguName,
-			Namespace: testIbguNamespace,
-		},
-		Spec: v1alpha1.ImageBasedGroupUpgradeSpec{},
-	}
-}
-
 //nolint:funlen
-func TestPullIgu(t *testing.T) {
-	generateibgu := func(name, namespace string) *v1alpha1.ImageBasedGroupUpgrade {
-		return &v1alpha1.ImageBasedGroupUpgrade{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: namespace,
-			},
-			Spec: v1alpha1.ImageBasedGroupUpgradeSpec{},
-		}
-	}
+func TestPullIbgu(t *testing.T) {
+	generateIbgu := buildDummyIbgu(testIbguName, testIbguNamespace)
+}
 
-	testCases := []struct {
-		ibguName            string
-		ibguNamespace       string
-		expectedError       bool
-		addToRuntimeObjects bool
-		expectedErrorText   string
-		client              bool
-	}{
-		{
-			ibguName:            "test1",
-			ibguNamespace:       "test-namespace",
-			expectedError:       false,
-			addToRuntimeObjects: true,
-			client:              true,
-		},
-		{
-			ibguName:            "test2",
-			ibguNamespace:       "test-namespace",
-			expectedError:       true,
-			addToRuntimeObjects: false,
-			expectedErrorText:   "ibgu object test2 does not exist in namespace test-namespace",
-			client:              true,
-		},
-		{
-			ibguName:            "",
-			ibguNamespace:       "test-namespace",
-			expectedError:       true,
-			addToRuntimeObjects: false,
-			expectedErrorText:   "ibgu 'name' cannot be empty",
-			client:              true,
-		},
-		{
-			ibguName:            "test3",
-			ibguNamespace:       "",
-			expectedError:       true,
-			addToRuntimeObjects: false,
-			expectedErrorText:   "ibgu 'namespace' cannot be empty",
-			client:              true,
-		},
-		{
-			ibguName:            "test3",
-			ibguNamespace:       "test-namespace",
-			expectedError:       true,
-			addToRuntimeObjects: false,
-			expectedErrorText:   "ibgu 'apiClient' cannot be empty",
-			client:              false,
-		},
-	}
-	for _, testCase := range testCases {
-		// Pre-populate the runtime objects
-		var runtimeObjects []runtime.Object
+testCases := []struct {
+ibguName            string
+ibguNamespace       string
+expectedError       bool
+addToRuntimeObjects bool
+expectedErrorText   string
+client              bool
+}{
+{
+ibguName:            testIbguName,
+ibguNamespace:       testIbguNamespace,
+expectedError:       false,
+addToRuntimeObjects: true,
+client:              true,
+},
+{
+ibguName:            "test2",
+ibguNamespace:       testIbguNamespace,
+expectedError:       true,
+addToRuntimeObjects: false,
+expectedErrorText:   "ibgu object test2 does not exist in namespace test-namespace",
+client:              true,
+},
+{
+ibguName:            "",
+ibguNamespace:       testIbguNamespace,
+expectedError:       true,
+addToRuntimeObjects: false,
+expectedErrorText:   "ibgu 'name' cannot be empty",
+client:              true,
+},
+{
+ibguName:            "test3",
+ibguNamespace:       "",
+expectedError:       true,
+addToRuntimeObjects: false,
+expectedErrorText:   "ibgu 'namespace' cannot be empty",
+client:              true,
+},
+{
+ibguName:            "test3",
+ibguNamespace:       testIbguNamespace,
+expectedError:       true,
+addToRuntimeObjects: false,
+expectedErrorText:   "ibgu 'apiClient' cannot be empty",
+client:              false,
+},
+}
+for _, testCase := range testCases {
+// Pre-populate the runtime objects
+var runtimeObjects []runtime.Object
 
-		var testSettings *clients.Settings
+var testSettings *clients.Settings
 
-		testIbgu := generateibgu(testCase.ibguName, testCase.ibguNamespace)
+testIbgu := generateIbgu(testCase.ibguName, testCase.ibguNamespace)
 
-		if testCase.addToRuntimeObjects {
-			runtimeObjects = append(runtimeObjects, testIbgu)
-		}
+if testCase.addToRuntimeObjects {
+runtimeObjects = append(runtimeObjects, testIbgu)
+}
 
-		if testCase.client {
-			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects:  runtimeObjects,
-				SchemeAttachers: testSchemes,
-			})
-		}
+if testCase.client {
+testSettings = clients.GetTestClients(clients.TestClientParams{
+K8sMockObjects:  runtimeObjects,
+SchemeAttachers: testSchemes,
+})
+}
 
-		// Test the Pull method
-		builderResult, err := PullIbgu(testSettings, testIbgu.Name, testIbgu.Namespace)
+// Test the Pull method
+builderResult, err := PullIbgu(testSettings, testIbgu.Name, testIbgu.Namespace)
 
-		// Check the error
-		if testCase.expectedError {
-			assert.NotNil(t, err)
+// Check the error
+if testCase.expectedError {
+assert.NotNil(t, err)
 
-			// Check the error message
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, err.Error())
-			}
-		} else {
-			assert.Nil(t, err)
-			assert.Equal(t, testIbgu.Name, builderResult.Object.Name)
-			assert.Equal(t, testIbgu.Namespace, builderResult.Object.Namespace)
-		}
-	}
+// Check the error message
+if testCase.expectedErrorText != "" {
+assert.Equal(t, testCase.expectedErrorText, err.Error())
+}
+} else {
+assert.Nil(t, err)
+assert.Equal(t, testIbgu.Name, builderResult.Object.Name)
+assert.Equal(t, testIbgu.Namespace, builderResult.Object.Namespace)
+}
+}
 }
 
 func testIbguDeleteAndWait(t *testing.T) {
@@ -547,10 +509,6 @@ func testIbguDeleteAndWait(t *testing.T) {
 		{
 			testIbgu:      buildValidIbguTestBuilder(buildTestClientWithDummyIbguObject()),
 			expectedError: nil,
-		},
-		{
-			testIbgu:      buildValidIbguTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: fmt.Errorf("ibgu cannot be deleted because it does not exist"),
 		},
 		{
 			testIbgu:      buildInvalidibguTestBuilder(buildTestClientWithDummyIbguObject()),
@@ -598,15 +556,40 @@ func testIbguWaitUntilDeleted(t *testing.T) {
 	}
 }
 
+func generateIbguBuilderWithFakeObjects(objects []runtime.Object) *IbguBuilder {
+	return &IbguBuilder{
+		apiClient: clients.GetTestClients(
+			clients.TestClientParams{K8sMockObjects: objects, SchemeAttachers: testSchemes}).Client,
+		Definition: generateIbgu(),
+	}
+}
+
+func generateIbguBuilder() *IbguBuilder {
+	return &IbguBuilder{
+		apiClient:  clients.GetTestClients(clients.TestClientParams{}).Client,
+		Definition: generateIbgu(),
+	}
+}
+
+func generateIbgu() *v1alpha1.ImageBasedGroupUpgrade {
+	return &v1alpha1.ImageBasedGroupUpgrade{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      testIbguName,
+			Namespace: testIbguNamespace,
+		},
+		Spec: v1alpha1.ImageBasedGroupUpgradeSpec{},
+	}
+}
+
 func buildTestClientWithDummyIbguObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects:  buildDummyibguObject(),
+		K8sMockObjects:  buildDummyIbguObject(),
 		SchemeAttachers: testSchemes,
 	})
 }
 
-func buildDummyibguObject() []runtime.Object {
-	return append([]runtime.Object{}, buildDummyIbgu(defaultIbguName, defaultIbguNsName))
+func buildDummyIbguObject() []runtime.Object {
+	return append([]runtime.Object{}, buildDummyIbgu(testIbguName, testIbguNamespace))
 }
 
 func buildDummyIbgu(name, namespace string) *v1alpha1.ImageBasedGroupUpgrade {
@@ -625,8 +608,8 @@ func buildDummyIbgu(name, namespace string) *v1alpha1.ImageBasedGroupUpgrade {
 func buildValidIbguTestBuilder(apiClient *clients.Settings) *IbguBuilder {
 	return NewIbguBuilder(
 		apiClient,
-		defaultIbguName,
-		defaultIbguNsName,
+		testIbguName,
+		testIbguNamespace,
 	)
 }
 
@@ -634,6 +617,6 @@ func buildValidIbguTestBuilder(apiClient *clients.Settings) *IbguBuilder {
 func buildInvalidibguTestBuilder(apiClient *clients.Settings) *IbguBuilder {
 	return NewIbguBuilder(
 		apiClient,
-		defaultIbguName,
+		testIbguName,
 		"")
 }

@@ -314,38 +314,6 @@ func (builder *IbguBuilder) Delete() error {
 	return nil
 }
 
-// validate will check that the builder and builder definition are properly initialized before
-// accessing any member fields.
-func (builder *IbguBuilder) validate() (bool, error) {
-	resourceCRD := "ibgu"
-
-	if builder == nil {
-		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
-
-		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
-	}
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The %s is undefined", resourceCRD)
-
-		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
-	}
-
-	if builder.apiClient == nil {
-		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
-
-		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
-	}
-
-	if builder.errorMsg != "" {
-		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
-
-		return false, fmt.Errorf(builder.errorMsg)
-	}
-
-	return true, nil
-}
-
 // PullIbgu pulls existing ibgu into IbguBuilder struct.
 func PullIbgu(apiClient *clients.Settings, name, nsname string) (*IbguBuilder, error) {
 	glog.V(100).Infof("Pulling existing ibgu name %s under namespace %s from cluster", name, nsname)
@@ -442,4 +410,36 @@ func (builder *IbguBuilder) WaitUntilDeleted(timeout time.Duration) error {
 
 			return false, err
 		})
+}
+
+// validate will check that the builder and builder definition are properly initialized before
+// accessing any member fields.
+func (builder *IbguBuilder) validate() (bool, error) {
+	resourceCRD := "ibgu"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
+
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
+
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
