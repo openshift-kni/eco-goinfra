@@ -441,6 +441,7 @@ func generateIbgu() *v1alpha1.ImageBasedGroupUpgrade {
 	}
 }
 
+//nolint:funlen
 func TestPullIgu(t *testing.T) {
 	generateibgu := func(name, namespace string) *v1alpha1.ImageBasedGroupUpgrade {
 		return &v1alpha1.ImageBasedGroupUpgrade{
@@ -538,7 +539,7 @@ func TestPullIgu(t *testing.T) {
 	}
 }
 
-func TestibguDeleteAndWait(t *testing.T) {
+func TestIbguDeleteAndWait(t *testing.T) {
 	testCases := []struct {
 		testibgu      *IbguBuilder
 		expectedError error
@@ -568,7 +569,7 @@ func TestibguDeleteAndWait(t *testing.T) {
 	}
 }
 
-func TestibguWaitUntilDeleted(t *testing.T) {
+func TestIbguWaitUntilDeleted(t *testing.T) {
 	testCases := []struct {
 		testibgu      *IbguBuilder
 		expectedError error

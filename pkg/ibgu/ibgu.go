@@ -3,7 +3,6 @@ package ibgu
 import (
 	"context"
 	"fmt"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"time"
 
 	"github.com/golang/glog"
@@ -13,6 +12,7 @@ import (
 	lcav1 "github.com/openshift-kni/lifecycle-agent/api/imagebasedupgrade/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -251,7 +251,6 @@ func (builder *IbguBuilder) Get() (*v1alpha1.ImageBasedGroupUpgrade, error) {
 	}
 
 	return imagebasedgroupupgrade, err
-	return imagebasedgroupupgrade, err
 }
 
 // Exists checks whether the given imagebasedgroupupgrade exists.
@@ -347,7 +346,7 @@ func (builder *IbguBuilder) validate() (bool, error) {
 	return true, nil
 }
 
-// Pull pulls existing ibgu into IbguBuilder struct.
+// PullIbgu pulls existing ibgu into IbguBuilder struct.
 func PullIbgu(apiClient *clients.Settings, name, nsname string) (*IbguBuilder, error) {
 	glog.V(100).Infof("Pulling existing ibgu name %s under namespace %s from cluster", name, nsname)
 
@@ -373,6 +372,7 @@ func PullIbgu(apiClient *clients.Settings, name, nsname string) (*IbguBuilder, e
 			},
 		},
 	}
+
 	if name == "" {
 		glog.V(100).Infof("The name of the ibgu is empty")
 
