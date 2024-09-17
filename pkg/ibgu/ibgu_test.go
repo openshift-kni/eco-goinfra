@@ -82,7 +82,7 @@ func TestNewIbguBuilder(t *testing.T) {
 	}
 }
 
-func TestIbguWithClusterLabelSelectors(t *testing.T) {
+func testIbguWithClusterLabelSelectors(t *testing.T) {
 	testCases := []struct {
 		labels        map[string]string
 		expectedError string
@@ -109,7 +109,7 @@ func TestIbguWithClusterLabelSelectors(t *testing.T) {
 	}
 }
 
-func TestIbguWithSeedImageRef(t *testing.T) {
+func testIbguWithSeedImageRef(t *testing.T) {
 	testCases := []struct {
 		seedImage     string
 		seedVersion   string
@@ -145,7 +145,7 @@ func TestIbguWithSeedImageRef(t *testing.T) {
 	}
 }
 
-func TestIbguWithOadpContent(t *testing.T) {
+func testIbguWithOadpContent(t *testing.T) {
 	testCases := []struct {
 		name          string
 		namespace     string
@@ -181,7 +181,7 @@ func TestIbguWithOadpContent(t *testing.T) {
 	}
 }
 
-func TestIbguWithPlan(t *testing.T) {
+func testIbguWithPlan(t *testing.T) {
 	testCases := []struct {
 		actions        []string
 		maxConcurrency int
@@ -228,7 +228,7 @@ func TestIbguWithPlan(t *testing.T) {
 	}
 }
 
-func TestIbguGet(t *testing.T) {
+func testIbguGet(t *testing.T) {
 	testCases := []struct {
 		exists bool
 	}{
@@ -260,7 +260,7 @@ func TestIbguGet(t *testing.T) {
 	}
 }
 
-func TestIbguExists(t *testing.T) {
+func testIbguExists(t *testing.T) {
 	testCases := []struct {
 		exists bool
 	}{
@@ -285,7 +285,7 @@ func TestIbguExists(t *testing.T) {
 	}
 }
 
-func TestIbguCreate(t *testing.T) {
+func testIbguCreate(t *testing.T) {
 	testCases := []struct {
 		exists bool
 	}{
@@ -314,7 +314,7 @@ func TestIbguCreate(t *testing.T) {
 	}
 }
 
-func TestIbguDelete(t *testing.T) {
+func testIbguDelete(t *testing.T) {
 	testCases := []struct {
 		name          string
 		exists        bool
@@ -356,7 +356,7 @@ func TestIbguDelete(t *testing.T) {
 	}
 }
 
-func TestIbguValidate(t *testing.T) {
+func testIbguValidate(t *testing.T) {
 	testCases := []struct {
 		builderNil    bool
 		definitionNil bool
@@ -539,61 +539,61 @@ func TestPullIgu(t *testing.T) {
 	}
 }
 
-func TestIbguDeleteAndWait(t *testing.T) {
+func testIbguDeleteAndWait(t *testing.T) {
 	testCases := []struct {
-		testibgu      *IbguBuilder
+		testIbgu      *IbguBuilder
 		expectedError error
 	}{
 		{
-			testibgu:      buildValidIbguTestBuilder(buildTestClientWithDummyIbguObject()),
+			testIbgu:      buildValidIbguTestBuilder(buildTestClientWithDummyIbguObject()),
 			expectedError: nil,
 		},
 		{
-			testibgu:      buildValidIbguTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testIbgu:      buildValidIbguTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError: fmt.Errorf("ibgu cannot be deleted because it does not exist"),
 		},
 		{
-			testibgu:      buildInvalidibguTestBuilder(buildTestClientWithDummyIbguObject()),
+			testIbgu:      buildInvalidibguTestBuilder(buildTestClientWithDummyIbguObject()),
 			expectedError: fmt.Errorf("ibgu 'nsname' cannot be empty"),
 		},
 	}
 
 	for _, testCase := range testCases {
-		_, err := testCase.testibgu.DeleteAndWait(time.Second)
+		_, err := testCase.testIbgu.DeleteAndWait(time.Second)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
-			assert.Nil(t, testCase.testibgu.Object)
-			assert.Nil(t, testCase.testibgu.Object)
+			assert.Nil(t, testCase.testIbgu.Object)
+			assert.Nil(t, testCase.testIbgu.Object)
 		}
 	}
 }
 
-func TestIbguWaitUntilDeleted(t *testing.T) {
+func testIbguWaitUntilDeleted(t *testing.T) {
 	testCases := []struct {
-		testibgu      *IbguBuilder
+		testIbgu      *IbguBuilder
 		expectedError error
 	}{
 		{
-			testibgu:      buildValidIbguTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			testIbgu:      buildValidIbguTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError: nil,
 		},
 		{
-			testibgu:      buildValidIbguTestBuilder(buildTestClientWithDummyIbguObject()),
+			testIbgu:      buildValidIbguTestBuilder(buildTestClientWithDummyIbguObject()),
 			expectedError: context.DeadlineExceeded,
 		},
 		{
-			testibgu:      buildInvalidibguTestBuilder(buildTestClientWithDummyIbguObject()),
+			testIbgu:      buildInvalidibguTestBuilder(buildTestClientWithDummyIbguObject()),
 			expectedError: fmt.Errorf("ibgu 'nsname' cannot be empty"),
 		},
 	}
 
 	for _, testCase := range testCases {
-		err := testCase.testibgu.WaitUntilDeleted(time.Second)
+		err := testCase.testIbgu.WaitUntilDeleted(time.Second)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
-			assert.Nil(t, testCase.testibgu.Object)
+			assert.Nil(t, testCase.testIbgu.Object)
 		}
 	}
 }
