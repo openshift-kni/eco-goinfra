@@ -427,18 +427,18 @@ func (builder *IbguBuilder) WaitUntilDeleted(timeout time.Duration) error {
 		context.TODO(), time.Second, timeout, true, func(ctx context.Context) (bool, error) {
 			_, err := builder.Get()
 			if err == nil {
-				glog.V(100).Infof("ibgu %s/%s still present", builder.Definition.Name, builder.Definition.Namespace)
+				glog.V(100).Infof("ibgu %s/%s still present", builder.Definition.Namespace, builder.Definition.Name)
 
 				return false, nil
 			}
 
 			if k8serrors.IsNotFound(err) {
-				glog.V(100).Infof("ibgu %s/%s is gone", builder.Definition.Name, builder.Definition.Namespace)
+				glog.V(100).Infof("ibgu %s/%s is gone", builder.Definition.Namespace, builder.Definition.Name)
 
 				return true, nil
 			}
 
-			glog.V(100).Infof("failed to get ibgu %s/%s: %w", builder.Definition.Name, builder.Definition.Namespace, err)
+			glog.V(100).Infof("failed to get ibgu %s/%s: %w", builder.Definition.Namespace, builder.Definition.Name, err)
 
 			return false, err
 		})
