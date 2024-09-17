@@ -1,8 +1,6 @@
 module github.com/openshift-kni/eco-goinfra
 
-go 1.22.0
-
-toolchain go1.22.5
+go 1.22
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
@@ -40,6 +38,7 @@ require (
 	github.com/openshift/elasticsearch-operator v0.0.0-20220613183908-e1648e67c298
 	github.com/openshift/local-storage-operator v0.0.0-20240422172451-2a80d7f6681d // release-4.16
 	github.com/openshift/machine-config-operator v0.0.1-0.20230811181556-63d7be1ef18b
+	github.com/ovn-org/ovn-kubernetes/go-controller v0.0.0-20240614144800-61d5c5937bd4
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.73.2
 	github.com/red-hat-storage/odf-operator v0.0.0-20240703093545-0e22236e2160
@@ -54,9 +53,9 @@ require (
 	gopkg.in/k8snetworkplumbingwg/multus-cni.v4 v4.0.2
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/gorm v1.24.5
-	k8s.io/api v0.30.2
-	k8s.io/apiextensions-apiserver v0.30.2
-	k8s.io/apimachinery v0.30.2
+	k8s.io/api v0.29.5
+	k8s.io/apiextensions-apiserver v0.29.4
+	k8s.io/apimachinery v0.29.5
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/klog/v2 v2.120.1
 	k8s.io/kubectl v0.29.4
@@ -67,7 +66,7 @@ require (
 	open-cluster-management.io/governance-policy-propagator v0.13.0
 	open-cluster-management.io/multicloud-operators-subscription v0.13.0
 	sigs.k8s.io/container-object-storage-interface-api v0.1.0
-	sigs.k8s.io/controller-runtime v0.18.4
+	sigs.k8s.io/controller-runtime v0.17.5
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -190,9 +189,9 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiserver v0.30.2 // indirect
+	k8s.io/apiserver v0.29.4 // indirect
 	k8s.io/cli-runtime v0.29.4 // indirect
-	k8s.io/component-base v0.30.2 // indirect
+	k8s.io/component-base v0.29.4 // indirect
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/kube-aggregator v0.29.4 // indirect
 	k8s.io/kube-openapi v0.0.0-20240411171206-dc4e619f62f3 // indirect
@@ -203,8 +202,6 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.17.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 )
-
-require github.com/ovn-org/ovn-kubernetes/go-controller v0.0.0-20240917085209-b21b80027369
 
 replace (
 	github.com/imdario/mergo => github.com/imdario/mergo v0.3.16

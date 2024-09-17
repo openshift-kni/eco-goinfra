@@ -9,3 +9,5 @@ reviewers:
   - api-reviewers
 labels:
   - kind/api-change
+  - sig/api-machinery
+  - sig/scheduling
