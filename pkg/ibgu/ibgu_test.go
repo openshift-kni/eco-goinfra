@@ -1,6 +1,7 @@
 package ibgu
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -430,7 +431,7 @@ func TestPullIbgu(t *testing.T) {
 			ibguNamespace:       testIbguNamespace,
 			expectedError:       true,
 			addToRuntimeObjects: false,
-			expectedErrorText:   "ibgu object test2 does not exist in namespace test-namespace",
+			expectedErrorText:   "ibgu object test-ibgu does not exist in namespace test-namespace",
 			client:              true,
 		},
 		{
@@ -464,10 +465,10 @@ func TestPullIbgu(t *testing.T) {
 
 		var testSettings *clients.Settings
 
-		testIbgu := generateIbgu()
+		testCgu := generateIbgu()
 
 		if testCase.addToRuntimeObjects {
-			runtimeObjects = append(runtimeObjects, testIbgu)
+			runtimeObjects = append(runtimeObjects, testCgu)
 		}
 
 		if testCase.client {
@@ -478,7 +479,7 @@ func TestPullIbgu(t *testing.T) {
 		}
 
 		// Test the Pull method
-		builderResult, err := PullIbgu(testSettings, testIbgu.Name, testIbgu.Namespace)
+		builderResult, err := PullIbgu(testSettings, testCgu.Name, testCgu.Namespace)
 
 		// Check the error
 		if testCase.expectedError {
@@ -490,8 +491,8 @@ func TestPullIbgu(t *testing.T) {
 			}
 		} else {
 			assert.Nil(t, err)
-			assert.Equal(t, testIbgu.Name, builderResult.Object.Name)
-			assert.Equal(t, testIbgu.Namespace, builderResult.Object.Namespace)
+			assert.Equal(t, testCgu.Name, builderResult.Object.Name)
+			assert.Equal(t, testCgu.Namespace, builderResult.Object.Namespace)
 		}
 	}
 }
@@ -542,17 +543,17 @@ func TestIbguWaitUntilDeleted(t *testing.T) {
 	testCases := []struct {
 		name          string
 		exists        bool
-		expectedError bool
+		expectedError error
 	}{
 		{
 			name:          "Delete existing IBGU",
 			exists:        true,
-			expectedError: false,
+			expectedError: nil,
 		},
 		{
 			name:          "Delete non-existing IBGU",
 			exists:        false,
-			expectedError: false,
+			expectedError: context.DeadlineExceeded,
 		},
 	}
 
@@ -567,11 +568,9 @@ func TestIbguWaitUntilDeleted(t *testing.T) {
 			testBuilder := generateIbguBuilderWithFakeObjects(runtimeObjects)
 
 			err := testBuilder.WaitUntilDeleted(time.Second)
-
-			if testCase.expectedError {
-				assert.NotNil(t, err)
-			} else {
-				assert.Nil(t, err)
+			assert.Equal(t, testCase.expectedError, err)
+			if testCase.expectedError == nil {
+				assert.Nil(t, testCase.exists)
 			}
 
 			// Verify that the object no longer exists
