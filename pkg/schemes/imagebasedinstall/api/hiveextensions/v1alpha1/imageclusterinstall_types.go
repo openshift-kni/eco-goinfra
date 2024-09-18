@@ -83,11 +83,6 @@ type ImageClusterInstallSpec struct {
 	// The tls-ca-bundle.pem entry in the config map will be written to /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
 	CABundleRef *corev1.LocalObjectReference `json:"caBundleRef,omitempty"`
 
-	// NetworkConfigRef is the reference to a config map containing network configuration files if necessary.
-	// Keys should be of the form *.nmconnection and each represent an nmconnection file to be applied to the host.
-	// +optional
-	NetworkConfigRef *corev1.LocalObjectReference `json:"networkConfigRef,omitempty"`
-
 	// ExtraManifestsRefs is list of config map references containing additional manifests to be applied to the relocated cluster.
 	// +optional
 	ExtraManifestsRefs []corev1.LocalObjectReference `json:"extraManifestsRef,omitempty"`
@@ -134,6 +129,7 @@ type BareMetalHostReference struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+// +kubebuilder:resource:path=imageclusterinstalls,shortName=ici
 // +kubebuilder:printcolumn:name="RequirementsMet",type="string",JSONPath=".status.conditions[?(@.type=='RequirementsMet')].reason"
 // +kubebuilder:printcolumn:name="Completed",type="string",JSONPath=".status.conditions[?(@.type=='Completed')].reason"
 // +kubebuilder:printcolumn:name="ConfigurationImageURL",type="string",JSONPath=".status.configurationImageURL"
