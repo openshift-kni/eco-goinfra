@@ -53,21 +53,6 @@ func (r *ImageClusterInstall) ValidateCreate() (admission.Warnings, error) {
 	return nil, nil
 }
 
-func (r *ImageClusterInstall) validate() error {
-	if err := isValidSSHPublicKey(r.Spec.SSHKey); err != nil {
-		return fmt.Errorf("invalid ssh key: %v", err)
-	}
-	if err := isValidHostname(r.Spec.Hostname); err != nil {
-		return fmt.Errorf("invalid hostname: %w", err)
-	}
-
-	if err := isValidMachineNetwork(r.Spec.MachineNetwork); err != nil {
-		return fmt.Errorf("invalid machine network: %w", err)
-	}
-
-	return nil
-}
-
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *ImageClusterInstall) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
 	icilog.Info("validate update", "name", r.Name)
@@ -81,18 +66,39 @@ func (r *ImageClusterInstall) ValidateUpdate(old runtime.Object) (admission.Warn
 		return nil, fmt.Errorf("old object is not an ImageClusterInstall")
 	}
 
-	if oldClusterInstall.Spec.BareMetalHostRef == nil && r.Spec.BareMetalHostRef == nil {
-		return nil, nil
-	}
-
 	// Allow update if it's not the spec
 	if !isSpecUpdate(oldClusterInstall, r) {
 		return nil, nil
 	}
-	if BMHRefsMatch(oldClusterInstall.Spec.BareMetalHostRef, r.Spec.BareMetalHostRef) {
-		return nil, fmt.Errorf("Cannot update ImageClusterInstall when BareMetalHostRef is set, unset BareMetalHostRef before making changes")
+	// block update if the installation started
+	if installationStarted(oldClusterInstall) {
+		return nil, fmt.Errorf("cannot update ImageClusterInstall when the configImage is ready")
 	}
 	return nil, nil
+}
+
+// ValidateDelete implements webhook.Validator so a webhook will be registered for the type
+func (r *ImageClusterInstall) ValidateDelete() (admission.Warnings, error) {
+	return nil, nil
+}
+
+func (r *ImageClusterInstall) validate() error {
+	if err := isValidSSHPublicKey(r.Spec.SSHKey); err != nil {
+		return fmt.Errorf("invalid ssh key: %v", err)
+	}
+	if err := isValidHostname(r.Spec.Hostname); err != nil {
+		return fmt.Errorf("invalid hostname: %w", err)
+	}
+
+	if err := isValidMachineNetwork(r.Spec.MachineNetwork); err != nil {
+		return fmt.Errorf("invalid machine network: %w", err)
+	}
+	return nil
+}
+
+func installationStarted(r *ImageClusterInstall) bool {
+	// if the BareMetalHostRef is set on the status than the installation has started.
+	return r.Status.BareMetalHostRef != nil
 }
 
 func isSpecUpdate(oldClusterInstall *ImageClusterInstall, newClusterInstall *ImageClusterInstall) bool {
@@ -140,21 +146,4 @@ func isValidMachineNetwork(machineNetwork string) error {
 		return fmt.Errorf("error parsing machine network, check that it is valid cidr: %w", err)
 	}
 	return nil
-}
-
-// ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *ImageClusterInstall) ValidateDelete() (admission.Warnings, error) {
-	return nil, nil
-}
-
-func BMHRefsMatch(ref1 *BareMetalHostReference, ref2 *BareMetalHostReference) bool {
-	if ref1 == nil && ref2 == nil {
-		return true
-	}
-
-	if ref1 == nil && ref2 != nil || ref1 != nil && ref2 == nil {
-		return false
-	}
-
-	return *ref1 == *ref2
 }
