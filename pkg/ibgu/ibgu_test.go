@@ -410,15 +410,6 @@ func testIbguValidate(t *testing.T) {
 
 //nolint:funlen
 func TestPullIbgu(t *testing.T) {
-	generateIbgu := func(name, namespace string) *v1alpha1.ImageBasedGroupUpgrade {
-		return &v1alpha1.ImageBasedGroupUpgrade{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: namespace,
-			},
-			Spec: v1alpha1.ImageBasedGroupUpgradeSpec{},
-		}
-	}
 	testCases := []struct {
 		ibguName            string
 		ibguNamespace       string
@@ -473,7 +464,7 @@ func TestPullIbgu(t *testing.T) {
 
 		var testSettings *clients.Settings
 
-		testIbgu := generateIbgu(testCase.ibguName, testCase.ibguNamespace)
+		testIbgu := generateIbgu()
 
 		if testCase.addToRuntimeObjects {
 			runtimeObjects = append(runtimeObjects, testIbgu)
@@ -612,44 +603,4 @@ func generateIbgu() *v1alpha1.ImageBasedGroupUpgrade {
 		},
 		Spec: v1alpha1.ImageBasedGroupUpgradeSpec{},
 	}
-}
-
-func buildTestClientWithDummyIbguObject() *clients.Settings {
-	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects:  buildDummyIbguObject(),
-		SchemeAttachers: testSchemes,
-	})
-}
-
-func buildDummyIbguObject() []runtime.Object {
-	return append([]runtime.Object{}, buildDummyIbgu(testIbguName, testIbguNamespace))
-}
-
-func buildDummyIbgu(name, namespace string) *v1alpha1.ImageBasedGroupUpgrade {
-	return &v1alpha1.ImageBasedGroupUpgrade{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: v1alpha1.ImageBasedGroupUpgradeSpec{
-			ClusterLabelSelectors: make([]metav1.LabelSelector, 0),
-		},
-	}
-}
-
-// buildValidIbguTestBuilder returns a valid IbguBuilder for testing purposes.
-func buildValidIbguTestBuilder(apiClient *clients.Settings) *IbguBuilder {
-	return NewIbguBuilder(
-		apiClient,
-		testIbguName,
-		testIbguNamespace,
-	)
-}
-
-// buildinInvalidibguTestBuilder returns an invalid ibguBuilder for testing purposes.
-func buildInvalidibguTestBuilder(apiClient *clients.Settings) *IbguBuilder {
-	return NewIbguBuilder(
-		apiClient,
-		testIbguName,
-		"")
 }
