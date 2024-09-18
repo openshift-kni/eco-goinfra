@@ -3,6 +3,7 @@ package ibgu
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
@@ -11,6 +12,7 @@ import (
 	lcav1 "github.com/openshift-kni/lifecycle-agent/api/imagebasedupgrade/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -310,6 +312,104 @@ func (builder *IbguBuilder) Delete() error {
 	builder.Object = nil
 
 	return nil
+}
+
+// PullIbgu pulls existing ibgu into IbguBuilder struct.
+func PullIbgu(apiClient *clients.Settings, name, nsname string) (*IbguBuilder, error) {
+	glog.V(100).Infof("Pulling existing ibgu name %s under namespace %s from cluster", name, nsname)
+
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is empty")
+
+		return nil, fmt.Errorf("ibgu 'apiClient' cannot be empty")
+	}
+
+	err := apiClient.AttachScheme(v1alpha1.AddToScheme)
+	if err != nil {
+		glog.V(100).Infof("Failed to add ibgu v1alpha1 scheme to client schemes")
+
+		return nil, err
+	}
+
+	builder := IbguBuilder{
+		apiClient: apiClient.Client,
+		Definition: &v1alpha1.ImageBasedGroupUpgrade{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
+	}
+
+	if name == "" {
+		glog.V(100).Infof("The name of the ibgu is empty")
+
+		return nil, fmt.Errorf("ibgu 'name' cannot be empty")
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The namespace of the ibgu is empty")
+
+		return nil, fmt.Errorf("ibgu 'nsname' cannot be empty")
+	}
+
+	if !builder.Exists() {
+		return nil, fmt.Errorf("ibgu object %s does not exist in namespace %s", name, nsname)
+	}
+
+	builder.Definition = builder.Object
+
+	return &builder, nil
+}
+
+// DeleteAndWait deletes the ibgu object and waits until the ibgu is deleted.
+func (builder *IbguBuilder) DeleteAndWait(timeout time.Duration) (*IbguBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
+	glog.V(100).Infof("Deleting ibgu %s in namespace %s and waiting for the defined period until it is removed",
+		builder.Definition.Name, builder.Definition.Namespace)
+
+	err := builder.Delete()
+	if err != nil {
+		return builder, err
+	}
+
+	err = builder.WaitUntilDeleted(timeout)
+
+	return builder, err
+}
+
+// WaitUntilDeleted waits for the duration of the defined timeout or until the ibgu is deleted.
+func (builder *IbguBuilder) WaitUntilDeleted(timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
+	glog.V(100).Infof(
+		"Waiting for the defined period until ibgu %s in namespace %s is deleted",
+		builder.Definition.Name, builder.Definition.Namespace)
+
+	return wait.PollUntilContextTimeout(
+		context.TODO(), time.Second, timeout, true, func(ctx context.Context) (bool, error) {
+			_, err := builder.Get()
+			if err == nil {
+				glog.V(100).Infof("ibgu %s/%s still present", builder.Definition.Namespace, builder.Definition.Name)
+
+				return false, nil
+			}
+
+			if k8serrors.IsNotFound(err) {
+				glog.V(100).Infof("ibgu %s/%s is gone", builder.Definition.Namespace, builder.Definition.Name)
+
+				return true, nil
+			}
+
+			glog.V(100).Infof("failed to get ibgu %s/%s: %w", builder.Definition.Namespace, builder.Definition.Name, err)
+
+			return false, err
+		})
 }
 
 // validate will check that the builder and builder definition are properly initialized before
