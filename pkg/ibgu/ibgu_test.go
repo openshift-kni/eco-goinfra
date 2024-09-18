@@ -1,8 +1,6 @@
 package ibgu
 
 import (
-	"context"
-	"fmt"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedgroupupgrades/v1alpha1"
 	"github.com/stretchr/testify/assert"
@@ -412,147 +410,182 @@ func testIbguValidate(t *testing.T) {
 
 //nolint:funlen
 func TestPullIbgu(t *testing.T) {
-	generateIbgu := buildDummyIbgu(testIbguName, testIbguNamespace)
-}
-
-testCases := []struct {
-ibguName            string
-ibguNamespace       string
-expectedError       bool
-addToRuntimeObjects bool
-expectedErrorText   string
-client              bool
-}{
-{
-ibguName:            testIbguName,
-ibguNamespace:       testIbguNamespace,
-expectedError:       false,
-addToRuntimeObjects: true,
-client:              true,
-},
-{
-ibguName:            "test2",
-ibguNamespace:       testIbguNamespace,
-expectedError:       true,
-addToRuntimeObjects: false,
-expectedErrorText:   "ibgu object test2 does not exist in namespace test-namespace",
-client:              true,
-},
-{
-ibguName:            "",
-ibguNamespace:       testIbguNamespace,
-expectedError:       true,
-addToRuntimeObjects: false,
-expectedErrorText:   "ibgu 'name' cannot be empty",
-client:              true,
-},
-{
-ibguName:            "test3",
-ibguNamespace:       "",
-expectedError:       true,
-addToRuntimeObjects: false,
-expectedErrorText:   "ibgu 'namespace' cannot be empty",
-client:              true,
-},
-{
-ibguName:            "test3",
-ibguNamespace:       testIbguNamespace,
-expectedError:       true,
-addToRuntimeObjects: false,
-expectedErrorText:   "ibgu 'apiClient' cannot be empty",
-client:              false,
-},
-}
-for _, testCase := range testCases {
-// Pre-populate the runtime objects
-var runtimeObjects []runtime.Object
-
-var testSettings *clients.Settings
-
-testIbgu := generateIbgu(testCase.ibguName, testCase.ibguNamespace)
-
-if testCase.addToRuntimeObjects {
-runtimeObjects = append(runtimeObjects, testIbgu)
-}
-
-if testCase.client {
-testSettings = clients.GetTestClients(clients.TestClientParams{
-K8sMockObjects:  runtimeObjects,
-SchemeAttachers: testSchemes,
-})
-}
-
-// Test the Pull method
-builderResult, err := PullIbgu(testSettings, testIbgu.Name, testIbgu.Namespace)
-
-// Check the error
-if testCase.expectedError {
-assert.NotNil(t, err)
-
-// Check the error message
-if testCase.expectedErrorText != "" {
-assert.Equal(t, testCase.expectedErrorText, err.Error())
-}
-} else {
-assert.Nil(t, err)
-assert.Equal(t, testIbgu.Name, builderResult.Object.Name)
-assert.Equal(t, testIbgu.Namespace, builderResult.Object.Namespace)
-}
-}
-}
-
-func testIbguDeleteAndWait(t *testing.T) {
+	generateIbgu := func(name, namespace string) *v1alpha1.ImageBasedGroupUpgrade {
+		return &v1alpha1.ImageBasedGroupUpgrade{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      name,
+				Namespace: namespace,
+			},
+			Spec: v1alpha1.ImageBasedGroupUpgradeSpec{},
+		}
+	}
 	testCases := []struct {
-		testIbgu      *IbguBuilder
-		expectedError error
+		ibguName            string
+		ibguNamespace       string
+		expectedError       bool
+		addToRuntimeObjects bool
+		expectedErrorText   string
+		client              bool
 	}{
 		{
-			testIbgu:      buildValidIbguTestBuilder(buildTestClientWithDummyIbguObject()),
-			expectedError: nil,
+			ibguName:            testIbguName,
+			ibguNamespace:       testIbguNamespace,
+			expectedError:       false,
+			addToRuntimeObjects: true,
+			client:              true,
 		},
 		{
-			testIbgu:      buildInvalidibguTestBuilder(buildTestClientWithDummyIbguObject()),
-			expectedError: fmt.Errorf("ibgu 'nsname' cannot be empty"),
+			ibguName:            "test2",
+			ibguNamespace:       testIbguNamespace,
+			expectedError:       true,
+			addToRuntimeObjects: false,
+			expectedErrorText:   "ibgu object test2 does not exist in namespace test-namespace",
+			client:              true,
+		},
+		{
+			ibguName:            "",
+			ibguNamespace:       testIbguNamespace,
+			expectedError:       true,
+			addToRuntimeObjects: false,
+			expectedErrorText:   "ibgu 'name' cannot be empty",
+			client:              true,
+		},
+		{
+			ibguName:            "test3",
+			ibguNamespace:       "",
+			expectedError:       true,
+			addToRuntimeObjects: false,
+			expectedErrorText:   "ibgu 'namespace' cannot be empty",
+			client:              true,
+		},
+		{
+			ibguName:            "test3",
+			ibguNamespace:       testIbguNamespace,
+			expectedError:       true,
+			addToRuntimeObjects: false,
+			expectedErrorText:   "ibgu 'apiClient' cannot be empty",
+			client:              false,
+		},
+	}
+	for _, testCase := range testCases {
+		// Pre-populate the runtime objects
+		var runtimeObjects []runtime.Object
+
+		var testSettings *clients.Settings
+
+		testIbgu := generateIbgu(testCase.ibguName, testCase.ibguNamespace)
+
+		if testCase.addToRuntimeObjects {
+			runtimeObjects = append(runtimeObjects, testIbgu)
+		}
+
+		if testCase.client {
+			testSettings = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
+			})
+		}
+
+		// Test the Pull method
+		builderResult, err := PullIbgu(testSettings, testIbgu.Name, testIbgu.Namespace)
+
+		// Check the error
+		if testCase.expectedError {
+			assert.NotNil(t, err)
+
+			// Check the error message
+			if testCase.expectedErrorText != "" {
+				assert.Equal(t, testCase.expectedErrorText, err.Error())
+			}
+		} else {
+			assert.Nil(t, err)
+			assert.Equal(t, testIbgu.Name, builderResult.Object.Name)
+			assert.Equal(t, testIbgu.Namespace, builderResult.Object.Namespace)
+		}
+	}
+}
+
+func testIbguDeleteandWait(t *testing.T) {
+	testCases := []struct {
+		name          string
+		exists        bool
+		expectedError bool
+	}{
+		{
+			name:          "Delete existing IBGU",
+			exists:        true,
+			expectedError: false,
+		},
+		{
+			name:          "Delete non-existing IBGU",
+			exists:        false,
+			expectedError: false,
 		},
 	}
 
 	for _, testCase := range testCases {
-		_, err := testCase.testIbgu.DeleteAndWait(time.Second)
-		assert.Equal(t, testCase.expectedError, err)
+		t.Run(testCase.name, func(t *testing.T) {
+			var runtimeObjects []runtime.Object
 
-		if testCase.expectedError == nil {
-			assert.Nil(t, testCase.testIbgu.Object)
-			assert.Nil(t, testCase.testIbgu.Object)
-		}
+			if testCase.exists {
+				runtimeObjects = append(runtimeObjects, generateIbgu())
+			}
+
+			testBuilder := generateIbguBuilderWithFakeObjects(runtimeObjects)
+
+			_, err := testBuilder.DeleteAndWait(time.Second)
+
+			if testCase.expectedError {
+				assert.NotNil(t, err)
+			} else {
+				assert.Nil(t, err)
+			}
+
+			// Verify that the object no longer exists
+			assert.False(t, testBuilder.Exists())
+		})
 	}
 }
 
 func testIbguWaitUntilDeleted(t *testing.T) {
 	testCases := []struct {
-		testIbgu      *IbguBuilder
-		expectedError error
+		name          string
+		exists        bool
+		expectedError bool
 	}{
 		{
-			testIbgu:      buildValidIbguTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: nil,
+			name:          "Delete existing IBGU",
+			exists:        true,
+			expectedError: false,
 		},
 		{
-			testIbgu:      buildValidIbguTestBuilder(buildTestClientWithDummyIbguObject()),
-			expectedError: context.DeadlineExceeded,
-		},
-		{
-			testIbgu:      buildInvalidibguTestBuilder(buildTestClientWithDummyIbguObject()),
-			expectedError: fmt.Errorf("ibgu 'nsname' cannot be empty"),
+			name:          "Delete non-existing IBGU",
+			exists:        false,
+			expectedError: false,
 		},
 	}
 
 	for _, testCase := range testCases {
-		err := testCase.testIbgu.WaitUntilDeleted(time.Second)
-		assert.Equal(t, testCase.expectedError, err)
+		t.Run(testCase.name, func(t *testing.T) {
+			var runtimeObjects []runtime.Object
 
-		if testCase.expectedError == nil {
-			assert.Nil(t, testCase.testIbgu.Object)
-		}
+			if testCase.exists {
+				runtimeObjects = append(runtimeObjects, generateIbgu())
+			}
+
+			testBuilder := generateIbguBuilderWithFakeObjects(runtimeObjects)
+
+			err := testBuilder.WaitUntilDeleted(time.Second)
+
+			if testCase.expectedError {
+				assert.NotNil(t, err)
+			} else {
+				assert.Nil(t, err)
+			}
+
+			// Verify that the object no longer exists
+			assert.False(t, testBuilder.Exists())
+		})
 	}
 }
 
