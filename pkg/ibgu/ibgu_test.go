@@ -1,13 +1,14 @@
 package ibgu
 
 import (
+	"testing"
+	"time"
+
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedgroupupgrades/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"testing"
-	"time"
 )
 
 const (
@@ -74,7 +75,7 @@ func TestNewIbguBuilder(t *testing.T) {
 	}
 }
 
-func testIbguWithClusterLabelSelectors(t *testing.T) {
+func TestIbguWithClusterLabelSelectors(t *testing.T) {
 	testCases := []struct {
 		labels        map[string]string
 		expectedError string
@@ -101,7 +102,7 @@ func testIbguWithClusterLabelSelectors(t *testing.T) {
 	}
 }
 
-func testIbguWithSeedImageRef(t *testing.T) {
+func TestIbguWithSeedImageRef(t *testing.T) {
 	testCases := []struct {
 		seedImage     string
 		seedVersion   string
@@ -137,7 +138,7 @@ func testIbguWithSeedImageRef(t *testing.T) {
 	}
 }
 
-func testIbguWithOadpContent(t *testing.T) {
+func TestIbguWithOadpContent(t *testing.T) {
 	testCases := []struct {
 		name          string
 		namespace     string
@@ -173,7 +174,7 @@ func testIbguWithOadpContent(t *testing.T) {
 	}
 }
 
-func testIbguWithPlan(t *testing.T) {
+func TestIbguWithPlan(t *testing.T) {
 	testCases := []struct {
 		actions        []string
 		maxConcurrency int
@@ -220,7 +221,7 @@ func testIbguWithPlan(t *testing.T) {
 	}
 }
 
-func testIbguGet(t *testing.T) {
+func TestIbguGet(t *testing.T) {
 	testCases := []struct {
 		exists bool
 	}{
@@ -252,7 +253,7 @@ func testIbguGet(t *testing.T) {
 	}
 }
 
-func testIbguExists(t *testing.T) {
+func TestIbguExists(t *testing.T) {
 	testCases := []struct {
 		exists bool
 	}{
@@ -277,7 +278,7 @@ func testIbguExists(t *testing.T) {
 	}
 }
 
-func testIbguCreate(t *testing.T) {
+func TestIbguCreate(t *testing.T) {
 	testCases := []struct {
 		exists bool
 	}{
@@ -306,7 +307,7 @@ func testIbguCreate(t *testing.T) {
 	}
 }
 
-func testIbguDelete(t *testing.T) {
+func TestIbguDelete(t *testing.T) {
 	testCases := []struct {
 		name          string
 		exists        bool
@@ -348,7 +349,7 @@ func testIbguDelete(t *testing.T) {
 	}
 }
 
-func testIbguValidate(t *testing.T) {
+func TestIbguValidate(t *testing.T) {
 	testCases := []struct {
 		builderNil    bool
 		definitionNil bool
@@ -408,7 +409,6 @@ func testIbguValidate(t *testing.T) {
 	}
 }
 
-//nolint:funlen
 func TestPullIbgu(t *testing.T) {
 	testCases := []struct {
 		ibguName            string
@@ -496,7 +496,7 @@ func TestPullIbgu(t *testing.T) {
 	}
 }
 
-func testIbguDeleteandWait(t *testing.T) {
+func TestIbguDeleteandWait(t *testing.T) {
 	testCases := []struct {
 		name          string
 		exists        bool
@@ -538,7 +538,7 @@ func testIbguDeleteandWait(t *testing.T) {
 	}
 }
 
-func testIbguWaitUntilDeleted(t *testing.T) {
+func TestIbguWaitUntilDeleted(t *testing.T) {
 	testCases := []struct {
 		name          string
 		exists        bool
