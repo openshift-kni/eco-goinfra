@@ -350,7 +350,7 @@ func PullIbgu(apiClient *clients.Settings, name, nsname string) (*IbguBuilder, e
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the ibgu is empty")
 
-		return nil, fmt.Errorf("ibgu 'namespace' cannot be empty")
+		return nil, fmt.Errorf("ibgu 'nsname' cannot be empty")
 	}
 
 	if !builder.Exists() {

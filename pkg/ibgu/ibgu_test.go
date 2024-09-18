@@ -2,6 +2,7 @@ package ibgu
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -92,7 +93,7 @@ func TestIbguWithClusterLabelSelectors(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := generateIbguBuilder()
+		testBuilder := generateValidIbguBuilder(clients.GetTestClients(clients.TestClientParams{}))
 
 		testBuilder.WithClusterLabelSelectors(testCase.labels)
 		assert.Equal(t, testCase.expectedError, testBuilder.errorMsg)
@@ -127,7 +128,7 @@ func TestIbguWithSeedImageRef(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := generateIbguBuilder()
+		testBuilder := generateValidIbguBuilder(clients.GetTestClients(clients.TestClientParams{}))
 
 		testBuilder.WithSeedImageRef(testCase.seedImage, testCase.seedVersion)
 		assert.Equal(t, testCase.expectedError, testBuilder.errorMsg)
@@ -163,7 +164,7 @@ func TestIbguWithOadpContent(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := generateIbguBuilder()
+		testBuilder := generateValidIbguBuilder(clients.GetTestClients(clients.TestClientParams{}))
 
 		testBuilder.WithOadpContent(testCase.name, testCase.namespace)
 		assert.Equal(t, testCase.expectedError, testBuilder.errorMsg)
@@ -209,7 +210,7 @@ func TestIbguWithPlan(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := generateIbguBuilder()
+		testBuilder := generateValidIbguBuilder(clients.GetTestClients(clients.TestClientParams{}))
 
 		testBuilder.WithPlan(testCase.actions, testCase.maxConcurrency, testCase.timeout)
 		assert.Equal(t, testCase.expectedError, testBuilder.errorMsg)
@@ -414,61 +415,56 @@ func TestPullIbgu(t *testing.T) {
 	testCases := []struct {
 		ibguName            string
 		ibguNamespace       string
-		expectedError       bool
 		addToRuntimeObjects bool
-		expectedErrorText   string
 		client              bool
+		expectedError       error
 	}{
 		{
 			ibguName:            testIbguName,
 			ibguNamespace:       testIbguNamespace,
-			expectedError:       false,
 			addToRuntimeObjects: true,
 			client:              true,
+			expectedError:       nil,
 		},
 		{
-			ibguName:            "test2",
+			ibguName:            testIbguName,
 			ibguNamespace:       testIbguNamespace,
-			expectedError:       true,
 			addToRuntimeObjects: false,
-			expectedErrorText:   "ibgu object test-ibgu does not exist in namespace test-namespace",
 			client:              true,
+			expectedError:       fmt.Errorf("ibgu object %s does not exist in namespace %s", testIbguName, testIbguNamespace),
 		},
 		{
 			ibguName:            "",
 			ibguNamespace:       testIbguNamespace,
-			expectedError:       true,
-			addToRuntimeObjects: false,
-			expectedErrorText:   "ibgu 'name' cannot be empty",
+			addToRuntimeObjects: true,
 			client:              true,
+			expectedError:       fmt.Errorf("ibgu 'name' cannot be empty"),
 		},
 		{
-			ibguName:            "test3",
+			ibguName:            testIbguName,
 			ibguNamespace:       "",
-			expectedError:       true,
-			addToRuntimeObjects: false,
-			expectedErrorText:   "ibgu 'namespace' cannot be empty",
+			addToRuntimeObjects: true,
 			client:              true,
+			expectedError:       fmt.Errorf("ibgu 'nsname' cannot be empty"),
 		},
 		{
-			ibguName:            "test3",
+			ibguName:            testIbguName,
 			ibguNamespace:       testIbguNamespace,
-			expectedError:       true,
-			addToRuntimeObjects: false,
-			expectedErrorText:   "ibgu 'apiClient' cannot be empty",
+			addToRuntimeObjects: true,
 			client:              false,
+			expectedError:       fmt.Errorf("ibgu 'apiClient' cannot be empty"),
 		},
 	}
 	for _, testCase := range testCases {
-		// Pre-populate the runtime objects
-		var runtimeObjects []runtime.Object
+		var (
+			runtimeObjects []runtime.Object
+			testSettings   *clients.Settings
+		)
 
-		var testSettings *clients.Settings
-
-		testCgu := generateIbgu()
+		testIbgu := generateIbgu()
 
 		if testCase.addToRuntimeObjects {
-			runtimeObjects = append(runtimeObjects, testCgu)
+			runtimeObjects = append(runtimeObjects, testIbgu)
 		}
 
 		if testCase.client {
@@ -478,104 +474,71 @@ func TestPullIbgu(t *testing.T) {
 			})
 		}
 
-		// Test the Pull method
-		builderResult, err := PullIbgu(testSettings, testCgu.Name, testCgu.Namespace)
+		testBuilder, err := PullIbgu(testSettings, testCase.ibguName, testCase.ibguNamespace)
+		assert.Equal(t, testCase.expectedError, err)
 
-		// Check the error
-		if testCase.expectedError {
-			assert.NotNil(t, err)
-
-			// Check the error message
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, err.Error())
-			}
-		} else {
-			assert.Nil(t, err)
-			assert.Equal(t, testCgu.Name, builderResult.Object.Name)
-			assert.Equal(t, testCgu.Namespace, builderResult.Object.Namespace)
+		if testCase.expectedError == nil {
+			assert.Equal(t, testIbgu.Name, testBuilder.Definition.Name)
+			assert.Equal(t, testIbgu.Namespace, testBuilder.Definition.Namespace)
 		}
 	}
 }
 
-func TestIbguDeleteandWait(t *testing.T) {
+func TestIbguDeleteAndWait(t *testing.T) {
 	testCases := []struct {
-		name          string
-		exists        bool
-		expectedError bool
+		testIbgu      *IbguBuilder
+		expectedError error
 	}{
 		{
-			name:          "Delete existing IBGU",
-			exists:        true,
-			expectedError: false,
+			testIbgu:      generateValidIbguBuilder(generateTestClientWithDummyIbgu()),
+			expectedError: nil,
 		},
 		{
-			name:          "Delete non-existing IBGU",
-			exists:        false,
-			expectedError: false,
+			testIbgu:      generateValidIbguBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: nil,
+		},
+		{
+			testIbgu:      generateInvalidIbguBuilder(generateTestClientWithDummyIbgu()),
+			expectedError: fmt.Errorf("ibgu 'nsname' cannot be empty"),
 		},
 	}
 
 	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			var runtimeObjects []runtime.Object
+		_, err := testCase.testIbgu.DeleteAndWait(time.Second)
+		assert.Equal(t, testCase.expectedError, err)
 
-			if testCase.exists {
-				runtimeObjects = append(runtimeObjects, generateIbgu())
-			}
-
-			testBuilder := generateIbguBuilderWithFakeObjects(runtimeObjects)
-
-			_, err := testBuilder.DeleteAndWait(time.Second)
-
-			if testCase.expectedError {
-				assert.NotNil(t, err)
-			} else {
-				assert.Nil(t, err)
-			}
-
-			// Verify that the object no longer exists
-			assert.False(t, testBuilder.Exists())
-		})
+		if testCase.expectedError == nil {
+			assert.Nil(t, testCase.testIbgu.Object)
+		}
 	}
 }
 
 func TestIbguWaitUntilDeleted(t *testing.T) {
 	testCases := []struct {
-		name          string
-		exists        bool
+		testIbgu      *IbguBuilder
 		expectedError error
 	}{
 		{
-			name:          "Delete existing IBGU",
-			exists:        true,
+			testIbgu:      generateValidIbguBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError: nil,
 		},
 		{
-			name:          "Delete non-existing IBGU",
-			exists:        false,
+			testIbgu:      generateValidIbguBuilder(generateTestClientWithDummyIbgu()),
 			expectedError: context.DeadlineExceeded,
+		},
+		{
+			testIbgu:      generateInvalidIbguBuilder(generateTestClientWithDummyIbgu()),
+			expectedError: fmt.Errorf("ibgu 'nsname' cannot be empty"),
 		},
 	}
 
 	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			var runtimeObjects []runtime.Object
+		err := testCase.testIbgu.WaitUntilDeleted(time.Second)
+		assert.Equal(t, testCase.expectedError, err)
 
-			if testCase.exists {
-				runtimeObjects = append(runtimeObjects, generateIbgu())
-			}
-
-			testBuilder := generateIbguBuilderWithFakeObjects(runtimeObjects)
-
-			err := testBuilder.WaitUntilDeleted(time.Second)
-			assert.Equal(t, testCase.expectedError, err)
-			if testCase.expectedError == nil {
-				assert.Nil(t, testCase.exists)
-			}
-
-			// Verify that the object no longer exists
-			assert.False(t, testBuilder.Exists())
-		})
+		if testCase.expectedError == nil {
+			assert.Nil(t, testCase.testIbgu.Object)
+		}
 	}
 }
 
@@ -587,11 +550,19 @@ func generateIbguBuilderWithFakeObjects(objects []runtime.Object) *IbguBuilder {
 	}
 }
 
-func generateIbguBuilder() *IbguBuilder {
-	return &IbguBuilder{
-		apiClient:  clients.GetTestClients(clients.TestClientParams{}).Client,
-		Definition: generateIbgu(),
-	}
+func generateValidIbguBuilder(apiClient *clients.Settings) *IbguBuilder {
+	return NewIbguBuilder(apiClient, testIbguName, testIbguNamespace)
+}
+
+func generateInvalidIbguBuilder(apiClient *clients.Settings) *IbguBuilder {
+	return NewIbguBuilder(apiClient, testIbguName, "")
+}
+
+func generateTestClientWithDummyIbgu() *clients.Settings {
+	return clients.GetTestClients(clients.TestClientParams{
+		K8sMockObjects:  []runtime.Object{generateIbgu()},
+		SchemeAttachers: testSchemes,
+	})
 }
 
 func generateIbgu() *v1alpha1.ImageBasedGroupUpgrade {
