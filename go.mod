@@ -38,6 +38,7 @@ require (
 	github.com/openshift/elasticsearch-operator v0.0.0-20220613183908-e1648e67c298
 	github.com/openshift/local-storage-operator v0.0.0-20240422172451-2a80d7f6681d // release-4.16
 	github.com/openshift/machine-config-operator v0.0.1-0.20230811181556-63d7be1ef18b
+	github.com/ovn-org/ovn-kubernetes/go-controller v0.0.0-20240614144800-61d5c5937bd4
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.73.2
 	github.com/red-hat-storage/odf-operator v0.0.0-20240703093545-0e22236e2160
