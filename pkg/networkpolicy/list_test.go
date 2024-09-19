@@ -1,6 +1,7 @@
 package networkpolicy
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
@@ -22,13 +23,46 @@ func TestList(t *testing.T) {
 	}
 
 	testCases := []struct {
-		networkPolicyExists bool
+		networkPolicyExists        bool
+		testNamespace              string
+		listOptions                []metav1.ListOptions
+		expetedError               error
+		expectedNumNetworkPolicies int
 	}{
-		{
-			networkPolicyExists: true,
+		{ // NetworkPolicy does exist
+			networkPolicyExists:        true,
+			testNamespace:              "test-namespace",
+			expetedError:               nil,
+			listOptions:                []metav1.ListOptions{},
+			expectedNumNetworkPolicies: 1,
 		},
-		{
-			networkPolicyExists: false,
+		{ // NetworkPolicy does not exist
+			networkPolicyExists:        false,
+			testNamespace:              "test-namespace",
+			expetedError:               nil,
+			listOptions:                []metav1.ListOptions{},
+			expectedNumNetworkPolicies: 0,
+		},
+		{ // Missing namespace parameter
+			networkPolicyExists:        true,
+			testNamespace:              "",
+			expetedError:               errors.New("failed to list networkpolicies, 'nsname' parameter is empty"),
+			listOptions:                []metav1.ListOptions{},
+			expectedNumNetworkPolicies: 0,
+		},
+		{ // More than one ListOptions was passed
+			networkPolicyExists:        true,
+			testNamespace:              "test-namespace",
+			expetedError:               errors.New("error: more than one ListOptions was passed"),
+			listOptions:                []metav1.ListOptions{{}, {}},
+			expectedNumNetworkPolicies: 0,
+		},
+		{ // Valid number of list options
+			networkPolicyExists:        true,
+			testNamespace:              "test-namespace",
+			expetedError:               nil,
+			listOptions:                []metav1.ListOptions{{}},
+			expectedNumNetworkPolicies: 1,
 		},
 	}
 
@@ -43,13 +77,8 @@ func TestList(t *testing.T) {
 			K8sMockObjects: runtimeObjects,
 		})
 
-		networkPolicyList, err := List(testSettings, "test-namespace")
-		assert.NoError(t, err)
-
-		if testCase.networkPolicyExists {
-			assert.Len(t, networkPolicyList, 1)
-		} else {
-			assert.Nil(t, networkPolicyList)
-		}
+		networkPolicyList, err := List(testSettings, testCase.testNamespace, testCase.listOptions...)
+		assert.Equal(t, testCase.expetedError, err)
+		assert.Equal(t, testCase.expectedNumNetworkPolicies, len(networkPolicyList))
 	}
 }
