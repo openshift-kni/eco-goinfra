@@ -3,7 +3,7 @@ module github.com/openshift-kni/eco-goinfra
 go 1.23
 
 require (
-	github.com/Masterminds/semver/v3 v3.2.1
+	github.com/Masterminds/semver/v3 v3.3.0
 	github.com/blang/semver/v4 v4.0.0
 	github.com/go-openapi/errors v0.20.3
 	github.com/go-openapi/strfmt v0.21.3
@@ -30,7 +30,7 @@ require (
 	github.com/openshift-kni/lifecycle-agent v0.0.0-20241002223755-1e32b456449f // release-4.17
 	github.com/openshift-kni/numaresources-operator v0.4.17-0rc0.0.20240903095616-58342d895734 // release-4.17
 	github.com/openshift/api v3.9.1-0.20191111211345-a27ff30ebf09+incompatible
-	github.com/openshift/client-go v0.0.0-20240523113335-452272e0496d
+	github.com/openshift/client-go v0.0.1
 	github.com/openshift/cluster-logging-operator v0.0.0-20241003210634-afb65cea19d1 // release-5.9
 	github.com/openshift/cluster-nfd-operator v0.0.0-20240902145504-f70d1389d329 // release-4.17
 	github.com/openshift/cluster-node-tuning-operator v0.0.0-20241002235338-d7086bb43aa2 // release-4.17
@@ -38,6 +38,7 @@ require (
 	github.com/openshift/elasticsearch-operator v0.0.0-20240920003342-0094add099d8 // release-5.8
 	github.com/openshift/local-storage-operator v0.0.0-20240712213037-f7a4384c92bb // release-4.16
 	github.com/openshift/machine-config-operator v0.0.1-0.20231024085435-7e1fb719c1ba
+	github.com/openshift/ptp-operator v0.0.0-20241008160821-983423165f34
 	github.com/ovn-org/ovn-kubernetes/go-controller v0.0.0-20240614144800-61d5c5937bd4
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.74.0
