@@ -145,7 +145,7 @@ func (builder *ICSPBuilder) Delete() error {
 	}
 
 	err := builder.apiClient.ImageContentSourcePolicies().Delete(
-		context.TODO(), builder.Object.Name, metav1.DeleteOptions{})
+		context.TODO(), builder.Definition.Name, metav1.DeleteOptions{})
 
 	if err != nil {
 		return err
