@@ -34,7 +34,7 @@ const (
 	HostConfigurationSucceededMessage = "Configuration image is attached to the referenced host"
 
 	InstallTimedoutReason  = "ClusterInstallationTimedOut"
-	InstallTimedoutMessage = "Cluster installation has timed out"
+	InstallTimedoutMessage = "Cluster installation is taking longer than expected"
 
 	InstallInProgressReason  = "ClusterInstallationInProgress"
 	InstallInProgressMessage = "Cluster installation is in progress"
