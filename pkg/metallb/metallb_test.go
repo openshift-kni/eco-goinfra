@@ -366,6 +366,31 @@ func TestMetalLbWithOptions(t *testing.T) {
 	assert.Equal(t, "error", testBuilder.errorMsg)
 }
 
+func TestMetalLbWithFRRConfigAlwaysBlock(t *testing.T) {
+	testCases := []struct {
+		testMetalLb   *Builder
+		prefixes      []string
+		expectedError string
+	}{
+		{
+			testMetalLb:   buildValidMetalLbBuilder(buildMetalLbTestClientWithDummyObject()),
+			expectedError: "",
+			prefixes:      []string{"192.168.1.0/24"},
+		},
+		{
+			testMetalLb:   buildValidMetalLbBuilder(buildMetalLbTestClientWithDummyObject()),
+			expectedError: "the prefix 192.168.1. is not a valid CIDR",
+			prefixes:      []string{"192.168.1."},
+		},
+	}
+
+	for _, testCase := range testCases {
+		assert.Equal(t, defaultMetalLbNodeSelector, testCase.testMetalLb.Definition.Spec.SpeakerNodeSelector)
+		metalLbBuilder := testCase.testMetalLb.WithFRRConfigAlwaysBlock(testCase.prefixes)
+		assert.Equal(t, testCase.expectedError, metalLbBuilder.errorMsg)
+	}
+}
+
 func TestGetMetalLbIoGVR(t *testing.T) {
 	assert.Equal(t, GetMetalLbIoGVR(),
 		schema.GroupVersionResource{
