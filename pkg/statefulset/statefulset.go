@@ -214,6 +214,8 @@ func (builder *Builder) Delete() error {
 	glog.V(100).Infof("Deleting statefulset %s in namespace %s", builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
+		glog.V(100).Infof("Statefulset %s cannot be deleted because it does not exist", builder.Definition.Name)
+
 		builder.Object = nil
 
 		return nil
