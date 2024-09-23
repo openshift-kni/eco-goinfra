@@ -408,7 +408,7 @@ func TestClassUpdate(t *testing.T) {
 		{
 			alreadyExists:     false,
 			force:             false,
-			expectedErrorText: "Cannot update non-existent storageclass",
+			expectedErrorText: "cannot update non-existent storageclass",
 		},
 		{
 			alreadyExists:     true,
@@ -418,7 +418,7 @@ func TestClassUpdate(t *testing.T) {
 		{
 			alreadyExists:     false,
 			force:             true,
-			expectedErrorText: "Cannot update non-existent storageclass",
+			expectedErrorText: "cannot update non-existent storageclass",
 		},
 		{
 			alreadyExists:     true,
