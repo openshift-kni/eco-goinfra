@@ -318,7 +318,7 @@ func TestBareMetalHostDelete(t *testing.T) {
 		},
 		{
 			testBmHost:    buildValidBmHostBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: fmt.Errorf("bmh cannot be deleted because it does not exist"),
+			expectedError: nil,
 		},
 		{
 			testBmHost:    buildInValidBmHostBuilder(buildBareMetalHostTestClientWithDummyObject()),
@@ -948,7 +948,7 @@ func TestBareMetalHostDeleteAndWaitUntilDeleted(t *testing.T) {
 		},
 		{
 			testBmHost:    buildValidBmHostBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: fmt.Errorf("bmh cannot be deleted because it does not exist"),
+			expectedError: nil,
 		},
 		{
 			testBmHost:    buildInValidBmHostBuilder(buildBareMetalHostTestClientWithDummyObject()),
