@@ -188,3 +188,53 @@ func TestListInAllNamespaces(t *testing.T) {
 		}
 	}
 }
+
+func TestDelete(t *testing.T) {
+	generateStatefulSet := func() *appsv1.StatefulSet {
+		return &appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-statefulset",
+				Namespace: "test-namespace",
+				Labels:    map[string]string{"demo": "test"},
+			},
+		}
+	}
+
+	testCases := []struct {
+		statefulSetExistsAlready bool
+	}{
+		{statefulSetExistsAlready: true},
+		{statefulSetExistsAlready: false},
+	}
+
+	for _, testCase := range testCases {
+		var runtimeObjects []runtime.Object
+
+		if testCase.statefulSetExistsAlready {
+			runtimeObjects = append(runtimeObjects, generateStatefulSet())
+		}
+
+		testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects)
+		err := testBuilder.Delete()
+
+		assert.Nil(t, err)
+		assert.Nil(t, testBuilder.Object)
+	}
+}
+
+func buildTestBuilderWithFakeObjects(runtimeObjects []runtime.Object) *Builder {
+	testSettings := clients.GetTestClients(clients.TestClientParams{
+		K8sMockObjects: runtimeObjects,
+	})
+
+	return &Builder{
+		apiClient: testSettings,
+		Definition: &appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-statefulset",
+				Namespace: "test-namespace",
+				Labels:    map[string]string{"demo": "test"},
+			},
+		},
+	}
+}
