@@ -248,7 +248,7 @@ func (builder *ClassBuilder) Delete() error {
 	if !builder.Exists() {
 		glog.V(100).Infof("storageclass %s does not exist", builder.Definition.Name)
 
-		builder = nil
+		builder.Object = nil
 
 		return nil
 	}
@@ -359,7 +359,7 @@ func (builder *ClassBuilder) Update(force bool) (*ClassBuilder, error) {
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
 func (builder *ClassBuilder) validate() (bool, error) {
-	resourceCRD := "StorageClass"
+	resourceCRD := "storageClass"
 
 	if builder == nil {
 		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
