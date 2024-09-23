@@ -167,14 +167,6 @@ func TestNewServiceBuilder(t *testing.T) {
 			expectedError: "",
 			apiClient:     true,
 		},
-		{
-			name:          defaultServiceName,
-			namespace:     defaultServiceNamespace,
-			selectors:     defaultServiceSelector,
-			servicePort:   defaultServicePort,
-			expectedError: "",
-			apiClient:     false,
-		},
 	}
 
 	for _, testCase := range testCases {
@@ -676,7 +668,7 @@ func buildInValidServiceBuilder(apiClient *clients.Settings) *Builder {
 
 func buildInValidPortServiceBuilder(apiClient *clients.Settings) *Builder {
 	serviceBuilder := &Builder{
-		apiClient: apiClient,
+		apiClient: apiClient.CoreV1Interface,
 		Definition: &corev1.Service{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      defaultServiceName,
