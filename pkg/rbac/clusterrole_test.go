@@ -9,40 +9,40 @@ import (
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
-	v1 "k8s.io/api/rbac/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 )
 
 func TestNewClusterRoleBuilder(t *testing.T) {
 	testCases := []struct {
 		name              string
-		rule              v1.PolicyRule
+		rule              rbacv1.PolicyRule
 		expectedErrorText string
 		client            bool
 	}{
 		{
 			name: "test",
-			rule: v1.PolicyRule{
+			rule: rbacv1.PolicyRule{
 				Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}},
 			client:            true,
 			expectedErrorText: "",
 		},
 		{
 			name: "test",
-			rule: v1.PolicyRule{
+			rule: rbacv1.PolicyRule{
 				Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}},
 			client:            false,
 			expectedErrorText: "clusterRole builder cannot have nil apiClient",
 		},
 		{
 			name: "",
-			rule: v1.PolicyRule{
+			rule: rbacv1.PolicyRule{
 				Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}},
 			client:            true,
 			expectedErrorText: "clusterrole 'name' cannot be empty",
 		},
 		{
 			name: "test",
-			rule: v1.PolicyRule{
+			rule: rbacv1.PolicyRule{
 				Resources: []string{"pods"}, APIGroups: []string{"v1"}},
 			client:            true,
 			expectedErrorText: "clusterrole rule must contain at least one Verb entry",
@@ -69,8 +69,8 @@ func TestNewClusterRoleBuilder(t *testing.T) {
 }
 
 func TestPullClusterRole(t *testing.T) {
-	generateClusterRole := func(name string) *v1.ClusterRole {
-		return &v1.ClusterRole{
+	generateClusterRole := func(name string) *rbacv1.ClusterRole {
+		return &rbacv1.ClusterRole{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
 			},
@@ -269,25 +269,29 @@ func TestClusterRoleUpdate(t *testing.T) {
 
 func TestClusterRoleWithRules(t *testing.T) {
 	testCases := []struct {
-		rule              []v1.PolicyRule
+		rule              []rbacv1.PolicyRule
 		expectedError     bool
 		expectedErrorText string
 	}{
 		{
-			rule:              []v1.PolicyRule{{Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}}},
+			rule: []rbacv1.PolicyRule{{Resources: []string{"pods"},
+				APIGroups: []string{"v1"}, Verbs: []string{"get"}}},
 			expectedError:     false,
 			expectedErrorText: "",
 		},
 		{
-			rule: []v1.PolicyRule{
-				{Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}},
-				{Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}},
+			rule: []rbacv1.PolicyRule{
+				{Resources: []string{"pods"},
+					APIGroups: []string{"v1"}, Verbs: []string{"get"}},
+				{Resources: []string{"pods"},
+					APIGroups: []string{"v1"}, Verbs: []string{"get"}},
 			},
 			expectedError:     false,
 			expectedErrorText: "",
 		},
 		{
-			rule:              []v1.PolicyRule{{Resources: []string{"pods"}, APIGroups: []string{"v1"}}},
+			rule: []rbacv1.PolicyRule{{Resources: []string{"pods"},
+				APIGroups: []string{"v1"}}},
 			expectedError:     true,
 			expectedErrorText: "clusterrole rule must contain at least one Verb entry",
 		},
@@ -329,12 +333,12 @@ func buildValidClusterRoleBuilder(apiClient *clients.Settings) *ClusterRoleBuild
 	return NewClusterRoleBuilder(
 		apiClient,
 		defaultRoleName,
-		v1.PolicyRule{Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}})
+		rbacv1.PolicyRule{Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}})
 }
 
 // buildValidClusterRoleBuilder returns a valid Builder for testing purposes.
 func buildInvalidClusterRoleTestBuilder(apiClient *clients.Settings) *ClusterRoleBuilder {
-	return NewClusterRoleBuilder(apiClient, defaultRoleName, v1.PolicyRule{})
+	return NewClusterRoleBuilder(apiClient, defaultRoleName, rbacv1.PolicyRule{})
 }
 
 func buildTestClientWithClusterRoleDummyObject() *clients.Settings {
@@ -344,7 +348,7 @@ func buildTestClientWithClusterRoleDummyObject() *clients.Settings {
 }
 
 func buildDummyClusterRoleObject() []runtime.Object {
-	return append([]runtime.Object{}, &v1.ClusterRole{
+	return append([]runtime.Object{}, &rbacv1.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: defaultRoleName,
 		},
