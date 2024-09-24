@@ -1,6 +1,7 @@
 package deployment
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -712,6 +713,38 @@ func TestValidate(t *testing.T) {
 		} else {
 			assert.Nil(t, err)
 			assert.True(t, result)
+		}
+	}
+}
+
+func TestDeploymentWaitUntilDeleted(t *testing.T) {
+	testCases := []struct {
+		testDeployment *Builder
+		expectedError  error
+	}{
+		{
+			testDeployment: buildTestBuilderWithFakeObjects(nil),
+			expectedError:  nil,
+		},
+		{
+			testDeployment: buildTestBuilderWithFakeObjects([]runtime.Object{
+				&appsv1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-name",
+						Namespace: "test-namespace",
+					},
+				},
+			}),
+			expectedError: context.DeadlineExceeded,
+		},
+	}
+
+	for _, testCase := range testCases {
+		err := testCase.testDeployment.WaitUntilDeleted(time.Second)
+		assert.Equal(t, testCase.expectedError, err)
+
+		if testCase.expectedError == nil {
+			assert.Nil(t, testCase.testDeployment.Object)
 		}
 	}
 }
