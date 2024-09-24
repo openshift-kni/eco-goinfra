@@ -408,7 +408,7 @@ func TestClassUpdate(t *testing.T) {
 		{
 			alreadyExists:     false,
 			force:             false,
-			expectedErrorText: "Cannot update non-existent storageclass",
+			expectedErrorText: "cannot update non-existent storageclass",
 		},
 		{
 			alreadyExists:     true,
@@ -418,7 +418,7 @@ func TestClassUpdate(t *testing.T) {
 		{
 			alreadyExists:     false,
 			force:             true,
-			expectedErrorText: "Cannot update non-existent storageclass",
+			expectedErrorText: "cannot update non-existent storageclass",
 		},
 		{
 			alreadyExists:     true,
@@ -479,21 +479,21 @@ func TestClassValidate(t *testing.T) {
 			definitionNil:   false,
 			apiClientNil:    false,
 			builderErrorMsg: "",
-			expectedError:   fmt.Errorf("error: received nil StorageClass builder"),
+			expectedError:   fmt.Errorf("error: received nil storageClass builder"),
 		},
 		{
 			builderNil:      false,
 			definitionNil:   true,
 			apiClientNil:    false,
 			builderErrorMsg: "",
-			expectedError:   fmt.Errorf("can not redefine the undefined StorageClass"),
+			expectedError:   fmt.Errorf("can not redefine the undefined storageClass"),
 		},
 		{
 			builderNil:      false,
 			definitionNil:   false,
 			apiClientNil:    true,
 			builderErrorMsg: "",
-			expectedError:   fmt.Errorf("StorageClass builder cannot have nil apiClient"),
+			expectedError:   fmt.Errorf("storageClass builder cannot have nil apiClient"),
 		},
 		{
 			builderNil:      false,
