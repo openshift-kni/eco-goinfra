@@ -1,0 +1,14 @@
+---
+- name: siteconfig-v1alpha1
+  sync: true
+  repo_link: https://github.com/stolostron/siteconfig
+  branch: main
+  remote_api_directory: api/v1alpha1
+  local_api_directory: schemes/siteconfig/v1alpha1
+  replace_imports:
+    - old: '"github.com/openshift/assisted-service/api/v1beta1"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/v1beta1"'
+    - old: '"github.com/openshift/hive/apis/hive/v1"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1"'
+  excludes:
+    - "*_test.go"
