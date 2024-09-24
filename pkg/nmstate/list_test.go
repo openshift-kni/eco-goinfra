@@ -68,7 +68,7 @@ func TestListPolicy(t *testing.T) {
 		}
 
 		netBuilders, err := ListPolicy(testSettings, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
 			assert.Equal(t, len(netBuilders), len(testCase.testPolicy))
@@ -134,9 +134,9 @@ func TestCleanAllNMStatePolicies(t *testing.T) {
 		}
 
 		err := CleanAllNMStatePolicies(testSettings, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 		netBuilders, err := ListPolicy(testSettings, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 		assert.Equal(t, len(netBuilders), 0)
 	}
 }

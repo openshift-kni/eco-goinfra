@@ -54,7 +54,7 @@ func TestSCCNewBuilder(t *testing.T) {
 	for _, testCase := range testCases {
 		testBuilder := NewBuilder(
 			clients.GetTestClients(clients.TestClientParams{}), testCase.name, testCase.user, testCase.seLinuxContent)
-		assert.Equal(t, testBuilder.errorMsg, testCase.expectedErrMsg)
+		assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
 	}
 }
 
@@ -154,7 +154,7 @@ func TestSCCGet(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, scc.Name, testCase.sccBuilder.Definition.Name)
 		} else {
-			assert.Equal(t, err.Error(), testCase.expectedError)
+			assert.Equal(t, testCase.expectedError, err.Error())
 		}
 	}
 }
@@ -181,7 +181,7 @@ func TestSCCExist(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.sccBuilder.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
@@ -207,7 +207,7 @@ func TestSCCCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		sccBuilder, err := testCase.testSCC.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, testCase.testSCC.Definition.Name, sccBuilder.Object.Name)
@@ -309,7 +309,7 @@ func TestSCCWithPrivilegedContainer(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithPrivilegedContainer(testCase.allowPrivileged)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.AllowPrivilegedContainer, testCase.allowPrivileged)
@@ -342,7 +342,7 @@ func TestSCCWithPrivilegedEscalation(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithPrivilegedEscalation(testCase.allowEscalation)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.DefaultAllowPrivilegeEscalation, &testCase.allowEscalation)
@@ -375,7 +375,7 @@ func TestSCCWithHostDirVolumePlugin(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithHostDirVolumePlugin(testCase.allowPlugin)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.AllowHostDirVolumePlugin, testCase.allowPlugin)
@@ -408,7 +408,7 @@ func TestSCCWithHostIPC(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithHostIPC(testCase.allowHostIPC)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.AllowHostIPC, testCase.allowHostIPC)
@@ -441,7 +441,7 @@ func TestSCCWithHostNetwork(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithHostNetwork(testCase.allowHostNet)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.AllowHostNetwork, testCase.allowHostNet)
@@ -474,7 +474,7 @@ func TestSCCWithHostPID(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithHostPID(testCase.allowHostPID)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.AllowHostPID, testCase.allowHostPID)
@@ -507,7 +507,7 @@ func TestSCCWithHostPorts(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithHostPorts(testCase.allowHostPorts)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.AllowHostPorts, testCase.allowHostPorts)
@@ -540,7 +540,7 @@ func TestSCCWithReadOnlyRootFilesystem(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithReadOnlyRootFilesystem(testCase.readOnlyFS)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.ReadOnlyRootFilesystem, testCase.readOnlyFS)
@@ -573,7 +573,7 @@ func TestSCCWithDropCapabilities(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithDropCapabilities(testCase.dropCapability)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.RequiredDropCapabilities, testCase.dropCapability)
@@ -606,7 +606,7 @@ func TestSCCWithAllowCapabilities(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithAllowCapabilities(testCase.allowCapability)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.AllowedCapabilities, testCase.allowCapability)
@@ -639,7 +639,7 @@ func TestSCCWithDefaultAddCapabilities(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithDefaultAddCapabilities(testCase.defaultAddCapability)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.DefaultAddCapabilities, testCase.defaultAddCapability)
@@ -667,7 +667,7 @@ func TestSCCWithPriority(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithPriority(&testCase.priority)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.Priority, &testCase.priority)
@@ -700,7 +700,7 @@ func TestSCCWithFSGroup(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithFSGroup(testCase.fsGroup)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.FSGroup.Type, securityV1.FSGroupStrategyType(testCase.fsGroup))
@@ -737,7 +737,7 @@ func TestSCCWithFSGroupRange(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithFSGroupRange(testCase.fsGroupMin, testCase.fsGroupMax)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.FSGroup.Ranges,
@@ -771,7 +771,7 @@ func TestSCCWithGroups(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithGroups(testCase.groups)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.Groups, testCase.groups)
@@ -804,7 +804,7 @@ func TestSCCWithSeccompProfiles(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithSeccompProfiles(testCase.seccompProfiles)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.SeccompProfiles, testCase.seccompProfiles)
@@ -837,7 +837,7 @@ func TestSCCWithSupplementalGroups(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithSupplementalGroups(testCase.supplementalGroupsType)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.SupplementalGroups.Type,
@@ -871,7 +871,7 @@ func TestSCCWithUsers(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithUsers(testCase.users)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.Users, testCase.users)
@@ -904,7 +904,7 @@ func TestSCCWithVolumes(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testCase.sccBuilder.WithVolumes(testCase.volumes)
-		assert.Equal(t, testCase.sccBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testCase.sccBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.sccBuilder.Definition.Volumes, testCase.volumes)

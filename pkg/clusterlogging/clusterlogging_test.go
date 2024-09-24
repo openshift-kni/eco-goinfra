@@ -169,7 +169,7 @@ func TestClusterLoggingGet(t *testing.T) {
 			assert.Equal(t, clusterLogging.Name, testCase.clusterLogging.Definition.Name)
 			assert.Equal(t, clusterLogging.Namespace, testCase.clusterLogging.Definition.Namespace)
 		} else {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 	}
 }
@@ -204,7 +204,7 @@ func TestClusterLoggingCreate(t *testing.T) {
 			assert.Equal(t, clusterLogging.Definition.Name, clusterLogging.Object.Name)
 			assert.Equal(t, clusterLogging.Definition.Namespace, clusterLogging.Object.Namespace)
 		} else {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 	}
 }
@@ -264,7 +264,7 @@ func TestClusterLoggingExist(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.clusterLogging.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 

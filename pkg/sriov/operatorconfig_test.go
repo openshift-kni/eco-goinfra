@@ -120,7 +120,7 @@ func TestNewOperatorConfigBuilder(t *testing.T) {
 		testSettings := clients.GetTestClients(clients.TestClientParams{})
 		testPolicyStructure := generatePolicyBuilder(testSettings, testCase.operatorConfigNamespace)
 		assert.NotNil(t, testPolicyStructure)
-		assert.Equal(t, testPolicyStructure.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testPolicyStructure.errorMsg)
 	}
 }
 
@@ -148,7 +148,7 @@ func TestOperatorConfigCreate(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, oCBuilder.Definition.Name, oCBuilder.Object.Name)
 		} else {
-			assert.Equal(t, err, testCase.expectedError)
+			assert.Equal(t, testCase.expectedError, err)
 		}
 	}
 }
@@ -172,7 +172,7 @@ func TestOperatorConfigExistGet(t *testing.T) {
 
 	for _, testCase := range testCases {
 		operatorConfig, err := testCase.operatorConfig.Get()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, operatorConfig.Name, testCase.operatorConfig.Definition.Name)

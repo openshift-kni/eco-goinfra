@@ -50,7 +50,7 @@ func TestListMC(t *testing.T) {
 		}
 
 		mcBuilders, err := ListMC(testSettings, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
 			assert.Equal(t, len(testCase.machineConfigs), len(mcBuilders))

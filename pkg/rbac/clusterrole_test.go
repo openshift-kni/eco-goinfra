@@ -63,7 +63,7 @@ func TestNewClusterRoleBuilder(t *testing.T) {
 		}
 
 		if len(testCase.expectedErrorText) > 0 {
-			assert.Equal(t, testClusterRole.errorMsg, testCase.expectedErrorText)
+			assert.Equal(t, testCase.expectedErrorText, testClusterRole.errorMsg)
 		}
 	}
 }
@@ -168,7 +168,7 @@ func TestClusterRoleCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		clusterRoleBuilder, err := testCase.testClusterRole.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, clusterRoleBuilder.Definition.Name, clusterRoleBuilder.Object.Name)

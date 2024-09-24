@@ -185,7 +185,7 @@ func TestOperatorGroupGet(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, operatorGroup.Name, testCase.operatorGroup.Definition.Name)
 		} else {
-			assert.Equal(t, err.Error(), testCase.expectedError)
+			assert.Equal(t, testCase.expectedError, err.Error())
 		}
 	}
 }
@@ -212,7 +212,7 @@ func TestOperatorGroupExist(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.operatorGroup.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
@@ -238,7 +238,7 @@ func TestOperatorGroupCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		operatorGroupBuilder, err := testCase.operatorGroup.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, operatorGroupBuilder.Definition.Name, operatorGroupBuilder.Object.Name)

@@ -92,7 +92,7 @@ func TestOpenshiftAPIServerGet(t *testing.T) {
 		if testCase.expectedError == nil {
 			assert.Equal(t, testOpenshiftAPIServer.Name, testCase.testOpenshiftAPIServerBuilder.Definition.Name)
 		} else {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 	}
 }
@@ -116,7 +116,7 @@ func TestOpenshiftAPIServerExists(t *testing.T) {
 
 	for _, testCase := range testCases {
 		status := testCase.testOpenshiftAPIServerBuilder.Exists()
-		assert.Equal(t, status, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, status)
 	}
 }
 

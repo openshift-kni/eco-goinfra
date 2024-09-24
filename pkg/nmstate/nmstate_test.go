@@ -141,7 +141,7 @@ func TestNMStateNewBuilder(t *testing.T) {
 		}
 
 		if len(testCase.expectedErrorText) > 0 {
-			assert.Equal(t, testNMState.errorMsg, testCase.expectedErrorText)
+			assert.Equal(t, testCase.expectedErrorText, testNMState.errorMsg)
 		}
 	}
 }
@@ -168,9 +168,9 @@ func TestNMStateGet(t *testing.T) {
 	for _, testCase := range testCases {
 		nmState, err := testCase.nmStateBuilder.Get()
 		if testCase.expectedError != nil {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		} else {
-			assert.Equal(t, err, testCase.expectedError)
+			assert.Equal(t, testCase.expectedError, err)
 		}
 
 		if testCase.expectedError == nil {
@@ -200,7 +200,7 @@ func TestNMStateCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		nmStateBuilder, err := testCase.testNMState.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, nmStateBuilder.Definition.Name, nmStateBuilder.Object.Name)

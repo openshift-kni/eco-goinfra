@@ -53,7 +53,7 @@ func TestCguListInAllNamespaces(t *testing.T) {
 		}
 
 		cguBuilders, err := ListInAllNamespaces(testSettings, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
 			assert.Equal(t, len(cguBuilders), len(testCase.testCGU))

@@ -134,7 +134,7 @@ func TestConfigGet(t *testing.T) {
 	for _, testCase := range testCases {
 		hiveConfig, err := testCase.testConfig.Get()
 		if testCase.expectedError != nil {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 
 		if testCase.expectedError == nil {
@@ -164,7 +164,7 @@ func TestConfigExists(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.testConfig.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 

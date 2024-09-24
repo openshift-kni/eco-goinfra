@@ -182,7 +182,7 @@ func TestNFDGet(t *testing.T) {
 		if testCase.expectedError == nil {
 			assert.NotNil(t, nfd)
 		} else {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 	}
 }
@@ -209,7 +209,7 @@ func TestNFDExist(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.nfd.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
@@ -261,7 +261,7 @@ func TestNFDCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		clusterPolicyBuilder, err := testCase.clusterPolicy.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, clusterPolicyBuilder.Definition.Name, clusterPolicyBuilder.Object.Name)

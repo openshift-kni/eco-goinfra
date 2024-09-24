@@ -161,7 +161,7 @@ func TestNADNewNetworkBuilder(t *testing.T) {
 		}
 
 		if len(testCase.expectedErrorText) > 0 {
-			assert.Equal(t, testNetworkStructure.errorMsg, testCase.expectedErrorText)
+			assert.Equal(t, testCase.expectedErrorText, testNetworkStructure.errorMsg)
 		}
 	}
 }
@@ -191,7 +191,7 @@ func TestNADGet(t *testing.T) {
 		if testCase.expectedError == nil {
 			assert.Equal(t, network.Name, testCase.networkBuilder.Definition.Name)
 		} else {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 	}
 }
@@ -217,7 +217,7 @@ func TestNADCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		netBuilder, err := testCase.testNetwork.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, netBuilder.Definition, netBuilder.Object)
@@ -341,7 +341,7 @@ func TestNADWithMasterPlugin(t *testing.T) {
 
 	for _, testCase := range testCases {
 		builder := testCase.testNetwork.WithMasterPlugin(testCase.plugin)
-		assert.Equal(t, builder.errorMsg, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, builder.errorMsg)
 
 		if testCase.expectedError == "" {
 			assert.Contains(t, builder.Definition.Spec.Config, testCase.plugin.Name)
@@ -371,7 +371,7 @@ func TestNADWithPlugins(t *testing.T) {
 
 	for _, testCase := range testCases {
 		builder := testCase.testNetwork.WithPlugins(testCase.name, &testCase.plugins)
-		assert.Equal(t, builder.errorMsg, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, builder.errorMsg)
 
 		if testCase.expectedError == "" {
 			for _, plugin := range testCase.plugins {
@@ -402,7 +402,7 @@ func TestNADGetString(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testNetworkString, err := testCase.testNetwork.GetString()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.NotEmpty(t, testNetworkString)

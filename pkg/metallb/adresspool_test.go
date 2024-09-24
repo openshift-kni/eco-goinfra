@@ -164,7 +164,7 @@ func TestIPAddressPoolGet(t *testing.T) {
 
 	for _, testCase := range testCases {
 		ipAddressPool, err := testCase.testIPAddressPool.Get()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, ipAddressPool.Name, testCase.testIPAddressPool.Definition.Name)
@@ -189,7 +189,7 @@ func TestIPAddressPoolExist(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.testIPAddressPool.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
@@ -210,7 +210,7 @@ func TestIPAddressPoolCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		ipAddressPoolBuilder, err := testCase.testIPAddressPool.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, ipAddressPoolBuilder.Definition, ipAddressPoolBuilder.Object)

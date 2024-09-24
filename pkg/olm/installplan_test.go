@@ -179,7 +179,7 @@ func TestInstallPlanGet(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, installPlan.Name, testCase.installPlan.Definition.Name)
 		} else {
-			assert.Equal(t, err.Error(), testCase.expectedError)
+			assert.Equal(t, testCase.expectedError, err.Error())
 		}
 	}
 }
@@ -206,7 +206,7 @@ func TestInstallPlanExist(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.installPlan.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
@@ -232,7 +232,7 @@ func TestInstallPlanCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		installPlanBuilder, err := testCase.installPlan.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, installPlanBuilder.Definition.Name, installPlanBuilder.Object.Name)

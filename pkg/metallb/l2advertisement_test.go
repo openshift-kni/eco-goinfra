@@ -158,7 +158,7 @@ func TestL2AdvertisementExist(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.testL2Advertisement.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
@@ -179,7 +179,7 @@ func TestL2AdvertisementGet(t *testing.T) {
 
 	for _, testCase := range testCases {
 		l2Advertisement, err := testCase.testL2Advertisement.Get()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, l2Advertisement.Name, testCase.testL2Advertisement.Definition.Name)
@@ -204,7 +204,7 @@ func TestL2AdvertisementCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		ipAddressPoolBuilder, err := testCase.testL2Advertisement.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, ipAddressPoolBuilder.Definition.Name, ipAddressPoolBuilder.Object.Name)

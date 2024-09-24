@@ -67,7 +67,7 @@ func TestNewPolicyBuilder(t *testing.T) {
 		}
 
 		if len(testCase.expectedErrorText) > 0 {
-			assert.Equal(t, testPolicy.errorMsg, testCase.expectedErrorText)
+			assert.Equal(t, testCase.expectedErrorText, testPolicy.errorMsg)
 		}
 	}
 }
@@ -94,9 +94,9 @@ func TestPolicyGet(t *testing.T) {
 	for _, testCase := range testCases {
 		policyBuilder, err := testCase.policyBuilder.Get()
 		if testCase.expectedError != nil {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		} else {
-			assert.Equal(t, err, testCase.expectedError)
+			assert.Equal(t, testCase.expectedError, err)
 		}
 
 		if testCase.expectedError == nil {
@@ -150,7 +150,7 @@ func TestPolicyCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		nmStatePolicyBuilder, err := testCase.testPolicy.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, nmStatePolicyBuilder.Definition.Name, nmStatePolicyBuilder.Object.Name)
@@ -251,7 +251,7 @@ func TestPolicyWithInterfaceAndVFs(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		testPolicy := testCase.testNMStatePolicy.WithInterfaceAndVFs(testCase.sriovInterface, testCase.numberOfVF)
-		assert.Equal(t, testPolicy.errorMsg, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, testPolicy.errorMsg)
 		numberOfVFs := int(testCase.numberOfVF)
 		desireState := &DesiredState{}
 
@@ -307,7 +307,7 @@ func TestPolicyWithWithBondInterface(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		testPolicy := testCase.testNMStatePolicy.WithBondInterface(testCase.slavePorts, testCase.bondName, testCase.mode)
-		assert.Equal(t, testPolicy.errorMsg, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, testPolicy.errorMsg)
 
 		desireState := &DesiredState{}
 		if testCase.expectedError == "" {
@@ -357,7 +357,7 @@ func TestPolicyWithVlanInterface(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		testPolicy := testCase.testNMStatePolicy.WithVlanInterface(testCase.sriovInterface, testCase.vlanID)
-		assert.Equal(t, testPolicy.errorMsg, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, testPolicy.errorMsg)
 
 		desireState := &DesiredState{}
 		if testCase.expectedError == "" {
@@ -398,7 +398,7 @@ func TestPolicyWithAbsentInterface(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		testPolicy := testCase.testNMStatePolicy.WithAbsentInterface(testCase.baseInterface)
-		assert.Equal(t, testPolicy.errorMsg, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, testPolicy.errorMsg)
 
 		desireState := &DesiredState{}
 		if testCase.expectedError == "" {
@@ -449,7 +449,7 @@ func TestPolicyWaitUntilCondition(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		err := testCase.testNMStatePolicy.WaitUntilCondition(testCase.condition, 2*time.Second)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 	}
 }
 

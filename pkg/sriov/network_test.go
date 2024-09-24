@@ -185,7 +185,7 @@ func TestNewNetworkBuilder(t *testing.T) {
 		assert.NotNil(t, testNetworkStructure)
 
 		if len(testCase.expectedErrorText) > 0 {
-			assert.Equal(t, testNetworkStructure.errorMsg, testCase.expectedErrorText)
+			assert.Equal(t, testCase.expectedErrorText, testNetworkStructure.errorMsg)
 		}
 	}
 }
@@ -229,7 +229,7 @@ func TestWithLogLevel(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildTestClientWithDummyObject()
 		netBuilder := buildValidSriovNetworkTestBuilder(testSettings).WithLogLevel(testCase.loglevel)
-		assert.Equal(t, netBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, netBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, netBuilder.Definition.Spec.LogLevel, testCase.loglevel)
@@ -255,7 +255,7 @@ func TestWithVlan(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildTestClientWithDummyObject()
 		netBuilder := buildValidSriovNetworkTestBuilder(testSettings).WithVLAN(testCase.vlanID)
-		assert.Equal(t, netBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, netBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, netBuilder.Definition.Spec.Vlan, int(testCase.vlanID))
@@ -293,7 +293,7 @@ func TestWithVlanProto(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildTestClientWithDummyObject()
 		netBuilder := buildValidSriovNetworkTestBuilder(testSettings).WithVlanProto(testCase.vlanProtocol)
-		assert.Equal(t, netBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, netBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, netBuilder.Definition.Spec.VlanProto, testCase.vlanProtocol)
@@ -536,7 +536,7 @@ func TestGet(t *testing.T) {
 
 	for _, testCase := range testCases {
 		network, err := testCase.networkBuilder.Get()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, network.Name, testCase.networkBuilder.Definition.Name)
@@ -561,7 +561,7 @@ func TestCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		netBuilder, err := testCase.testNetwork.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, netBuilder.Definition, netBuilder.Object)

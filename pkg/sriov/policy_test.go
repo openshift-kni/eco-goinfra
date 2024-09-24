@@ -207,7 +207,7 @@ func TestNewPolicyBuilder(t *testing.T) {
 			testCase.nicNames,
 			testCase.nodeSelector)
 		assert.NotNil(t, testPolicyStructure)
-		assert.Equal(t, testPolicyStructure.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testPolicyStructure.errorMsg)
 	}
 }
 
@@ -237,7 +237,7 @@ func TestPolicyWithDevType(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildTestClientWithDummyPolicyObject()
 		netBuilder := buildValidSriovPolicyTestBuilder(testSettings).WithDevType(testCase.devType)
-		assert.Equal(t, netBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, netBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, netBuilder.Definition.Spec.DeviceType, testCase.devType)
@@ -276,7 +276,7 @@ func TestPolicyVFRange(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildTestClientWithDummyPolicyObject()
 		netBuilder := buildValidSriovPolicyTestBuilder(testSettings).WithVFRange(testCase.firstVF, testCase.lastVF)
-		assert.Equal(t, netBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, netBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, fmt.Sprintf("%s#%d-%d", "eth1", testCase.firstVF, testCase.lastVF),
@@ -311,7 +311,7 @@ func TestPolicyWithMTU(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildTestClientWithDummyPolicyObject()
 		netBuilder := buildValidSriovPolicyTestBuilder(testSettings).WithMTU(testCase.mtu)
-		assert.Equal(t, netBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, netBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.mtu, netBuilder.Definition.Spec.Mtu)
@@ -335,7 +335,7 @@ func TestPolicyWithRDMA(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildTestClientWithDummyPolicyObject()
 		netBuilder := buildValidSriovPolicyTestBuilder(testSettings).WithRDMA(testCase.rdma)
-		assert.Equal(t, netBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, netBuilder.errorMsg)
 		assert.Equal(t, testCase.rdma, netBuilder.Definition.Spec.IsRdma)
 	}
 }
@@ -356,7 +356,7 @@ func TestPolicyVhostNet(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildTestClientWithDummyPolicyObject()
 		netBuilder := buildValidSriovPolicyTestBuilder(testSettings).WithVhostNet(testCase.vhostNet)
-		assert.Equal(t, netBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, netBuilder.errorMsg)
 		assert.Equal(t, testCase.vhostNet, netBuilder.Definition.Spec.NeedVhostNet)
 	}
 }
@@ -377,7 +377,7 @@ func TestPolicyWithExternallyManaged(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildTestClientWithDummyPolicyObject()
 		netBuilder := buildValidSriovPolicyTestBuilder(testSettings).WithExternallyManaged(testCase.externallyManaged)
-		assert.Equal(t, netBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, netBuilder.errorMsg)
 		assert.Equal(t, testCase.externallyManaged, netBuilder.Definition.Spec.ExternallyManaged)
 	}
 }
@@ -414,7 +414,7 @@ func TestPolicyGet(t *testing.T) {
 
 	for _, testCase := range testCases {
 		policy, err := testCase.policyBuilder.Get()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, policy.Name, testCase.policyBuilder.Definition.Name)
@@ -439,7 +439,7 @@ func TestPolicyCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		netBuilder, err := testCase.testPolicy.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, netBuilder.Definition, netBuilder.Object)

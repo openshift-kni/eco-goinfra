@@ -184,7 +184,7 @@ func TestCatalogSourceGet(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, catalogSource.Name, testCase.catalogSource.Definition.Name)
 		} else {
-			assert.Equal(t, err.Error(), testCase.expectedError)
+			assert.Equal(t, testCase.expectedError, err.Error())
 		}
 	}
 }
@@ -211,7 +211,7 @@ func TestCatalogSourceExist(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.catalogSource.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
@@ -237,7 +237,7 @@ func TestCatalogSourceCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		catalogSourceBuilder, err := testCase.catalogSource.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, catalogSourceBuilder.Definition.Name, catalogSourceBuilder.Object.Name)

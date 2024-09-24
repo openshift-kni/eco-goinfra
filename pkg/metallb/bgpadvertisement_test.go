@@ -179,7 +179,7 @@ func TestBGPAdvertisementGet(t *testing.T) {
 
 	for _, testCase := range testCases {
 		bgpAdvertisement, err := testCase.testBGPAdvertisement.Get()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, bgpAdvertisement.Name, testCase.testBGPAdvertisement.Definition.Name)
@@ -203,7 +203,7 @@ func TestBGPAdvertisementCreate(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		bgpAdvertisement, err := testCase.testBGPAdvertisement.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, bgpAdvertisement.Definition, bgpAdvertisement.Object)

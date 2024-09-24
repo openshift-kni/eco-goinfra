@@ -48,7 +48,7 @@ func TestNewBuilder(t *testing.T) {
 	for _, test := range testcases {
 		testBuilder := NewBuilder(clients.GetTestClients(clients.TestClientParams{}),
 			test.name, test.namespace, test.targetService)
-		assert.Equal(t, testBuilder.errorMsg, test.expectedErrMsg)
+		assert.Equal(t, test.expectedErrMsg, testBuilder.errorMsg)
 	}
 }
 

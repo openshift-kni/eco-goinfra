@@ -66,7 +66,7 @@ func TestBareMetalHostList(t *testing.T) {
 		}
 
 		bmhBuilders, err := List(testSettings, testCase.nsName, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
 			assert.Equal(t, len(testCase.BareMetalHosts), len(bmhBuilders))
@@ -115,7 +115,7 @@ func TestBareMetalHostListInAllNamespaces(t *testing.T) {
 		}
 
 		bmhBuilders, err := ListInAllNamespaces(testSettings, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
 			assert.Equal(t, len(testCase.bareMetalHosts), len(bmhBuilders))
@@ -201,7 +201,7 @@ func TestBareMetalWaitForAllBareMetalHostsInGoodOperationalState(t *testing.T) {
 
 		status, err := WaitForAllBareMetalHostsInGoodOperationalState(
 			testSettings, testCase.nsName, 1*time.Second, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
-		assert.Equal(t, status, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedError, err)
+		assert.Equal(t, testCase.expectedStatus, status)
 	}
 }

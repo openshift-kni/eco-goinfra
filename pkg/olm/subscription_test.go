@@ -226,7 +226,7 @@ func TestSubscriptionGet(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, subscription.Name, testCase.subscription.Definition.Name)
 		} else {
-			assert.Equal(t, err.Error(), testCase.expectedError)
+			assert.Equal(t, testCase.expectedError, err.Error())
 		}
 	}
 }
@@ -249,7 +249,7 @@ func TestSubscriptionExist(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.subscription.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
@@ -333,7 +333,7 @@ func TestSubscriptionCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		catalogSourceBuilder, err := testCase.subscription.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, catalogSourceBuilder.Definition.Name, catalogSourceBuilder.Object.Name)
@@ -359,7 +359,7 @@ func TestSubscriptionWithChannel(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildTestSubscriptionClientWithDummyObject()
 		subscriptionBuilder := buildValidSubscriptionBuilder(testSettings).WithChannel(testCase.channel)
-		assert.Equal(t, subscriptionBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, subscriptionBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, subscriptionBuilder.Definition.Spec.Channel, testCase.channel)
@@ -385,7 +385,7 @@ func TestSubscriptionWithStartingCSV(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildTestSubscriptionClientWithDummyObject()
 		subscriptionBuilder := buildValidSubscriptionBuilder(testSettings).WithStartingCSV(testCase.csv)
-		assert.Equal(t, subscriptionBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, subscriptionBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, subscriptionBuilder.Definition.Spec.StartingCSV, testCase.csv)
@@ -411,7 +411,7 @@ func TestSubscriptionWithInstallPlanApproval(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildTestSubscriptionClientWithDummyObject()
 		subscriptionBuilder := buildValidSubscriptionBuilder(testSettings).WithInstallPlanApproval(testCase.installPlan)
-		assert.Equal(t, subscriptionBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, subscriptionBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, subscriptionBuilder.Definition.Spec.InstallPlanApproval, testCase.installPlan)

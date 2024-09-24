@@ -174,7 +174,7 @@ func TestNvidiaGPUGet(t *testing.T) {
 	for _, testCase := range testCases {
 		clusterPolicy, err := testCase.clusterPolicy.Get()
 		if testCase.expectedError != nil {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 
 		if testCase.expectedError == nil {
@@ -205,7 +205,7 @@ func TestNvidiaGPUExist(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.clusterPolicy.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
@@ -257,7 +257,7 @@ func TestNvidiaGPUCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		clusterPolicyBuilder, err := testCase.clusterPolicy.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, clusterPolicyBuilder.Definition.Name, clusterPolicyBuilder.Object.Name)

@@ -175,7 +175,7 @@ func TestPullAgentClusterInstall(t *testing.T) {
 		}
 
 		testBuilder, err := PullAgentClusterInstall(testSettings, testCase.name, testCase.namespace)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError != nil {
 			assert.Nil(t, testBuilder)
