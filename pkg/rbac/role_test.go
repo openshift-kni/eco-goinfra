@@ -9,7 +9,7 @@ import (
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
-	v1 "k8s.io/api/rbac/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 )
 
 var (
@@ -21,14 +21,14 @@ func TestNewRoleBuilder(t *testing.T) {
 	testCases := []struct {
 		name              string
 		nsName            string
-		rule              v1.PolicyRule
+		rule              rbacv1.PolicyRule
 		expectedErrorText string
 		client            bool
 	}{
 		{
 			name:   "test",
 			nsName: "testns",
-			rule: v1.PolicyRule{
+			rule: rbacv1.PolicyRule{
 				Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}},
 			client:            true,
 			expectedErrorText: "",
@@ -36,7 +36,7 @@ func TestNewRoleBuilder(t *testing.T) {
 		{
 			name:   "test",
 			nsName: "testns",
-			rule: v1.PolicyRule{
+			rule: rbacv1.PolicyRule{
 				Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}},
 			client:            false,
 			expectedErrorText: "role builder cannot have nil apiClient",
@@ -44,7 +44,7 @@ func TestNewRoleBuilder(t *testing.T) {
 		{
 			name:   "",
 			nsName: "testns",
-			rule: v1.PolicyRule{
+			rule: rbacv1.PolicyRule{
 				Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}},
 			client:            true,
 			expectedErrorText: "role 'name' cannot be empty",
@@ -52,7 +52,7 @@ func TestNewRoleBuilder(t *testing.T) {
 		{
 			name:   "test",
 			nsName: "",
-			rule: v1.PolicyRule{
+			rule: rbacv1.PolicyRule{
 				Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}},
 			client:            true,
 			expectedErrorText: "role 'nsname' cannot be empty",
@@ -60,7 +60,7 @@ func TestNewRoleBuilder(t *testing.T) {
 		{
 			name:   "test",
 			nsName: "testns",
-			rule: v1.PolicyRule{
+			rule: rbacv1.PolicyRule{
 				Resources: []string{"pods"}, APIGroups: []string{"v1"}},
 			client:            true,
 			expectedErrorText: "role must contain at least one Verb",
@@ -87,8 +87,8 @@ func TestNewRoleBuilder(t *testing.T) {
 }
 
 func TestPullRole(t *testing.T) {
-	generateRole := func(name, nsName string) *v1.Role {
-		return &v1.Role{
+	generateRole := func(name, nsName string) *rbacv1.Role {
+		return &rbacv1.Role{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: nsName,
@@ -301,17 +301,18 @@ func TestRoleUpdate(t *testing.T) {
 
 func TestRoleWithRules(t *testing.T) {
 	testCases := []struct {
-		rule              []v1.PolicyRule
+		rule              []rbacv1.PolicyRule
 		expectedError     bool
 		expectedErrorText string
 	}{
 		{
-			rule:              []v1.PolicyRule{{Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}}},
+			rule: []rbacv1.PolicyRule{{Resources: []string{"pods"},
+				APIGroups: []string{"v1"}, Verbs: []string{"get"}}},
 			expectedError:     false,
 			expectedErrorText: "",
 		},
 		{
-			rule: []v1.PolicyRule{
+			rule: []rbacv1.PolicyRule{
 				{Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}},
 				{Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}},
 			},
@@ -319,7 +320,8 @@ func TestRoleWithRules(t *testing.T) {
 			expectedErrorText: "",
 		},
 		{
-			rule:              []v1.PolicyRule{{Resources: []string{"pods"}, APIGroups: []string{"v1"}}},
+			rule: []rbacv1.PolicyRule{{Resources: []string{"pods"},
+				APIGroups: []string{"v1"}}},
 			expectedError:     true,
 			expectedErrorText: "role must contain at least one Verb",
 		},
@@ -362,12 +364,12 @@ func buildValidRoleBuilder(apiClient *clients.Settings) *RoleBuilder {
 		apiClient,
 		defaultRoleName,
 		defaultRoleNsName,
-		v1.PolicyRule{Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}})
+		rbacv1.PolicyRule{Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}})
 }
 
 // buildValidTestBuilder returns a valid Builder for testing purposes.
 func buildInvalidRoleTestBuilder(apiClient *clients.Settings) *RoleBuilder {
-	return NewRoleBuilder(apiClient, defaultRoleName, defaultRoleNsName, v1.PolicyRule{})
+	return NewRoleBuilder(apiClient, defaultRoleName, defaultRoleNsName, rbacv1.PolicyRule{})
 }
 
 func buildTestClientWithDummyObject() *clients.Settings {
@@ -377,7 +379,7 @@ func buildTestClientWithDummyObject() *clients.Settings {
 }
 
 func buildDummyRoleObject() []runtime.Object {
-	return append([]runtime.Object{}, &v1.Role{
+	return append([]runtime.Object{}, &rbacv1.Role{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      defaultRoleName,
 			Namespace: defaultRoleNsName,
