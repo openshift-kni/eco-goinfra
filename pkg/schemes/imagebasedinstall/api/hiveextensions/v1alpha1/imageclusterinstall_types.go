@@ -113,9 +113,6 @@ type ImageClusterInstallStatus struct {
 
 	BareMetalHostRef *BareMetalHostReference `json:"bareMetalHostRef,omitempty"`
 
-	// ConfigurationImageURL is the externally accessible URL for downloading the image containing the SNO configuration
-	ConfigurationImageURL string `json:"configurationImageURL,omitempty"`
-
 	// BootTime indicates the time at which the host was requested to boot. Used to determine install timeouts.
 	BootTime metav1.Time `json:"bootTime,omitempty"`
 }
@@ -132,7 +129,6 @@ type BareMetalHostReference struct {
 // +kubebuilder:resource:path=imageclusterinstalls,shortName=ici
 // +kubebuilder:printcolumn:name="RequirementsMet",type="string",JSONPath=".status.conditions[?(@.type=='RequirementsMet')].reason"
 // +kubebuilder:printcolumn:name="Completed",type="string",JSONPath=".status.conditions[?(@.type=='Completed')].reason"
-// +kubebuilder:printcolumn:name="ConfigurationImageURL",type="string",JSONPath=".status.configurationImageURL"
 // +kubebuilder:printcolumn:name="BareMetalHostRef",type="string",JSONPath=".spec.bareMetalHostRef.name"
 
 // ImageClusterInstall is the Schema for the imageclusterinstall API
