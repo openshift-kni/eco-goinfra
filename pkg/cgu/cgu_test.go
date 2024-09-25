@@ -188,7 +188,7 @@ func TestNewCguBuilder(t *testing.T) {
 
 		if testCase.client {
 			assert.NotNil(t, testCguStructure)
-			assert.Equal(t, testCguStructure.errorMsg, testCase.expectedErrorText)
+			assert.Equal(t, testCase.expectedErrorText, testCguStructure.errorMsg)
 		} else {
 			assert.Nil(t, testCguStructure)
 		}
@@ -213,7 +213,7 @@ func TestCguWithCluster(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildTestClientWithDummyCguObject()
 		cguBuilder := buildValidCguTestBuilder(testSettings).WithCluster(testCase.cluster)
-		assert.Equal(t, cguBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, cguBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, cguBuilder.Definition.Spec.Clusters, []string{testCase.cluster})
@@ -239,7 +239,7 @@ func TestCguWithManagedPolicy(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildTestClientWithDummyCguObject()
 		cguBuilder := buildValidCguTestBuilder(testSettings).WithManagedPolicy(testCase.policy)
-		assert.Equal(t, cguBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, cguBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, cguBuilder.Definition.Spec.ManagedPolicies, []string{testCase.policy})
@@ -265,7 +265,7 @@ func TestCguWithCanary(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildTestClientWithDummyCguObject()
 		cguBuilder := buildValidCguTestBuilder(testSettings).WithCanary(testCase.canary)
-		assert.Equal(t, cguBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, cguBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, cguBuilder.Definition.Spec.RemediationStrategy.Canaries, []string{testCase.canary})
@@ -290,7 +290,7 @@ func TestCguCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		cguBuilder, err := testCase.testCgu.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, cguBuilder.Definition, cguBuilder.Object)

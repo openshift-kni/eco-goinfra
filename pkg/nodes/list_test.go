@@ -54,7 +54,7 @@ func TestNodesList(t *testing.T) {
 		}
 
 		nodeBuilders, err := List(testSettings, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
 			assert.Equal(t, len(nodeBuilders), len(testCase.nodes))

@@ -62,7 +62,7 @@ func TestListCatalogSources(t *testing.T) {
 		}
 
 		netBuilders, err := ListCatalogSources(testSettings, testCase.nsName, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
 			assert.Equal(t, len(netBuilders), len(testCase.catalogSource))
@@ -128,7 +128,7 @@ func TestListClusterServiceVersion(t *testing.T) {
 		}
 
 		netBuilders, err := ListClusterServiceVersion(testSettings, testCase.nsName, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
 			assert.Equal(t, len(netBuilders), len(testCase.clusterVersion))
@@ -209,7 +209,7 @@ func TestListClusterServiceVersionWithNamePattern(t *testing.T) {
 
 		netBuilders, err := ListClusterServiceVersionWithNamePattern(
 			testSettings, testCase.namePattern, testCase.nsName, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
 			assert.Equal(t, len(netBuilders), len(testCase.clusterVersion))
@@ -263,7 +263,7 @@ func TestListClusterServiceVersionInAllNamespaces(t *testing.T) {
 		}
 
 		netBuilders, err := ListClusterServiceVersionInAllNamespaces(testSettings, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
 			assert.Equal(t, len(netBuilders), len(testCase.clusterVersion))
@@ -329,7 +329,7 @@ func TestListInstallPlan(t *testing.T) {
 		}
 
 		netBuilders, err := ListInstallPlan(testSettings, testCase.nsName, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
 			assert.Equal(t, len(netBuilders), len(testCase.installPlan))
@@ -395,7 +395,7 @@ func TestListPackageManifest(t *testing.T) {
 		}
 
 		packageManifests, err := ListPackageManifest(testSettings, testCase.nsName, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
 			assert.Equal(t, len(packageManifests), len(testCase.packageManifest))

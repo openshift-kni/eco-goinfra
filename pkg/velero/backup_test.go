@@ -43,7 +43,7 @@ func TestNewBackupBuilder(t *testing.T) {
 
 	for _, test := range testcases {
 		testBuilder := NewBackupBuilder(clients.GetTestClients(clients.TestClientParams{}), test.name, test.namespace)
-		assert.Equal(t, testBuilder.errorMsg, test.expectedErrMsg)
+		assert.Equal(t, test.expectedErrMsg, testBuilder.errorMsg)
 	}
 }
 
@@ -154,7 +154,7 @@ func TestWithStorageLocation(t *testing.T) {
 
 		testBuilder.WithStorageLocation(test.location)
 
-		assert.Equal(t, testBuilder.errorMsg, test.expectedErrorMsg)
+		assert.Equal(t, test.expectedErrorMsg, testBuilder.errorMsg)
 	}
 }
 
@@ -180,7 +180,7 @@ func TestWithIncludedNamespace(t *testing.T) {
 			testBuilder.WithIncludedNamespace(namespace)
 		}
 
-		assert.Equal(t, testBuilder.errorMsg, test.expectedErrorMsg)
+		assert.Equal(t, test.expectedErrorMsg, testBuilder.errorMsg)
 
 		if test.expectedErrorMsg == "" {
 			assert.Len(t, testBuilder.Definition.Spec.IncludedNamespaces, len(test.namespaces))
@@ -210,7 +210,7 @@ func TestWithIncludedClusterScopedResource(t *testing.T) {
 			testBuilder.WithIncludedClusterScopedResource(clusterScopedResources)
 		}
 
-		assert.Equal(t, testBuilder.errorMsg, test.expectedErrorMsg)
+		assert.Equal(t, test.expectedErrorMsg, testBuilder.errorMsg)
 
 		if test.expectedErrorMsg == "" {
 			assert.Len(t, testBuilder.Definition.Spec.IncludedClusterScopedResources, len(test.clusterScopedResources))
@@ -240,7 +240,7 @@ func TestWithIncludedNamespaceScopedResource(t *testing.T) {
 			testBuilder.WithIncludedNamespaceScopedResource(namespace)
 		}
 
-		assert.Equal(t, testBuilder.errorMsg, test.expectedErrorMsg)
+		assert.Equal(t, test.expectedErrorMsg, testBuilder.errorMsg)
 
 		if test.expectedErrorMsg == "" {
 			assert.Len(t, testBuilder.Definition.Spec.IncludedNamespaceScopedResources, len(test.namespaceResources))
@@ -270,7 +270,7 @@ func TestWithExcludedClusterScopedResources(t *testing.T) {
 			testBuilder.WithExcludedClusterScopedResource(clusterScopedResources)
 		}
 
-		assert.Equal(t, testBuilder.errorMsg, test.expectedErrorMsg)
+		assert.Equal(t, test.expectedErrorMsg, testBuilder.errorMsg)
 
 		if test.expectedErrorMsg == "" {
 			assert.Len(t, testBuilder.Definition.Spec.ExcludedClusterScopedResources, len(test.clusterScopedResources))
@@ -300,7 +300,7 @@ func TestWithExcludedNamespaceScopedResources(t *testing.T) {
 			testBuilder.WithExcludedNamespaceScopedResources(namespaceResources)
 		}
 
-		assert.Equal(t, testBuilder.errorMsg, test.expectedErrorMsg)
+		assert.Equal(t, test.expectedErrorMsg, testBuilder.errorMsg)
 
 		if test.expectedErrorMsg == "" {
 			assert.Len(t, testBuilder.Definition.Spec.ExcludedNamespaceScopedResources, len(test.namespaceResources))

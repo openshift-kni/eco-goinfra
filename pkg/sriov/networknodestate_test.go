@@ -52,7 +52,7 @@ func TestNewNetworkNodeStateBuilder(t *testing.T) {
 		assert.NotNil(t, testNetworkStructure)
 
 		if len(testCase.expectedErrorText) > 0 {
-			assert.Equal(t, testNetworkStructure.errorMsg, testCase.expectedErrorText)
+			assert.Equal(t, testCase.expectedErrorText, testNetworkStructure.errorMsg)
 		}
 	}
 }

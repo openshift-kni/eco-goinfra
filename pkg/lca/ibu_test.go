@@ -68,7 +68,7 @@ func TestImageBasedUpgradePull(t *testing.T) {
 		builderResult, err := PullImageBasedUpgrade(testSettings)
 
 		// Check the error
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.NotNil(t, builderResult)
@@ -112,7 +112,7 @@ func TestImageBasedUpgradeUpdate(t *testing.T) {
 		builderResult, err := ibuBuilder.WithSeedImage("quay.io/no-image").Update()
 
 		// Check the error
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.NotNil(t, builderResult)
@@ -156,7 +156,7 @@ func TestImageBasedUpgradeDelete(t *testing.T) {
 		builderResult, err := ibuBuilder.Delete()
 
 		// Check the error
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Nil(t, builderResult.Object)
@@ -205,7 +205,7 @@ func TestImageBasedUpgradeGet(t *testing.T) {
 		builderResult, err := ibuBuilder.Get()
 
 		// Check the error
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.NotNil(t, builderResult)
@@ -255,7 +255,7 @@ func TestImageBasedUpgradeExists(t *testing.T) {
 		builderResult := ibuBuilder.Exists()
 
 		// Check the error
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.NotNil(t, builderResult)
@@ -305,7 +305,7 @@ func TestImageBasedUpgradeWithSeedImage(t *testing.T) {
 		builderResult := ibuBuilder.WithSeedImage(testCase.seedImage)
 
 		// Check the error
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.NotNil(t, builderResult)
@@ -359,7 +359,7 @@ func TestImageBasedUpgradeWithExtraManifests(t *testing.T) {
 			testCase.extraManifestsConfigMapName, testCase.extraManifestsConfigMapNamespace)
 
 		// Check the error
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.NotNil(t, builderResult)
@@ -413,7 +413,7 @@ func TestImageBasedUpgradeWithOadpContent(t *testing.T) {
 			testCase.oadpContentConfigMapName, testCase.oadpContentConfigMapNamespace)
 
 		// Check the error
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.NotNil(t, builderResult)
@@ -464,7 +464,7 @@ func TestImageBasedUpgradeWithSeedImageVersion(t *testing.T) {
 			testCase.seedImageVersion)
 
 		// Check the error
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.NotNil(t, builderResult)
@@ -515,7 +515,7 @@ func TestImageBasedUpgradeWithSeedImagePullSecretRef(t *testing.T) {
 			testCase.pullSecretName)
 
 		// Check the error
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.NotNil(t, builderResult)
@@ -560,7 +560,7 @@ func TestImageBasedUpgradeWaitUntilStageComplete(t *testing.T) {
 			testCase.stage)
 
 		// Check the error
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.NotNil(t, builderResult)
@@ -611,7 +611,7 @@ func TestImageBasedUpgradeWithStage(t *testing.T) {
 			testCase.stage)
 
 		// Check the error
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.NotNil(t, builderResult)

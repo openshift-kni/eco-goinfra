@@ -454,7 +454,7 @@ func TestPodNetworkStaticIPMultiNetDualStackAnnotation(t *testing.T) {
 		if testCase.expectedError == nil {
 			assert.NotNil(t, annotation)
 		} else {
-			assert.Equal(t, err, testCase.expectedError)
+			assert.Equal(t, testCase.expectedError, err)
 		}
 	}
 }

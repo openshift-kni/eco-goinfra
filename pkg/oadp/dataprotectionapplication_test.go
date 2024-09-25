@@ -181,7 +181,7 @@ func TestPullDPA(t *testing.T) {
 		}
 
 		testBuilder, err := PullDPA(testSettings, testCase.name, testCase.namespace)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError != nil {
 			assert.Nil(t, testBuilder)

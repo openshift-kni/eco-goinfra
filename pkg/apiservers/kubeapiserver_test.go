@@ -91,7 +91,7 @@ func TestKubeAPIServerGet(t *testing.T) {
 		if testCase.expectedError == nil {
 			assert.Equal(t, testKubeAPIServer.Name, testCase.testKubeAPIServerBuilder.Definition.Name)
 		} else {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 	}
 }
@@ -113,7 +113,7 @@ func TestKubeAPIServerExist(t *testing.T) {
 
 	for _, testCase := range testCases {
 		status := testCase.testKubeAPIServerBuilder.Exists()
-		assert.Equal(t, status, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, status)
 	}
 }
 

@@ -241,7 +241,7 @@ func TestBareMetalHostExists(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.testBmHost.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
@@ -271,7 +271,7 @@ func TestBareMetalHostGet(t *testing.T) {
 			assert.Equal(t, bmHost.Name, testCase.testBmHost.Definition.Name)
 			assert.Equal(t, bmHost.Namespace, testCase.testBmHost.Definition.Namespace)
 		} else {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 	}
 }
@@ -302,7 +302,7 @@ func TestBareMetalHostCreate(t *testing.T) {
 			assert.Equal(t, ipAddressPoolBuilder.Definition.Name, ipAddressPoolBuilder.Object.Name)
 			assert.Equal(t, ipAddressPoolBuilder.Definition.Namespace, ipAddressPoolBuilder.Object.Namespace)
 		} else {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 	}
 }
@@ -763,7 +763,7 @@ func TestBareMetalHostCreateAndWaitUntilProvisioned(t *testing.T) {
 			assert.Equal(t, ipAddressPoolBuilder.Definition.Name, ipAddressPoolBuilder.Object.Name)
 			assert.Equal(t, ipAddressPoolBuilder.Definition.Namespace, ipAddressPoolBuilder.Object.Namespace)
 		} else {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 	}
 }
@@ -794,7 +794,7 @@ func TestBareMetalHostWaitUntilProvisioned(t *testing.T) {
 	for _, testCase := range testCases {
 		err := testCase.testBmHost.WaitUntilProvisioned(1 * time.Millisecond)
 		if testCase.expectedError != nil {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		} else {
 			assert.Nil(t, err)
 		}
@@ -827,7 +827,7 @@ func TestBareMetalHostWaitUntilProvisioning(t *testing.T) {
 	for _, testCase := range testCases {
 		err := testCase.testBmHost.WaitUntilProvisioning(1 * time.Millisecond)
 		if testCase.expectedError != nil {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		} else {
 			assert.Nil(t, err)
 		}
@@ -860,7 +860,7 @@ func TestBareMetalHostWaitUntilReady(t *testing.T) {
 	for _, testCase := range testCases {
 		err := testCase.testBmHost.WaitUntilReady(1 * time.Millisecond)
 		if testCase.expectedError != nil {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		} else {
 			assert.Nil(t, err)
 		}
@@ -893,7 +893,7 @@ func TestBareMetalHostWaitUntilAvailable(t *testing.T) {
 	for _, testCase := range testCases {
 		err := testCase.testBmHost.WaitUntilAvailable(1 * time.Millisecond)
 		if testCase.expectedError != nil {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		} else {
 			assert.Nil(t, err)
 		}
@@ -930,7 +930,7 @@ func TestBareMetalHostWaitUntilInStatus(t *testing.T) {
 	for _, testCase := range testCases {
 		err := testCase.testBmHost.WaitUntilInStatus(bmhv1alpha1.StateAvailable, 1*time.Millisecond)
 		if testCase.expectedError != nil {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		} else {
 			assert.Nil(t, err)
 		}

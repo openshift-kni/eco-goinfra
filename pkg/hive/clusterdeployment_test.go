@@ -219,7 +219,7 @@ func TestClusterDeploymentGet(t *testing.T) {
 	for _, testCase := range testCases {
 		clusterClusterDeployment, err := testCase.testClusterDeployment.Get()
 		if testCase.expectedError != nil {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 
 		if testCase.expectedError == nil {
@@ -250,7 +250,7 @@ func TestClusterDeploymentCreate(t *testing.T) {
 	for _, testCase := range testCases {
 		clusterClusterDeployment, err := testCase.testClusterDeployment.Create()
 		if testCase.expectedError != nil {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 
 		if testCase.expectedError == nil {
@@ -343,7 +343,7 @@ func TestClusterDeploymentExists(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.testClusterDeployment.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
@@ -381,7 +381,7 @@ func TestClusterDeploymentWithAdditionalAgentSelectorLabels(t *testing.T) {
 		testSettings := buildClusterDeploymentClientWithDummyObject()
 		clusterDeployment := buildValidClusterDeploymentBuilder(testSettings).WithAdditionalAgentSelectorLabels(
 			testCase.additionalAgentSelector)
-		assert.Equal(t, clusterDeployment.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, clusterDeployment.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, clusterDeployment.Definition.Spec.Platform.AgentBareMetal.AgentSelector.MatchLabels,
@@ -408,7 +408,7 @@ func TestClusterDeploymentWithPullSecret(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildClusterDeploymentClientWithDummyObject()
 		clusterDeployment := buildValidClusterDeploymentBuilder(testSettings).WithPullSecret(testCase.psName)
-		assert.Equal(t, clusterDeployment.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, clusterDeployment.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, clusterDeployment.Definition.Spec.PullSecretRef.Name, testCase.psName)

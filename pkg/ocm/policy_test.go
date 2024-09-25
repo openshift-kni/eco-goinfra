@@ -356,7 +356,7 @@ func TestWithRemediationAction(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildTestClientWithPolicyScheme()
 		policyBuilder := buildValidPolicyTestBuilder(testSettings).WithRemediationAction(testCase.action)
-		assert.Equal(t, policyBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, policyBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testCase.action, policyBuilder.Definition.Spec.RemediationAction)

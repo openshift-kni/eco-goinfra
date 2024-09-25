@@ -312,7 +312,7 @@ func TestPreflightValidationExists(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.testPreflight.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 

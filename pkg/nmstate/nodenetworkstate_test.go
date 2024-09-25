@@ -123,9 +123,9 @@ func TestStateBuilderGet(t *testing.T) {
 	for _, testCase := range testCases {
 		nodeNetState, err := testCase.nodeNetStateBuilder.Get()
 		if testCase.expectedError != nil {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		} else {
-			assert.Equal(t, err, testCase.expectedError)
+			assert.Equal(t, testCase.expectedError, err)
 		}
 
 		if testCase.expectedError == nil {
@@ -184,7 +184,7 @@ func TestStateBuilderGetTotalVFs(t *testing.T) {
 
 	for _, testCase := range testCases {
 		vfsNumber, err := testCase.testNodeNetState.GetTotalVFs(testCase.sriovInterfaceName)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 		assert.Equal(t, vfsNumber, testCase.vfsNumber)
 	}
 }
@@ -224,7 +224,7 @@ func TestStateBuilderGetInterfaceType(t *testing.T) {
 
 	for _, testCase := range testCases {
 		networkInterface, err := testCase.testNodeNetState.GetInterfaceType(testCase.interfaceName, testCase.interfaceType)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, networkInterface.Name, testCase.interfaceName)
@@ -260,7 +260,7 @@ func TestStateBuilderGetSriovVfs(t *testing.T) {
 
 	for _, testCase := range testCases {
 		vfsList, err := testCase.testNodeNetState.GetSriovVfs(testCase.interfaceName)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, testCase.vfsInUse, len(vfsList))

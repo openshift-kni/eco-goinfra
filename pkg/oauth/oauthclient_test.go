@@ -64,7 +64,7 @@ func TestOAuthClientPull(t *testing.T) {
 		builderResult, err := PullOAuthClient(testSettings, testCase.oauthTestClientName)
 
 		// Check the error
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.NotNil(t, builderResult)
@@ -110,7 +110,7 @@ func TestOAuthClientUpdate(t *testing.T) {
 		// Test the Update function
 		builderResult, err := oauthClientBuilder.Update()
 
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		// Validate that the resource was updated
 		if testCase.expectedError == nil {
@@ -247,7 +247,7 @@ func TestOAuthClientGet(t *testing.T) {
 		builderResult, err := oauthClientBuilder.Get()
 
 		// Check the error
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.NotNil(t, builderResult)

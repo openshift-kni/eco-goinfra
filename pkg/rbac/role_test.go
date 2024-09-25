@@ -81,7 +81,7 @@ func TestNewRoleBuilder(t *testing.T) {
 		}
 
 		if len(testCase.expectedErrorText) > 0 {
-			assert.Equal(t, testPolicy.errorMsg, testCase.expectedErrorText)
+			assert.Equal(t, testCase.expectedErrorText, testPolicy.errorMsg)
 		}
 	}
 }
@@ -200,7 +200,7 @@ func TestRoleCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		roleBuilder, err := testCase.testRole.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, roleBuilder.Definition.Name, roleBuilder.Object.Name)

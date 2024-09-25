@@ -53,7 +53,7 @@ func TestListClusterDeploymentsInAllNamespaces(t *testing.T) {
 		}
 
 		deploymentBuilder, err := ListClusterDeploymentsInAllNamespaces(testSettings, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
 			assert.Equal(t, len(deploymentBuilder), len(testCase.clusterDeployment))

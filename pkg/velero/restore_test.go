@@ -47,7 +47,7 @@ func TestNewRestoreBuilder(t *testing.T) {
 	for _, test := range testcases {
 		testBuilder := NewRestoreBuilder(
 			clients.GetTestClients(clients.TestClientParams{}), test.name, test.namespace, test.backupName)
-		assert.Equal(t, testBuilder.errorMsg, test.expectedErrMsg)
+		assert.Equal(t, test.expectedErrMsg, testBuilder.errorMsg)
 	}
 }
 
@@ -159,6 +159,6 @@ func TestRestoreWithStorageLocation(t *testing.T) {
 
 		testBuilder.WithStorageLocation(test.location)
 
-		assert.Equal(t, testBuilder.errorMsg, test.expectedErrorMsg)
+		assert.Equal(t, test.expectedErrorMsg, testBuilder.errorMsg)
 	}
 }

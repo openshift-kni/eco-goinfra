@@ -158,7 +158,7 @@ func TestBFDProfileGet(t *testing.T) {
 
 	for _, testCase := range testCases {
 		bfdProfile, err := testCase.testBFDProfile.Get()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, bfdProfile.Name, testCase.testBFDProfile.Definition.Name)
@@ -183,7 +183,7 @@ func TestBFDProfileExist(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.testBFDProfile.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
@@ -204,7 +204,7 @@ func TestBFDProfileCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		BFDProfileBuilder, err := testCase.testBFDProfile.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, BFDProfileBuilder.Definition, BFDProfileBuilder.Object)

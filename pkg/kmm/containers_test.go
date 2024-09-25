@@ -162,7 +162,7 @@ func TestModuleLoaderContainerWithKernelMapping(t *testing.T) {
 		testBuilder.WithKernelMapping(testcase.mapping)
 
 		if testcase.expectedError != "" {
-			assert.Equal(t, testBuilder.errorMsg, testcase.expectedError)
+			assert.Equal(t, testcase.expectedError, testBuilder.errorMsg)
 		} else {
 			assert.Equal(t, testBuilder.definition.KernelMappings[0], *testcase.mapping)
 		}
@@ -203,7 +203,7 @@ func TestModuleLoaderContainerWithVersion(t *testing.T) {
 		testBuilder.WithVersion(testcase.version)
 
 		if testcase.expectedError != "" {
-			assert.Equal(t, testBuilder.errorMsg, testcase.expectedError)
+			assert.Equal(t, testcase.expectedError, testBuilder.errorMsg)
 		} else {
 			assert.Equal(t, testBuilder.definition.Version, testcase.version)
 		}

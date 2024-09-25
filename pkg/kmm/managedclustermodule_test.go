@@ -208,7 +208,7 @@ func TestManagedClusterModuleExists(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.testManagedClusterModule.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 

@@ -62,7 +62,7 @@ func TestNetworkList(t *testing.T) {
 		}
 
 		netBuilders, err := List(testSettings, testCase.nsName, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
 			assert.Equal(t, len(netBuilders), len(testCase.testNetwork))
@@ -133,7 +133,7 @@ func TestNetworkCleanAllNetworksByTargetNamespace(t *testing.T) {
 
 		err := CleanAllNetworksByTargetNamespace(
 			testSettings, testCase.operatorNsName, testCase.targetNsName, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			netBuilders, err := List(testSettings, testCase.operatorNsName)
@@ -356,7 +356,7 @@ func TestCleanAllNetworkNodePolicies(t *testing.T) {
 		}
 
 		err := CleanAllNetworkNodePolicies(testSettings, testCase.nsName, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			netBuilders, err := ListPolicy(testSettings, testCase.nsName)
@@ -414,7 +414,7 @@ func TestListPoolConfigs(t *testing.T) {
 		}
 
 		poolConfigBuilders, err := ListPoolConfigs(testSettings, testCase.nsName)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, len(poolConfigBuilders), len(testCase.poolConfigs))
@@ -470,7 +470,7 @@ func TestCleanPoolConfigs(t *testing.T) {
 		}
 
 		err := CleanAllPoolConfigs(testSettings, testCase.operatorNamespace)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			poolConfigBuilders, err := ListPoolConfigs(testSettings, testCase.operatorNamespace)

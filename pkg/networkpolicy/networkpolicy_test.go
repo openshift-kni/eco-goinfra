@@ -514,7 +514,7 @@ func TestNewNetworkPolicyBuilder(t *testing.T) {
 		}), testCase.testName, testCase.testNamespace)
 
 		if testCase.expectedError {
-			assert.Equal(t, testNBP.errorMsg, testCase.expectedErrorText)
+			assert.Equal(t, testCase.expectedErrorText, testNBP.errorMsg)
 		} else {
 			assert.NotNil(t, testNBP)
 		}

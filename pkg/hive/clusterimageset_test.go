@@ -143,7 +143,7 @@ func TestClusterImageSetGet(t *testing.T) {
 	for _, testCase := range testCases {
 		clusterImageSet, err := testCase.testClusterImageSet.Get()
 		if testCase.expectedError != nil {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 
 		if testCase.expectedError == nil {
@@ -174,7 +174,7 @@ func TestClusterImageSetCreate(t *testing.T) {
 	for _, testCase := range testCases {
 		clusterImageSet, err := testCase.testClusterImageSet.Create()
 		if testCase.expectedError != nil {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 
 		if testCase.expectedError == nil {
@@ -267,7 +267,7 @@ func TestClusterImageSetExists(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.testClusterImageSet.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 

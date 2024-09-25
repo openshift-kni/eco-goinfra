@@ -119,7 +119,7 @@ func TestClusterServiceVersionGet(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, clusterService.Name, testCase.clusterService.Definition.Name)
 		} else {
-			assert.Equal(t, err.Error(), testCase.expectedError)
+			assert.Equal(t, testCase.expectedError, err.Error())
 		}
 	}
 }
@@ -142,7 +142,7 @@ func TestClusterServiceVersionExist(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.clusterService.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 

@@ -84,7 +84,7 @@ func TestSeedGeneratorCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testSeedGeneratorBuilder, err := testCase.seedGenerator.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, testSeedGeneratorBuilder.Definition.Name, testSeedGeneratorBuilder.Object.Name)
@@ -154,7 +154,7 @@ func TestSeedGeneratorPull(t *testing.T) {
 		builderResult, err := PullSeedGenerator(testSettings, testCase.name)
 
 		// Check the error
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.NotNil(t, builderResult)
@@ -184,7 +184,7 @@ func TestSeedGeneratorDelete(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testSeedGeneratorBuilder, err := testCase.seedGenerator.Delete()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Nil(t, testSeedGeneratorBuilder.Object)
@@ -215,7 +215,7 @@ func TestSeedGeneratorGet(t *testing.T) {
 	for _, testCase := range testCases {
 		testSeedGenerator, err := testCase.seedGenerator.Get()
 		if err != nil {
-			assert.Equal(t, err.Error(), testCase.expectedError.Error())
+			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 
 		if testCase.expectedError == nil {
@@ -246,7 +246,7 @@ func TestSeedGeneratorExists(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.seedGenerator.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
@@ -334,7 +334,7 @@ func TestSeedGeneratorWaitUntilComplete(t *testing.T) {
 		_, err := testSeedGeneratorBuilder.WaitUntilComplete(time.Second * 1)
 
 		// Check the error
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 	}
 }
 

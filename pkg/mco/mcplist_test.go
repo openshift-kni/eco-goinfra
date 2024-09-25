@@ -56,7 +56,7 @@ func TestListMCP(t *testing.T) {
 		}
 
 		mcBuilders, err := ListMCP(testSettings, testCase.listOptions...)
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
 			assert.Equal(t, len(testCase.mcPools), len(mcBuilders))

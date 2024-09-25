@@ -50,7 +50,7 @@ func TestNewPoolConfigBuilder(t *testing.T) {
 		assert.NotNil(t, testPoolconfigStructure)
 
 		if len(testCase.expectedErrorText) > 0 {
-			assert.Equal(t, testPoolconfigStructure.errorMsg, testCase.expectedErrorText)
+			assert.Equal(t, testCase.expectedErrorText, testPoolconfigStructure.errorMsg)
 		}
 	}
 }
@@ -72,7 +72,7 @@ func TestPooConfigCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testBuilder, err := testCase.testPoolConfig.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, testBuilder.Definition, testBuilder.Object)
@@ -194,7 +194,7 @@ func TestWithNodeSelector(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildTestPoolConfigClientWithDummyObject()
 		testBuilder := buildValidPoolConfigTestBuilder(testSettings).WithNodeSelector(testCase.nodeSelector)
-		assert.Equal(t, testBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testBuilder.Definition.Spec.NodeSelector.MatchLabels, testCase.nodeSelector)
@@ -232,7 +232,7 @@ func TestWithMaxUnavailable(t *testing.T) {
 	for _, testCase := range testCases {
 		testSettings := buildTestPoolConfigClientWithDummyObject()
 		testBuilder := buildValidPoolConfigTestBuilder(testSettings).WithMaxUnavailable(testCase.maxUnavailable)
-		assert.Equal(t, testBuilder.errorMsg, testCase.expectedErrorText)
+		assert.Equal(t, testCase.expectedErrorText, testBuilder.errorMsg)
 
 		if testCase.expectedErrorText == "" {
 			assert.Equal(t, testBuilder.Definition.Spec.MaxUnavailable.IntVal, testCase.maxUnavailable.IntVal)

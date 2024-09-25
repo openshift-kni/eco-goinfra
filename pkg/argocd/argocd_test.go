@@ -188,7 +188,7 @@ func TestArgoCdExist(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.testArgoCd.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
@@ -209,7 +209,7 @@ func TestArgoCdCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testArgoCdBuilder, err := testCase.testArgoCd.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, testArgoCdBuilder.Definition, testArgoCdBuilder.Object)

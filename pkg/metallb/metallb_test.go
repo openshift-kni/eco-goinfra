@@ -172,7 +172,7 @@ func TestMetalLbExist(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.testMetalLb.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
@@ -193,7 +193,7 @@ func TestMetalLbGet(t *testing.T) {
 
 	for _, testCase := range testCases {
 		metalLb, err := testCase.testMetalLb.Get()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, metalLb.Name, testCase.testMetalLb.Definition.Name)
@@ -218,7 +218,7 @@ func TestMetalLbCreate(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testMetalLbBuilder, err := testCase.testMetalLb.Create()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, testMetalLbBuilder.Definition.Name, testMetalLbBuilder.Object.Name)

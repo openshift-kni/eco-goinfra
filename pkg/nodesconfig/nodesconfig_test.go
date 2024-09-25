@@ -120,7 +120,7 @@ func TestNodeConfigExist(t *testing.T) {
 
 	for _, testCase := range testCases {
 		exist := testCase.testNodesConfig.Exists()
-		assert.Equal(t, exist, testCase.expectedStatus)
+		assert.Equal(t, testCase.expectedStatus, exist)
 	}
 }
 
@@ -145,7 +145,7 @@ func TestNodesConfigGet(t *testing.T) {
 
 	for _, testCase := range testCases {
 		nodesConfigObj, err := testCase.testNodesConfig.Get()
-		assert.Equal(t, err, testCase.expectedError)
+		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, nodesConfigObj, testCase.testNodesConfig.Definition)
