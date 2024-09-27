@@ -32,6 +32,12 @@ func NewBuilder(apiClient *clients.Settings, name, nsname string) *Builder {
 	glog.V(100).Infof("Initializing new resource quota structure with the following params: "+
 		"name=%s, namespace=%s", name, nsname)
 
+	if apiClient == nil {
+		glog.V(100).Info("API client is nil")
+
+		return nil
+	}
+
 	builder := &Builder{
 		apiClient: apiClient.CoreV1Interface,
 		Definition: &corev1.ResourceQuota{

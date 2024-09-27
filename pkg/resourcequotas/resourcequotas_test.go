@@ -245,6 +245,73 @@ func TestResourceQuotaExists(t *testing.T) {
 	}
 }
 
+func TestNewBuilder(t *testing.T) {
+	testCases := []struct {
+		apiClientNil    bool
+		testName        string
+		testNamespace   string
+		expectedBuilder Builder
+		expectedError   string
+	}{
+		{
+			apiClientNil:  false,
+			testName:      "testRQ",
+			testNamespace: "testNamespace",
+			expectedBuilder: Builder{
+				Definition: &corev1.ResourceQuota{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "testRQ",
+						Namespace: "testNamespace",
+					},
+				},
+			},
+		},
+		{
+			apiClientNil:  true,
+			testName:      "testRQ",
+			testNamespace: "testNamespace",
+			expectedError: "",
+		},
+		{
+			apiClientNil:  false,
+			testName:      "",
+			testNamespace: "testNamespace",
+			expectedError: "resource quota 'name' cannot be empty",
+		},
+		{
+			apiClientNil:  false,
+			testName:      "testRQ",
+			testNamespace: "",
+			expectedError: "resource quota 'namespace' cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: nil,
+		})
+
+		if testCase.apiClientNil {
+			testSettings = nil
+		}
+
+		builderResult := NewBuilder(testSettings, testCase.testName, testCase.testNamespace)
+
+		if testCase.expectedError != "" {
+			assert.NotNil(t, builderResult)
+		} else {
+			if testCase.apiClientNil {
+				assert.Nil(t, builderResult)
+			} else {
+				assert.NotNil(t, builderResult)
+				assert.Equal(t, testCase.expectedBuilder.Definition.Name, builderResult.Definition.Name)
+				assert.Equal(t, testCase.expectedBuilder.Definition.Namespace, builderResult.Definition.Namespace)
+				assert.Equal(t, testCase.expectedError, builderResult.errorMsg)
+			}
+		}
+	}
+}
+
 func TestValidate(t *testing.T) {
 	testCases := []struct {
 		builderNil    bool
