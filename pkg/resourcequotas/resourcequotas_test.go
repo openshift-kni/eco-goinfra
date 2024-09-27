@@ -6,21 +6,12 @@ import (
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
+	resource "k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-//nolint:funlen
 func TestResourceQuotaPull(t *testing.T) {
-	generateResourceQuota := func(name, namespace string) *corev1.ResourceQuota {
-		return &corev1.ResourceQuota{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: namespace,
-			},
-		}
-	}
-
 	testCases := []struct {
 		testName            string
 		testNamespace       string
@@ -105,16 +96,68 @@ func TestResourceQuotaPull(t *testing.T) {
 	}
 }
 
-func TestResourceQuotaCreate(t *testing.T) {
-	generateResourceQuota := func(name, namespace string) *corev1.ResourceQuota {
-		return &corev1.ResourceQuota{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: namespace,
-			},
-		}
+func TestResourceQuotaWithQuotaSpec(t *testing.T) {
+	testCases := []struct {
+		builderNil    bool
+		definitionNil bool
+		expectedError bool
+		errorMessage  string
+	}{
+		{ // Test Case 1 - Happy path, no nils
+			builderNil:    false,
+			definitionNil: false,
+			expectedError: false,
+		},
+		{ // Test Case 2 - Builder is nil
+			builderNil:    true,
+			definitionNil: false,
+			expectedError: true,
+		},
+		{ // Test Case 3 - Definition is nil
+			builderNil:    false,
+			definitionNil: true,
+			expectedError: true,
+		},
 	}
 
+	for _, testCase := range testCases {
+		testBuilder := &Builder{
+			apiClient: nil,
+			Definition: &corev1.ResourceQuota{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "testRQ",
+					Namespace: "testNamespace",
+				},
+			},
+		}
+
+		if testCase.builderNil {
+			testBuilder = nil
+		}
+
+		if testCase.definitionNil {
+			testBuilder.Definition = nil
+		}
+
+		result := testBuilder.WithQuotaSpec(corev1.ResourceQuotaSpec{
+			Hard: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("1"),
+				corev1.ResourceMemory: resource.MustParse("1Gi"),
+			},
+		})
+
+		if !testCase.expectedError {
+			assert.NotNil(t, result)
+			assert.NotNil(t, testBuilder.Definition)
+			assert.Equal(t, resource.MustParse("1"), testBuilder.Definition.Spec.Hard[corev1.ResourceCPU])
+			assert.Equal(t, resource.MustParse("1Gi"), testBuilder.Definition.Spec.Hard[corev1.ResourceMemory])
+		} else {
+			assert.Nil(t, result)
+		}
+	}
+}
+
+func TestResourceQuotaCreate(t *testing.T) {
 	testCases := []struct {
 		rqExistsAlready bool
 	}{
@@ -146,15 +189,6 @@ func TestResourceQuotaCreate(t *testing.T) {
 }
 
 func TestResourceQuotaDelete(t *testing.T) {
-	generateResourceQuota := func(name, namespace string) *corev1.ResourceQuota {
-		return &corev1.ResourceQuota{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: namespace,
-			},
-		}
-	}
-
 	testCases := []struct {
 		rqExistsAlready bool
 	}{
@@ -180,6 +214,34 @@ func TestResourceQuotaDelete(t *testing.T) {
 
 		assert.Nil(t, err)
 		assert.Nil(t, testBuilder.Object)
+	}
+}
+
+func TestResourceQuotaExists(t *testing.T) {
+	testCases := []struct {
+		rqExistsAlready bool
+	}{
+		{
+			rqExistsAlready: true,
+		},
+		{
+			rqExistsAlready: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		var runtimeObjects []runtime.Object
+
+		testRQ := generateResourceQuota("testRQ", "testNamespace")
+
+		if testCase.rqExistsAlready {
+			runtimeObjects = append(runtimeObjects, testRQ)
+		}
+
+		testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects, testRQ.Name, testRQ.Namespace)
+		result := testBuilder.Exists()
+
+		assert.Equal(t, testCase.rqExistsAlready, result)
 	}
 }
 
@@ -240,6 +302,15 @@ func TestValidate(t *testing.T) {
 			assert.Nil(t, err)
 			assert.True(t, result)
 		}
+	}
+}
+
+func generateResourceQuota(name, namespace string) *corev1.ResourceQuota {
+	return &corev1.ResourceQuota{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
 	}
 }
 

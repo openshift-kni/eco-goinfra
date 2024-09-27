@@ -28,14 +28,18 @@ type Builder struct {
 }
 
 // NewBuilder creates a new resource quota builder.
-func NewBuilder(apiClient corev1Typed.CoreV1Interface, name, nsname string,
-	quotaDefinition corev1.ResourceQuota) *Builder {
+func NewBuilder(apiClient *clients.Settings, name, nsname string) *Builder {
 	glog.V(100).Infof("Initializing new resource quota structure with the following params: "+
-		"name=%s, namespace=%s, quotaSpec=%v", name, nsname, quotaDefinition)
+		"name=%s, namespace=%s", name, nsname)
 
 	builder := &Builder{
-		Definition: &quotaDefinition,
-		apiClient:  apiClient,
+		apiClient: apiClient.CoreV1Interface,
+		Definition: &corev1.ResourceQuota{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      name,
+				Namespace: nsname,
+			},
+		},
 	}
 
 	if name == "" {
@@ -53,6 +57,25 @@ func NewBuilder(apiClient corev1Typed.CoreV1Interface, name, nsname string,
 
 		return builder
 	}
+
+	return builder
+}
+
+// WithQuotaSpec sets the resource quota spec.
+func (builder *Builder) WithQuotaSpec(quotaSpec corev1.ResourceQuotaSpec) *Builder {
+	if builder == nil {
+		glog.V(100).Info("Builder is nil")
+
+		return nil
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Info("Resource Quota definition is nil")
+
+		return nil
+	}
+
+	builder.Definition.Spec = quotaSpec
 
 	return builder
 }
@@ -117,38 +140,6 @@ func (builder *Builder) Exists() bool {
 	return err == nil || !k8serrors.IsNotFound(err)
 }
 
-// validate validates the resource quota definition.
-func (builder *Builder) validate() (bool, error) {
-	resourceCRD := "ResourceQuota"
-
-	if builder == nil {
-		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
-
-		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
-	}
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The %s is undefined", resourceCRD)
-
-		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
-	}
-
-	if builder.apiClient == nil {
-		glog.V(100).Infof("The %s API client is uninitialized", resourceCRD)
-
-		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
-	}
-
-	if builder.errorMsg != "" {
-		glog.V(100).Infof("The %s builder has error message: %s",
-			resourceCRD, builder.errorMsg)
-
-		return false, fmt.Errorf(builder.errorMsg)
-	}
-
-	return true, nil
-}
-
 // Create creates the resource quota in the cluster.
 func (builder *Builder) Create() (*Builder, error) {
 	if valid, err := builder.validate(); !valid {
@@ -195,4 +186,35 @@ func (builder *Builder) Delete() error {
 	builder.Object = nil
 
 	return nil
+}
+
+func (builder *Builder) validate() (bool, error) {
+	resourceCRD := "ResourceQuota"
+
+	if builder == nil {
+		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
+	}
+
+	if builder.Definition == nil {
+		glog.V(100).Infof("The %s is undefined", resourceCRD)
+
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
+	}
+
+	if builder.apiClient == nil {
+		glog.V(100).Infof("The %s API client is uninitialized", resourceCRD)
+
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message: %s",
+			resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
+	}
+
+	return true, nil
 }
