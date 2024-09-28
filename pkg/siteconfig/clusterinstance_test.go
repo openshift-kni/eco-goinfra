@@ -1,8 +1,10 @@
 package siteconfig
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	siteconfigv1alpha1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/siteconfig/v1alpha1"
@@ -13,12 +15,73 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+var (
+	// defaultClusterInstanceCondition  is a variable which depicts default value of ClusterInstance condition types.
+	defaultClusterInstanceCondition = metav1.Condition{Type: "", Status: metav1.ConditionTrue}
+)
+
 const (
 	testClusterInstance = "test-cluster-instance"
 )
 
 var testSchemes = []clients.SchemeAttacher{
 	siteconfigv1alpha1.AddToScheme,
+}
+
+func TestNewClusterInstanceBuilder(t *testing.T) {
+	generateCIBuilder := NewCIBuilder
+
+	testCases := []struct {
+		name              string
+		namespace         string
+		client            bool
+		expectedErrorText string
+	}{
+		{
+			name:              testClusterInstance,
+			namespace:         testClusterInstance,
+			client:            true,
+			expectedErrorText: "",
+		},
+		{
+			name:              "",
+			namespace:         testClusterInstance,
+			client:            true,
+			expectedErrorText: "clusterinstance 'name' cannot be empty",
+		},
+		{
+			name:              testClusterInstance,
+			namespace:         "",
+			client:            true,
+			expectedErrorText: "clusterinstance 'nsname' cannot be empty",
+		},
+		{
+			name:              testClusterInstance,
+			namespace:         testClusterInstance,
+			client:            false,
+			expectedErrorText: "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		var testSettings *clients.Settings
+
+		if testCase.client {
+			testSettings = clients.GetTestClients(clients.TestClientParams{})
+		}
+
+		testClusterInstanceStructure := generateCIBuilder(
+			testSettings,
+			testClusterInstance,
+			testClusterInstance)
+
+		if testCase.client {
+			assert.NotNil(t, testClusterInstanceStructure)
+			assert.Equal(t, testCase.expectedErrorText, testClusterInstanceStructure.errorMsg)
+		} else {
+			assert.Nil(t, testClusterInstanceStructure)
+		}
+	}
 }
 
 func TestClusterInstancePull(t *testing.T) {
@@ -95,6 +158,148 @@ func TestClusterInstancePull(t *testing.T) {
 	}
 }
 
+func TestClusterInstanceWithExtraManifests(t *testing.T) {
+	testCases := []struct {
+		extramanifest    string
+		expectedErrorMsg string
+	}{
+		{
+			extramanifest:    "ci-extra-manifest",
+			expectedErrorMsg: "",
+		},
+		{
+			extramanifest:    "",
+			expectedErrorMsg: "clusterinstance extramanifest cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := generateClusterInstanceBuilderWithFakeObjects([]runtime.Object{})
+
+		testBuilder.WithExtraManifests(testCase.extramanifest)
+		assert.Equal(t, testCase.expectedErrorMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrorMsg == "" {
+			assert.Equal(t, testCase.extramanifest, testBuilder.Definition.Spec.ExtraManifestsRefs[0].Name)
+		}
+	}
+}
+
+func TestClusterInstanceWithExtraLabels(t *testing.T) {
+	testCases := []struct {
+		key            string
+		labels         map[string]string
+		expectedErrMsg string
+		emptyLabels    bool
+	}{
+		{
+			key:         "test-key",
+			labels:      map[string]string{},
+			emptyLabels: false,
+		},
+		{
+			key:            "",
+			expectedErrMsg: "can not apply empty key",
+			emptyLabels:    false,
+		},
+		{
+			key:            "test-key",
+			labels:         nil,
+			expectedErrMsg: "can not apply if extraLabels map values are nil",
+			emptyLabels:    true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		var testSettings *clients.Settings
+
+		testBuilder := buildValidClusterInstanceTestBuilder(testSettings)
+
+		if testCase.emptyLabels {
+			testBuilder.Definition.Spec.ExtraLabels = nil
+		}
+
+		testBuilder.WithExtraLabels(testCase.key, testCase.labels)
+
+		assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrMsg == "" {
+			assert.Equal(t, testCase.labels, testBuilder.Definition.Spec.ExtraLabels[testCase.key])
+		}
+	}
+}
+
+func TestClusterInstanceWaitForCondition(t *testing.T) {
+	testCases := []struct {
+		condition     metav1.Condition
+		exists        bool
+		conditionMet  bool
+		valid         bool
+		expectedError error
+	}{
+		{
+			condition:     defaultClusterInstanceCondition,
+			exists:        true,
+			conditionMet:  true,
+			valid:         true,
+			expectedError: nil,
+		},
+		{
+			condition:    defaultClusterInstanceCondition,
+			exists:       false,
+			conditionMet: true,
+			valid:        true,
+			expectedError: fmt.Errorf("clusterinstance object %s does not exist in namespace %s",
+				testClusterInstance, testClusterInstance),
+		},
+		{
+			condition:     defaultClusterInstanceCondition,
+			exists:        true,
+			conditionMet:  false,
+			valid:         true,
+			expectedError: context.DeadlineExceeded,
+		},
+		{
+			condition:     defaultClusterInstanceCondition,
+			exists:        true,
+			conditionMet:  true,
+			valid:         false,
+			expectedError: fmt.Errorf("clusterinstance 'nsname' cannot be empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		var (
+			runtimeObjects         []runtime.Object
+			clusterInstanceBuilder *CIBuilder
+		)
+
+		if testCase.exists {
+			clusterinstance := generateClusterInstance()
+
+			if testCase.conditionMet {
+				clusterinstance.Status.Conditions = append(clusterinstance.Status.Conditions, testCase.condition)
+			}
+
+			runtimeObjects = append(runtimeObjects, clusterinstance)
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: testSchemes,
+		})
+
+		if testCase.valid {
+			clusterInstanceBuilder = buildValidClusterInstanceTestBuilder(testSettings)
+		} else {
+			clusterInstanceBuilder = buildInvalidClusterInstanceTestBuilder(testSettings)
+		}
+
+		_, err := clusterInstanceBuilder.WaitForCondition(testCase.condition, time.Second)
+		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
 func TestClusterInstanceGet(t *testing.T) {
 	testCases := []struct {
 		exists bool
@@ -157,6 +362,43 @@ func TestClusterInstanceCreate(t *testing.T) {
 		assert.NotNil(t, result)
 		assert.Equal(t, testClusterInstance, result.Definition.Name)
 		assert.Equal(t, testClusterInstance, result.Definition.Namespace)
+	}
+}
+
+func TestClusterInstanceUpdate(t *testing.T) {
+	testCases := []struct {
+		exists        bool
+		expectedError error
+	}{
+		{
+			exists:        true,
+			expectedError: nil,
+		},
+		{
+			exists:        false,
+			expectedError: fmt.Errorf("cannot update non-existent clusterinstance"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		var (
+			runtimeObjects []runtime.Object
+		)
+
+		if testCase.exists {
+			runtimeObjects = append(runtimeObjects, generateClusterInstance())
+		}
+
+		testBuilder := generateClusterInstanceBuilderWithFakeObjects(runtimeObjects)
+
+		testBuilder.Definition.Spec.ClusterName = "test-clustername"
+
+		clusterinstance, err := testBuilder.Update(true)
+		assert.Equal(t, testCase.expectedError, err)
+
+		if testCase.expectedError == nil {
+			assert.Equal(t, clusterinstance.Object.Spec.ClusterName, "test-clustername")
+		}
 	}
 }
 
@@ -281,8 +523,8 @@ func TestClusterInstanceValidate(t *testing.T) {
 	}
 }
 
-func generateClusterInstanceBuilderWithFakeObjects(objects []runtime.Object) *ClusterInstanceBuilder {
-	return &ClusterInstanceBuilder{
+func generateClusterInstanceBuilderWithFakeObjects(objects []runtime.Object) *CIBuilder {
+	return &CIBuilder{
 		apiClient: clients.GetTestClients(
 			clients.TestClientParams{K8sMockObjects: objects, SchemeAttachers: testSchemes}).Client,
 		Definition: generateClusterInstance(),
@@ -296,4 +538,21 @@ func generateClusterInstance() *siteconfigv1alpha1.ClusterInstance {
 			Namespace: testClusterInstance,
 		},
 	}
+}
+
+// buildValidClusterInstanceTestBuilder returns a valid ClusterInstanceBuilder for testing purposes.
+func buildValidClusterInstanceTestBuilder(apiClient *clients.Settings) *CIBuilder {
+	return NewCIBuilder(
+		apiClient,
+		testClusterInstance,
+		testClusterInstance)
+}
+
+// buildInvalidClusterInstanceTestBuilder returns an invalid ClusterInstanceBuilder for testing purposes.
+func buildInvalidClusterInstanceTestBuilder(apiClient *clients.Settings) *CIBuilder {
+	return NewCIBuilder(
+		apiClient,
+		testClusterInstance,
+		"",
+	)
 }
