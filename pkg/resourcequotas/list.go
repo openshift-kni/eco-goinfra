@@ -11,6 +11,8 @@ import (
 
 // List returns resource quota inventory in the given namespace.
 func List(apiClient *clients.Settings, nsname string, options ...metav1.ListOptions) ([]*Builder, error) {
+	glog.V(100).Infof("Listing resource quotas in the namespace %s", nsname)
+
 	if nsname == "" {
 		glog.V(100).Infof("resource quota 'nsname' parameter can not be empty")
 

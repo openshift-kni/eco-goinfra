@@ -67,17 +67,6 @@ func NewBuilder(apiClient *clients.Settings, name, nsname string) *Builder {
 	return builder
 }
 
-// WithQuotaSpec sets the resource quota spec.
-func (builder *Builder) WithQuotaSpec(quotaSpec corev1.ResourceQuotaSpec) *Builder {
-	if valid, _ := builder.validate(); !valid {
-		return builder
-	}
-
-	builder.Definition.Spec = quotaSpec
-
-	return builder
-}
-
 // Pull retrieves the resource quota from the cluster.
 func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	if apiClient == nil {
@@ -118,6 +107,60 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	builder.Definition = builder.Object
 
 	return builder, nil
+}
+
+// WithQuotaSpec sets the resource quota spec.
+func (builder *Builder) WithQuotaSpec(quotaSpec corev1.ResourceQuotaSpec) *Builder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Setting resource quota spec for %s in namespace %s",
+		builder.Definition.Name, builder.Definition.Namespace)
+
+	builder.Definition.Spec = quotaSpec
+
+	return builder
+}
+
+// Update renovates the existing resource quota in the cluster.
+func (builder *Builder) Update(force bool) (*Builder, error) {
+	if valid, err := builder.validate(); !valid {
+		return builder, err
+	}
+
+	glog.V(100).Infof("Updating resource quota %s in namespace %s",
+		builder.Definition.Name, builder.Definition.Namespace)
+
+	if !builder.Exists() {
+		return builder, fmt.Errorf("resource quota %s does not exist in namespace %s",
+			builder.Definition.Name, builder.Definition.Namespace)
+	}
+
+	_, err := builder.apiClient.ResourceQuotas(
+		builder.Definition.Namespace).Update(context.TODO(),
+		builder.Definition, metav1.UpdateOptions{})
+
+	if err != nil {
+		if force {
+			glog.V(100).Infof("Force updating resource quota %s in namespace %s",
+				builder.Definition.Name, builder.Definition.Namespace)
+
+			err := builder.Delete()
+			if err != nil {
+				glog.V(100).Infof(msg.FailToUpdateError("resource quota",
+					builder.Definition.Name, builder.Definition.Namespace))
+			}
+
+			return nil, err
+		}
+
+		return builder.Create()
+	}
+
+	builder.Object = builder.Definition
+
+	return builder, err
 }
 
 // Exists checks if the resource quota exists in the cluster.

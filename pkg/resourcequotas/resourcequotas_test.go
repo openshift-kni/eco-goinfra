@@ -11,6 +11,73 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+func TestResourceQuotaNewBuilder(t *testing.T) {
+	testCases := []struct {
+		apiClientNil    bool
+		testName        string
+		testNamespace   string
+		expectedBuilder Builder
+		expectedError   string
+	}{
+		{
+			apiClientNil:  false,
+			testName:      "testRQ",
+			testNamespace: "testNamespace",
+			expectedBuilder: Builder{
+				Definition: &corev1.ResourceQuota{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "testRQ",
+						Namespace: "testNamespace",
+					},
+				},
+			},
+		},
+		{
+			apiClientNil:  true,
+			testName:      "testRQ",
+			testNamespace: "testNamespace",
+			expectedError: "",
+		},
+		{
+			apiClientNil:  false,
+			testName:      "",
+			testNamespace: "testNamespace",
+			expectedError: "resource quota 'name' cannot be empty",
+		},
+		{
+			apiClientNil:  false,
+			testName:      "testRQ",
+			testNamespace: "",
+			expectedError: "resource quota 'namespace' cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: nil,
+		})
+
+		if testCase.apiClientNil {
+			testSettings = nil
+		}
+
+		builderResult := NewBuilder(testSettings, testCase.testName, testCase.testNamespace)
+
+		if testCase.expectedError != "" {
+			assert.NotNil(t, builderResult)
+		} else {
+			if testCase.apiClientNil {
+				assert.Nil(t, builderResult)
+			} else {
+				assert.NotNil(t, builderResult)
+				assert.Equal(t, testCase.expectedBuilder.Definition.Name, builderResult.Definition.Name)
+				assert.Equal(t, testCase.expectedBuilder.Definition.Namespace, builderResult.Definition.Namespace)
+				assert.Equal(t, testCase.expectedError, builderResult.errorMsg)
+			}
+		}
+	}
+}
+
 func TestResourceQuotaPull(t *testing.T) {
 	testCases := []struct {
 		testName            string
@@ -221,6 +288,48 @@ func TestResourceQuotaDelete(t *testing.T) {
 	}
 }
 
+func TestResourceQuotaUpdate(t *testing.T) {
+	testCases := []struct {
+		rqExistsAlready bool
+		force           bool
+	}{
+		{
+			rqExistsAlready: true,
+			force:           false,
+		},
+		{
+			rqExistsAlready: false,
+			force:           false,
+		},
+		{
+			rqExistsAlready: true,
+			force:           true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		var runtimeObjects []runtime.Object
+
+		testRQ := generateResourceQuota("testRQ", "testNamespace")
+
+		if testCase.rqExistsAlready {
+			runtimeObjects = append(runtimeObjects, testRQ)
+		}
+
+		testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects, testRQ.Name, testRQ.Namespace)
+		builderResult, err := testBuilder.Update(testCase.force)
+
+		if testCase.rqExistsAlready {
+			assert.Nil(t, err)
+			assert.NotNil(t, testBuilder.Object)
+			assert.Equal(t, testRQ.Name, builderResult.Object.Name)
+			assert.Equal(t, testRQ.Namespace, builderResult.Object.Namespace)
+		} else {
+			assert.NotNil(t, err)
+		}
+	}
+}
+
 func TestResourceQuotaExists(t *testing.T) {
 	testCases := []struct {
 		rqExistsAlready bool
@@ -249,74 +358,7 @@ func TestResourceQuotaExists(t *testing.T) {
 	}
 }
 
-func TestNewBuilder(t *testing.T) {
-	testCases := []struct {
-		apiClientNil    bool
-		testName        string
-		testNamespace   string
-		expectedBuilder Builder
-		expectedError   string
-	}{
-		{
-			apiClientNil:  false,
-			testName:      "testRQ",
-			testNamespace: "testNamespace",
-			expectedBuilder: Builder{
-				Definition: &corev1.ResourceQuota{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "testRQ",
-						Namespace: "testNamespace",
-					},
-				},
-			},
-		},
-		{
-			apiClientNil:  true,
-			testName:      "testRQ",
-			testNamespace: "testNamespace",
-			expectedError: "",
-		},
-		{
-			apiClientNil:  false,
-			testName:      "",
-			testNamespace: "testNamespace",
-			expectedError: "resource quota 'name' cannot be empty",
-		},
-		{
-			apiClientNil:  false,
-			testName:      "testRQ",
-			testNamespace: "",
-			expectedError: "resource quota 'namespace' cannot be empty",
-		},
-	}
-
-	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: nil,
-		})
-
-		if testCase.apiClientNil {
-			testSettings = nil
-		}
-
-		builderResult := NewBuilder(testSettings, testCase.testName, testCase.testNamespace)
-
-		if testCase.expectedError != "" {
-			assert.NotNil(t, builderResult)
-		} else {
-			if testCase.apiClientNil {
-				assert.Nil(t, builderResult)
-			} else {
-				assert.NotNil(t, builderResult)
-				assert.Equal(t, testCase.expectedBuilder.Definition.Name, builderResult.Definition.Name)
-				assert.Equal(t, testCase.expectedBuilder.Definition.Namespace, builderResult.Definition.Namespace)
-				assert.Equal(t, testCase.expectedError, builderResult.errorMsg)
-			}
-		}
-	}
-}
-
-func TestValidate(t *testing.T) {
+func TestResourceQuotaValidate(t *testing.T) {
 	testCases := []struct {
 		builderNil    bool
 		definitionNil bool
