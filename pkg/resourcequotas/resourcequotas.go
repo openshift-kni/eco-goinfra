@@ -69,16 +69,8 @@ func NewBuilder(apiClient *clients.Settings, name, nsname string) *Builder {
 
 // WithQuotaSpec sets the resource quota spec.
 func (builder *Builder) WithQuotaSpec(quotaSpec corev1.ResourceQuotaSpec) *Builder {
-	if builder == nil {
-		glog.V(100).Info("Builder is nil")
-
-		return nil
-	}
-
-	if builder.Definition == nil {
-		glog.V(100).Info("Resource Quota definition is nil")
-
-		return nil
+	if valid, _ := builder.validate(); !valid {
+		return builder
 	}
 
 	builder.Definition.Spec = quotaSpec

@@ -122,7 +122,7 @@ func TestResourceQuotaWithQuotaSpec(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testBuilder := &Builder{
-			apiClient: nil,
+			apiClient: clients.GetTestClients(clients.TestClientParams{}).CoreV1Interface,
 			Definition: &corev1.ResourceQuota{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "testRQ",
@@ -152,7 +152,11 @@ func TestResourceQuotaWithQuotaSpec(t *testing.T) {
 			assert.Equal(t, resource.MustParse("1"), testBuilder.Definition.Spec.Hard[corev1.ResourceCPU])
 			assert.Equal(t, resource.MustParse("1Gi"), testBuilder.Definition.Spec.Hard[corev1.ResourceMemory])
 		} else {
-			assert.Nil(t, result)
+			if !testCase.builderNil {
+				assert.NotNil(t, result)
+			} else {
+				assert.Nil(t, result)
+			}
 		}
 	}
 }
