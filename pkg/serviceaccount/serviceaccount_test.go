@@ -11,6 +11,54 @@ import (
 	k8sfake "k8s.io/client-go/kubernetes/fake"
 )
 
+func TestNewBuilder(t *testing.T) {
+	testCases := []struct {
+		name        string
+		namespace   string
+		expectedSA  *corev1.ServiceAccount
+		expectedErr string
+	}{
+		{
+			name:      "test-sa",
+			namespace: "test-ns",
+			expectedSA: &corev1.ServiceAccount{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-sa",
+					Namespace: "test-ns",
+				},
+			},
+			expectedErr: "",
+		},
+		{
+			name:        "",
+			namespace:   "test-ns",
+			expectedSA:  nil,
+			expectedErr: "serviceaccount 'name' cannot be empty",
+		},
+		{
+			name:        "test-sa",
+			namespace:   "",
+			expectedSA:  nil,
+			expectedErr: "serviceaccount 'nsname' cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testSettings := clients.GetTestClients(clients.TestClientParams{})
+
+		testBuilder := NewBuilder(testSettings, testCase.name, testCase.namespace)
+
+		if testCase.expectedErr != "" {
+			assert.NotNil(t, testBuilder)
+			assert.Equal(t, testCase.expectedErr, testBuilder.errorMsg)
+		} else {
+			assert.NotNil(t, testBuilder)
+			assert.Equal(t, testCase.expectedSA.Name, testBuilder.Definition.Name)
+			assert.Equal(t, testCase.expectedSA.Namespace, testBuilder.Definition.Namespace)
+		}
+	}
+}
+
 func TestServiceAccountPull(t *testing.T) {
 	generateServiceAccount := func(name, namespace string) *corev1.ServiceAccount {
 		return &corev1.ServiceAccount{
@@ -153,6 +201,52 @@ func TestServiceAccountDelete(t *testing.T) {
 	}
 }
 
+func TestServiceAccountWithOptions(t *testing.T) {
+	testBuilder := buildValidTestBuilder()
+
+	testBuilder.WithOptions(func(builder *Builder) (*Builder, error) {
+		return builder, nil
+	})
+
+	assert.Equal(t, "", testBuilder.errorMsg)
+}
+
+func TestServiceAccountExists(t *testing.T) {
+	generateServiceAccount := func(name, namespace string) *corev1.ServiceAccount {
+		return &corev1.ServiceAccount{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      name,
+				Namespace: namespace,
+			},
+		}
+	}
+
+	testCases := []struct {
+		saExistsAlready bool
+	}{
+		{
+			saExistsAlready: false,
+		},
+		{
+			saExistsAlready: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		var runtimeObjects []runtime.Object
+
+		testSA := generateServiceAccount("test-sa", "test-ns")
+
+		if testCase.saExistsAlready {
+			runtimeObjects = append(runtimeObjects, testSA)
+		}
+
+		testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects, testSA.Name, testSA.Namespace)
+		result := testBuilder.Exists()
+		assert.Equal(t, testCase.saExistsAlready, result)
+	}
+}
+
 func TestServiceAccountValidate(t *testing.T) {
 	testCases := []struct {
 		builderNil    bool
@@ -213,14 +307,14 @@ func TestServiceAccountValidate(t *testing.T) {
 	}
 }
 
-func TestServiceAccountWithOptions(t *testing.T) {
-	testBuilder := buildValidTestBuilder()
+func buildTestBuilderWithFakeObjects(objects []runtime.Object, name, namespace string) *Builder {
+	fakeClient := k8sfake.NewSimpleClientset(objects...)
 
-	testBuilder.WithOptions(func(builder *Builder) (*Builder, error) {
-		return builder, nil
-	})
-
-	assert.Equal(t, "", testBuilder.errorMsg)
+	return NewBuilder(&clients.Settings{
+		K8sClient:       fakeClient,
+		CoreV1Interface: fakeClient.CoreV1(),
+		AppsV1Interface: fakeClient.AppsV1(),
+	}, name, namespace)
 }
 
 func buildValidTestBuilder() *Builder {
@@ -231,98 +325,4 @@ func buildValidTestBuilder() *Builder {
 		AppsV1Interface: fakeClient.AppsV1(),
 		CoreV1Interface: fakeClient.CoreV1(),
 	}, "test-sa", "test-ns")
-}
-
-func TestNewBuilder(t *testing.T) {
-	testCases := []struct {
-		name        string
-		namespace   string
-		expectedSA  *corev1.ServiceAccount
-		expectedErr string
-	}{
-		{
-			name:      "test-sa",
-			namespace: "test-ns",
-			expectedSA: &corev1.ServiceAccount{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-sa",
-					Namespace: "test-ns",
-				},
-			},
-			expectedErr: "",
-		},
-		{
-			name:        "",
-			namespace:   "test-ns",
-			expectedSA:  nil,
-			expectedErr: "serviceaccount 'name' cannot be empty",
-		},
-		{
-			name:        "test-sa",
-			namespace:   "",
-			expectedSA:  nil,
-			expectedErr: "serviceaccount 'nsname' cannot be empty",
-		},
-	}
-
-	for _, testCase := range testCases {
-		testSettings := clients.GetTestClients(clients.TestClientParams{})
-
-		testBuilder := NewBuilder(testSettings, testCase.name, testCase.namespace)
-
-		if testCase.expectedErr != "" {
-			assert.NotNil(t, testBuilder)
-			assert.Equal(t, testCase.expectedErr, testBuilder.errorMsg)
-		} else {
-			assert.NotNil(t, testBuilder)
-			assert.Equal(t, testCase.expectedSA.Name, testBuilder.Definition.Name)
-			assert.Equal(t, testCase.expectedSA.Namespace, testBuilder.Definition.Namespace)
-		}
-	}
-}
-
-func TestServiceAccountExists(t *testing.T) {
-	generateServiceAccount := func(name, namespace string) *corev1.ServiceAccount {
-		return &corev1.ServiceAccount{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: namespace,
-			},
-		}
-	}
-
-	testCases := []struct {
-		saExistsAlready bool
-	}{
-		{
-			saExistsAlready: false,
-		},
-		{
-			saExistsAlready: true,
-		},
-	}
-
-	for _, testCase := range testCases {
-		var runtimeObjects []runtime.Object
-
-		testSA := generateServiceAccount("test-sa", "test-ns")
-
-		if testCase.saExistsAlready {
-			runtimeObjects = append(runtimeObjects, testSA)
-		}
-
-		testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects, testSA.Name, testSA.Namespace)
-		result := testBuilder.Exists()
-		assert.Equal(t, testCase.saExistsAlready, result)
-	}
-}
-
-func buildTestBuilderWithFakeObjects(objects []runtime.Object, name, namespace string) *Builder {
-	fakeClient := k8sfake.NewSimpleClientset(objects...)
-
-	return NewBuilder(&clients.Settings{
-		K8sClient:       fakeClient,
-		CoreV1Interface: fakeClient.CoreV1(),
-		AppsV1Interface: fakeClient.AppsV1(),
-	}, name, namespace)
 }
