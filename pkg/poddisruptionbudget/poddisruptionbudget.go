@@ -10,6 +10,7 @@ import (
 	policyv1 "k8s.io/api/policy/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	policyv1typed "k8s.io/client-go/kubernetes/typed/policy/v1"
 )
 
@@ -223,6 +224,15 @@ func (builder *Builder) Update(force bool) (*Builder, error) {
 	builder.Object = builder.Definition
 
 	return builder, err
+}
+
+// GetGVR returns the GroupVersionResource for the Pod Disruption Budget.
+func GetGVR() schema.GroupVersionResource {
+	return schema.GroupVersionResource{
+		Group:    "policy",
+		Version:  "v1",
+		Resource: "poddisruptionbudgets",
+	}
 }
 
 func (builder *Builder) validate() (bool, error) {
