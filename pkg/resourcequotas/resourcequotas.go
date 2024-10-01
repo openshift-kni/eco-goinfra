@@ -143,22 +143,25 @@ func (builder *Builder) Update(force bool) (*Builder, error) {
 
 	if err != nil {
 		if force {
-			glog.V(100).Infof("Force updating resource quota %s in namespace %s",
-				builder.Definition.Name, builder.Definition.Namespace)
+			glog.V(100).Infof(
+				msg.FailToUpdateNotification("resource quota", builder.Definition.Name, builder.Definition.Namespace))
 
 			err := builder.Delete()
+
 			if err != nil {
 				glog.V(100).Infof(msg.FailToUpdateError("resource quota",
 					builder.Definition.Name, builder.Definition.Namespace))
+
+				return nil, err
 			}
 
-			return nil, err
+			return builder.Create()
 		}
-
-		return builder.Create()
 	}
 
-	builder.Object = builder.Definition
+	if err == nil {
+		builder.Object = builder.Definition
+	}
 
 	return builder, err
 }
