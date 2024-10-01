@@ -1,5 +1,5 @@
 run:
-  go: 1.22
+  go: 1.23
   timeout: 15m0s
   skip-dirs-use-default: true
   fast: false
@@ -71,7 +71,7 @@ linters-settings:
     statements: 40
   unused:
     check-exported: true
-    go: "1.22"
+    go: "1.23"
   staticcheck:
     # https://staticcheck.io/docs/options#checks
     checks:
