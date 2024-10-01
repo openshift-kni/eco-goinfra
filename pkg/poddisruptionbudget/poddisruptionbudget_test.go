@@ -133,10 +133,10 @@ func TestPDBPull(t *testing.T) {
 
 		var testSettings *clients.Settings
 
-		testResourceQuota := generatePDB(testCase.testName, testCase.testNamespace)
+		testPDB := generatePDB(testCase.testName, testCase.testNamespace)
 
 		if testCase.addToRuntimeObjects {
-			runtimeObjects = append(runtimeObjects, testResourceQuota)
+			runtimeObjects = append(runtimeObjects, testPDB)
 		}
 
 		testSettings = clients.GetTestClients(clients.TestClientParams{
@@ -157,8 +157,8 @@ func TestPDBPull(t *testing.T) {
 			}
 		} else {
 			assert.Nil(t, err)
-			assert.Equal(t, testResourceQuota.Name, builderResult.Object.Name)
-			assert.Equal(t, testResourceQuota.Namespace, builderResult.Object.Namespace)
+			assert.Equal(t, testPDB.Name, builderResult.Object.Name)
+			assert.Equal(t, testPDB.Namespace, builderResult.Object.Namespace)
 		}
 	}
 }
@@ -240,7 +240,7 @@ func TestPDBCreate(t *testing.T) {
 	for _, testCase := range testCases {
 		var runtimeObjects []runtime.Object
 
-		testPDB := generatePDB("testRQ", "testNamespace")
+		testPDB := generatePDB("testPDB", "testNamespace")
 
 		if testCase.pdbExistsAlready {
 			runtimeObjects = append(runtimeObjects, testPDB)
@@ -271,7 +271,7 @@ func TestPDBDelete(t *testing.T) {
 	for _, testCase := range testCases {
 		var runtimeObjects []runtime.Object
 
-		testPDB := generatePDB("testRQ", "testNamespace")
+		testPDB := generatePDB("testPDB", "testNamespace")
 
 		if testCase.pdbExistsAlready {
 			runtimeObjects = append(runtimeObjects, testPDB)
@@ -284,7 +284,7 @@ func TestPDBDelete(t *testing.T) {
 	}
 }
 
-func TestResourceQuotaExists(t *testing.T) {
+func TestPDBExists(t *testing.T) {
 	testCases := []struct {
 		pdbExistsAlready bool
 	}{
@@ -299,13 +299,13 @@ func TestResourceQuotaExists(t *testing.T) {
 	for _, testCase := range testCases {
 		var runtimeObjects []runtime.Object
 
-		testRQ := generatePDB("testRQ", "testNamespace")
+		testPDB := generatePDB("testPDB", "testNamespace")
 
 		if testCase.pdbExistsAlready {
-			runtimeObjects = append(runtimeObjects, testRQ)
+			runtimeObjects = append(runtimeObjects, testPDB)
 		}
 
-		testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects, testRQ.Name, testRQ.Namespace)
+		testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects, testPDB.Name, testPDB.Namespace)
 		result := testBuilder.Exists()
 
 		assert.Equal(t, testCase.pdbExistsAlready, result)
@@ -314,40 +314,40 @@ func TestResourceQuotaExists(t *testing.T) {
 
 func TestPDBUpdate(t *testing.T) {
 	testCases := []struct {
-		rqExistsAlready bool
-		force           bool
+		pdbExistsAlready bool
+		force            bool
 	}{
-		// {
-		// 	rqExistsAlready: true,
-		// 	force:           false,
-		// },
-		// {
-		// 	rqExistsAlready: false,
-		// 	force:           false,
-		// },
 		{
-			rqExistsAlready: true,
-			force:           true,
+			pdbExistsAlready: true,
+			force:            false,
+		},
+		{
+			pdbExistsAlready: false,
+			force:            false,
+		},
+		{
+			pdbExistsAlready: true,
+			force:            true,
 		},
 	}
 
 	for _, testCase := range testCases {
 		var runtimeObjects []runtime.Object
 
-		testRQ := generatePDB("testRQ", "testNamespace")
+		testPDB := generatePDB("testPDB", "testNamespace")
 
-		if testCase.rqExistsAlready {
-			runtimeObjects = append(runtimeObjects, testRQ)
+		if testCase.pdbExistsAlready {
+			runtimeObjects = append(runtimeObjects, testPDB)
 		}
 
-		testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects, testRQ.Name, testRQ.Namespace)
+		testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects, testPDB.Name, testPDB.Namespace)
 		builderResult, err := testBuilder.Update(testCase.force)
 
-		if testCase.rqExistsAlready {
+		if testCase.pdbExistsAlready {
 			assert.Nil(t, err)
 			assert.NotNil(t, testBuilder.Object)
-			assert.Equal(t, testRQ.Name, builderResult.Object.Name)
-			assert.Equal(t, testRQ.Namespace, builderResult.Object.Namespace)
+			assert.Equal(t, testPDB.Name, builderResult.Object.Name)
+			assert.Equal(t, testPDB.Namespace, builderResult.Object.Namespace)
 		} else {
 			assert.NotNil(t, err)
 		}

@@ -177,6 +177,9 @@ func (builder *Builder) WithPDBSpec(spec policyv1.PodDisruptionBudgetSpec) *Buil
 		return builder
 	}
 
+	glog.V(100).Infof("Setting PodDisruptionBudgetSpec for PodDisruptionBudget %s in namespace %s",
+		builder.Definition.Name, builder.Definition.Namespace)
+
 	builder.Definition.Spec = spec
 
 	return builder
