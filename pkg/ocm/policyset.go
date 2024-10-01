@@ -46,7 +46,7 @@ func NewPolicySetBuilder(
 		return nil
 	}
 
-	builder := PolicySetBuilder{
+	builder := &PolicySetBuilder{
 		apiClient: apiClient.Client,
 		Definition: &policiesv1beta1.PolicySet{
 			ObjectMeta: metav1.ObjectMeta{
@@ -63,21 +63,27 @@ func NewPolicySetBuilder(
 		glog.V(100).Info("The name of the PolicySet is empty")
 
 		builder.errorMsg = "policyset's 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Info("The namespace of the PolicySet is empty")
 
 		builder.errorMsg = "policyset's 'nsname' cannot be empty"
+
+		return builder
 	}
 
 	if policy == "" {
 		glog.V(100).Info("The policy of the PolicySet is empty")
 
 		builder.errorMsg = "policyset's 'policy' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // PullPolicySet pulls existing policySet into Builder struct.
@@ -97,7 +103,7 @@ func PullPolicySet(apiClient *clients.Settings, name, nsname string) (*PolicySet
 		return nil, err
 	}
 
-	builder := PolicySetBuilder{
+	builder := &PolicySetBuilder{
 		apiClient: apiClient.Client,
 		Definition: &policiesv1beta1.PolicySet{
 			ObjectMeta: metav1.ObjectMeta{
@@ -125,7 +131,7 @@ func PullPolicySet(apiClient *clients.Settings, name, nsname string) (*PolicySet
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Exists checks whether the given policySet exists.
@@ -163,7 +169,7 @@ func (builder *PolicySetBuilder) Get() (*policiesv1beta1.PolicySet, error) {
 		return nil, err
 	}
 
-	return policySet, err
+	return policySet, nil
 }
 
 // Create makes a policySet in the cluster and stores the created object in struct.
@@ -289,13 +295,13 @@ func (builder *PolicySetBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

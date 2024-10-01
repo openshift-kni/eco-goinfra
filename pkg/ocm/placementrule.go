@@ -45,7 +45,7 @@ func NewPlacementRuleBuilder(apiClient *clients.Settings, name, nsname string) *
 		return nil
 	}
 
-	builder := PlacementRuleBuilder{
+	builder := &PlacementRuleBuilder{
 		apiClient: apiClient.Client,
 		Definition: &placementrulev1.PlacementRule{
 			ObjectMeta: metav1.ObjectMeta{
@@ -59,15 +59,19 @@ func NewPlacementRuleBuilder(apiClient *clients.Settings, name, nsname string) *
 		glog.V(100).Info("The name of the PlacementRule is empty")
 
 		builder.errorMsg = "placementrule's 'name' cannot be empty"
+
+		return builder
 	}
 
 	if nsname == "" {
 		glog.V(100).Info("The namespace of the PlacementRule is empty")
 
 		builder.errorMsg = "placementrule's 'nsname' cannot be empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // PullPlacementRule pulls existing placementrule into Builder struct.
@@ -87,7 +91,7 @@ func PullPlacementRule(apiClient *clients.Settings, name, nsname string) (*Place
 		return nil, err
 	}
 
-	builder := PlacementRuleBuilder{
+	builder := &PlacementRuleBuilder{
 		apiClient: apiClient.Client,
 		Definition: &placementrulev1.PlacementRule{
 			ObjectMeta: metav1.ObjectMeta{
@@ -115,7 +119,7 @@ func PullPlacementRule(apiClient *clients.Settings, name, nsname string) (*Place
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Exists checks whether the given placementrule exists.
@@ -153,7 +157,7 @@ func (builder *PlacementRuleBuilder) Get() (*placementrulev1.PlacementRule, erro
 		return nil, err
 	}
 
-	return placementRule, err
+	return placementRule, nil
 }
 
 // Create makes a placementrule in the cluster and stores the created object in struct.
@@ -255,13 +259,13 @@ func (builder *PlacementRuleBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {
