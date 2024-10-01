@@ -10,6 +10,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	corev1Typed "k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
@@ -230,6 +231,15 @@ func (builder *Builder) Delete() error {
 	builder.Object = nil
 
 	return nil
+}
+
+// GetGVR returns resource quotas's GroupVersionResource which could be used for Clean function.
+func GetGVR() schema.GroupVersionResource {
+	return schema.GroupVersionResource{
+		Group:    "",
+		Version:  "v1",
+		Resource: "resourcequotas",
+	}
 }
 
 func (builder *Builder) validate() (bool, error) {
