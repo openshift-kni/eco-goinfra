@@ -429,8 +429,9 @@ func (builder *ControlPlaneBuilder) Delete() error {
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return fmt.Errorf("serviceMeshControlPlane %s in namespace %s cannot be deleted because it does not exist",
-			builder.Definition.Name, builder.Definition.Namespace)
+		builder.Object = nil
+
+		return nil
 	}
 
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
@@ -510,13 +511,13 @@ func (builder *ControlPlaneBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

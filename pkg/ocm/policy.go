@@ -199,7 +199,9 @@ func (builder *PolicyBuilder) Delete() (*PolicyBuilder, error) {
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return builder, fmt.Errorf("policy cannot be deleted because it does not exist")
+		builder.Object = nil
+
+		return builder, nil
 	}
 
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)

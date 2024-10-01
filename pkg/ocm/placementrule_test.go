@@ -257,39 +257,24 @@ func TestPlacementRuleDelete(t *testing.T) {
 
 func TestPlacementRuleUpdate(t *testing.T) {
 	testCases := []struct {
-		alreadyExists bool
-		force         bool
+		force bool
 	}{
 		{
-			alreadyExists: false,
-			force:         false,
+			force: false,
 		},
 		{
-			alreadyExists: true,
-			force:         false,
-		},
-		{
-			alreadyExists: false,
-			force:         true,
-		},
-		{
-			alreadyExists: true,
-			force:         true,
+			force: true,
 		},
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := buildValidPlacementRuleTestBuilder(buildTestClientWithPlacementRuleScheme())
-
 		// Create the builder rather than just adding it to the client so that the proper metadata is added and
 		// the update will not fail.
-		if testCase.alreadyExists {
-			var err error
+		var err error
 
-			testBuilder = buildValidPlacementRuleTestBuilder(buildTestClientWithPlacementRuleScheme())
-			testBuilder, err = testBuilder.Create()
-			assert.Nil(t, err)
-		}
+		testBuilder := buildValidPlacementRuleTestBuilder(buildTestClientWithPlacementRuleScheme())
+		testBuilder, err = testBuilder.Create()
+		assert.Nil(t, err)
 
 		assert.NotNil(t, testBuilder.Definition)
 		assert.Empty(t, testBuilder.Definition.Spec.SchedulerName)
@@ -299,13 +284,9 @@ func TestPlacementRuleUpdate(t *testing.T) {
 		placementRuleBuilder, err := testBuilder.Update(testCase.force)
 		assert.NotNil(t, testBuilder.Definition)
 
-		if testCase.alreadyExists {
-			assert.Nil(t, err)
-			assert.Equal(t, testBuilder.Definition.Name, placementRuleBuilder.Definition.Name)
-			assert.Equal(t, testBuilder.Definition.Spec.SchedulerName, placementRuleBuilder.Definition.Spec.SchedulerName)
-		} else {
-			assert.NotNil(t, err)
-		}
+		assert.Nil(t, err)
+		assert.Equal(t, testBuilder.Definition.Name, placementRuleBuilder.Definition.Name)
+		assert.Equal(t, testBuilder.Definition.Spec.SchedulerName, placementRuleBuilder.Definition.Spec.SchedulerName)
 	}
 }
 

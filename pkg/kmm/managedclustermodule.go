@@ -263,6 +263,8 @@ func (builder *ManagedClusterModuleBuilder) Delete() (*ManagedClusterModuleBuild
 	if !builder.Exists() {
 		glog.V(100).Infof("managedclustermodule cannot be deleted because it does not exist")
 
+		builder.Object = nil
+
 		return builder, nil
 	}
 

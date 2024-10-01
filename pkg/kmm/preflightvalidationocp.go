@@ -264,6 +264,8 @@ func (builder *PreflightValidationOCPBuilder) Delete() (*PreflightValidationOCPB
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
+		builder.Object = nil
+
 		return builder, nil
 	}
 

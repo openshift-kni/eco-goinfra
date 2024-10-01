@@ -178,6 +178,8 @@ func (builder *Builder) Delete() (*Builder, error) {
 	if !builder.Exists() {
 		glog.V(100).Infof("nodeFeatureDiscovery cannot be deleted because it does not exist")
 
+		builder.Object = nil
+
 		return builder, nil
 	}
 
