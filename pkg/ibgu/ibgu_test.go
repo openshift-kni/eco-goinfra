@@ -542,6 +542,110 @@ func TestIbguWaitUntilDeleted(t *testing.T) {
 	}
 }
 
+func TestIbguWaitForCondition(t *testing.T) {
+	testCases := []struct {
+		condition     metav1.Condition
+		exists        bool
+		conditionMet  bool
+		valid         bool
+		expectedError error
+	}{
+		{
+			condition:     conditionComplete,
+			exists:        true,
+			conditionMet:  true,
+			valid:         true,
+			expectedError: nil,
+		},
+		{
+			condition:     conditionComplete,
+			exists:        false,
+			conditionMet:  true,
+			valid:         true,
+			expectedError: fmt.Errorf("ibgu object %s does not exist in namespace %s", testIbguName, testIbguNamespace),
+		},
+		{
+			condition:     conditionComplete,
+			exists:        true,
+			conditionMet:  false,
+			valid:         true,
+			expectedError: context.DeadlineExceeded,
+		},
+		{
+			condition:     conditionComplete,
+			exists:        true,
+			conditionMet:  true,
+			valid:         false,
+			expectedError: fmt.Errorf("ibgu 'nsname' cannot be empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		var (
+			runtimeObjects []runtime.Object
+			ibguBuilder    *IbguBuilder
+		)
+
+		if testCase.exists {
+			ibgu := generateIbgu()
+
+			if testCase.conditionMet {
+				ibgu.Status.Conditions = append(ibgu.Status.Conditions, testCase.condition)
+			}
+
+			runtimeObjects = append(runtimeObjects, ibgu)
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: testSchemes,
+		})
+
+		if testCase.valid {
+			ibguBuilder = generateValidIbguBuilder(testSettings)
+		} else {
+			ibguBuilder = generateInvalidIbguBuilder(testSettings)
+		}
+
+		_, err := ibguBuilder.WaitForCondition(testCase.condition, time.Second)
+		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
+func TestIbguWaitUntilComplete(t *testing.T) {
+	testCases := []struct {
+		complete      bool
+		expectedError error
+	}{
+		{
+			complete:      true,
+			expectedError: nil,
+		},
+		{
+			complete:      false,
+			expectedError: context.DeadlineExceeded,
+		},
+	}
+
+	for _, testCase := range testCases {
+		ibgu := generateIbgu()
+
+		if testCase.complete {
+			ibgu.Status.Conditions = append(ibgu.Status.Conditions, conditionComplete)
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects:  []runtime.Object{ibgu},
+			SchemeAttachers: testSchemes,
+		})
+
+		ibguBuilder := generateValidIbguBuilder(testSettings)
+		_, err := ibguBuilder.WaitUntilComplete(time.Second)
+
+		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
 func generateIbguBuilderWithFakeObjects(objects []runtime.Object) *IbguBuilder {
 	return &IbguBuilder{
 		apiClient: clients.GetTestClients(
@@ -572,5 +676,8 @@ func generateIbgu() *v1alpha1.ImageBasedGroupUpgrade {
 			Namespace: testIbguNamespace,
 		},
 		Spec: v1alpha1.ImageBasedGroupUpgradeSpec{},
+		Status: v1alpha1.ImageBasedGroupUpgradeStatus{
+			Conditions: []metav1.Condition{},
+		},
 	}
 }
