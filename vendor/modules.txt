@@ -548,8 +548,8 @@ github.com/openshift/api/template
 github.com/openshift/api/template/v1
 github.com/openshift/api/user
 github.com/openshift/api/user/v1
-# github.com/openshift/client-go v0.0.0-20240415214935-be70f772f157
-## explicit; go 1.21
+# github.com/openshift/client-go v0.0.1
+## explicit; go 1.20
 github.com/openshift/client-go/build/applyconfigurations/build/v1
 github.com/openshift/client-go/build/applyconfigurations/internal
 github.com/openshift/client-go/build/clientset/versioned
@@ -654,6 +654,9 @@ github.com/openshift/machine-config-operator/pkg/generated/informers/externalver
 github.com/openshift/machine-config-operator/pkg/generated/informers/externalversions/machineconfiguration.openshift.io/v1
 github.com/openshift/machine-config-operator/pkg/generated/listers/machineconfiguration.openshift.io/v1
 github.com/openshift/machine-config-operator/pkg/version
+# github.com/openshift/ptp-operator v0.0.0-20240911175639-82a037980dfb
+## explicit; go 1.22
+github.com/openshift/ptp-operator/api/v1
 # github.com/ovn-org/ovn-kubernetes/go-controller v0.0.0-20240614144800-61d5c5937bd4
 ## explicit; go 1.21
 github.com/ovn-org/ovn-kubernetes/go-controller/pkg/crd/egressservice/v1
@@ -795,7 +798,7 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/socks
 golang.org/x/net/proxy
-# golang.org/x/oauth2 v0.20.0
+# golang.org/x/oauth2 v0.21.0
 ## explicit; go 1.18
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
@@ -833,8 +836,8 @@ golang.org/x/tools/go/ast/inspector
 # gomodules.xyz/jsonpatch/v2 v2.4.0
 ## explicit; go 1.20
 gomodules.xyz/jsonpatch/v2
-# google.golang.org/protobuf v1.34.1
-## explicit; go 1.17
+# google.golang.org/protobuf v1.34.2
+## explicit; go 1.20
 google.golang.org/protobuf/encoding/protodelim
 google.golang.org/protobuf/encoding/prototext
 google.golang.org/protobuf/encoding/protowire
@@ -1384,7 +1387,7 @@ k8s.io/component-base/version
 # k8s.io/klog v1.0.0
 ## explicit; go 1.12
 k8s.io/klog
-# k8s.io/klog/v2 v2.120.1
+# k8s.io/klog/v2 v2.130.1
 ## explicit; go 1.18
 k8s.io/klog/v2
 k8s.io/klog/v2/internal/buffer
@@ -1426,7 +1429,7 @@ k8s.io/kubectl/pkg/validation
 # k8s.io/kubelet v0.29.4
 ## explicit; go 1.21
 k8s.io/kubelet/config/v1beta1
-# k8s.io/utils v0.0.0-20240310230437-4693a0247e57
+# k8s.io/utils v0.0.0-20240902221715-702e33fdd3c3
 ## explicit; go 1.18
 k8s.io/utils/buffer
 k8s.io/utils/clock

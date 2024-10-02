@@ -30,7 +30,7 @@ require (
 	github.com/openshift-kni/lifecycle-agent v0.0.0-20240606123201-0c45cd13c2f1
 	github.com/openshift-kni/numaresources-operator v0.4.16-0rc0
 	github.com/openshift/api v3.9.1-0.20191111211345-a27ff30ebf09+incompatible
-	github.com/openshift/client-go v0.0.0-20240415214935-be70f772f157
+	github.com/openshift/client-go v0.0.1
 	github.com/openshift/cluster-logging-operator v0.0.0-20240606085930-750f369019d4 // release-5.8
 	github.com/openshift/cluster-nfd-operator v0.0.0-20240604082319-19bf50784aa7
 	github.com/openshift/cluster-node-tuning-operator v0.0.0-20240606084543-6d2e11aec345
@@ -38,6 +38,7 @@ require (
 	github.com/openshift/elasticsearch-operator v0.0.0-20220613183908-e1648e67c298
 	github.com/openshift/local-storage-operator v0.0.0-20240422172451-2a80d7f6681d // release-4.16
 	github.com/openshift/machine-config-operator v0.0.1-0.20230811181556-63d7be1ef18b
+	github.com/openshift/ptp-operator v0.0.0-20240911175639-82a037980dfb
 	github.com/ovn-org/ovn-kubernetes/go-controller v0.0.0-20240614144800-61d5c5937bd4
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.73.2
@@ -57,10 +58,10 @@ require (
 	k8s.io/apiextensions-apiserver v0.29.4
 	k8s.io/apimachinery v0.29.5
 	k8s.io/client-go v12.0.0+incompatible
-	k8s.io/klog/v2 v2.120.1
+	k8s.io/klog/v2 v2.130.1
 	k8s.io/kubectl v0.29.4
 	k8s.io/kubelet v0.29.4
-	k8s.io/utils v0.0.0-20240310230437-4693a0247e57
+	k8s.io/utils v0.0.0-20240902221715-702e33fdd3c3
 	maistra.io/api v0.0.0-20230704084350-dfc96815fb16
 	open-cluster-management.io/api v0.13.0
 	open-cluster-management.io/governance-policy-propagator v0.13.0
@@ -176,7 +177,7 @@ require (
 	go.mongodb.org/mongo-driver v1.15.0 // indirect
 	go.starlark.net v0.0.0-20240123142251-f86470692795 // indirect
 	go4.org v0.0.0-20230225012048-214862532bf5 // indirect
-	golang.org/x/oauth2 v0.20.0 // indirect
+	golang.org/x/oauth2 v0.21.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
 	golang.org/x/term v0.21.0 // indirect
@@ -184,7 +185,7 @@ require (
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.22.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
-	google.golang.org/protobuf v1.34.1 // indirect
+	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
