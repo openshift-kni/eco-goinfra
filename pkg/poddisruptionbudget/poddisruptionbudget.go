@@ -210,15 +210,18 @@ func (builder *Builder) Update(force bool) (*Builder, error) {
 				builder.Definition.Name, builder.Definition.Namespace)
 
 			err := builder.Delete()
+
 			if err != nil {
 				glog.V(100).Infof(msg.FailToUpdateError("pod disruption budget",
 					builder.Definition.Name, builder.Definition.Namespace))
+
+				return nil, err
 			}
 
-			return nil, err
+			return builder.Create()
 		}
 
-		return builder.Create()
+		return nil, err
 	}
 
 	builder.Object = builder.Definition
