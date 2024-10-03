@@ -58,14 +58,14 @@
 - name: assisted-hive-scheme
   sync: true
   repo_link: "https://github.com/openshift/hive"
-  branch: ocm-2.5-mce-2.0
+  branch: mce-2.7
   remote_api_directory: apis/scheme
   local_api_directory: schemes/assisted/hive/scheme
 
 - name: assisted-hive-v1
   sync: true
   repo_link: "https://github.com/openshift/hive"
-  branch: ocm-2.5-mce-2.0
+  branch: mce-2.7
   remote_api_directory: apis/hive/v1
   local_api_directory: schemes/assisted/hive/api/v1
   replace_imports:

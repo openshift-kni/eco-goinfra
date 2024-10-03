@@ -887,7 +887,7 @@ func TestAgentClusterInstallWaitForStateInfo(t *testing.T) {
 func TestAgentClusterInstallWaitForConditionMessage(t *testing.T) {
 	testCases := []struct {
 		status        hiveextV1Beta1.AgentClusterInstallStatus
-		conditionType string
+		conditionType v1.ClusterInstallConditionType
 		message       string
 	}{
 		{
@@ -940,7 +940,7 @@ func TestAgentClusterInstallWaitForConditionMessage(t *testing.T) {
 func TestAgentClusterInstallWaitForConditionStatus(t *testing.T) {
 	testCases := []struct {
 		status          hiveextV1Beta1.AgentClusterInstallStatus
-		conditionType   string
+		conditionType   v1.ClusterInstallConditionType
 		conditionStatus corev1.ConditionStatus
 	}{
 		{
@@ -993,7 +993,7 @@ func TestAgentClusterInstallWaitForConditionStatus(t *testing.T) {
 func TestAgentClusterInstallWaitForConditionReason(t *testing.T) {
 	testCases := []struct {
 		status        hiveextV1Beta1.AgentClusterInstallStatus
-		conditionType string
+		conditionType v1.ClusterInstallConditionType
 		reason        string
 	}{
 		{
