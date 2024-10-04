@@ -85,7 +85,7 @@ type ImageClusterInstallSpec struct {
 
 	// ExtraManifestsRefs is list of config map references containing additional manifests to be applied to the relocated cluster.
 	// +optional
-	ExtraManifestsRefs []corev1.LocalObjectReference `json:"extraManifestsRef,omitempty"`
+	ExtraManifestsRefs []corev1.LocalObjectReference `json:"extraManifestsRefs,omitempty"`
 
 	// BareMetalHostRef identifies a BareMetalHost object to be used to attach the configuration to the host.
 	// +optional
