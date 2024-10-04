@@ -23,6 +23,9 @@ install: deps-update
 test:
 	go test ./...
 
+integration-test:
+	go test -tags=integration ./...
+
 coverage-html:
 	go test -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out
