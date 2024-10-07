@@ -16,11 +16,11 @@ jobs:
       ECO_GOTESTS_REPO: openshift-kni/eco-gotests
 
     steps:
-      - name: Set up Go 1.22
+      - name: Set up Go 1.23
         if: ${{ !contains(github.event.*.labels.*.name, 'ignore-dep-check') }}
         uses: actions/setup-go@v5
         with:
-          go-version: 1.22.6
+          go-version: 1.23.2
 
       - name: Check out the eco-goinfra code
         if: ${{ !contains(github.event.*.labels.*.name, 'ignore-dep-check') }}
