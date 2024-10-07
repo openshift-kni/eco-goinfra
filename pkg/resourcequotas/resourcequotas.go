@@ -158,11 +158,11 @@ func (builder *Builder) Update(force bool) (*Builder, error) {
 
 			return builder.Create()
 		}
+
+		return nil, err
 	}
 
-	if err == nil {
-		builder.Object = builder.Definition
-	}
+	builder.Object = builder.Definition
 
 	return builder, err
 }
