@@ -244,7 +244,7 @@ func TestBGPPeerWithHoldTime(t *testing.T) {
 		assert.Equal(t, testCase.expectedError, bgpPeerBuilder.errorMsg)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testCase.holdTime, bgpPeerBuilder.Definition.Spec.HoldTime)
+			assert.Equal(t, testCase.holdTime, *bgpPeerBuilder.Definition.Spec.HoldTime)
 		}
 	}
 }
@@ -275,7 +275,7 @@ func TestBGPPeerWithKeepalive(t *testing.T) {
 		assert.Equal(t, testCase.expectedError, bgpPeerBuilder.errorMsg)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testCase.keepalive, bgpPeerBuilder.Definition.Spec.KeepaliveTime)
+			assert.Equal(t, testCase.keepalive, *bgpPeerBuilder.Definition.Spec.KeepaliveTime)
 		}
 	}
 }
