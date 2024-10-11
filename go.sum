@@ -607,8 +607,8 @@ github.com/MakeNowJust/heredoc v1.0.0/go.mod h1:mG5amYoWBHf8vpLOuehzbGGw0EHxpZZ6
 github.com/Masterminds/goutils v1.1.1 h1:5nUrii3FMTL5diU80unEVvNevw1nH4+ZV4DSLVJLSYI=
 github.com/Masterminds/goutils v1.1.1/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
 github.com/Masterminds/semver/v3 v3.2.0/go.mod h1:qvl/7zhW3nngYb5+80sSMF+FG2BjYrf8m9wsX0PNOMQ=
-github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0rYXWg0=
-github.com/Masterminds/semver/v3 v3.2.1/go.mod h1:qvl/7zhW3nngYb5+80sSMF+FG2BjYrf8m9wsX0PNOMQ=
+github.com/Masterminds/semver/v3 v3.3.0 h1:B8LGeaivUe71a5qox1ICM/JLl0NqZSW5CHyL+hmvYS0=
+github.com/Masterminds/semver/v3 v3.3.0/go.mod h1:4V+yj/TJE1HU9XfppCwVMZq3I84lprf4nC11bSS5beM=
 github.com/Masterminds/sprig/v3 v3.2.3 h1:eL2fZNezLomi0uOLqjQoN6BfsDD+fyLtgbJMAj9n6YA=
 github.com/Masterminds/sprig/v3 v3.2.3/go.mod h1:rXcFaZ2zZbLRJv/xSysmlgIM1u11eBaRMhvYXJNkGuM=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
@@ -1266,8 +1266,8 @@ github.com/openshift-kni/numaresources-operator v0.4.17-0rc0.0.20240903095616-58
 github.com/openshift-kni/numaresources-operator v0.4.17-0rc0.0.20240903095616-58342d895734/go.mod h1:3JEkNx0nBloibpk6cxx5NDz3qPRRgJ03fq23plPEkAI=
 github.com/openshift/api v0.0.0-20240830023148-b7d0481c9094 h1:J1wuGhVxpsHykZBa6Beb1gQ96Ptej9AE/BvwCBiRj1E=
 github.com/openshift/api v0.0.0-20240830023148-b7d0481c9094/go.mod h1:CxgbWAlvu2iQB0UmKTtRu1YfepRg1/vJ64n2DlIEVz4=
-github.com/openshift/client-go v0.0.0-20240523113335-452272e0496d h1:Dq21KMlDTVy2fCIyp0gsW+6ir6FwD3RjnCuza2/bIyM=
-github.com/openshift/client-go v0.0.0-20240523113335-452272e0496d/go.mod h1:jt2Q+6Iheyh6omSPkRMOC6Doad5My/FfBfJpATPD4g0=
+github.com/openshift/client-go v0.0.1 h1:zJ9NsS9rwBtYkYzLCUECkdmrM6jPit3W7Q0+Pxf5gd4=
+github.com/openshift/client-go v0.0.1/go.mod h1:I8qTI1lgErsWc6CVukSjP1PYqpafE7fue0ZPy7A2jiw=
 github.com/openshift/cluster-logging-operator v0.0.0-20241003210634-afb65cea19d1 h1:wHc3FvG1CTkAfOQ6GoAahRc+TDgDapEwnn77zssj3Ac=
 github.com/openshift/cluster-logging-operator v0.0.0-20241003210634-afb65cea19d1/go.mod h1:iLuWnS7rFs5XMY8Y5yZKFwLBWeo/7n7ts1kxJe3pElI=
 github.com/openshift/cluster-nfd-operator v0.0.0-20240902145504-f70d1389d329 h1:FT5pUXcRFPEFQwTjQfGkPPn3OtV/OMjE4LVSnnkryjE=
@@ -1284,6 +1284,8 @@ github.com/openshift/local-storage-operator v0.0.0-20240712213037-f7a4384c92bb h
 github.com/openshift/local-storage-operator v0.0.0-20240712213037-f7a4384c92bb/go.mod h1:Xd0acgr/PW7GbqjF/vM9cK0h+0XZyQgZj5w4GJ3GKoU=
 github.com/openshift/machine-config-operator v0.0.1-0.20231024085435-7e1fb719c1ba h1:WM6K+m2xMAwbQDetKGhV/Rd8yukF3AsU1z74cqoWrz0=
 github.com/openshift/machine-config-operator v0.0.1-0.20231024085435-7e1fb719c1ba/go.mod h1:mSt3ACow31pa1hTRONn+yT5e+KFkgi7G2bFEx5Nj+n0=
+github.com/openshift/ptp-operator v0.0.0-20241008160821-983423165f34 h1:bqOw2RZDyEEsyS4gZNLnUbN88RJE9DiksdS06VGj/iY=
+github.com/openshift/ptp-operator v0.0.0-20241008160821-983423165f34/go.mod h1:p05fjTh1GbWY8UXtutLOvy8m0MefN8kV1hOxoIzUeBE=
 github.com/openshift/sriov-network-operator v0.0.0-20241007120942-40fc75e827a1 h1:eOONPWetpAKkcVjoki9HhhSkLpe47sxuKh/uAaUgInw=
 github.com/openshift/sriov-network-operator v0.0.0-20241007120942-40fc75e827a1/go.mod h1:YL5Y2SIHqmR52FXrt4JyIaodWJyOnEK5n7PW4bL320Q=
 github.com/ovn-org/ovn-kubernetes/go-controller v0.0.0-20240614144800-61d5c5937bd4 h1:rqCh/Kh/7ityDsd1tIh1EjLxJ7ie7J8pH9/nxLZURWc=
