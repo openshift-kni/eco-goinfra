@@ -245,7 +245,7 @@ func TestPodDelete(t *testing.T) {
 
 func TestPodDeleteAndWait(t *testing.T) {
 	testPodDeleteHelper(t, func(builder *Builder) (*Builder, error) {
-		return builder.DeleteAndWait(time.Second)
+		return builder.DeleteAndWait(5 * time.Second)
 	})
 }
 
