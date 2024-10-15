@@ -335,6 +335,8 @@ func (builder *PolicyBuilder) Delete() error {
 	}
 
 	if !builder.Exists() {
+		builder.Object = nil
+
 		return nil
 	}
 

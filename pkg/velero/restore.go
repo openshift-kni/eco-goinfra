@@ -235,7 +235,9 @@ func (builder *RestoreBuilder) Delete() (*RestoreBuilder, error) {
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return builder, fmt.Errorf("restore cannot be deleted because it does not exist")
+		builder.Object = nil
+
+		return builder, nil
 	}
 
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)

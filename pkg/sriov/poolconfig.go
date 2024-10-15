@@ -107,6 +107,8 @@ func (builder *PoolConfigBuilder) Delete() error {
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
+		builder.Object = nil
+
 		return nil
 	}
 
