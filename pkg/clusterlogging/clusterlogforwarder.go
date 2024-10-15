@@ -224,7 +224,12 @@ func (builder *ClusterLogForwarderBuilder) Delete() error {
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		return fmt.Errorf("clusterlogforwarder cannot be deleted because it does not exist")
+		glog.V(100).Infof("Clusterlogforwarder %s in namespace %s does not exist",
+			builder.Definition.Name, builder.Definition.Namespace)
+
+		builder.Object = nil
+
+		return nil
 	}
 
 	err := builder.apiClient.Delete(context.TODO(), builder.Definition)
