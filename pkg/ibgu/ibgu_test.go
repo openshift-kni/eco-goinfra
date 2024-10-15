@@ -646,6 +646,37 @@ func TestIbguWaitUntilComplete(t *testing.T) {
 	}
 }
 
+func TestIbguWithAutoRollbackOnFailure(t *testing.T) {
+	testCases := []struct {
+		initMonitorTimeout int
+		expectedError      string
+	}{
+		{
+			initMonitorTimeout: 10,
+			expectedError:      "",
+		},
+		{
+			initMonitorTimeout: -1,
+			expectedError:      "initMonitorTimeout cannot be undefined",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := generateValidIbguBuilder(clients.GetTestClients(clients.TestClientParams{}))
+
+		testBuilder.WithAutoRollbackOnFailure(testCase.initMonitorTimeout)
+		assert.Equal(t, testCase.expectedError, testBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.NotNil(t, testBuilder.Definition.Spec.IBUSpec.AutoRollbackOnFailure)
+			assert.Equal(t, testCase.initMonitorTimeout,
+				testBuilder.Definition.Spec.IBUSpec.AutoRollbackOnFailure.InitMonitorTimeoutSeconds)
+		} else {
+			assert.Nil(t, testBuilder.Definition.Spec.IBUSpec.AutoRollbackOnFailure)
+		}
+	}
+}
+
 func generateIbguBuilderWithFakeObjects(objects []runtime.Object) *IbguBuilder {
 	return &IbguBuilder{
 		apiClient: clients.GetTestClients(
