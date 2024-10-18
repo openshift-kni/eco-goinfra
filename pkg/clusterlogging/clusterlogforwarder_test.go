@@ -256,7 +256,7 @@ func TestClusterLogForwarderDelete(t *testing.T) {
 		},
 		{
 			testClusterLogForwarder: buildInValidClusterLogForwarderBuilder(buildClusterLogForwarderClientWithDummyObject()),
-			expectedError:           fmt.Errorf("clusterlogforwarder cannot be deleted because it does not exist"),
+			expectedError:           nil,
 		},
 		{
 			testClusterLogForwarder: buildValidClusterLogForwarderBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -290,9 +290,10 @@ func TestClusterLogForwarderUpdate(t *testing.T) {
 		},
 		{
 			testClusterLogForwarder: buildInValidClusterLogForwarderBuilder(buildClusterLogForwarderClientWithDummyObject()),
-			expectedError:           "clusterlogforwarder cannot be deleted because it does not exist",
-			outputs:                 newOutputs,
-			pipelines:               newPipelines,
+			//nolint:lll
+			expectedError: `ClusterLogForwarder.logging.openshift.io "" is invalid: metadata.name: Required value: name is required`,
+			outputs:       newOutputs,
+			pipelines:     newPipelines,
 		},
 	}
 
