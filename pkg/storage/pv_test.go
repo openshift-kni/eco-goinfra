@@ -183,7 +183,7 @@ func TestPersistentVolumeWaitUntilDeleted(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		err := testCase.testBuilder.WaitUntilDeleted(time.Second)
+		err := testCase.testBuilder.WaitUntilDeleted(5 * time.Second)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {

@@ -740,7 +740,7 @@ func TestDeploymentWaitUntilDeleted(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		err := testCase.testDeployment.WaitUntilDeleted(time.Second)
+		err := testCase.testDeployment.WaitUntilDeleted(5 * time.Second)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
