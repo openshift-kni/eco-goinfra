@@ -298,7 +298,7 @@ func (builder *ClusterLogForwarderBuilder) Update(force bool) (*ClusterLogForwar
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
 func (builder *ClusterLogForwarderBuilder) validate() (bool, error) {
-	resourceCRD := "ClusterLogForwarder"
+	resourceCRD := "clusterLogForwarder"
 
 	if builder == nil {
 		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
@@ -316,6 +316,12 @@ func (builder *ClusterLogForwarderBuilder) validate() (bool, error) {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
 		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
 	}
 
 	return true, nil
