@@ -254,7 +254,7 @@ func TestPolicyDelete(t *testing.T) {
 		},
 		{
 			testBuilder:   buildValidPolicyTestBuilder(buildTestClientWithPolicyScheme()),
-			expectedError: fmt.Errorf("policy cannot be deleted because it does not exist"),
+			expectedError: nil,
 		},
 		{
 			testBuilder:   buildInvalidPolicyTestBuilder(buildTestClientWithDummyPolicy()),
