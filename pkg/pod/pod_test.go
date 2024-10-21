@@ -275,7 +275,7 @@ func TestPodWaitUntilDeleted(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		err := testCase.testBuilder.WaitUntilDeleted(5 * time.Second)
+		err := testCase.testBuilder.WaitUntilDeleted(2 * time.Second)
 		assert.Equal(t, testCase.expectedError, err)
 	}
 }

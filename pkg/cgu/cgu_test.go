@@ -434,7 +434,7 @@ func TestCguWaitUntilDeleted(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		err := testCase.testCgu.WaitUntilDeleted(5 * time.Second)
+		err := testCase.testCgu.WaitUntilDeleted(time.Second)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
