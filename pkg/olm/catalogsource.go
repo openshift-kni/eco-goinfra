@@ -235,6 +235,8 @@ func (builder *CatalogSourceBuilder) Delete() error {
 	if !builder.Exists() {
 		glog.V(100).Infof("catalogsource cannot be deleted because it does not exist")
 
+		builder.Object = nil
+
 		return nil
 	}
 
@@ -263,13 +265,13 @@ func (builder *CatalogSourceBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

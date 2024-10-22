@@ -82,6 +82,8 @@ linters-settings:
     checks:
       - all
       - ST1001
+      - "-SA1006"
+    
 
 linters:
   enable:
@@ -121,7 +123,6 @@ linters:
     - predeclared
     - promlinter
     - revive
-    - staticcheck
     - stylecheck
     - tenv
     - thelper

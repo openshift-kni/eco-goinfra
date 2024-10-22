@@ -338,7 +338,7 @@ func (builder *Builder) CreateAndWaitUntilReady(timeout time.Duration) (*Builder
 	if err != nil {
 		glog.V(100).Infof("Failed to create replicaset. Error is: '%s'", err.Error())
 
-		return nil, fmt.Errorf(err.Error())
+		return nil, err
 	}
 
 	// Polls every retryInterval to determine if replicaset is available.
