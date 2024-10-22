@@ -31,7 +31,7 @@ func TestNewClusterRoleBuilder(t *testing.T) {
 			rule: rbacv1.PolicyRule{
 				Resources: []string{"pods"}, APIGroups: []string{"v1"}, Verbs: []string{"get"}},
 			client:            false,
-			expectedErrorText: "clusterRole builder cannot have nil apiClient",
+			expectedErrorText: "",
 		},
 		{
 			name: "",

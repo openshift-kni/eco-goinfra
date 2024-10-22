@@ -37,7 +37,7 @@ func NewNmStateConfigBuilder(apiClient *clients.Settings, name, namespace string
 		return nil
 	}
 
-	builder := NmStateConfigBuilder{
+	builder := &NmStateConfigBuilder{
 		apiClient: apiClient.Client,
 		Definition: &assistedv1beta1.NMStateConfig{
 			ObjectMeta: metav1.ObjectMeta{
@@ -51,15 +51,19 @@ func NewNmStateConfigBuilder(apiClient *clients.Settings, name, namespace string
 		glog.V(100).Infof("The name of the nmstateconfig is empty")
 
 		builder.errorMsg = "nmstateconfig 'name' cannot be empty"
+
+		return builder
 	}
 
 	if namespace == "" {
 		glog.V(100).Infof("The namespace of the nmstateconfig is empty")
 
 		builder.errorMsg = "nmstateconfig namespace's name is empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // Exists checks whether the given NMStateConfig exists.
@@ -228,13 +232,13 @@ func (builder *NmStateConfigBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {

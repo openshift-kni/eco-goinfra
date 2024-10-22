@@ -63,7 +63,7 @@ func NewPolicyBuilder(apiClient *clients.Settings, name string, nodeSelector map
 		return nil
 	}
 
-	builder := PolicyBuilder{
+	builder := &PolicyBuilder{
 		apiClient: apiClient.Client,
 		Definition: &nmstateV1.NodeNetworkConfigurationPolicy{
 			ObjectMeta: metav1.ObjectMeta{
@@ -78,15 +78,19 @@ func NewPolicyBuilder(apiClient *clients.Settings, name string, nodeSelector map
 		glog.V(100).Infof("The name of the NodeNetworkConfigurationPolicy is empty")
 
 		builder.errorMsg = "nodeNetworkConfigurationPolicy 'name' cannot be empty"
+
+		return builder
 	}
 
 	if len(nodeSelector) == 0 {
 		glog.V(100).Infof("The nodeSelector of the NodeNetworkConfigurationPolicy is empty")
 
 		builder.errorMsg = "nodeNetworkConfigurationPolicy 'nodeSelector' cannot be empty map"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // Get returns NodeNetworkConfigurationPolicy object if found.
@@ -110,7 +114,7 @@ func (builder *PolicyBuilder) Get() (*nmstateV1.NodeNetworkConfigurationPolicy, 
 		return nil, err
 	}
 
-	return nmstatePolicy, err
+	return nmstatePolicy, nil
 }
 
 // Exists checks whether the given NodeNetworkConfigurationPolicy exists.
@@ -260,15 +264,15 @@ func (builder *PolicyBuilder) WithBondInterface(slavePorts []string, bondName, m
 		glog.V(100).Infof("error to add Bond mode %s, allowed modes are %v", mode, allowedBondModes)
 
 		builder.errorMsg = "invalid Bond mode parameter"
+
+		return builder
 	}
 
 	if bondName == "" {
 		glog.V(100).Infof("The bondName can not be empty string")
 
 		builder.errorMsg = "The bondName is empty sting"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -298,13 +302,13 @@ func (builder *PolicyBuilder) WithVlanInterface(baseInterface string, vlanID uin
 		glog.V(100).Infof("The baseInterface can not be empty string")
 
 		builder.errorMsg = "nodenetworkconfigurationpolicy 'baseInterface' cannot be empty"
+
+		return builder
 	}
 
 	if vlanID > 4094 {
 		builder.errorMsg = "invalid vlanID, allowed vlanID values are between 0-4094"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -405,9 +409,7 @@ func (builder *PolicyBuilder) WithAbsentInterface(interfaceName string) *PolicyB
 		glog.V(100).Infof("The interfaceName can not be empty string")
 
 		builder.errorMsg = "nodenetworkconfigurationpolicy 'interfaceName' cannot be empty"
-	}
 
-	if builder.errorMsg != "" {
 		return builder
 	}
 
@@ -493,13 +495,13 @@ func (builder *PolicyBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {
