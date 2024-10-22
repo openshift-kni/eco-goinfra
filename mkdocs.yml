@@ -1,0 +1,17 @@
+---
+site_name: eco-goinfra
+
+# Repository
+repo_url: https://gitlab.cee.redhat.com/quality-innovators/qe-toolbelt
+
+# Theme configuration
+theme:
+  name: material
+
+# Extensions
+markdown_extensions:
+  - toc:
+      permalink: true
+
+plugins:
+  - techdocs-core

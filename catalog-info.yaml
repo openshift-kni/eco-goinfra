@@ -5,9 +5,6 @@ metadata:
   name: eco-goinfra
   title: eco-goinfra
   description: Ecosystem QE infrastructure framework
-  links:
-    - title : Golang
-      url: https://go.dev/
   tags:
     - golang
     - test-framework
@@ -16,8 +13,8 @@ metadata:
   namespace: quality-community
   annotations:
     github.com/project-slug: openshift-kni/eco-goinfra
-    backstage.io/techdocs-ref: https://github.com/openshift-kni/eco-goinfra/blob/main/README.md
+    backstage.io/techdocs-ref: dir:./
 spec:
   type: library
-  owner: group:redhat/openshift-kni
+  owner: group:redhat/ocp-edge-qe
   lifecycle: production
