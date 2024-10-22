@@ -296,8 +296,7 @@ func TestStorageClusterDelete(t *testing.T) {
 		},
 		{
 			testStorageCluster: buildValidStorageClusterBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: fmt.Errorf("can not delete storageCluster: " +
-				"storageclusters.ocs.openshift.io \"ocs-storagecluster\" not found"),
+			expectedError:      nil,
 		},
 	}
 
