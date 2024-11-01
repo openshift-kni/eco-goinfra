@@ -187,29 +187,30 @@ func TestClusterLogForwarderExist(t *testing.T) {
 func TestClusterLogForwarderGet(t *testing.T) {
 	testCases := []struct {
 		testClusterLogForwarder *ClusterLogForwarderBuilder
-		expectedError           error
+		expectedError           string
 	}{
 		{
 			testClusterLogForwarder: buildValidClusterLogForwarderBuilder(buildClusterLogForwarderClientWithDummyObject()),
-			expectedError:           nil,
+			expectedError:           "",
 		},
 		{
 			testClusterLogForwarder: buildInValidClusterLogForwarderBuilder(buildClusterLogForwarderClientWithDummyObject()),
-			expectedError:           fmt.Errorf("clusterlogforwarders.logging.openshift.io \"\" not found"),
+			expectedError:           "clusterlogforwarder 'name' cannot be empty",
 		},
 		{
 			testClusterLogForwarder: buildValidClusterLogForwarderBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:           fmt.Errorf("clusterlogforwarders.logging.openshift.io \"instance\" not found"),
+			expectedError:           "clusterlogforwarders.logging.openshift.io \"instance\" not found",
 		},
 	}
 
 	for _, testCase := range testCases {
 		clusterLogForwarderObj, err := testCase.testClusterLogForwarder.Get()
 
-		if testCase.expectedError == nil {
+		if testCase.expectedError == "" {
+			assert.Nil(t, err)
 			assert.Equal(t, testCase.testClusterLogForwarder.Definition, clusterLogForwarderObj)
 		} else {
-			assert.Equal(t, testCase.expectedError.Error(), err.Error())
+			assert.EqualError(t, err, testCase.expectedError)
 		}
 	}
 }
@@ -225,8 +226,7 @@ func TestClusterLogForwarderCreate(t *testing.T) {
 		},
 		{
 			testClusterLogForwarder: buildInValidClusterLogForwarderBuilder(buildClusterLogForwarderClientWithDummyObject()),
-			expectedError: fmt.Sprintf("ClusterLogForwarder.logging.openshift.io \"\" is invalid: %s",
-				metaDataNameErrorMgs),
+			expectedError:           "clusterlogforwarder 'name' cannot be empty",
 		},
 		{
 			testClusterLogForwarder: buildValidClusterLogForwarderBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -290,10 +290,9 @@ func TestClusterLogForwarderUpdate(t *testing.T) {
 		},
 		{
 			testClusterLogForwarder: buildInValidClusterLogForwarderBuilder(buildClusterLogForwarderClientWithDummyObject()),
-			//nolint:lll
-			expectedError: `ClusterLogForwarder.logging.openshift.io "" is invalid: metadata.name: Required value: name is required`,
-			outputs:       newOutputs,
-			pipelines:     newPipelines,
+			expectedError:           "clusterlogforwarder 'name' cannot be empty",
+			outputs:                 newOutputs,
+			pipelines:               newPipelines,
 		},
 	}
 
