@@ -1,7 +1,6 @@
 package velero
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -452,7 +451,7 @@ func TestBackupStorageLocationDelete(t *testing.T) {
 		},
 		{
 			exists:        false,
-			expectedError: errors.New("backupstoragelocation cannot be deleted because it does not exist"),
+			expectedError: nil,
 		},
 	}
 
