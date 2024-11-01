@@ -11,7 +11,7 @@ on:
       - 'release-\d.\d\d'
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-22.04
     env:
       SHELL: /bin/bash
@@ -26,6 +26,19 @@ jobs:
 
       - name: Run lint
         run: make lint
+
+  test:
+    runs-on: ubuntu-22.04
+    env:
+      SHELL: /bin/bash
+
+    steps:
+      - name: Set up Go 1.23
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23.2
+
+      - uses: actions/checkout@v4
 
       - name: Run unit tests
         run: make test
