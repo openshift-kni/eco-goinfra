@@ -5,7 +5,11 @@ import (
 	"testing"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	hiveextV1Beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/hiveextension/v1beta1"
 	hivev1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1"
+	"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1/agent"
+	"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1/none"
+	ibiv1alpha1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/api/hiveextensions/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -85,7 +89,7 @@ func TestNewABMClusterDeploymentBuilder(t *testing.T) {
 			baseDomain:        "domaintest",
 			clusterInstallRef: "",
 			agentSelector:     metav1.LabelSelector{MatchLabels: map[string]string{"test": "test"}},
-			expectedError:     "clusterdeployment 'clusterInstallRef' cannot be empty",
+			expectedError:     "clusterdeployment 'clusterInstallRef.name' cannot be empty",
 		},
 		{
 			name:              "testdeployment",
@@ -103,6 +107,158 @@ func TestNewABMClusterDeploymentBuilder(t *testing.T) {
 		testClusterDeployment := NewABMClusterDeploymentBuilder(
 			testSettings, testCase.name, testCase.nsName, testCase.clusterName,
 			testCase.baseDomain, testCase.clusterInstallRef, testCase.agentSelector)
+		assert.Equal(t, testCase.expectedError, testClusterDeployment.errorMsg)
+		assert.NotNil(t, testClusterDeployment.Definition)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, testCase.name, testClusterDeployment.Definition.Name)
+		}
+	}
+}
+
+//nolint:funlen
+func TestNewClusterDeploymentByInstallRefBuilder(t *testing.T) {
+	testCases := []struct {
+		name              string
+		nsName            string
+		clusterName       string
+		baseDomain        string
+		clusterInstallRef hivev1.ClusterInstallLocalReference
+		platform          hivev1.Platform
+		expectedError     string
+	}{
+		{
+			name:        "testdeployment",
+			nsName:      "test-namespace",
+			clusterName: "clustertest",
+			baseDomain:  "domaintest",
+			clusterInstallRef: hivev1.ClusterInstallLocalReference{
+				Group:   hiveextV1Beta1.Group,
+				Version: hiveextV1Beta1.Version,
+				Kind:    "AgentClusterInstall",
+				Name:    "test-agentclusterinstall",
+			},
+			platform: hivev1.Platform{
+				AgentBareMetal: &agent.BareMetalPlatform{
+					AgentSelector: metav1.LabelSelector{MatchLabels: map[string]string{"test": "test"}},
+				},
+			},
+			expectedError: "",
+		},
+		{
+			name:        "testdeployment",
+			nsName:      "test-namespace",
+			clusterName: "clustertest",
+			baseDomain:  "domaintest",
+			clusterInstallRef: hivev1.ClusterInstallLocalReference{
+				Group:   ibiv1alpha1.Group,
+				Version: ibiv1alpha1.Version,
+				Kind:    "ImageClusterInstall",
+				Name:    "test-imageclusterinstall",
+			},
+			platform: hivev1.Platform{
+				None: &none.Platform{},
+			},
+			expectedError: "",
+		},
+		{
+			name:        "",
+			nsName:      "test-namespace",
+			clusterName: "",
+			baseDomain:  "domaintest",
+			clusterInstallRef: hivev1.ClusterInstallLocalReference{
+				Group:   hiveextV1Beta1.Group,
+				Version: hiveextV1Beta1.Version,
+				Kind:    "AgentClusterInstall",
+				Name:    "test-agentclusterinstall",
+			},
+			platform: hivev1.Platform{
+				AgentBareMetal: &agent.BareMetalPlatform{
+					AgentSelector: metav1.LabelSelector{MatchLabels: map[string]string{"test": "test"}},
+				},
+			},
+			expectedError: "clusterdeployment 'name' cannot be empty",
+		},
+		{
+			name:        "testdeployment",
+			nsName:      "",
+			clusterName: "clustertest",
+			baseDomain:  "domaintest",
+			clusterInstallRef: hivev1.ClusterInstallLocalReference{
+				Group:   hiveextV1Beta1.Group,
+				Version: hiveextV1Beta1.Version,
+				Kind:    "AgentClusterInstall",
+				Name:    "test-agentclusterinstall",
+			},
+			platform: hivev1.Platform{
+				AgentBareMetal: &agent.BareMetalPlatform{
+					AgentSelector: metav1.LabelSelector{MatchLabels: map[string]string{"test": "test"}},
+				},
+			},
+			expectedError: "clusterdeployment 'namespace' cannot be empty",
+		},
+		{
+			name:        "testdeployment",
+			nsName:      "test-namespace",
+			clusterName: "",
+			baseDomain:  "domaintest",
+			clusterInstallRef: hivev1.ClusterInstallLocalReference{
+				Group:   hiveextV1Beta1.Group,
+				Version: hiveextV1Beta1.Version,
+				Kind:    "AgentClusterInstall",
+				Name:    "test-agentclusterinstall",
+			},
+			platform: hivev1.Platform{
+				AgentBareMetal: &agent.BareMetalPlatform{
+					AgentSelector: metav1.LabelSelector{MatchLabels: map[string]string{"test": "test"}},
+				},
+			},
+			expectedError: "clusterdeployment 'clusterName' cannot be empty",
+		},
+		{
+			name:        "testdeployment",
+			nsName:      "test-namespace",
+			clusterName: "clustertest",
+			baseDomain:  "",
+			clusterInstallRef: hivev1.ClusterInstallLocalReference{
+				Group:   hiveextV1Beta1.Group,
+				Version: hiveextV1Beta1.Version,
+				Kind:    "AgentClusterInstall",
+				Name:    "test-agentclusterinstall",
+			},
+			platform: hivev1.Platform{
+				AgentBareMetal: &agent.BareMetalPlatform{
+					AgentSelector: metav1.LabelSelector{MatchLabels: map[string]string{"test": "test"}},
+				},
+			},
+			expectedError: "clusterdeployment 'baseDomain' cannot be empty",
+		},
+		{
+			name:        "testdeployment",
+			nsName:      "test-namespace",
+			clusterName: "clustertest",
+			baseDomain:  "domaintest",
+			clusterInstallRef: hivev1.ClusterInstallLocalReference{
+				Group:   hiveextV1Beta1.Group,
+				Version: hiveextV1Beta1.Version,
+				Kind:    "AgentClusterInstall",
+				Name:    "",
+			},
+			platform: hivev1.Platform{
+				AgentBareMetal: &agent.BareMetalPlatform{
+					AgentSelector: metav1.LabelSelector{MatchLabels: map[string]string{"test": "test"}},
+				},
+			},
+			expectedError: "clusterdeployment 'clusterInstallRef.name' cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testSettings := clients.GetTestClients(clients.TestClientParams{})
+		testClusterDeployment := NewClusterDeploymentByInstallRefBuilder(
+			testSettings, testCase.name, testCase.nsName, testCase.clusterName,
+			testCase.baseDomain, testCase.clusterInstallRef, testCase.platform)
+
 		assert.Equal(t, testCase.expectedError, testClusterDeployment.errorMsg)
 		assert.NotNil(t, testClusterDeployment.Definition)
 
