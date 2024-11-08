@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	aiv1beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/v1beta1"
 	siteconfigv1alpha1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/siteconfig/v1alpha1"
 
 	"github.com/stretchr/testify/assert"
@@ -179,6 +180,266 @@ func TestClusterInstanceWithExtraManifests(t *testing.T) {
 
 		if testCase.expectedErrorMsg == "" {
 			assert.Equal(t, testCase.extramanifest, testBuilder.Definition.Spec.ExtraManifestsRefs[0].Name)
+		}
+	}
+}
+
+func TestClusterInstanceWithPullSecretRef(t *testing.T) {
+	testCases := []struct {
+		secretRef        string
+		expectedErrorMsg string
+	}{
+		{
+			secretRef:        "test-secret",
+			expectedErrorMsg: "",
+		},
+		{
+			secretRef:        "",
+			expectedErrorMsg: "clusterinstance secretRef cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := generateClusterInstanceBuilderWithFakeObjects([]runtime.Object{})
+
+		testBuilder.WithPullSecretRef(testCase.secretRef)
+		assert.Equal(t, testCase.expectedErrorMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrorMsg == "" {
+			assert.Equal(t, testCase.secretRef, testBuilder.Definition.Spec.PullSecretRef.Name)
+		}
+	}
+}
+
+func TestClusterInstanceWithClusterTemplateRef(t *testing.T) {
+	testCases := []struct {
+		templateName      string
+		templateNamespace string
+		expectedErrorMsg  string
+	}{
+		{
+			templateName:      "test-template",
+			templateNamespace: "test-namespace",
+			expectedErrorMsg:  "",
+		},
+		{
+			templateName:      "",
+			templateNamespace: "test-namespace",
+			expectedErrorMsg:  "clusterinstance clusterTemplateName cannot be empty",
+		},
+		{
+			templateName:      "test-template",
+			templateNamespace: "",
+			expectedErrorMsg:  "clusterinstance clusterTemplateNamespace cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := generateClusterInstanceBuilderWithFakeObjects([]runtime.Object{})
+
+		testBuilder.WithClusterTemplateRef(testCase.templateName, testCase.templateNamespace)
+		assert.Equal(t, testCase.expectedErrorMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrorMsg == "" {
+			assert.Equal(t, testCase.templateName, testBuilder.Definition.Spec.TemplateRefs[0].Name)
+			assert.Equal(t, testCase.templateNamespace, testBuilder.Definition.Spec.TemplateRefs[0].Namespace)
+		}
+	}
+}
+
+func TestClusterInstanceWithBaseDomain(t *testing.T) {
+	testCases := []struct {
+		baseDomain       string
+		expectedErrorMsg string
+	}{
+		{
+			baseDomain:       "example.domain.com",
+			expectedErrorMsg: "",
+		},
+		{
+			baseDomain:       "",
+			expectedErrorMsg: "clusterinstance baseDomain cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := generateClusterInstanceBuilderWithFakeObjects([]runtime.Object{})
+
+		testBuilder.WithBaseDomain(testCase.baseDomain)
+		assert.Equal(t, testCase.expectedErrorMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrorMsg == "" {
+			assert.Equal(t, testCase.baseDomain, testBuilder.Definition.Spec.BaseDomain)
+		}
+	}
+}
+
+func TestClusterInstanceWithClusterImageSetRef(t *testing.T) {
+	testCases := []struct {
+		imgSet           string
+		expectedErrorMsg string
+	}{
+		{
+			imgSet:           "quay.io/example/img:latest",
+			expectedErrorMsg: "",
+		},
+		{
+			imgSet:           "",
+			expectedErrorMsg: "clusterinstance imageSet cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := generateClusterInstanceBuilderWithFakeObjects([]runtime.Object{})
+
+		testBuilder.WithClusterImageSetRef(testCase.imgSet)
+		assert.Equal(t, testCase.expectedErrorMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrorMsg == "" {
+			assert.Equal(t, testCase.imgSet, testBuilder.Definition.Spec.ClusterImageSetNameRef)
+		}
+	}
+}
+
+func TestClusterInstanceWithClusterName(t *testing.T) {
+	testCases := []struct {
+		clusterName      string
+		expectedErrorMsg string
+	}{
+		{
+			clusterName:      "test-cluster",
+			expectedErrorMsg: "",
+		},
+		{
+			clusterName:      "",
+			expectedErrorMsg: "clusterinstance clusterName cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := generateClusterInstanceBuilderWithFakeObjects([]runtime.Object{})
+
+		testBuilder.WithClusterName(testCase.clusterName)
+		assert.Equal(t, testCase.expectedErrorMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrorMsg == "" {
+			assert.Equal(t, testCase.clusterName, testBuilder.Definition.Spec.ClusterName)
+		}
+	}
+}
+
+func TestClusterInstanceWithSSHPubKey(t *testing.T) {
+	testCases := []struct {
+		sshPubKey        string
+		expectedErrorMsg string
+	}{
+		{
+			sshPubKey:        "mykey",
+			expectedErrorMsg: "",
+		},
+		{
+			sshPubKey:        "",
+			expectedErrorMsg: "clusterinstance sshPubKey cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := generateClusterInstanceBuilderWithFakeObjects([]runtime.Object{})
+
+		testBuilder.WithSSHPubKey(testCase.sshPubKey)
+		assert.Equal(t, testCase.expectedErrorMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrorMsg == "" {
+			assert.Equal(t, testCase.sshPubKey, testBuilder.Definition.Spec.SSHPublicKey)
+		}
+	}
+}
+
+func TestClusterInstanceWithMachineNetwork(t *testing.T) {
+	testCases := []struct {
+		network          string
+		expectedErrorMsg string
+	}{
+		{
+			network:          "192.168.122.0/24",
+			expectedErrorMsg: "",
+		},
+		{
+			network:          "2001:db8:abcd:1::/64",
+			expectedErrorMsg: "",
+		},
+		{
+			network:          "192.168.122.0",
+			expectedErrorMsg: "clusterinstance contains invalid machineNetwork cidr",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := generateClusterInstanceBuilderWithFakeObjects([]runtime.Object{})
+
+		testBuilder.WithMachineNetwork(testCase.network)
+		assert.Equal(t, testCase.expectedErrorMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrorMsg == "" {
+			assert.Equal(t, testCase.network, testBuilder.Definition.Spec.MachineNetwork[0].CIDR)
+		}
+	}
+}
+
+func TestClusterInstanceWithProxy(t *testing.T) {
+	testCases := []struct {
+		proxy            *aiv1beta1.Proxy
+		expectedErrorMsg string
+	}{
+		{
+			proxy: &aiv1beta1.Proxy{
+				HTTPProxy:  "http://myproxy.com:3128",
+				HTTPSProxy: "http://myproxy.com:3128",
+				NoProxy:    ".dont.proxy.this.com",
+			},
+			expectedErrorMsg: "",
+		},
+		{
+			proxy:            nil,
+			expectedErrorMsg: "clusterinstance proxy cannot be nil",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := generateClusterInstanceBuilderWithFakeObjects([]runtime.Object{})
+
+		testBuilder.WithProxy(testCase.proxy)
+		assert.Equal(t, testCase.expectedErrorMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrorMsg == "" {
+			assert.Equal(t, testCase.proxy, testBuilder.Definition.Spec.Proxy)
+		}
+	}
+}
+
+func TestClusterInstanceWithNode(t *testing.T) {
+	testCases := []struct {
+		node             *siteconfigv1alpha1.NodeSpec
+		expectedErrorMsg string
+	}{
+		{
+			node:             generateNodeSpec(),
+			expectedErrorMsg: "",
+		},
+		{
+			node:             nil,
+			expectedErrorMsg: "clusterinstance node cannot be nil",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := generateClusterInstanceBuilderWithFakeObjects([]runtime.Object{})
+
+		testBuilder.WithNode(testCase.node)
+		assert.Equal(t, testCase.expectedErrorMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrorMsg == "" {
+			assert.Equal(t, *testCase.node, testBuilder.Definition.Spec.Nodes[0])
 		}
 	}
 }
@@ -540,6 +801,23 @@ func generateClusterInstance() *siteconfigv1alpha1.ClusterInstance {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      testClusterInstance,
 			Namespace: testClusterInstance,
+		},
+	}
+}
+
+func generateNodeSpec() *siteconfigv1alpha1.NodeSpec {
+	return &siteconfigv1alpha1.NodeSpec{
+		HostName:       "mynode",
+		BmcAddress:     "https+redfish://mybmcaddress",
+		BootMACAddress: "00:00:00:00:00:00",
+		BmcCredentialsName: siteconfigv1alpha1.BmcCredentialsName{
+			Name: "mycreds",
+		},
+		TemplateRefs: []siteconfigv1alpha1.TemplateRef{
+			{
+				Name:      "test-template",
+				Namespace: "test-namespace",
+			},
 		},
 	}
 }
