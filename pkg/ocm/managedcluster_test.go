@@ -172,6 +172,32 @@ func TestPullManagedCluster(t *testing.T) {
 	}
 }
 
+func TestWithHubAcceptsClient(t *testing.T) {
+	testCases := []struct {
+		accept            bool
+		expectedErrorText string
+	}{
+		{
+			accept:            true,
+			expectedErrorText: "",
+		},
+		{
+			accept:            false,
+			expectedErrorText: "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testSettings := buildTestClientWithManagedClusterScheme()
+		managedClusterBuilder := buildValidManagedClusterTestBuilder(testSettings).WithHubAcceptsClient(testCase.accept)
+		assert.Equal(t, testCase.expectedErrorText, managedClusterBuilder.errorMsg)
+
+		if testCase.expectedErrorText == "" {
+			assert.Equal(t, testCase.accept, managedClusterBuilder.Definition.Spec.HubAcceptsClient)
+		}
+	}
+}
+
 func TestManagedClusterExists(t *testing.T) {
 	testCases := []struct {
 		testBuilder *ManagedClusterBuilder
@@ -190,6 +216,31 @@ func TestManagedClusterExists(t *testing.T) {
 	for _, testCase := range testCases {
 		exists := testCase.testBuilder.Exists()
 		assert.Equal(t, testCase.exists, exists)
+	}
+}
+
+func TestManagedClusterCreate(t *testing.T) {
+	testCases := []struct {
+		testBuilder   *ManagedClusterBuilder
+		expectedError error
+	}{
+		{
+			testBuilder:   buildValidManagedClusterTestBuilder(buildTestClientWithManagedClusterScheme()),
+			expectedError: nil,
+		},
+		{
+			testBuilder:   buildInvalidManagedClusterTestBuilder(buildTestClientWithManagedClusterScheme()),
+			expectedError: fmt.Errorf("managedCluster 'name' cannot be empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		managedClusterBuilder, err := testCase.testBuilder.Create()
+		assert.Equal(t, testCase.expectedError, err)
+
+		if testCase.expectedError == nil {
+			assert.Equal(t, managedClusterBuilder.Definition, managedClusterBuilder.Object)
+		}
 	}
 }
 
