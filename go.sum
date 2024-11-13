@@ -1270,6 +1270,8 @@ github.com/openshift-kni/lifecycle-agent v0.0.0-20241002223755-1e32b456449f h1:2
 github.com/openshift-kni/lifecycle-agent v0.0.0-20241002223755-1e32b456449f/go.mod h1:HfcYUjKnuReNB0oE0tRJ8V9L699XepjfxXso+6IMZLk=
 github.com/openshift-kni/numaresources-operator v0.4.17-0rc0.0.20240903095616-58342d895734 h1:12QyWN7/6+YszdioTgIDFeJY9nCxSqKGB9P9Pp2huhU=
 github.com/openshift-kni/numaresources-operator v0.4.17-0rc0.0.20240903095616-58342d895734/go.mod h1:3JEkNx0nBloibpk6cxx5NDz3qPRRgJ03fq23plPEkAI=
+github.com/openshift-kni/oran-o2ims/api/provisioning v0.0.0-20241112205445-5b445634c20c h1:sY1bBoM/6mdukAcS2YMyw2hFc9eveidB+yxOCJroBU0=
+github.com/openshift-kni/oran-o2ims/api/provisioning v0.0.0-20241112205445-5b445634c20c/go.mod h1:u4yCIhhGsut5bXKOoP8jkOYUv8T3hjOb0RCpZR3+VbQ=
 github.com/openshift/api v0.0.0-20240830023148-b7d0481c9094 h1:J1wuGhVxpsHykZBa6Beb1gQ96Ptej9AE/BvwCBiRj1E=
 github.com/openshift/api v0.0.0-20240830023148-b7d0481c9094/go.mod h1:CxgbWAlvu2iQB0UmKTtRu1YfepRg1/vJ64n2DlIEVz4=
 github.com/openshift/client-go v0.0.0-20240523113335-452272e0496d h1:Dq21KMlDTVy2fCIyp0gsW+6ir6FwD3RjnCuza2/bIyM=
