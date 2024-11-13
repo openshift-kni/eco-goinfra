@@ -29,6 +29,7 @@ require (
 	github.com/openshift-kni/cluster-group-upgrades-operator v0.0.0-20240918194836-a0a3f896c283 // release-4.17
 	github.com/openshift-kni/lifecycle-agent v0.0.0-20241002223755-1e32b456449f // release-4.17
 	github.com/openshift-kni/numaresources-operator v0.4.17-0rc0.0.20240903095616-58342d895734 // release-4.17
+	github.com/openshift-kni/oran-o2ims/api/provisioning v0.0.0-20241112205445-5b445634c20c
 	github.com/openshift/api v3.9.1-0.20191111211345-a27ff30ebf09+incompatible
 	github.com/openshift/client-go v0.0.0-20240523113335-452272e0496d
 	github.com/openshift/cluster-logging-operator v0.0.0-20241003210634-afb65cea19d1 // release-5.9
