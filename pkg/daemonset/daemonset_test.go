@@ -1,6 +1,7 @@
 package daemonset
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
@@ -231,6 +232,51 @@ func TestDaemonsetWithHostNetwork(t *testing.T) {
 	testBuilder.WithHostNetwork()
 
 	assert.Equal(t, true, testBuilder.Definition.Spec.Template.Spec.HostNetwork)
+}
+
+func TestDaemonsetWithPodAffinity(t *testing.T) {
+	testCases := []struct {
+		podAffinity   *corev1.Affinity
+		expectedError error
+	}{
+		{
+			podAffinity: &corev1.Affinity{
+				NodeAffinity: &corev1.NodeAffinity{
+					RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+						NodeSelectorTerms: []corev1.NodeSelectorTerm{
+							{
+								MatchExpressions: []corev1.NodeSelectorRequirement{
+									{
+										Key:      "kubernetes.io/hostname",
+										Operator: corev1.NodeSelectorOpIn,
+										Values:   []string{"host1", "host2"},
+									},
+								},
+							},
+						}},
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			podAffinity:   nil,
+			expectedError: fmt.Errorf("affinity parameter is empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidTestBuilderWithClient([]runtime.Object{})
+
+		testBuilder.WithPodAffinity(testCase.podAffinity)
+
+		if testCase.expectedError == nil {
+			assert.Equal(t, testCase.podAffinity, testBuilder.Definition.Spec.Template.Spec.Affinity)
+			assert.Equal(t, "", testBuilder.errorMsg)
+			assert.NotNil(t, testBuilder)
+		} else {
+			assert.Equal(t, testCase.expectedError.Error(), testBuilder.errorMsg)
+		}
+	}
 }
 
 func TestDaemonsetWithVolume(t *testing.T) {
