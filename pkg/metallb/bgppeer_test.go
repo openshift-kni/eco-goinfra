@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/openshift-kni/eco-goinfra/pkg/schemes/metallb/mlbtypesv1beta2"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -81,6 +82,39 @@ func TestNewBPGPeerBuilder(t *testing.T) {
 		if testCase.expectedError == "" {
 			assert.Equal(t, testCase.name, testBGPPeerBuilder.Definition.Name)
 			assert.Equal(t, testCase.namespace, testBGPPeerBuilder.Definition.Namespace)
+		}
+	}
+}
+
+func TestBGPPeerWithDynamicASN(t *testing.T) {
+	testCases := []struct {
+		testBGPPeer   *BGPPeerBuilder
+		dynamicASN    string
+		expectedError string
+	}{
+		{
+			testBGPPeer:   buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
+			dynamicASN:    "internal",
+			expectedError: "",
+		},
+		{
+			testBGPPeer:   buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
+			dynamicASN:    "external",
+			expectedError: "",
+		},
+		{
+			testBGPPeer:   buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
+			dynamicASN:    "ebgp",
+			expectedError: "bgpPeer 'dynamicASN' must be either internal or external",
+		},
+	}
+
+	for _, testCase := range testCases {
+		bgpPeerBuilder := testCase.testBGPPeer.WithDynamicASN(mlbtypesv1beta2.DynamicASNMode(testCase.dynamicASN))
+		assert.Equal(t, testCase.expectedError, bgpPeerBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, mlbtypesv1beta2.DynamicASNMode(testCase.dynamicASN), bgpPeerBuilder.Definition.Spec.DynamicASN)
 		}
 	}
 }
