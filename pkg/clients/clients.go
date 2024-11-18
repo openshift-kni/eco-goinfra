@@ -92,6 +92,8 @@ func New(kubeconfig string) *Settings {
 	}
 
 	if err != nil {
+		log.Printf("Error loading provided kubeconfig: %s\n", err.Error())
+
 		return nil
 	}
 
