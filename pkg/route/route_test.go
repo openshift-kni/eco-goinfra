@@ -177,6 +177,29 @@ func TestWithTargetPortName(t *testing.T) {
 	}
 }
 
+func TestWithHostDomain(t *testing.T) {
+	testCases := []struct {
+		hostDomain     string
+		expectedErrMsg string
+	}{
+		{
+			"",
+			"route host domain cannot be empty string",
+		},
+		{
+			"app.demo-server.dummy.domain.com",
+			"",
+		},
+	}
+
+	for _, test := range testCases {
+		testBuilder := buildValidTestBuilder()
+		testBuilder.WithHostDomain(test.hostDomain)
+
+		assert.Equal(t, test.expectedErrMsg, testBuilder.errorMsg)
+	}
+}
+
 func TestWithWildCardPolicy(t *testing.T) {
 	testCases := []struct {
 		policy         string
