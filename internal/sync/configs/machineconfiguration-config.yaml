@@ -1,0 +1,8 @@
+---
+- name: machineconfiguration
+  sync: true
+  repo_link: "https://github.com/openshift/api/"
+  branch: master
+  remote_api_directory: operator/v1
+  local_api_directory: schemes/machineconfiguration/mctypes
+...
