@@ -501,6 +501,33 @@ func TestDeploymentWithAffinity(t *testing.T) {
 	}
 }
 
+func TestWithHostNetwork(t *testing.T) {
+	testCases := []struct {
+		enableHostNetwork bool
+		expectedErrMsg    string
+	}{
+		{
+			enableHostNetwork: true,
+			expectedErrMsg:    "",
+		},
+		{
+			enableHostNetwork: false,
+			expectedErrMsg:    "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidTestBuilder()
+
+		testBuilder.WithHostNetwork(testCase.enableHostNetwork)
+		assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrMsg == "" {
+			assert.Equal(t, testCase.enableHostNetwork, testBuilder.Definition.Spec.Template.Spec.HostNetwork)
+		}
+	}
+}
+
 func TestCreate(t *testing.T) {
 	generateTestDeployment := func() *appsv1.Deployment {
 		return &appsv1.Deployment{
