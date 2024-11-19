@@ -25,6 +25,7 @@ linters-settings:
           - "github.com/metal3-io/baremetal-operator"
           - "github.com/operator-framework/operator-lifecycle-manager"
           - "github.com/ovn-org/ovn-kubernetes/go-controller/pkg/crd/egressservice/v1"
+          - "github.com/ovn-org/ovn-kubernetes/go-controller/pkg/crd/egressip/v1"
           - "github.com/grafana-operator/grafana-operator"
           - "github.com/kedacore/keda-olm-operator/apis/keda/v1alpha1"
           - "github.com/kube-object-storage/lib-bucket-provisioner/pkg/apis/objectbucket.io/v1alpha1"
