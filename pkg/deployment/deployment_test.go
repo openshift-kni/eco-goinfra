@@ -2,6 +2,7 @@ package deployment
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -451,6 +452,51 @@ func TestWithToleration(t *testing.T) {
 
 		if testCase.expectedErrMsg == "" {
 			assert.Equal(t, testCase.toleration, testBuilder.Definition.Spec.Template.Spec.Tolerations[0])
+		}
+	}
+}
+
+func TestDeploymentWithAffinity(t *testing.T) {
+	testCases := []struct {
+		nodeAffinity  *corev1.Affinity
+		expectedError error
+	}{
+		{
+			nodeAffinity: &corev1.Affinity{
+				NodeAffinity: &corev1.NodeAffinity{
+					RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+						NodeSelectorTerms: []corev1.NodeSelectorTerm{
+							{
+								MatchExpressions: []corev1.NodeSelectorRequirement{
+									{
+										Key:      "kubernetes.io/hostname",
+										Operator: corev1.NodeSelectorOpIn,
+										Values:   []string{"host1", "host2"},
+									},
+								},
+							},
+						}},
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			nodeAffinity:  nil,
+			expectedError: fmt.Errorf("affinity parameter is empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidTestBuilder()
+
+		testBuilder.WithAffinity(testCase.nodeAffinity)
+
+		if testCase.expectedError == nil {
+			assert.Equal(t, testCase.nodeAffinity, testBuilder.Definition.Spec.Template.Spec.Affinity)
+			assert.Equal(t, "", testBuilder.errorMsg)
+			assert.NotNil(t, testBuilder)
+		} else {
+			assert.Equal(t, testCase.expectedError.Error(), testBuilder.errorMsg)
 		}
 	}
 }
