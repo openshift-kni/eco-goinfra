@@ -401,6 +401,60 @@ func TestPodContainerWithPorts(t *testing.T) {
 	}
 }
 
+func TestPodContainerWithTTY(t *testing.T) {
+	testCases := []struct {
+		enableTty     bool
+		expectedError string
+	}{
+		{
+			enableTty:     true,
+			expectedError: "",
+		},
+		{
+			enableTty:     false,
+			expectedError: "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		container := NewContainerBuilder("container", "test", []string{"/bin/bash", "-c", "sleep"})
+		container = container.WithTTY(testCase.enableTty)
+		assert.Equal(t, testCase.expectedError, container.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.NotNil(t, container.definition)
+			assert.Equal(t, testCase.enableTty, container.definition.TTY)
+		}
+	}
+}
+
+func TestPodContainerWithStdin(t *testing.T) {
+	testCases := []struct {
+		enableStdin   bool
+		expectedError string
+	}{
+		{
+			enableStdin:   true,
+			expectedError: "",
+		},
+		{
+			enableStdin:   false,
+			expectedError: "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		container := NewContainerBuilder("container", "test", []string{"/bin/bash", "-c", "sleep"})
+		container = container.WithStdin(testCase.enableStdin)
+		assert.Equal(t, testCase.expectedError, container.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.NotNil(t, container.definition)
+			assert.Equal(t, testCase.enableStdin, container.definition.Stdin)
+		}
+	}
+}
+
 func TestPodContainerGetContainerCfg(t *testing.T) {
 	testCases := []struct {
 		builder       *ContainerBuilder
