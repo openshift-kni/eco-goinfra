@@ -240,6 +240,40 @@ func TestWithMaxUnavailable(t *testing.T) {
 	}
 }
 
+func TestWithRDMAMode(t *testing.T) {
+	testCases := []struct {
+		RdmaMode      string
+		ExpectedError string
+	}{
+		{
+			RdmaMode:      "shared",
+			ExpectedError: "",
+		},
+		{
+			RdmaMode:      "exclusive",
+			ExpectedError: "",
+		},
+		{
+			RdmaMode:      "",
+			ExpectedError: "rdmaMode cannot be empty",
+		},
+		{
+			RdmaMode:      "none",
+			ExpectedError: "invalid value for rdmaMode. It should be 'shared' or 'exclusive'",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testSettings := buildTestPoolConfigClientWithDummyObject()
+		testBuilder := buildValidPoolConfigTestBuilder(testSettings).WithRDMAMode(testCase.RdmaMode)
+		assert.Equal(t, testCase.ExpectedError, testBuilder.errorMsg)
+
+		if testCase.ExpectedError == "" {
+			assert.Equal(t, testBuilder.Definition.Spec.RdmaMode, testCase.RdmaMode)
+		}
+	}
+}
+
 func TestPullPoolConfig(t *testing.T) {
 	testCases := []struct {
 		poolConfigName      string
