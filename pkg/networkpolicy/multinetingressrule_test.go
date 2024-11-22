@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -26,6 +27,46 @@ func TestIngressWithPortAndProtocol(t *testing.T) {
 	builder.WithPortAndProtocol(0, "TCP")
 
 	assert.Equal(t, builder.errorMsg, "port number can not be 0")
+}
+
+func TestIngressWithProtocol(t *testing.T) {
+	testCases := []struct {
+		protocol      v1.Protocol
+		expectedError string
+	}{
+		{protocol: v1.ProtocolTCP, expectedError: ""},
+		{protocol: v1.ProtocolUDP, expectedError: ""},
+		{protocol: v1.ProtocolSCTP, expectedError: ""},
+		{protocol: "dummy", expectedError: "invalid protocol argument. Allowed protocols: TCP, UDP & SCTP"},
+	}
+	for _, testCase := range testCases {
+		builder := NewIngressRuleBuilder().WithProtocol(testCase.protocol)
+		assert.Equal(t, testCase.expectedError, builder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, testCase.protocol, *builder.definition.Ports[0].Protocol)
+		}
+	}
+}
+
+func TestIngressWithPort(t *testing.T) {
+	testCases := []struct {
+		port          uint16
+		expectedError string
+	}{
+		{
+			port:          5001,
+			expectedError: "",
+		},
+		{
+			port:          0,
+			expectedError: "port number cannot be 0",
+		},
+	}
+	for _, testCase := range testCases {
+		builder := NewIngressRuleBuilder().WithPort(testCase.port)
+		assert.Equal(t, testCase.expectedError, builder.errorMsg)
+	}
 }
 
 func TestIngressWithOptions(t *testing.T) {
@@ -85,6 +126,33 @@ func TestIngressWithPeerPodSelector(t *testing.T) {
 	assert.Len(t, builder.definition.From, 0)
 }
 
+func TestIngressWithPeerNamespaceSelector(t *testing.T) {
+	testCases := []struct {
+		namespaceSelector metav1.LabelSelector
+		expectedError     string
+	}{
+		{
+			namespaceSelector: metav1.LabelSelector{MatchLabels: map[string]string{"app": "nginx"}},
+			expectedError:     "",
+		},
+		{
+			namespaceSelector: metav1.LabelSelector{MatchExpressions: []metav1.LabelSelectorRequirement{
+				{
+					Key:      "app",
+					Operator: metav1.LabelSelectorOpIn,
+					Values:   []string{"nginx"},
+				},
+			}},
+			expectedError: "",
+		},
+	}
+	for _, testCase := range testCases {
+		builder := NewIngressRuleBuilder().WithPeerNamespaceSelector(testCase.namespaceSelector)
+		assert.Equal(t, testCase.expectedError, builder.errorMsg)
+		assert.Equal(t, &testCase.namespaceSelector, builder.definition.From[0].NamespaceSelector)
+	}
+}
+
 func TestIngressWithCIDR(t *testing.T) {
 	builder := NewIngressRuleBuilder()
 
@@ -108,6 +176,30 @@ func TestIngressWithCIDR(t *testing.T) {
 
 	assert.Len(t, builder.definition.From, 1)
 	assert.Equal(t, builder.definition.From[0].IPBlock.Except, []string{"192.168.1.1"})
+}
+
+func TestIngressWithPeerPodAndNamespaceSelector(t *testing.T) {
+	testCases := []struct {
+		podSelector       metav1.LabelSelector
+		namespaceSelector metav1.LabelSelector
+		expectedError     string
+	}{
+		{
+			podSelector: metav1.LabelSelector{MatchLabels: map[string]string{"app": "nginx"}},
+			namespaceSelector: metav1.LabelSelector{MatchExpressions: []metav1.LabelSelectorRequirement{{
+				Key:      "app",
+				Operator: metav1.LabelSelectorOpIn,
+				Values:   []string{"nginx"},
+			}}},
+			expectedError: "",
+		},
+	}
+	for _, testCase := range testCases {
+		builder := NewIngressRuleBuilder().WithPeerPodAndNamespaceSelector(testCase.podSelector, testCase.namespaceSelector)
+		assert.Equal(t, testCase.expectedError, builder.errorMsg)
+		assert.Equal(t, &testCase.podSelector, builder.definition.From[0].PodSelector)
+		assert.Equal(t, &testCase.namespaceSelector, builder.definition.From[0].NamespaceSelector)
+	}
 }
 
 func TestIngressWithPeerPodSelectorAndCIDR(t *testing.T) {
