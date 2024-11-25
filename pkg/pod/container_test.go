@@ -401,6 +401,42 @@ func TestPodContainerWithPorts(t *testing.T) {
 	}
 }
 
+func TestPodContainerWithReadinessProbe(t *testing.T) {
+	testCases := []struct {
+		readinessProbe *corev1.Probe
+		expectedError  string
+	}{
+		{
+			readinessProbe: &corev1.Probe{
+				ProbeHandler: corev1.ProbeHandler{
+					Exec: &corev1.ExecAction{
+						Command: []string{
+							"echo",
+							"ready",
+						},
+					},
+				},
+			},
+			expectedError: "",
+		},
+		{
+			readinessProbe: nil,
+			expectedError:  "container's readinessProbe is empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		container := NewContainerBuilder("container", "test", []string{"/bin/bash", "-c", "sleep"})
+		container = container.WithReadinessProbe(testCase.readinessProbe)
+		assert.Equal(t, testCase.expectedError, container.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.NotNil(t, container.definition)
+			assert.Equal(t, testCase.readinessProbe, container.definition.ReadinessProbe)
+		}
+	}
+}
+
 func TestPodContainerWithTTY(t *testing.T) {
 	testCases := []struct {
 		enableTty     bool
