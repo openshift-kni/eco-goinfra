@@ -246,6 +246,32 @@ func TestImageClusterInstallWithExtraManifests(t *testing.T) {
 		}
 	}
 }
+func TestImageClusterInstallWithCABundle(t *testing.T) {
+	testCases := []struct {
+		cabundle         string
+		expectedErrorMsg string
+	}{
+		{
+			cabundle:         "ibi-ca-bundle",
+			expectedErrorMsg: "",
+		},
+		{
+			cabundle:         "",
+			expectedErrorMsg: "imageclusterinstall cabundle cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := generateImageClusterInstallBuilder()
+
+		testBuilder.WithCABundle(testCase.cabundle)
+		assert.Equal(t, testCase.expectedErrorMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrorMsg == "" {
+			assert.Equal(t, testCase.cabundle, testBuilder.Definition.Spec.CABundleRef.Name)
+		}
+	}
+}
 func TestImageClusterInstallWithMachineNetwork(t *testing.T) {
 	testCases := []struct {
 		machineNetwork   string
