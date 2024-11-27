@@ -281,6 +281,58 @@ func TestOperatorConfigWithConfigDaemonNodeSelector(t *testing.T) {
 	}
 }
 
+func TestOperatorConfigWithDisablePlugins(t *testing.T) {
+	testCases := []struct {
+		plugins           []string
+		expectedErrorText string
+	}{
+		{
+			plugins:           []string{"mellanox"},
+			expectedErrorText: "",
+		},
+		{
+			plugins:           []string{"test"},
+			expectedErrorText: "invalid plugin parameter",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testSettings := buildTestClientWithDummyPolicyObject()
+		operatorConfigBuilder := NewOperatorConfigBuilder(testSettings, "testnamespace").
+			WithDisablePlugins(testCase.plugins)
+
+		assert.Equal(t, testCase.expectedErrorText, operatorConfigBuilder.errorMsg)
+
+		if testCase.expectedErrorText == "" {
+			var pluginSlice srIovV1.PluginNameSlice
+			for _, plugin := range testCase.plugins {
+				pluginSlice = append(pluginSlice, srIovV1.PluginNameValue(plugin))
+			}
+
+			assert.Equal(t, pluginSlice,
+				operatorConfigBuilder.Definition.Spec.DisablePlugins)
+		}
+	}
+}
+
+func TestOperatorConfigRemoveDisablePlugins(t *testing.T) {
+	testCases := []struct {
+		testOperatorConfig *OperatorConfigBuilder
+	}{
+		{
+			testOperatorConfig: NewOperatorConfigBuilder(
+				buildTestClientWithDummyOperatorConfigObject(),
+				defaultOperatorConfigNsName).WithDisablePlugins([]string{"mellanox"}),
+		},
+	}
+	for _, testCase := range testCases {
+		operatorConfigBuilder, _ := testCase.testOperatorConfig.Create()
+
+		operatorConfigBuilder.RemoveDisablePlugins()
+		assert.Nil(t, operatorConfigBuilder.Definition.Spec.DisablePlugins)
+	}
+}
+
 func TestOperatorConfigUpdate(t *testing.T) {
 	testCases := []struct {
 		testOperatorConfig *OperatorConfigBuilder
