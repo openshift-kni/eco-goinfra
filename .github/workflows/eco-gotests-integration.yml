@@ -20,7 +20,7 @@ jobs:
         if: ${{ !contains(github.event.*.labels.*.name, 'ignore-dep-check') }}
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23.3
+          go-version: 1.23.5
 
       - name: Check out the eco-goinfra code
         if: ${{ !contains(github.event.*.labels.*.name, 'ignore-dep-check') }}
