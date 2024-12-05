@@ -133,6 +133,8 @@ func (builder *ClusterServiceVersionBuilder) Delete() error {
 
 		builder.Object = nil
 
+		builder.Object = nil
+
 		return nil
 	}
 

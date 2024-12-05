@@ -467,9 +467,6 @@ func (builder *Builder) Delete() (*Builder, error) {
 	glog.V(100).Infof("Deleting PerformanceProfile %s", builder.Definition.Name)
 
 	if !builder.Exists() {
-		glog.V(100).Infof("performanceprofile %s cannot be deleted because it does not exist",
-			builder.Definition.Name)
-
 		builder.Object = nil
 
 		return builder, nil

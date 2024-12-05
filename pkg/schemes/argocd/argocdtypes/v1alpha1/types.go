@@ -970,7 +970,6 @@ type ApplicationDestination struct {
 	// Name is an alternate way of specifying the target cluster by its symbolic name. This must be set if Server is not set.
 	Name string `json:"name,omitempty" protobuf:"bytes,3,opt,name=name"`
 
-	// nolint:govet
 	isServerInferred bool `json:"-"`
 }
 
@@ -1080,7 +1079,6 @@ type SyncOperationResource struct {
 	Kind      string `json:"kind" protobuf:"bytes,2,opt,name=kind"`
 	Name      string `json:"name" protobuf:"bytes,3,opt,name=name"`
 	Namespace string `json:"namespace,omitempty" protobuf:"bytes,4,opt,name=namespace"`
-	// nolint:govet
 	Exclude bool `json:"-"`
 }
 
