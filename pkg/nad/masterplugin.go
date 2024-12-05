@@ -25,7 +25,7 @@ func NewMasterMacVlanPlugin(name string) *MasterMacVlanPlugin {
 	glog.V(100).Infof(
 		"Initializing new MasterVlanPlugin structure with the following param: %s", name)
 
-	builder := MasterMacVlanPlugin{
+	builder := &MasterMacVlanPlugin{
 		masterPlugin: &MasterPlugin{
 			CniVersion: "0.3.1",
 			Name:       name,
@@ -37,9 +37,11 @@ func NewMasterMacVlanPlugin(name string) *MasterMacVlanPlugin {
 		glog.V(100).Infof("error MasterMacVlanPlugin can not be empty")
 
 		builder.errorMsg = "MasterMacVlanPlugin name is empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // WithMode defines macvlan type to MasterMacVlanPlugin. Default is bridge.
@@ -136,7 +138,7 @@ func NewMasterBridgePlugin(name, bridgeName string) *MasterBridgePlugin {
 	glog.V(100).Infof(
 		"Initializing new MasterBridgePlugin structure %s, with bridge %s", name, bridgeName)
 
-	builder := MasterBridgePlugin{
+	builder := &MasterBridgePlugin{
 		masterPlugin: &MasterPlugin{
 			CniVersion: "0.3.1",
 			Name:       name,
@@ -149,9 +151,11 @@ func NewMasterBridgePlugin(name, bridgeName string) *MasterBridgePlugin {
 		glog.V(100).Infof("error MasterBridgePlugin can not be empty")
 
 		builder.errorMsg = "MasterBridgePlugin name is empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // GetMasterPluginConfig returns master plugin if error does not occur.
@@ -194,7 +198,7 @@ func NewMasterVlanPlugin(name string, vlanID uint16) *MasterVlanPlugin {
 	glog.V(100).Infof(
 		"Initializing new MasterVlanPlugin structure %s, with vlanId %s", name, vlanID)
 
-	builder := MasterVlanPlugin{
+	builder := &MasterVlanPlugin{
 		masterPlugin: &MasterPlugin{
 			CniVersion: "0.3.1",
 			Name:       name,
@@ -207,15 +211,19 @@ func NewMasterVlanPlugin(name string, vlanID uint16) *MasterVlanPlugin {
 		glog.V(100).Infof("error vlan id can not be greater than 4094")
 
 		builder.errorMsg = "MasterVlanPlugin vlanID is greater than 4094"
+
+		return builder
 	}
 
 	if builder.masterPlugin.Name == "" {
 		glog.V(100).Infof("error MasterVlanPlugin name can not be empty")
 
 		builder.errorMsg = "MasterVlanPlugin name is empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // WithIPAM defines IPAM configuration to MasterVlanPlugin. Default is empty.
@@ -302,7 +310,7 @@ func NewMasterIPVlanPlugin(name string) *MasterIPVlanPlugin {
 	glog.V(100).Infof(
 		"Initializing new MasterIPVlanPlugin structure %s", name)
 
-	builder := MasterIPVlanPlugin{
+	builder := &MasterIPVlanPlugin{
 		masterPlugin: &MasterPlugin{
 			CniVersion: "0.3.1",
 			Name:       name,
@@ -314,9 +322,11 @@ func NewMasterIPVlanPlugin(name string) *MasterIPVlanPlugin {
 		glog.V(100).Infof("error MasterIPVlanPlugin can not be empty")
 
 		builder.errorMsg = "MasterIPVlanPlugin name is empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // WithIPAM defines IPAM configuration to MasterIPVlanPlugin. Default is empty.
@@ -410,7 +420,7 @@ func NewMasterBondPlugin(name, mode string) *MasterBondPlugin {
 		"balance-xor":   true,
 	}
 
-	builder := MasterBondPlugin{
+	builder := &MasterBondPlugin{
 		masterPlugin: &MasterPlugin{
 			CniVersion: "0.3.1",
 			Name:       name,
@@ -424,15 +434,19 @@ func NewMasterBondPlugin(name, mode string) *MasterBondPlugin {
 		glog.V(100).Infof("error: invalid mode type %s used for MasterBondPlugin bond interface", mode)
 
 		builder.errorMsg = "Bond mode type is not valid"
+
+		return builder
 	}
 
 	if builder.masterPlugin.Name == "" {
 		glog.V(100).Infof("error NewMasterBondPlugin name can not be empty")
 
 		builder.errorMsg = "NewMasterBondPlugin name is empty"
+
+		return builder
 	}
 
-	return &builder
+	return builder
 }
 
 // WithLinksInContainer defines linksInContainer configuration to MasterBondPlugin.

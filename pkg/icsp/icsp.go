@@ -68,7 +68,7 @@ func NewICSPBuilder(apiClient *clients.Settings, name, source string, mirrors []
 	if name == "" {
 		glog.V(100).Infof("The name of the ImageContentSourcePolicy is empty")
 
-		icspBuilder.errorMsg = "imageContentSourcePolicy 'name' cannot be empty"
+		icspBuilder.errorMsg = "ImageContentSourcePolicy 'name' cannot be empty"
 
 		return icspBuilder
 	}
@@ -76,7 +76,7 @@ func NewICSPBuilder(apiClient *clients.Settings, name, source string, mirrors []
 	if source == "" {
 		glog.V(100).Infof("The Source of the ImageContentSourcePolicy is empty")
 
-		icspBuilder.errorMsg = "imageContentSourcePolicy 'source' cannot be empty"
+		icspBuilder.errorMsg = "ImageContentSourcePolicy 'source' cannot be empty"
 
 		return icspBuilder
 	}
@@ -84,7 +84,7 @@ func NewICSPBuilder(apiClient *clients.Settings, name, source string, mirrors []
 	if len(mirrors) == 0 {
 		glog.V(100).Infof("The mirrors of the ImageContentSourcePolicy are empty")
 
-		icspBuilder.errorMsg = "imageContentSourcePolicy 'mirrors' cannot be empty"
+		icspBuilder.errorMsg = "ImageContentSourcePolicy 'mirrors' cannot be empty"
 
 		return icspBuilder
 	}
@@ -254,7 +254,7 @@ func (builder *ICSPBuilder) WithRepositoryDigestMirror(source string, mirrors []
 	if source == "" {
 		glog.V(100).Infof("The source is empty")
 
-		builder.errorMsg = "imageContentSourcePolicy 'source' cannot be empty"
+		builder.errorMsg = "'source' cannot be empty"
 
 		return builder
 	}
@@ -262,7 +262,7 @@ func (builder *ICSPBuilder) WithRepositoryDigestMirror(source string, mirrors []
 	if len(mirrors) == 0 {
 		glog.V(100).Infof("Mirrors is empty")
 
-		builder.errorMsg = "imageContentSourcePolicy 'mirrors' cannot be empty"
+		builder.errorMsg = "'mirrors' cannot be empty"
 
 		return builder
 	}
@@ -312,13 +312,13 @@ func (builder *ICSPBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {
