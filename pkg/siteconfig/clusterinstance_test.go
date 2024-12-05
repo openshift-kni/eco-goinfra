@@ -184,6 +184,33 @@ func TestClusterInstanceWithExtraManifests(t *testing.T) {
 	}
 }
 
+func TestClusterInstanceWithCABundle(t *testing.T) {
+	testCases := []struct {
+		cabundle         string
+		expectedErrorMsg string
+	}{
+		{
+			cabundle:         "ibi-ca-bundle",
+			expectedErrorMsg: "",
+		},
+		{
+			cabundle:         "",
+			expectedErrorMsg: "clusterinstance cabundle cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := generateClusterInstanceBuilderWithFakeObjects([]runtime.Object{})
+
+		testBuilder.WithCABundle(testCase.cabundle)
+		assert.Equal(t, testCase.expectedErrorMsg, testBuilder.errorMsg)
+
+		if testCase.expectedErrorMsg == "" {
+			assert.Equal(t, testCase.cabundle, testBuilder.Definition.Spec.CaBundleRef.Name)
+		}
+	}
+}
+
 func TestClusterInstanceWithPullSecretRef(t *testing.T) {
 	testCases := []struct {
 		secretRef        string
