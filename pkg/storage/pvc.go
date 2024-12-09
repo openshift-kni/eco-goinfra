@@ -222,8 +222,7 @@ func (builder *PVCBuilder) Delete() error {
 		builder.Definition.Name, builder.Definition.Namespace)
 
 	if !builder.Exists() {
-		glog.V(100).Infof("PersistentVolumeClaim %s not found in %s namespace",
-			builder.Definition.Name, builder.Definition.Namespace)
+		builder.Object = nil
 
 		builder.Object = nil
 
