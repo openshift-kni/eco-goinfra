@@ -615,7 +615,7 @@ func TestBMCCreateCLISSHSession(t *testing.T) {
 	// Check that the session creation fails with no SSH user.
 	expectedErrMsg := "cannot access ssh with nil user"
 
-	session, err := bmc.CreateCLISSHSession()
+	session, err := bmc.CreateCLISSHClient()
 	assert.Nil(t, session)
 	assert.EqualError(t, err, expectedErrMsg)
 
@@ -624,7 +624,7 @@ func TestBMCCreateCLISSHSession(t *testing.T) {
 
 	expectedErrMsg = "failed to connect to BMC's SSH server: dial tcp 1.2.3.4:22: i/o timeout"
 
-	session, err = bmc.CreateCLISSHSession()
+	session, err = bmc.CreateCLISSHClient()
 	assert.Nil(t, session)
 	assert.EqualError(t, err, expectedErrMsg)
 }
