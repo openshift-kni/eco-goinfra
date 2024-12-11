@@ -747,8 +747,8 @@ func (bmc *BMC) SetSystemBootOrderReferences(bootOrderReferences []string) error
 	return system.SetBoot(newBoot)
 }
 
-// CreateCLISSHClient creates a ssh Session to the host.
-func (bmc *BMC) CreateCLISSHClient() (*ssh.Client, error) {
+// createCLISSHClient creates a ssh Session to the host.
+func (bmc *BMC) createCLISSHClient() (*ssh.Client, error) {
 	if valid, err := bmc.validateSSH(); !valid {
 		return nil, err
 	}
@@ -797,7 +797,7 @@ func (bmc *BMC) RunCLICommand(
 
 	glog.V(100).Infof("Running CLI command in BMC's CLI: %s", cmd)
 
-	client, err := bmc.CreateCLISSHClient()
+	client, err := bmc.createCLISSHClient()
 	if err != nil {
 		glog.V(100).Infof("Failed to connect to CLI: %v", err)
 
@@ -899,7 +899,7 @@ func (bmc *BMC) OpenSerialConsole(openConsoleCliCmd string) (io.Reader, io.Write
 		}
 	}
 
-	client, err := bmc.CreateCLISSHClient()
+	client, err := bmc.createCLISSHClient()
 	if err != nil {
 		glog.V(100).Infof("Failed to create underlying ssh session for %v: %v", bmc.host, err)
 
