@@ -747,44 +747,6 @@ func (bmc *BMC) SetSystemBootOrderReferences(bootOrderReferences []string) error
 	return system.SetBoot(newBoot)
 }
 
-// createCLISSHClient creates a ssh Session to the host.
-func (bmc *BMC) createCLISSHClient() (*ssh.Client, error) {
-	if valid, err := bmc.validateSSH(); !valid {
-		return nil, err
-	}
-
-	glog.V(100).Infof("Creating SSH session to run commands in the BMC's CLI.")
-
-	config := &ssh.ClientConfig{
-		User: bmc.sshUser.Name,
-		Auth: []ssh.AuthMethod{
-			ssh.Password(bmc.sshUser.Password),
-			ssh.KeyboardInteractive(func(user, instruction string, questions []string,
-				echos []bool) (answers []string, err error) {
-				answers = make([]string, len(questions))
-				// The second parameter is unused
-				for n := range questions {
-					answers[n] = bmc.sshUser.Password
-				}
-
-				return answers, nil
-			}),
-		},
-		Timeout:         bmc.timeOuts.SSH,
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-	}
-
-	// Establish SSH connection
-	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", bmc.host, bmc.sshPort), config)
-	if err != nil {
-		glog.V(100).Infof("Failed to connect to BMC's SSH server: %v", err)
-
-		return nil, fmt.Errorf("failed to connect to BMC's SSH server: %w", err)
-	}
-
-	return client, nil
-}
-
 // RunCLICommand runs a CLI command in the BMC's console over SSH. This method will block until the command has
 // finished, and its output is copied to stdout and/or stderr if applicable. If combineOutput is true, stderr content is
 // merged in stdout. The timeout param is used to avoid the caller to be stuck forever in case something goes wrong or
@@ -985,7 +947,7 @@ func redfishConnect(
 		Insecure: true,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), sessionTimeout)
+	ctx, cancel := context.WithTimeout(context.TODO(), sessionTimeout)
 
 	client, err := gofish.ConnectContext(ctx, gofishConfig)
 	if err != nil {
@@ -1137,4 +1099,42 @@ func (bmc *BMC) getSupportedResetTypes() ([]redfish.ResetType, error) {
 	}
 
 	return system.SupportedResetTypes, nil
+}
+
+// createCLISSHClient creates a ssh Session to the host.
+func (bmc *BMC) createCLISSHClient() (*ssh.Client, error) {
+	if valid, err := bmc.validateSSH(); !valid {
+		return nil, err
+	}
+
+	glog.V(100).Infof("Creating SSH session to run commands in the BMC's CLI.")
+
+	config := &ssh.ClientConfig{
+		User: bmc.sshUser.Name,
+		Auth: []ssh.AuthMethod{
+			ssh.Password(bmc.sshUser.Password),
+			ssh.KeyboardInteractive(func(user, instruction string, questions []string,
+				echos []bool) (answers []string, err error) {
+				answers = make([]string, len(questions))
+				// The second parameter is unused
+				for n := range questions {
+					answers[n] = bmc.sshUser.Password
+				}
+
+				return answers, nil
+			}),
+		},
+		Timeout:         bmc.timeOuts.SSH,
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
+
+	// Establish SSH connection
+	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", bmc.host, bmc.sshPort), config)
+	if err != nil {
+		glog.V(100).Infof("Failed to connect to BMC's SSH server: %v", err)
+
+		return nil, fmt.Errorf("failed to connect to BMC's SSH server: %w", err)
+	}
+
+	return client, nil
 }
