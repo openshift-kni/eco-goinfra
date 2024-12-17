@@ -53,20 +53,20 @@ require (
 	gopkg.in/k8snetworkplumbingwg/multus-cni.v4 v4.0.2
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/gorm v1.24.5
-	k8s.io/api v0.30.5
-	k8s.io/apiextensions-apiserver v0.30.5
-	k8s.io/apimachinery v0.30.5
+	k8s.io/api v0.31.5
+	k8s.io/apiextensions-apiserver v0.31.5
+	k8s.io/apimachinery v0.31.5
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/klog/v2 v2.130.1
-	k8s.io/kubectl v0.30.5
-	k8s.io/kubelet v0.30.5
+	k8s.io/kubectl v0.31.5
+	k8s.io/kubelet v0.31.5
 	k8s.io/utils v0.0.0-20240902221715-702e33fdd3c3
 	maistra.io/api v0.0.0-20230704084350-dfc96815fb16
 	open-cluster-management.io/api v0.14.0
 	open-cluster-management.io/governance-policy-propagator v0.14.0
 	open-cluster-management.io/multicloud-operators-subscription v0.13.0
 	sigs.k8s.io/container-object-storage-interface-api v0.1.0
-	sigs.k8s.io/controller-runtime v0.17.6
+	sigs.k8s.io/controller-runtime v0.19.4
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -147,7 +147,7 @@ require (
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
-	github.com/moby/spdystream v0.2.0 // indirect
+	github.com/moby/spdystream v0.4.0 // indirect
 	github.com/moby/term v0.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
@@ -189,9 +189,9 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiserver v0.30.5 // indirect
-	k8s.io/cli-runtime v0.30.5 // indirect
-	k8s.io/component-base v0.30.5 // indirect
+	k8s.io/apiserver v0.31.5 // indirect
+	k8s.io/cli-runtime v0.31.5 // indirect
+	k8s.io/component-base v0.31.5 // indirect
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/kube-aggregator v0.29.4 // indirect
 	k8s.io/kube-openapi v0.0.0-20240730131305-7a9a4e85957e // indirect
@@ -203,10 +203,15 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 )
 
+require (
+	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
+	github.com/x448/float16 v0.8.4 // indirect
+)
+
 replace (
 	github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
 	github.com/k8snetworkplumbingwg/sriov-network-operator => github.com/openshift/sriov-network-operator v0.0.0-20241111131739-45f22daa4ca8 // release-4.17
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20240830023148-b7d0481c9094 // release-4.16
 	github.com/portworx/sched-ops => github.com/portworx/sched-ops v1.20.4-rc1
-	k8s.io/client-go => k8s.io/client-go v0.29.9
+	k8s.io/client-go => k8s.io/client-go v0.31.5
 )
