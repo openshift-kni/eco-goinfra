@@ -66,7 +66,7 @@ require (
 	open-cluster-management.io/governance-policy-propagator v0.14.0
 	open-cluster-management.io/multicloud-operators-subscription v0.13.0
 	sigs.k8s.io/container-object-storage-interface-api v0.1.0
-	sigs.k8s.io/controller-runtime v0.17.6
+	sigs.k8s.io/controller-runtime v0.18.2
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -208,5 +208,5 @@ replace (
 	github.com/k8snetworkplumbingwg/sriov-network-operator => github.com/openshift/sriov-network-operator v0.0.0-20241111131739-45f22daa4ca8 // release-4.17
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20240830023148-b7d0481c9094 // release-4.16
 	github.com/portworx/sched-ops => github.com/portworx/sched-ops v1.20.4-rc1
-	k8s.io/client-go => k8s.io/client-go v0.29.9
+	k8s.io/client-go => k8s.io/client-go v0.30.5
 )
