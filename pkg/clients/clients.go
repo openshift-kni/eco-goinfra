@@ -41,6 +41,7 @@ import (
 
 	operatorv1 "github.com/openshift/api/operator/v1"
 	machinev1beta1client "github.com/openshift/client-go/machine/clientset/versioned/typed/machine/v1beta1"
+	operatorv1client "github.com/openshift/client-go/operator/clientset/versioned"
 	operatorv1alpha1 "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1"
 	dynamicFake "k8s.io/client-go/dynamic/fake"
 	policyv1clientTyped "k8s.io/client-go/kubernetes/typed/policy/v1"
@@ -63,7 +64,8 @@ type Settings struct {
 	machinev1beta1client.MachineV1beta1Interface
 	storageV1Client.StorageV1Interface
 	policyv1clientTyped.PolicyV1Interface
-	scheme *runtime.Scheme
+	scheme      *runtime.Scheme
+	MCInterface operatorv1client.Interface
 }
 
 // SchemeAttacher represents a function that can modify the clients current schemes.
@@ -109,6 +111,7 @@ func New(kubeconfig string) *Settings {
 	clientSet.StorageV1Interface = storageV1Client.NewForConfigOrDie(config)
 	clientSet.PolicyV1Interface = policyv1clientTyped.NewForConfigOrDie(config)
 	clientSet.K8sClient = kubernetes.NewForConfigOrDie(config)
+	clientSet.MCInterface = operatorv1client.NewForConfigOrDie(config)
 	clientSet.Config = config
 
 	clientSet.scheme = runtime.NewScheme()
