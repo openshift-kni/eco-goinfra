@@ -29,6 +29,7 @@ require (
 	github.com/openshift-kni/cluster-group-upgrades-operator v0.0.0-20240918194836-a0a3f896c283 // release-4.17
 	github.com/openshift-kni/lifecycle-agent v0.0.0-20241002223755-1e32b456449f // release-4.17
 	github.com/openshift-kni/numaresources-operator v0.4.17-0rc0.0.20240903095616-58342d895734 // release-4.17
+	github.com/openshift-kni/oran-o2ims/api/provisioning v0.0.0-20241112205445-5b445634c20c
 	github.com/openshift/api v3.9.1-0.20191111211345-a27ff30ebf09+incompatible
 	github.com/openshift/client-go v0.0.0-20240523113335-452272e0496d
 	github.com/openshift/cluster-logging-operator v0.0.0-20241003210634-afb65cea19d1 // release-5.9
@@ -66,7 +67,7 @@ require (
 	open-cluster-management.io/governance-policy-propagator v0.14.0
 	open-cluster-management.io/multicloud-operators-subscription v0.13.0
 	sigs.k8s.io/container-object-storage-interface-api v0.1.0
-	sigs.k8s.io/controller-runtime v0.17.6
+	sigs.k8s.io/controller-runtime v0.18.2
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -208,5 +209,5 @@ replace (
 	github.com/k8snetworkplumbingwg/sriov-network-operator => github.com/openshift/sriov-network-operator v0.0.0-20241111131739-45f22daa4ca8 // release-4.17
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20240830023148-b7d0481c9094 // release-4.16
 	github.com/portworx/sched-ops => github.com/portworx/sched-ops v1.20.4-rc1
-	k8s.io/client-go => k8s.io/client-go v0.29.9
+	k8s.io/client-go => k8s.io/client-go v0.30.5
 )
