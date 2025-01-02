@@ -125,10 +125,6 @@ func (builder *IngressRuleBuilder) WithOptions(options ...IngressAdditionalOptio
 func (builder *IngressRuleBuilder) WithPeerPodSelector(podSelector metav1.LabelSelector) *IngressRuleBuilder {
 	glog.V(100).Infof("Adding peer pod selector %v to Ingress Rule", podSelector)
 
-	if builder.errorMsg != "" {
-		return builder
-	}
-
 	builder.definition.From = append(
 		builder.definition.From, v1beta1.MultiNetworkPolicyPeer{
 			PodSelector: &podSelector,
@@ -203,10 +199,6 @@ func (builder *IngressRuleBuilder) WithPeerPodSelectorAndCIDR(
 	podSelector metav1.LabelSelector, cidr string, except ...[]string) *IngressRuleBuilder {
 	glog.V(100).Infof("Adding peer pod selector %v and CIDR %s to IngressRule", podSelector, cidr)
 
-	if builder.errorMsg != "" {
-		return builder
-	}
-
 	builder.WithPeerPodSelector(podSelector)
 	builder.WithCIDR(cidr, except...)
 
@@ -238,7 +230,7 @@ func (builder *IngressRuleBuilder) validate() (bool, error) {
 	if builder.definition == nil {
 		glog.V(100).Infof("The %s is undefined", objectName)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(objectName)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(objectName))
 	}
 
 	if builder.errorMsg != "" {
