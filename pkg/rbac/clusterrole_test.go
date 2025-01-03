@@ -60,10 +60,12 @@ func TestNewClusterRoleBuilder(t *testing.T) {
 		testClusterRole := NewClusterRoleBuilder(client, testCase.name, testCase.rule)
 		if testCase.client {
 			assert.NotNil(t, testClusterRole)
-		}
 
-		if len(testCase.expectedErrorText) > 0 {
-			assert.Equal(t, testCase.expectedErrorText, testClusterRole.errorMsg)
+			if len(testCase.expectedErrorText) > 0 {
+				assert.Equal(t, testCase.expectedErrorText, testClusterRole.errorMsg)
+			}
+		} else {
+			assert.Nil(t, testClusterRole)
 		}
 	}
 }
