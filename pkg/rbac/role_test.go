@@ -78,10 +78,12 @@ func TestNewRoleBuilder(t *testing.T) {
 		testPolicy := NewRoleBuilder(client, testCase.name, testCase.nsName, testCase.rule)
 		if testCase.client {
 			assert.NotNil(t, testPolicy)
-		}
 
-		if len(testCase.expectedErrorText) > 0 {
-			assert.Equal(t, testCase.expectedErrorText, testPolicy.errorMsg)
+			if len(testCase.expectedErrorText) > 0 {
+				assert.Equal(t, testCase.expectedErrorText, testPolicy.errorMsg)
+			}
+		} else {
+			assert.Nil(t, testPolicy)
 		}
 	}
 }
@@ -190,7 +192,7 @@ func TestRoleCreate(t *testing.T) {
 		},
 		{
 			testRole:      buildInvalidRoleTestBuilder(buildTestClientWithDummyObject()),
-			expectedError: fmt.Errorf("role must contain at least one APIGroup"),
+			expectedError: fmt.Errorf("role must contain at least one Verb"),
 		},
 		{
 			testRole:      buildValidRoleBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -244,7 +246,7 @@ func TestRoleDelete(t *testing.T) {
 		},
 		{
 			testRole:      buildInvalidRoleTestBuilder(buildTestClientWithDummyObject()),
-			expectedError: fmt.Errorf("role must contain at least one APIGroup"),
+			expectedError: fmt.Errorf("role must contain at least one Verb"),
 		},
 		{
 			testRole:      buildValidRoleBuilder(clients.GetTestClients(clients.TestClientParams{})),
@@ -277,7 +279,7 @@ func TestRoleUpdate(t *testing.T) {
 		},
 		{
 			testRole:      buildInvalidRoleTestBuilder(buildTestClientWithDummyObject()),
-			expectedError: fmt.Errorf("role must contain at least one APIGroup"),
+			expectedError: fmt.Errorf("role must contain at least one Verb"),
 		},
 		{
 			testRole:      buildValidRoleBuilder(clients.GetTestClients(clients.TestClientParams{})),
