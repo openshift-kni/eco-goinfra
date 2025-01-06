@@ -449,6 +449,33 @@ func TestBGPPeerWithEBGPMultiHop(t *testing.T) {
 	}
 }
 
+func TestBGPPeerWithGracefulRestart(t *testing.T) {
+	testCases := []struct {
+		testBGPPeer     *BGPPeerBuilder
+		gracefulRestart bool
+		expectedError   string
+	}{
+		{
+			testBGPPeer:     buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
+			gracefulRestart: true,
+		},
+		{
+			testBGPPeer:     buildInValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
+			gracefulRestart: true,
+			expectedError:   "BGPPeer 'peerIP' of the BGPPeer contains invalid ip address",
+		},
+	}
+
+	for _, testCase := range testCases {
+		bgpPeerBuilder := testCase.testBGPPeer.WithGracefulRestart(testCase.gracefulRestart)
+		assert.Equal(t, testCase.expectedError, bgpPeerBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, testCase.gracefulRestart, bgpPeerBuilder.Definition.Spec.EnableGracefulRestart)
+		}
+	}
+}
+
 func TestBGPPeerWithOptions(t *testing.T) {
 	testSettings := buildBGPPeerTestClientWithDummyObject()
 	testBuilder := buildValidBGPPeerBuilder(testSettings).WithOptions(
