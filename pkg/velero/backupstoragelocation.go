@@ -72,24 +72,32 @@ func NewBackupStorageLocationBuilder(
 		glog.V(100).Infof("The name of the backupstoragelocation is empty")
 
 		builder.errorMsg = "backupstoragelocation name cannot be empty"
+
+		return builder
 	}
 
 	if namespace == "" {
 		glog.V(100).Infof("The namespace of the backupstoragelocation is empty")
 
 		builder.errorMsg = "backupstoragelocation namespace cannot be empty"
+
+		return builder
 	}
 
 	if provider == "" {
 		glog.V(100).Infof("The provider of the backupstoragelocation is empty")
 
 		builder.errorMsg = "backupstoragelocation provider cannot be empty"
+
+		return builder
 	}
 
 	if objectStorage.Bucket == "" {
 		glog.V(100).Infof("The objectstorage bucket of the backupstoragelocation is empty")
 
 		builder.errorMsg = "backupstoragelocation objectstorage bucket cannot be empty"
+
+		return builder
 	}
 
 	return builder
@@ -113,7 +121,7 @@ func PullBackupStorageLocationBuilder(
 		return nil, err
 	}
 
-	builder := BackupStorageLocationBuilder{
+	builder := &BackupStorageLocationBuilder{
 		apiClient: apiClient.Client,
 		Definition: &velerov1.BackupStorageLocation{
 			ObjectMeta: metav1.ObjectMeta{
@@ -141,7 +149,7 @@ func PullBackupStorageLocationBuilder(
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // WithConfig includes the provided configuration to the backupstoragelocation.
@@ -352,13 +360,13 @@ func (builder *BackupStorageLocationBuilder) validate() (bool, error) {
 	if builder.Definition == nil {
 		glog.V(100).Infof("The %s is undefined", resourceCRD)
 
-		builder.errorMsg = msg.UndefinedCrdObjectErrString(resourceCRD)
+		return false, fmt.Errorf(msg.UndefinedCrdObjectErrString(resourceCRD))
 	}
 
 	if builder.apiClient == nil {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
-		builder.errorMsg = fmt.Sprintf("%s builder cannot have nil apiClient", resourceCRD)
+		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
 	}
 
 	if builder.errorMsg != "" {
