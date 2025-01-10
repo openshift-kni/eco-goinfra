@@ -570,6 +570,10 @@ func (builder *Builder) Delete() error {
 		return err
 	}
 
+	if err != nil {
+		return err
+	}
+
 	builder.Object = nil
 
 	return nil
