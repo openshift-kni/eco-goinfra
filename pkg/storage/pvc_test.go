@@ -290,12 +290,12 @@ func TestPersistentVolumeClaimWithVolumeMode(t *testing.T) {
 		},
 		{
 			testPVC: "Disk",
-			expectedError: "Unsupported VolumeMode \"Disk\" requested for persistentvolumeclaim-test " +
+			expectedError: "unsupported VolumeMode \"Disk\" requested for persistentvolumeclaim-test " +
 				"PersistentVolumeClaim in persistentvolumeclaim-test namespace",
 		},
 		{
 			testPVC: "",
-			expectedError: "Empty volumeMode requested for the PersistentVolumeClaim persistentvolumeclaim-test " +
+			expectedError: "empty volumeMode requested for the PersistentVolumeClaim persistentvolumeclaim-test " +
 				"in persistentvolumeclaim-namespace namespace",
 		},
 	}
@@ -326,7 +326,7 @@ func TestPersistentVolumeClaimWithStorageClass(t *testing.T) {
 		},
 		{
 			testStorageClass: "",
-			expectedError:    "Empty storageClass requested for the PersistentVolumeClaim persistentvolumeclaim-test",
+			expectedError:    "empty storageClass requested for the PersistentVolumeClaim persistentvolumeclaim-test",
 		},
 	}
 
@@ -356,7 +356,7 @@ func TestPersistentVolumeClaimWithPVCCapacity(t *testing.T) {
 		},
 		{
 			testCapacity:  "",
-			expectedError: "Capacity of the PersistentVolumeClaim is empty",
+			expectedError: "capacity of the PersistentVolumeClaim is empty",
 		},
 	}
 
