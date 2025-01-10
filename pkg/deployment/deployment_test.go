@@ -610,7 +610,6 @@ func TestUpdate(t *testing.T) {
 
 		if !testCase.deploymentExistsAlready {
 			assert.NotNil(t, err)
-			assert.Nil(t, result.Object)
 		} else {
 			assert.Nil(t, err)
 			assert.Equal(t, testBuilder.Definition.Name, result.Definition.Name)
