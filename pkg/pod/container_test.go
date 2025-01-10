@@ -360,7 +360,7 @@ func TestPodContainerWithVolumeMount(t *testing.T) {
 		},
 		{
 			mount:         corev1.VolumeMount{},
-			expectedError: "container's volume mount path is empty",
+			expectedError: "container's volume mount name is empty",
 		},
 	}
 
@@ -511,7 +511,7 @@ func TestPodContainerGetContainerCfg(t *testing.T) {
 		{
 			builder: NewContainerBuilder("container", "test", []string{"/bin/bash", "-c", "sleep"}).
 				WithEnvVar("", ""),
-			expectedError: fmt.Errorf("container's environment var 'value' is empty"),
+			expectedError: fmt.Errorf("container's environment var 'name' is empty"),
 		},
 	}
 
