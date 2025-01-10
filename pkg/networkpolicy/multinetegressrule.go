@@ -126,10 +126,6 @@ func (builder *EgressRuleBuilder) WithOptions(options ...EgressAdditionalOptions
 func (builder *EgressRuleBuilder) WithPeerPodSelector(podSelector metav1.LabelSelector) *EgressRuleBuilder {
 	glog.V(100).Infof("Adding peer pod selector %v to EgressRule", podSelector)
 
-	if builder.errorMsg != "" {
-		return builder
-	}
-
 	builder.definition.To = append(builder.definition.To, v1beta1.MultiNetworkPolicyPeer{PodSelector: &podSelector})
 
 	return builder
