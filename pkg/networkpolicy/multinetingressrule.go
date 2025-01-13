@@ -38,6 +38,10 @@ func NewIngressRuleBuilder() *IngressRuleBuilder {
 func (builder *IngressRuleBuilder) WithPortAndProtocol(port uint16, protocol corev1.Protocol) *IngressRuleBuilder {
 	glog.V(100).Infof("Adding port %d protocol %s to IngressRule", port, protocol)
 
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	if port == 0 {
 		glog.V(100).Infof("Port number can not be 0")
 
@@ -125,6 +129,10 @@ func (builder *IngressRuleBuilder) WithOptions(options ...IngressAdditionalOptio
 func (builder *IngressRuleBuilder) WithPeerPodSelector(podSelector metav1.LabelSelector) *IngressRuleBuilder {
 	glog.V(100).Infof("Adding peer pod selector %v to Ingress Rule", podSelector)
 
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	builder.definition.From = append(
 		builder.definition.From, v1beta1.MultiNetworkPolicyPeer{
 			PodSelector: &podSelector,
@@ -135,11 +143,11 @@ func (builder *IngressRuleBuilder) WithPeerPodSelector(podSelector metav1.LabelS
 
 // WithPeerNamespaceSelector appends new item with only NamespaceSelector to From Peer list.
 func (builder *IngressRuleBuilder) WithPeerNamespaceSelector(nsSelector metav1.LabelSelector) *IngressRuleBuilder {
+	glog.V(100).Infof("Adding peer namespace selector %v to IngressRule", nsSelector)
+
 	if valid, _ := builder.validate(); !valid {
 		return builder
 	}
-
-	glog.V(100).Infof("Adding peer namespace selector %v to IngressRule", nsSelector)
 
 	builder.definition.From = append(builder.definition.From,
 		v1beta1.MultiNetworkPolicyPeer{NamespaceSelector: &nsSelector})
@@ -198,6 +206,10 @@ func (builder *IngressRuleBuilder) WithPeerPodAndNamespaceSelector(
 func (builder *IngressRuleBuilder) WithPeerPodSelectorAndCIDR(
 	podSelector metav1.LabelSelector, cidr string, except ...[]string) *IngressRuleBuilder {
 	glog.V(100).Infof("Adding peer pod selector %v and CIDR %s to IngressRule", podSelector, cidr)
+
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
 
 	builder.WithPeerPodSelector(podSelector)
 	builder.WithCIDR(cidr, except...)

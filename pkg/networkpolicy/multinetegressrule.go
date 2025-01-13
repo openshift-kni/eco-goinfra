@@ -39,6 +39,10 @@ func NewEgressRuleBuilder() *EgressRuleBuilder {
 func (builder *EgressRuleBuilder) WithPortAndProtocol(port uint16, protocol corev1.Protocol) *EgressRuleBuilder {
 	glog.V(100).Infof("Adding port %d and protocol %s to EgressRule", port, protocol)
 
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	if port == 0 {
 		glog.V(100).Infof("Port number can not be 0")
 
@@ -126,6 +130,10 @@ func (builder *EgressRuleBuilder) WithOptions(options ...EgressAdditionalOptions
 func (builder *EgressRuleBuilder) WithPeerPodSelector(podSelector metav1.LabelSelector) *EgressRuleBuilder {
 	glog.V(100).Infof("Adding peer pod selector %v to EgressRule", podSelector)
 
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
 	builder.definition.To = append(builder.definition.To, v1beta1.MultiNetworkPolicyPeer{PodSelector: &podSelector})
 
 	return builder
@@ -198,6 +206,10 @@ func (builder *EgressRuleBuilder) WithPeerPodAndNamespaceSelector(
 func (builder *EgressRuleBuilder) WithPeerPodSelectorAndCIDR(
 	podSelector metav1.LabelSelector, cidr string, except ...[]string) *EgressRuleBuilder {
 	glog.V(100).Infof("Adding peer pod selector %v to EgressRule", podSelector)
+
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
 
 	_, _, err := net.ParseCIDR(cidr)
 

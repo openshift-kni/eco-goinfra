@@ -124,7 +124,7 @@ func TestEgressWithPeerPodSelector(t *testing.T) {
 		},
 	})
 
-	assert.Len(t, builder.definition.To, 1)
+	assert.Len(t, builder.definition.To, 0)
 }
 
 func TestEgressWithPeerNamespaceSelector(t *testing.T) {
