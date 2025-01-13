@@ -55,7 +55,7 @@ func NewBuilderFromObjectString(apiClient *clients.Settings, almExample string) 
 		glog.V(100).Infof(
 			"Error initializing NodeFeatureDiscovery from alm-examples: %s", err.Error())
 
-		builder.errorMsg = fmt.Sprintf("Error initializing NodeFeatureDiscovery from alm-examples: %s",
+		builder.errorMsg = fmt.Sprintf("error initializing NodeFeatureDiscovery from alm-examples: %s",
 			err.Error())
 
 		return builder
@@ -69,7 +69,7 @@ func NewBuilderFromObjectString(apiClient *clients.Settings, almExample string) 
 	if builder.Definition == nil {
 		glog.V(100).Infof("The NodeFeatureDiscovery object definition is nil")
 
-		builder.errorMsg = "NodeFeatureDiscovery definition is nil"
+		builder.errorMsg = "nodeFeatureDiscovery definition is nil"
 
 		return builder
 	}
@@ -117,7 +117,7 @@ func Pull(apiClient *clients.Settings, name, namespace string) (*Builder, error)
 	}
 
 	if !builder.Exists() {
-		return nil, fmt.Errorf("NodeFeatureDiscovery object %s does not exist in namespace %s", name, namespace)
+		return nil, fmt.Errorf("nodeFeatureDiscovery object %s does not exist in namespace %s", name, namespace)
 	}
 
 	builder.Definition = builder.Object
