@@ -113,6 +113,8 @@ func TestEgressWithPeerPodSelector(t *testing.T) {
 	assert.Len(t, builder.definition.To, 1)
 	assert.Equal(t, builder.definition.To[0].PodSelector.MatchLabels["app"], "nginx")
 
+	builder = NewEgressRuleBuilder()
+
 	//nolint:goconst
 	builder.errorMsg = "error"
 
@@ -122,7 +124,7 @@ func TestEgressWithPeerPodSelector(t *testing.T) {
 		},
 	})
 
-	assert.Len(t, builder.definition.To, 1)
+	assert.Len(t, builder.definition.To, 0)
 }
 
 func TestEgressWithPeerNamespaceSelector(t *testing.T) {
@@ -205,6 +207,8 @@ func TestEgressWithPeerPodSelectorAndCIDR(t *testing.T) {
 	assert.Equal(t, builder.definition.To[0].PodSelector.MatchLabels["app"], "nginx")
 	assert.Equal(t, builder.definition.To[0].IPBlock.CIDR, "192.168.0.1/24")
 
+	builder = NewEgressRuleBuilder()
+
 	// Test invalid CIDR
 	builder.WithPeerPodSelectorAndCIDR(metav1.LabelSelector{
 		MatchLabels: map[string]string{
@@ -213,6 +217,8 @@ func TestEgressWithPeerPodSelectorAndCIDR(t *testing.T) {
 	}, "192.55.55.55", nil)
 
 	assert.Equal(t, builder.errorMsg, "Invalid CIDR argument 192.55.55.55")
+
+	builder = NewEgressRuleBuilder()
 
 	// Test with exception
 	builder.WithPeerPodSelectorAndCIDR(metav1.LabelSelector{
