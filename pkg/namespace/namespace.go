@@ -152,12 +152,12 @@ func (builder *Builder) Create() (*Builder, error) {
 		return builder, nil
 	}
 
-	var err error
-
-	builder.Object, err = builder.apiClient.Namespaces().Create(context.TODO(), builder.Definition, metav1.CreateOptions{})
+	err := builder.apiClient.Create(context.TODO(), builder.Definition)
 	if err != nil {
 		return builder, err
 	}
+
+	builder.Object = builder.Definition
 
 	return builder, nil
 }
