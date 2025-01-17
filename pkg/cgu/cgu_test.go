@@ -28,7 +28,6 @@ var (
 	}
 )
 
-//nolint:funlen
 func TestPullCgu(t *testing.T) {
 	generateCgu := func(name, namespace string) *v1alpha1.ClusterGroupUpgrade {
 		return &v1alpha1.ClusterGroupUpgrade{
