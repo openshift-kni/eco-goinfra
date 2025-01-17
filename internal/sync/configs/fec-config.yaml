@@ -3,6 +3,6 @@
   sync: true
   repo_link: "https://github.com/intel/sriov-fec-operator"
   branch: main
-  remote_api_directory: api/sriovfec/v1
+  remote_api_directory: api/sriovfec/v2
   local_api_directory: schemes/fec/fectypes
 ...
