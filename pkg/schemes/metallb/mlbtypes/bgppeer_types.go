@@ -62,6 +62,7 @@ type BGPPeerSpec struct {
 
 	// Requested BGP hold time, per RFC4271.
 	// +optional
+	// test
 	HoldTime metav1.Duration `json:"holdTime,omitempty"`
 
 	// Requested BGP keepalive time, per RFC4271.
