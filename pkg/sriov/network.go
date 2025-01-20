@@ -121,6 +121,8 @@ func (builder *NetworkBuilder) WithVlanProto(vlanProtocol string) *NetworkBuilde
 	allowedVlanProto := []string{"802.1q", "802.1Q", "802.1ad", "802.1AD"}
 	if !slices.Contains(allowedVlanProto, vlanProtocol) {
 		builder.errorMsg = "invalid 'vlanProtocol' parameters"
+
+		return builder
 	}
 
 	builder.Definition.Spec.VlanProto = vlanProtocol

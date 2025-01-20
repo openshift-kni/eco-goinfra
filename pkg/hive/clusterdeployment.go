@@ -30,6 +30,8 @@ type ClusterDeploymentAdditionalOptions func(builder *ClusterDeploymentBuilder) 
 
 // NewABMClusterDeploymentBuilder creates a new instance of
 // ClusterDeploymentBuilder with platform type set to agentBareMetal.
+//
+//nolint:funlen
 func NewABMClusterDeploymentBuilder(
 	apiClient *clients.Settings,
 	name string,
@@ -135,7 +137,7 @@ func NewClusterDeploymentByInstallRefBuilder(
 	if clusterInstallRef.Name == "" {
 		glog.V(100).Infof("The clusterInstallRef name of the clusterdeployment is empty")
 
-		builder.errorMsg = "clusterdeployment 'clusterInstallRef.name' cannot be empty"
+		builder.errorMsg = "clusterdeployment 'clusterInstallRef' cannot be empty"
 
 		return builder
 	}

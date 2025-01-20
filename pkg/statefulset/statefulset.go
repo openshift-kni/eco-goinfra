@@ -149,7 +149,7 @@ func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
 func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	glog.V(100).Infof("Pulling existing statefulset name: %s under namespace: %s", name, nsname)
 
-	builder := Builder{
+	builder := &Builder{
 		apiClient: apiClient,
 		Definition: &appsv1.StatefulSet{
 			ObjectMeta: metav1.ObjectMeta{
@@ -160,12 +160,16 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 	}
 
 	if name == "" {
+		glog.V(100).Infof("The name of the statefulset is empty")
+
 		builder.errorMsg = "statefulset 'name' cannot be empty"
 
 		return nil, fmt.Errorf("statefulset 'name' cannot be empty")
 	}
 
 	if nsname == "" {
+		glog.V(100).Infof("The namespace of the statefulset is empty")
+
 		builder.errorMsg = "statefulset 'namespace' cannot be empty"
 
 		return nil, fmt.Errorf("statefulset 'namespace' cannot be empty")
@@ -177,7 +181,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 
 	builder.Definition = builder.Object
 
-	return &builder, nil
+	return builder, nil
 }
 
 // Create generates a statefulset in cluster and stores the created object in struct.

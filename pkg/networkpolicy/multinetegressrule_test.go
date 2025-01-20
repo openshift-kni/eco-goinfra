@@ -114,7 +114,6 @@ func TestEgressWithPeerPodSelector(t *testing.T) {
 	assert.Equal(t, builder.definition.To[0].PodSelector.MatchLabels["app"], "nginx")
 
 	builder = NewEgressRuleBuilder()
-
 	//nolint:goconst
 	builder.errorMsg = "error"
 
@@ -210,6 +209,7 @@ func TestEgressWithPeerPodSelectorAndCIDR(t *testing.T) {
 	builder = NewEgressRuleBuilder()
 
 	// Test invalid CIDR
+	builder = NewEgressRuleBuilder()
 	builder.WithPeerPodSelectorAndCIDR(metav1.LabelSelector{
 		MatchLabels: map[string]string{
 			"app": "nginx",
@@ -221,6 +221,7 @@ func TestEgressWithPeerPodSelectorAndCIDR(t *testing.T) {
 	builder = NewEgressRuleBuilder()
 
 	// Test with exception
+	builder = NewEgressRuleBuilder()
 	builder.WithPeerPodSelectorAndCIDR(metav1.LabelSelector{
 		MatchLabels: map[string]string{
 			"app": "nginx",

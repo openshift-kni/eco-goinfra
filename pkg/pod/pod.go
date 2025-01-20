@@ -1068,6 +1068,10 @@ func (builder *Builder) WithSecurityContext(securityContext *corev1.PodSecurityC
 
 	builder.isMutationAllowed("SecurityContext")
 
+	if builder.errorMsg != "" {
+		return builder
+	}
+
 	builder.Definition.Spec.SecurityContext = securityContext
 
 	return builder
