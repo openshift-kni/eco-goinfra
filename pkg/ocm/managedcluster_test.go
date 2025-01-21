@@ -198,6 +198,38 @@ func TestWithHubAcceptsClient(t *testing.T) {
 	}
 }
 
+func TestManagedClusterGet(t *testing.T) {
+	testCases := []struct {
+		testBuilder   *ManagedClusterBuilder
+		expectedError string
+	}{
+		{
+			testBuilder:   buildValidManagedClusterTestBuilder(buildTestClientWithDummyManagedCluster()),
+			expectedError: "",
+		},
+		{
+			testBuilder:   buildInvalidManagedClusterTestBuilder(buildTestClientWithDummyManagedCluster()),
+			expectedError: "managedCluster 'name' cannot be empty",
+		},
+		{
+			testBuilder: buildValidManagedClusterTestBuilder(buildTestClientWithManagedClusterScheme()),
+			expectedError: fmt.Sprintf(
+				"managedclusters.cluster.open-cluster-management.io \"%s\" not found", defaultManagedClusterName),
+		},
+	}
+
+	for _, testCase := range testCases {
+		mcl, err := testCase.testBuilder.Get()
+
+		if testCase.expectedError == "" {
+			assert.Nil(t, err)
+			assert.Equal(t, testCase.testBuilder.Definition.Name, mcl.Name)
+		} else {
+			assert.EqualError(t, err, testCase.expectedError)
+		}
+	}
+}
+
 func TestManagedClusterExists(t *testing.T) {
 	testCases := []struct {
 		testBuilder *ManagedClusterBuilder
