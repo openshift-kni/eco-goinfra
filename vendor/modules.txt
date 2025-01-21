@@ -654,6 +654,9 @@ github.com/openshift/machine-config-operator/pkg/generated/informers/externalver
 github.com/openshift/machine-config-operator/pkg/generated/informers/externalversions/machineconfiguration.openshift.io/v1
 github.com/openshift/machine-config-operator/pkg/generated/listers/machineconfiguration.openshift.io/v1
 github.com/openshift/machine-config-operator/pkg/version
+# github.com/openshift/node-feature-discovery/api/nfd v0.0.0-20250103121957-354b94ed3e55
+## explicit; go 1.22.0
+github.com/openshift/node-feature-discovery/api/nfd/v1alpha1
 # github.com/ovn-org/ovn-kubernetes/go-controller v0.0.0-20240614144800-61d5c5937bd4
 ## explicit; go 1.21
 github.com/ovn-org/ovn-kubernetes/go-controller/pkg/crd/egressip/v1
@@ -893,7 +896,7 @@ gorm.io/gorm/clause
 gorm.io/gorm/logger
 gorm.io/gorm/schema
 gorm.io/gorm/utils
-# k8s.io/api v0.30.5
+# k8s.io/api v0.30.7
 ## explicit; go 1.22.0
 k8s.io/api/admission/v1
 k8s.io/api/admission/v1beta1
@@ -968,7 +971,7 @@ k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions/apiextensio
 k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions/internalinterfaces
 k8s.io/apiextensions-apiserver/pkg/client/listers/apiextensions/v1
 k8s.io/apiextensions-apiserver/pkg/client/listers/apiextensions/v1beta1
-# k8s.io/apimachinery v0.30.5
+# k8s.io/apimachinery v0.30.7
 ## explicit; go 1.22.0
 k8s.io/apimachinery/pkg/api/equality
 k8s.io/apimachinery/pkg/api/errors

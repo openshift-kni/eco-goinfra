@@ -53,9 +53,9 @@ require (
 	gopkg.in/k8snetworkplumbingwg/multus-cni.v4 v4.0.2
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/gorm v1.24.5
-	k8s.io/api v0.30.5
+	k8s.io/api v0.30.7
 	k8s.io/apiextensions-apiserver v0.30.5
-	k8s.io/apimachinery v0.30.5
+	k8s.io/apimachinery v0.30.7
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kubectl v0.30.5
@@ -202,6 +202,8 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.17.2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 )
+
+require github.com/openshift/node-feature-discovery/api/nfd v0.0.0-20250103121957-354b94ed3e55
 
 replace (
 	github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
