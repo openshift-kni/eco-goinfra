@@ -1,7 +1,6 @@
 run:
   go: 1.23
   timeout: 15m0s
-  skip-dirs-use-default: true
   fast: false
 #  modules-download-mode: readonly
 
@@ -137,6 +136,7 @@ linters:
 output:
   formats: colored-line-number
 issues:
+  exclude-dirs-use-default: true
   exclude-dirs:
     - pkg/schemes
   include:
