@@ -379,7 +379,7 @@ func TestSecretUpdate(t *testing.T) {
 
 		if !testCase.secretExistsAlready {
 			assert.NotNil(t, err)
-			assert.Nil(t, result.Object)
+			assert.Equal(t, "secrets \"nameBeforeUpdate\" not found", err.Error())
 		} else {
 			assert.Nil(t, err)
 			assert.Equal(t, testBuilder.Definition.Name, result.Definition.Name)
