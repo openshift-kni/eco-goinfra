@@ -37,7 +37,6 @@ require (
 	github.com/openshift/custom-resource-status v1.1.3-0.20220503160415-f2fdb4999d87
 	github.com/openshift/elasticsearch-operator v0.0.0-20241202183904-81cd6e70c15e // latest
 	github.com/openshift/local-storage-operator v0.0.0-20241213132210-fa575fb5f229 // release-4.18
-	github.com/openshift/machine-config-operator v0.0.1-0.20231024085435-7e1fb719c1ba
 	github.com/ovn-org/ovn-kubernetes/go-controller v0.0.0-20250122211335-e07ba60f758a // latest
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.78.2
@@ -158,6 +157,7 @@ require (
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/openshift/library-go v0.0.0-20240711100342-737dc0fa5232 // indirect
+	github.com/openshift/machine-config-operator v0.0.1-0.20231024085435-7e1fb719c1ba // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_golang v1.20.5 // indirect
