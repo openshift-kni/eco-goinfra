@@ -75,6 +75,7 @@ type N3000BBDevConfig struct {
 	// +kubebuilder:default:false
 	// +kubebuilder:validation:Enum=false
 	PFMode bool `json:"pfMode,omitempty"`
+	// +kubebuilder:validation:Optional
 	// +kubebuilder:validation:Minimum=0
 	FLRTimeOut int            `json:"flrTimeout"`
 	Downlink   UplinkDownlink `json:"downlink"`
@@ -158,6 +159,10 @@ type validator interface {
 }
 
 func (in *BBDevConfig) Validate() error {
+
+	if err := hasAmbiguousBBDevConfigs(*in); err != nil {
+		return err
+	}
 
 	for _, config := range []interface{}{in.ACC200, in.ACC100, in.N3000} {
 		if !isNil(config) {
