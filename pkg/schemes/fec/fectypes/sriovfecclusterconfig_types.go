@@ -159,11 +159,6 @@ type validator interface {
 }
 
 func (in *BBDevConfig) Validate() error {
-
-	if err := hasAmbiguousBBDevConfigs(*in); err != nil {
-		return err
-	}
-
 	for _, config := range []interface{}{in.ACC200, in.ACC100, in.N3000} {
 		if !isNil(config) {
 			if validator, ok := config.(validator); ok {

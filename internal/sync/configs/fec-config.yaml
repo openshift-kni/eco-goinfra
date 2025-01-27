@@ -1,8 +1,23 @@
 ---
+# Cannot be automatically synced due to the webhook being required by the
+# types file. Including the webhook causes issues because it relies on a very
+# old controller-runtime version.
+#
+# The only change made manually was removing these lines from
+# `func (in *BBDevConfig) Validate() error` in `sriovfecclusterconfig_types.go`.
+#
+# ```go
+# if err := hasAmbiguousBBDevConfigs(*in); err != nil {
+#         return err
+# }
+# ```
 - name: fec
-  sync: true
+  sync: false
   repo_link: "https://github.com/intel/sriov-fec-operator"
   branch: main
   remote_api_directory: api/sriovfec/v2
   local_api_directory: schemes/fec/fectypes
+  excludes:
+    - "*_test.go"
+    - "*_webhook.go"
 ...
