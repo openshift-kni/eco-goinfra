@@ -4,12 +4,8 @@
 package integration
 
 import (
-	"math/rand"
-	"time"
+	"math/rand/v2"
 )
-
-var seededRand *rand.Rand = rand.New(
-	rand.NewSource(time.Now().UnixNano()))
 
 func generateRandomString(length int) string {
 	charset := "abcdefghijklmnopqrstuvwxyz"
@@ -18,7 +14,7 @@ func generateRandomString(length int) string {
 	b := make([]byte, length)
 
 	for i := range b {
-		b[i] = charset[seededRand.Intn(len(charset))]
+		b[i] = charset[rand.IntN(len(charset))]
 	}
 
 	return string(b)
