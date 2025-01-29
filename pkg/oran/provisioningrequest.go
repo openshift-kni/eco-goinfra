@@ -2,7 +2,10 @@ package oran
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/google/uuid"
@@ -11,6 +14,8 @@ import (
 	provisioningv1alpha1 "github.com/openshift-kni/oran-o2ims/api/provisioning/v1alpha1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -83,6 +88,88 @@ func NewPRBuilder(
 
 		return builder
 	}
+
+	return builder
+}
+
+// WithTemplateParameter sets key to value in the TemplateParameters field.
+func (builder *ProvisioningRequestBuilder) WithTemplateParameter(key string, value any) *ProvisioningRequestBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Setting ProvisioningRequest TemplateParameter %s to %v", key, value)
+
+	if key == "" {
+		glog.V(100).Info("ProvisioningRequest TemplateParameter key is empty")
+
+		builder.errorMsg = "provisioningRequest TemplateParameter 'key' cannot be empty"
+
+		return builder
+	}
+
+	templateParameters, err := builder.GetTemplateParameters()
+	if err != nil {
+		glog.V(100).Infof("Failed to unmarshal ProvisioningRequest TemplateParameters: %v", err)
+
+		builder.errorMsg = fmt.Sprintf("failed to unmarshal TemplateParameters: %v", err)
+
+		return builder
+	}
+
+	templateParameters[key] = value
+	builder = builder.WithTemplateParameters(templateParameters)
+
+	return builder
+}
+
+// GetTemplateParameters unmarshals the raw JSON stored in the TemplateParameters in the Definition, returning an empty
+// rather than nil map if TemplateParameters is empty.
+func (builder *ProvisioningRequestBuilder) GetTemplateParameters() (map[string]any, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
+	glog.V(100).Infof("Getting the TemplateParameters map for ProvisioningRequest %s", builder.Definition.Name)
+
+	templateParameters := make(map[string]any)
+
+	if len(builder.Definition.Spec.TemplateParameters.Raw) == 0 {
+		return templateParameters, nil
+	}
+
+	err := json.Unmarshal(builder.Definition.Spec.TemplateParameters.Raw, &templateParameters)
+	if err != nil {
+		return nil, err
+	}
+
+	return templateParameters, nil
+}
+
+// WithTemplateParameters marshals the provided map into JSON and stores it in the builder Definition. Nil maps are
+// converted to empty maps before marshaling.
+func (builder *ProvisioningRequestBuilder) WithTemplateParameters(
+	templateParameters map[string]any) *ProvisioningRequestBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	glog.V(100).Infof("Setting the TemplateParameters map for ProvisioningRequest %s", builder.Definition.Name)
+
+	if templateParameters == nil {
+		templateParameters = make(map[string]any)
+	}
+
+	marshaled, err := json.Marshal(templateParameters)
+	if err != nil {
+		glog.V(100).Infof("Failed to marshal TemplateParameters for ProvisioningRequest %s: %v", builder.Definition.Name, err)
+
+		builder.errorMsg = fmt.Sprintf("failed to marshal TemplateParameters: %v", err)
+
+		return builder
+	}
+
+	builder.Definition.Spec.TemplateParameters = runtime.RawExtension{Raw: marshaled}
 
 	return builder
 }
@@ -241,6 +328,128 @@ func (builder *ProvisioningRequestBuilder) Delete() error {
 	builder.Object = nil
 
 	return nil
+}
+
+// DeleteAndWait deletes the ProvisioningRequest then waits up to timeout until the ProvisioningRequest no longer
+// exists.
+func (builder *ProvisioningRequestBuilder) DeleteAndWait(timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
+	glog.V(100).Infof("Deleting ProvisioningRequest %s and waiting up to %s until it is deleted",
+		builder.Definition.Name, timeout)
+
+	err := builder.Delete()
+	if err != nil {
+		return err
+	}
+
+	return wait.PollUntilContextTimeout(
+		context.TODO(), 3*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
+			return !builder.Exists(), nil
+		})
+}
+
+// WaitForCondition waits up to the provided timeout for a condition matching expected. It checks only the Type, Status,
+// Reason, and Message fields. For the message, it matches if the message contains the expected. Zero fields in the
+// expected condition are ignored.
+func (builder *ProvisioningRequestBuilder) WaitForCondition(
+	expected metav1.Condition, timeout time.Duration) (*ProvisioningRequestBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
+	glog.V(100).Infof("Waiting up to %s until ProvisioningRequest %s has condition %v",
+		timeout, builder.Definition.Name, expected)
+
+	if !builder.Exists() {
+		glog.V(100).Infof("ProvisioningRequest %s does not exist", builder.Definition.Name)
+
+		return nil, fmt.Errorf("cannot wait for non-existent ProvisioningRequest")
+	}
+
+	err := wait.PollUntilContextTimeout(
+		context.TODO(), 3*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
+			var err error
+			builder.Object, err = builder.Get()
+
+			if err != nil {
+				glog.V(100).Infof("Failed to get ProvisioningRequest %s: %v", builder.Definition.Name, err)
+
+				return false, nil
+			}
+
+			builder.Definition = builder.Object
+
+			for _, condition := range builder.Object.Status.Conditions {
+				if expected.Type != "" && condition.Type != expected.Type {
+					continue
+				}
+
+				if expected.Status != "" && condition.Status != expected.Status {
+					continue
+				}
+
+				if expected.Reason != "" && condition.Reason != expected.Reason {
+					continue
+				}
+
+				if expected.Message != "" && !strings.Contains(condition.Message, expected.Message) {
+					continue
+				}
+
+				return true, nil
+			}
+
+			return false, nil
+		})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return builder, nil
+}
+
+// WaitUntilFulfilled waits up to timeout until the ProvisioningRequest is in the fulfilled phase. Changes to the
+// template will not be accepted until it is fulfilled.
+func (builder *ProvisioningRequestBuilder) WaitUntilFulfilled(
+	timeout time.Duration) (*ProvisioningRequestBuilder, error) {
+	if valid, err := builder.validate(); !valid {
+		return nil, err
+	}
+
+	glog.V(100).Infof("Waiting up to %s until ProvisioningRequest %s is fulfilled", timeout, builder.Definition.Name)
+
+	if !builder.Exists() {
+		glog.V(100).Infof("ProvisioningRequest %s does not exist", builder.Definition.Name)
+
+		return nil, fmt.Errorf("cannot wait for non-existent ProvisioningRequest")
+	}
+
+	err := wait.PollUntilContextTimeout(
+		context.TODO(), 3*time.Second, timeout, true, func(ctx context.Context) (bool, error) {
+			var err error
+			builder.Object, err = builder.Get()
+
+			if err != nil {
+				glog.V(100).Infof("Failed to get ProvisioningRequest %s: %v", builder.Definition.Name, err)
+
+				return false, nil
+			}
+
+			builder.Definition = builder.Object
+			fulfilled := builder.Definition.Status.ProvisioningStatus.ProvisioningPhase == provisioningv1alpha1.StateFulfilled
+
+			return fulfilled, nil
+		})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return builder, nil
 }
 
 // validate checks that the builder, definition, and apiClient are properly initialized and there is no errorMsg.
