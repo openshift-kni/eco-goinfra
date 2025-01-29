@@ -491,6 +491,9 @@ github.com/openshift-kni/numaresources-operator/api/numaresourcesoperator/v1
 # github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin v0.0.0-20250128160241-57fbcf565b32
 ## explicit; go 1.22.0
 github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin/v1alpha1
+# github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20250129205116-6838db628c2b
+## explicit; go 1.22.0
+github.com/openshift-kni/oran-o2ims/api/hardwaremanagement/v1alpha1
 # github.com/openshift-kni/oran-o2ims/api/provisioning v0.0.0-20250123151805-c935b06062f9
 ## explicit; go 1.22.0
 github.com/openshift-kni/oran-o2ims/api/provisioning/v1alpha1
