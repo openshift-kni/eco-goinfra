@@ -498,6 +498,8 @@ github.com/openshift-kni/numaresources-operator v0.4.18-0.2024100201.0.202501140
 github.com/openshift-kni/numaresources-operator v0.4.18-0.2024100201.0.20250114093602-01c00730991d/go.mod h1:0Nx16xaZzxDbBs12tRjAWxDJdA9RknYEf2edrOjOdrU=
 github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin v0.0.0-20250128160241-57fbcf565b32 h1:ufFJmCmIAN8uI1/BowCryt+tIEzaXC1KbJnRwO3UUFE=
 github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin v0.0.0-20250128160241-57fbcf565b32/go.mod h1:IUuPY/mlglIpTHV1MlYbBYPBTRgad5d328i5j/F4AbY=
+github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20250129205116-6838db628c2b h1:/wRJJk8u0+aky96XDRwDuRT1GJxq23L5rMMsvxZ0Y8k=
+github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20250129205116-6838db628c2b/go.mod h1:WIYfQ7jH7QkTIzqVjMEClf1H47Prs6LuoPvSMxBBAGw=
 github.com/openshift-kni/oran-o2ims/api/provisioning v0.0.0-20250123151805-c935b06062f9 h1:AP4psTmffaPv3IS/PkXIqRo2lmC0chWv33piK6m28sU=
 github.com/openshift-kni/oran-o2ims/api/provisioning v0.0.0-20250123151805-c935b06062f9/go.mod h1:7dmhnmqiO1VP3SuqaAdnlFbBdeTLK3FI3vQHapVMNQg=
 github.com/openshift/api v0.0.0-20241210155609-29859d55727b h1:IrtLpBrlSL7a3HK+Brg7C1DFO/gsztIEMlCRJW0M82s=
