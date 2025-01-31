@@ -592,6 +592,72 @@ func TestClusterInstanceWaitForCondition(t *testing.T) {
 	}
 }
 
+func TestClusterInstanceWaitForExtraLabel(t *testing.T) {
+	testCases := []struct {
+		exists        bool
+		valid         bool
+		hasLabel      bool
+		expectedError error
+	}{
+		{
+			exists:        true,
+			valid:         true,
+			hasLabel:      true,
+			expectedError: nil,
+		},
+		{
+			exists:   false,
+			valid:    true,
+			hasLabel: true,
+			expectedError: fmt.Errorf("clusterinstance object %s does not exist in namespace %s",
+				testClusterInstance, testClusterInstance),
+		},
+		{
+			exists:        true,
+			valid:         false,
+			hasLabel:      true,
+			expectedError: fmt.Errorf("clusterinstance 'nsname' cannot be empty"),
+		},
+		{
+			exists:        true,
+			valid:         true,
+			hasLabel:      false,
+			expectedError: context.DeadlineExceeded,
+		},
+	}
+
+	for _, testCase := range testCases {
+		var (
+			runtimeObjects         []runtime.Object
+			clusterInstanceBuilder *CIBuilder
+		)
+
+		if testCase.exists {
+			clusterinstance := generateClusterInstance()
+
+			if testCase.hasLabel {
+				clusterinstance.Spec.ExtraLabels = map[string]map[string]string{"test": {"test": ""}}
+			}
+
+			runtimeObjects = append(runtimeObjects, clusterinstance)
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: testSchemes,
+		})
+
+		if testCase.valid {
+			clusterInstanceBuilder = buildValidClusterInstanceTestBuilder(testSettings)
+		} else {
+			clusterInstanceBuilder = buildInvalidClusterInstanceTestBuilder(testSettings)
+		}
+
+		_, err := clusterInstanceBuilder.WaitForExtraLabel("test", "test", time.Second)
+		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
 func TestClusterInstanceGet(t *testing.T) {
 	testCases := []struct {
 		exists bool
