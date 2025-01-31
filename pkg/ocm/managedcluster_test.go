@@ -1,8 +1,10 @@
 package ocm
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocm/clusterv1"
@@ -339,6 +341,71 @@ func TestManagedClusterUpdate(t *testing.T) {
 		} else {
 			assert.NotNil(t, err)
 		}
+	}
+}
+
+func TestManagedClusterWaitForLabel(t *testing.T) {
+	testCases := []struct {
+		exists        bool
+		valid         bool
+		hasLabel      bool
+		expectedError error
+	}{
+		{
+			exists:        true,
+			valid:         true,
+			hasLabel:      true,
+			expectedError: nil,
+		},
+		{
+			exists:        false,
+			valid:         true,
+			hasLabel:      true,
+			expectedError: fmt.Errorf("managedCluster object %s does not exist", defaultManagedClusterName),
+		},
+		{
+			exists:        true,
+			valid:         false,
+			hasLabel:      true,
+			expectedError: fmt.Errorf("managedCluster 'name' cannot be empty"),
+		},
+		{
+			exists:        true,
+			valid:         true,
+			hasLabel:      false,
+			expectedError: context.DeadlineExceeded,
+		},
+	}
+
+	for _, testCase := range testCases {
+		var (
+			runtimeObjects []runtime.Object
+			testBuilder    *ManagedClusterBuilder
+		)
+
+		if testCase.exists {
+			mcl := buildDummyManagedCluster(defaultManagedClusterName)
+
+			if testCase.hasLabel {
+				mcl.Labels = map[string]string{"test": ""}
+			}
+
+			runtimeObjects = append(runtimeObjects, mcl)
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: clusterTestSchemes,
+		})
+
+		if testCase.valid {
+			testBuilder = buildValidManagedClusterTestBuilder(testSettings)
+		} else {
+			testBuilder = buildInvalidManagedClusterTestBuilder(testSettings)
+		}
+
+		_, err := testBuilder.WaitForLabel("test", time.Second)
+		assert.Equal(t, testCase.expectedError, err)
 	}
 }
 
