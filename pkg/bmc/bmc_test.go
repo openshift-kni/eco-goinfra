@@ -1,6 +1,7 @@
 package bmc
 
 import (
+	"context"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -592,6 +593,22 @@ func TestBMCSystemPowerState(t *testing.T) {
 	powerState, err := bmc.SystemPowerState()
 	assert.NoError(t, err)
 	assert.Equal(t, expectedPowerState, powerState)
+}
+
+func TestBMCWaitForSystemPowerState(t *testing.T) {
+	// Create fake redfish endpoint.
+	redfishServer := createFakeRedfishLocalServer(false, redfishAPIResponseCallbacks{})
+	defer redfishServer.Close()
+
+	host := strings.Split(redfishServer.URL, "//")[1]
+	bmc := New(host).WithRedfishUser(defaultUsername, defaultPassword)
+
+	// The fake endpoint should be On, so will succeed when waiting till On and time out waiting for Off.
+	err := bmc.WaitForSystemPowerState(redfish.OnPowerState, time.Second)
+	assert.NoError(t, err)
+
+	err = bmc.WaitForSystemPowerState(redfish.OffPowerState, time.Second)
+	assert.Equal(t, context.DeadlineExceeded, err)
 }
 
 func TestBMCPowerUsage(t *testing.T) {
