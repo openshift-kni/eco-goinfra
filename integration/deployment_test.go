@@ -10,8 +10,8 @@ import (
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/deployment"
 	"github.com/openshift-kni/eco-goinfra/pkg/namespace"
+	"github.com/openshift-kni/eco-goinfra/pkg/pod"
 	"github.com/stretchr/testify/assert"
-	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -23,133 +23,129 @@ const (
 func TestDeploymentCreate(t *testing.T) {
 	t.Parallel()
 	client := clients.New("")
+	assert.NotNil(t, client)
 
-	// Create a random namespace for the test
-	randomNamespace := generateRandomNamespace(namespacePrefix)
+	var (
+		testNamespace  = "egi-deployment-create-ns"
+		deploymentName = "create-test"
+	)
 
 	// Create the namespace in the cluster using the namespaces package
-	_, err := namespace.NewBuilder(client, randomNamespace).Create()
+	namespaceBuilder, err := namespace.NewBuilder(client, testNamespace).Create()
 	assert.Nil(t, err)
 
 	// Defer the deletion of the namespace
 	defer func() {
 		// Delete the namespace
-		err := namespace.NewBuilder(client, randomNamespace).Delete()
+		err := namespaceBuilder.Delete()
 		assert.Nil(t, err)
 	}()
 
-	var deploymentName = "create-test"
+	testContainerBuilder := pod.NewContainerBuilder("test", containerImage, []string{"sleep", "3600"})
+	containerDefinition, err := testContainerBuilder.GetContainerCfg()
+	assert.Nil(t, err)
 
-	builder := deployment.NewBuilder(client, deploymentName, randomNamespace, map[string]string{
+	deploymentBuilder := deployment.NewBuilder(client, deploymentName, testNamespace, map[string]string{
 		"app": "test",
-	}, corev1.Container{
-		Name:  "test",
-		Image: containerImage,
-		Command: []string{
-			"sleep",
-			"3600",
-		},
-	})
+	}, *containerDefinition)
 
 	// Create a deployment in the namespace
-	_, err = builder.CreateAndWaitUntilReady(timeoutDuration)
+	_, err = deploymentBuilder.CreateAndWaitUntilReady(timeoutDuration)
 	assert.Nil(t, err)
 
 	// Check if the deployment was created
-	builder, err = deployment.Pull(client, deploymentName, randomNamespace)
+	deploymentBuilder, err = deployment.Pull(client, deploymentName, testNamespace)
 	assert.Nil(t, err)
-	assert.NotNil(t, builder.Object)
+	assert.NotNil(t, deploymentBuilder.Object)
 }
 
 func TestDeploymentDelete(t *testing.T) {
 	t.Parallel()
 	client := clients.New("")
+	assert.NotNil(t, client)
 
-	// Create a random namespace for the test
-	randomNamespace := generateRandomNamespace(namespacePrefix)
+	var (
+		testNamespace  = "egi-deployment-delete-ns"
+		deploymentName = "delete-test"
+	)
 
 	// Create the namespace in the cluster using the namespaces package
-	_, err := namespace.NewBuilder(client, randomNamespace).Create()
+	namespaceBuilder, err := namespace.NewBuilder(client, testNamespace).Create()
 	assert.Nil(t, err)
 
 	// Defer the deletion of the namespace
 	defer func() {
 		// Delete the namespace
-		err := namespace.NewBuilder(client, randomNamespace).Delete()
+		err := namespaceBuilder.Delete()
 		assert.Nil(t, err)
 	}()
 
-	var deploymentName = "delete-test"
+	testContainerBuilder := pod.NewContainerBuilder("test", containerImage, []string{"sleep", "3600"})
+	containerDefinition, err := testContainerBuilder.GetContainerCfg()
+	assert.Nil(t, err)
 
-	builder := deployment.NewBuilder(client, deploymentName, randomNamespace, map[string]string{
+	deploymentBuilder := deployment.NewBuilder(client, deploymentName, testNamespace, map[string]string{
 		"app": "test",
-	}, corev1.Container{
-		Name:  "test",
-		Image: containerImage,
-		Command: []string{
-			"sleep",
-			"3600",
-		},
-	})
+	}, *containerDefinition)
 
 	// Create a deployment in the namespace
-	_, err = builder.CreateAndWaitUntilReady(timeoutDuration)
+	_, err = deploymentBuilder.CreateAndWaitUntilReady(timeoutDuration)
 	assert.Nil(t, err)
+
+	defer func() {
+		// Delete the deployment
+		err = deploymentBuilder.DeleteAndWait(timeoutDuration)
+		assert.Nil(t, err)
+
+		// Check if the deployment was deleted
+		deploymentBuilder, err = deployment.Pull(client, deploymentName, testNamespace)
+		assert.Equal(t, "deployment object delete-test does not exist in namespace "+testNamespace, err.Error())
+	}()
 
 	// Check if the deployment was created
-	builder, err = deployment.Pull(client, deploymentName, randomNamespace)
+	deploymentBuilder, err = deployment.Pull(client, deploymentName, testNamespace)
 	assert.Nil(t, err)
-	assert.NotNil(t, builder.Object)
-
-	// Delete the deployment
-	err = builder.DeleteAndWait(timeoutDuration)
-	assert.Nil(t, err)
-
-	// Check if the deployment was deleted
-	builder, err = deployment.Pull(client, deploymentName, randomNamespace)
-	assert.Equal(t, "deployment object delete-test does not exist in namespace "+randomNamespace, err.Error())
+	assert.NotNil(t, deploymentBuilder.Object)
 }
 
 func TestDeploymentWithReplicas(t *testing.T) {
 	t.Parallel()
 	client := clients.New("")
+	assert.NotNil(t, client)
 
-	// Create a random namespace for the test
-	randomNamespace := generateRandomNamespace(namespacePrefix)
+	var (
+		testNamespace  = "egi-deployment-replicas-ns"
+		deploymentName = "replicas-test"
+	)
 
 	// Create the namespace in the cluster using the namespaces package
-	_, err := namespace.NewBuilder(client, randomNamespace).Create()
+	namespaceBuilder, err := namespace.NewBuilder(client, testNamespace).Create()
 	assert.Nil(t, err)
 
 	// Defer the deletion of the namespace
 	defer func() {
 		// Delete the namespace
-		err := namespace.NewBuilder(client, randomNamespace).Delete()
+		err := namespaceBuilder.Delete()
 		assert.Nil(t, err)
 	}()
 
-	var deploymentName = "replicas-test"
+	testContainerBuilder := pod.NewContainerBuilder("test", containerImage, []string{"sleep", "3600"})
+	containerDefinition, err := testContainerBuilder.GetContainerCfg()
+	assert.Nil(t, err)
 
-	builder := deployment.NewBuilder(client, deploymentName, randomNamespace, map[string]string{
+	deploymentBuilder := deployment.NewBuilder(client, deploymentName, testNamespace, map[string]string{
 		"app": "test",
-	}, corev1.Container{
-		Name:  "test",
-		Image: containerImage,
-		Command: []string{
-			"sleep",
-			"3600",
-		},
-	}).WithReplicas(2)
+	}, *containerDefinition).WithReplicas(2)
 
 	// Create a deployment in the namespace
-	_, err = builder.CreateAndWaitUntilReady(timeoutDuration)
+	_, err = deploymentBuilder.CreateAndWaitUntilReady(timeoutDuration)
 	assert.Nil(t, err)
 
 	// Check if the deployment was created
-	builder, err = deployment.Pull(client, deploymentName, randomNamespace)
+	deploymentBuilder, err = deployment.Pull(client, deploymentName, testNamespace)
 	assert.Nil(t, err)
-	assert.NotNil(t, builder.Object)
+	assert.NotNil(t, deploymentBuilder.Object)
 
 	// Check if the deployment has the correct number of replicas
-	assert.Equal(t, int32(2), *builder.Object.Spec.Replicas)
+	assert.Equal(t, int32(2), *deploymentBuilder.Object.Spec.Replicas)
 }
