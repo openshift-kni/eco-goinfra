@@ -1,8 +1,10 @@
 package oran
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	provisioningv1alpha1 "github.com/openshift-kni/oran-o2ims/api/provisioning/v1alpha1"
@@ -17,9 +19,17 @@ const (
 	defaultPRTemplateVersion = "v4-18-0-1"
 )
 
-var provisioningTestSchemes = []clients.SchemeAttacher{
-	provisioningv1alpha1.AddToScheme,
-}
+var (
+	defaultPRCondition = metav1.Condition{
+		Type:   string(provisioningv1alpha1.PRconditionTypes.Validated),
+		Reason: string(provisioningv1alpha1.CRconditionReasons.Completed),
+		Status: metav1.ConditionTrue,
+	}
+
+	provisioningTestSchemes = []clients.SchemeAttacher{
+		provisioningv1alpha1.AddToScheme,
+	}
+)
 
 func TestNewPRBuilder(t *testing.T) {
 	testCases := []struct {
@@ -86,6 +96,79 @@ func TestNewPRBuilder(t *testing.T) {
 			}
 		} else {
 			assert.Nil(t, testBuilder)
+		}
+	}
+}
+
+func TestPRWithTemplateParameter(t *testing.T) {
+	testCases := []struct {
+		key           string
+		expectedError string
+	}{
+		{
+			key:           "nodeClusterName",
+			expectedError: "",
+		},
+		{
+			key:           "",
+			expectedError: "provisioningRequest TemplateParameter 'key' cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidPRTestBuilder(clients.GetTestClients(clients.TestClientParams{}))
+		testBuilder = testBuilder.WithTemplateParameter(testCase.key, nil)
+
+		assert.Equal(t, testCase.expectedError, testBuilder.errorMsg)
+	}
+}
+
+func TestPRGetTemplateParameters(t *testing.T) {
+	testCases := []struct {
+		testBuilder   *ProvisioningRequestBuilder
+		expectedError error
+	}{
+		{
+			testBuilder:   buildValidPRTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: nil,
+		},
+		{
+			testBuilder:   buildInvalidPRTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: fmt.Errorf("provisioningRequest 'templateName' cannot be empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		templateParams, err := testCase.testBuilder.GetTemplateParameters()
+		assert.Equal(t, testCase.expectedError, err)
+
+		if testCase.expectedError == nil {
+			assert.Empty(t, templateParams)
+		}
+	}
+}
+
+func TestPRWithTemplateParameters(t *testing.T) {
+	testCases := []struct {
+		testBuilder   *ProvisioningRequestBuilder
+		expectedError string
+	}{
+		{
+			testBuilder:   buildValidPRTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: "",
+		},
+		{
+			testBuilder:   buildInvalidPRTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: "provisioningRequest 'templateName' cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := testCase.testBuilder.WithTemplateParameters(nil)
+		assert.Equal(t, testCase.expectedError, testBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, []byte("{}"), testBuilder.Definition.Spec.TemplateParameters.Raw)
 		}
 	}
 }
@@ -297,6 +380,166 @@ func TestPRDelete(t *testing.T) {
 	}
 }
 
+func TestPRDeleteAndWait(t *testing.T) {
+	testCases := []struct {
+		testBuilder   *ProvisioningRequestBuilder
+		expectedError error
+	}{
+		{
+			testBuilder:   buildValidPRTestBuilder(buildTestClientWithDummyPR()),
+			expectedError: nil,
+		},
+		{
+			testBuilder:   buildValidPRTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
+			expectedError: nil,
+		},
+		{
+			testBuilder:   buildInvalidPRTestBuilder(buildTestClientWithDummyPR()),
+			expectedError: fmt.Errorf("provisioningRequest 'templateName' cannot be empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		err := testCase.testBuilder.DeleteAndWait(time.Second)
+		assert.Equal(t, testCase.expectedError, err)
+
+		if testCase.expectedError == nil {
+			assert.Nil(t, testCase.testBuilder.Object)
+		}
+	}
+}
+
+func TestPRWaitForCondition(t *testing.T) {
+	testCases := []struct {
+		conditionMet  bool
+		exists        bool
+		valid         bool
+		expectedError error
+	}{
+		{
+			conditionMet:  true,
+			exists:        true,
+			valid:         true,
+			expectedError: nil,
+		},
+		{
+			conditionMet:  false,
+			exists:        true,
+			valid:         true,
+			expectedError: context.DeadlineExceeded,
+		},
+		{
+			conditionMet:  true,
+			exists:        false,
+			valid:         true,
+			expectedError: fmt.Errorf("cannot wait for non-existent ProvisioningRequest"),
+		},
+		{
+			conditionMet:  true,
+			exists:        true,
+			valid:         false,
+			expectedError: fmt.Errorf("provisioningRequest 'templateName' cannot be empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		var (
+			runtimeObjects []runtime.Object
+			testBuilder    *ProvisioningRequestBuilder
+		)
+
+		if testCase.exists {
+			provisioningRequest := buildDummyPR(defaultPRName)
+
+			if testCase.conditionMet {
+				provisioningRequest.Status.Conditions = append(provisioningRequest.Status.Conditions, defaultPRCondition)
+			}
+
+			runtimeObjects = append(runtimeObjects, provisioningRequest)
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: provisioningTestSchemes,
+		})
+
+		if testCase.valid {
+			testBuilder = buildValidPRTestBuilder(testSettings)
+		} else {
+			testBuilder = buildInvalidPRTestBuilder(testSettings)
+		}
+
+		_, err := testBuilder.WaitForCondition(defaultPRCondition, time.Second)
+		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
+func TestPRWaitUntilFulfilled(t *testing.T) {
+	testCases := []struct {
+		fulfilled     bool
+		exists        bool
+		valid         bool
+		expectedError error
+	}{
+		{
+			fulfilled:     true,
+			exists:        true,
+			valid:         true,
+			expectedError: nil,
+		},
+		{
+			fulfilled:     false,
+			exists:        true,
+			valid:         true,
+			expectedError: context.DeadlineExceeded,
+		},
+		{
+			fulfilled:     true,
+			exists:        false,
+			valid:         true,
+			expectedError: fmt.Errorf("cannot wait for non-existent ProvisioningRequest"),
+		},
+		{
+			fulfilled:     true,
+			exists:        true,
+			valid:         false,
+			expectedError: fmt.Errorf("provisioningRequest 'templateName' cannot be empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		var (
+			runtimeObjects []runtime.Object
+			testBuilder    *ProvisioningRequestBuilder
+		)
+
+		if testCase.exists {
+			provisioningRequest := buildDummyPR(defaultPRName)
+
+			if testCase.fulfilled {
+				provisioningRequest.Status.ProvisioningStatus.ProvisioningPhase = provisioningv1alpha1.StateFulfilled
+			}
+
+			runtimeObjects = append(runtimeObjects, provisioningRequest)
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: provisioningTestSchemes,
+		})
+
+		if testCase.valid {
+			testBuilder = buildValidPRTestBuilder(testSettings)
+		} else {
+			testBuilder = buildInvalidPRTestBuilder(testSettings)
+		}
+
+		_, err := testBuilder.WaitUntilFulfilled(time.Second)
+		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
+//nolint:unparam
 func buildDummyPR(name string) *provisioningv1alpha1.ProvisioningRequest {
 	return &provisioningv1alpha1.ProvisioningRequest{
 		ObjectMeta: metav1.ObjectMeta{
