@@ -373,6 +373,38 @@ func TestL2AdvertisementWithIPAddressPoolsSelectors(t *testing.T) {
 	}
 }
 
+func TestL2AdvertisementWithInterfaces(t *testing.T) {
+	testCases := []struct {
+		testL2Advertisement *L2AdvertisementBuilder
+		interfaces          []string
+		expectedError       string
+	}{
+		{
+			testL2Advertisement: buildValidL2AdvertisementBuilder(buildL2AdvertisementTestClientWithDummyObject()),
+			interfaces:          []string{"eno1"},
+		},
+		{
+			testL2Advertisement: buildInValidL2AdvertisementBuilder(buildL2AdvertisementTestClientWithDummyObject()),
+			interfaces:          []string{"eno1"},
+			expectedError:       "L2Advertisement 'nsname' cannot be empty",
+		},
+		{
+			testL2Advertisement: buildValidL2AdvertisementBuilder(buildL2AdvertisementTestClientWithDummyObject()),
+			interfaces:          []string{},
+			expectedError:       "error: Interfaces setting is empty list, the list should contain at least one element",
+		},
+	}
+
+	for _, testCase := range testCases {
+		l2AdvertisementBuilder := testCase.testL2Advertisement.WithInterfaces(testCase.interfaces)
+		assert.Equal(t, testCase.expectedError, l2AdvertisementBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, testCase.interfaces, l2AdvertisementBuilder.Definition.Spec.Interfaces)
+		}
+	}
+}
+
 func TestL2AdvertisementWithOptions(t *testing.T) {
 	testSettings := buildL2AdvertisementTestClientWithDummyObject()
 	testBuilder := buildValidL2AdvertisementBuilder(testSettings).WithOptions(
