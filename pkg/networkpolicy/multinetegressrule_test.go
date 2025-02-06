@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -31,12 +31,12 @@ func TestEgressWithPortAndProtocol(t *testing.T) {
 
 func TestEgressWithProtocol(t *testing.T) {
 	testCases := []struct {
-		protocol      v1.Protocol
+		protocol      corev1.Protocol
 		expectedError string
 	}{
-		{protocol: v1.ProtocolTCP, expectedError: ""},
-		{protocol: v1.ProtocolUDP, expectedError: ""},
-		{protocol: v1.ProtocolSCTP, expectedError: ""},
+		{protocol: corev1.ProtocolTCP, expectedError: ""},
+		{protocol: corev1.ProtocolUDP, expectedError: ""},
+		{protocol: corev1.ProtocolSCTP, expectedError: ""},
 		{protocol: "dummy", expectedError: "invalid protocol argument. Allowed protocols: TCP, UDP & SCTP"},
 	}
 	for _, testCase := range testCases {

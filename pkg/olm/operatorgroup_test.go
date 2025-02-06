@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	v1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/operators/v1"
+	operatorsv1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/operators/v1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -13,7 +13,7 @@ import (
 
 var (
 	operatorTestSchemes = []clients.SchemeAttacher{
-		v1.AddToScheme,
+		operatorsv1.AddToScheme,
 	}
 )
 
@@ -74,13 +74,13 @@ func TestNewOperatorGroupBuilder(t *testing.T) {
 }
 
 func TestPullIOperatorGroup(t *testing.T) {
-	operatorGroup := func(name, namespace string) *v1.OperatorGroup {
-		return &v1.OperatorGroup{
+	operatorGroup := func(name, namespace string) *operatorsv1.OperatorGroup {
+		return &operatorsv1.OperatorGroup{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,
 			},
-			Spec: v1.OperatorGroupSpec{
+			Spec: operatorsv1.OperatorGroupSpec{
 				ServiceAccountName: "test",
 			},
 		}
@@ -330,11 +330,11 @@ func buildOperatorGroupTestClientWithDummyObject() *clients.Settings {
 }
 
 func buildDummyOperatorGroup() []runtime.Object {
-	return append([]runtime.Object{}, &v1.OperatorGroup{
+	return append([]runtime.Object{}, &operatorsv1.OperatorGroup{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "operatorgroup",
 			Namespace: "test-namespace",
 		},
-		Spec: v1.OperatorGroupSpec{},
+		Spec: operatorsv1.OperatorGroupSpec{},
 	})
 }

@@ -10,7 +10,7 @@ import (
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	hiveextV1Beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/hiveextension/v1beta1"
-	v1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/hive/api/v1"
+	hivev1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/hive/api/v1"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -887,12 +887,12 @@ func TestAgentClusterInstallWaitForStateInfo(t *testing.T) {
 func TestAgentClusterInstallWaitForConditionMessage(t *testing.T) {
 	testCases := []struct {
 		status        hiveextV1Beta1.AgentClusterInstallStatus
-		conditionType v1.ClusterInstallConditionType
+		conditionType hivev1.ClusterInstallConditionType
 		message       string
 	}{
 		{
 			status: hiveextV1Beta1.AgentClusterInstallStatus{
-				Conditions: []v1.ClusterInstallCondition{
+				Conditions: []hivev1.ClusterInstallCondition{
 					{
 						Type:    "Stopped",
 						Status:  corev1.ConditionTrue,
@@ -906,7 +906,7 @@ func TestAgentClusterInstallWaitForConditionMessage(t *testing.T) {
 		},
 		{
 			status: hiveextV1Beta1.AgentClusterInstallStatus{
-				Conditions: []v1.ClusterInstallCondition{
+				Conditions: []hivev1.ClusterInstallCondition{
 					{
 						Type:    "SpecSynced",
 						Status:  corev1.ConditionTrue,
@@ -940,12 +940,12 @@ func TestAgentClusterInstallWaitForConditionMessage(t *testing.T) {
 func TestAgentClusterInstallWaitForConditionStatus(t *testing.T) {
 	testCases := []struct {
 		status          hiveextV1Beta1.AgentClusterInstallStatus
-		conditionType   v1.ClusterInstallConditionType
+		conditionType   hivev1.ClusterInstallConditionType
 		conditionStatus corev1.ConditionStatus
 	}{
 		{
 			status: hiveextV1Beta1.AgentClusterInstallStatus{
-				Conditions: []v1.ClusterInstallCondition{
+				Conditions: []hivev1.ClusterInstallCondition{
 					{
 						Type:    "Stopped",
 						Status:  corev1.ConditionTrue,
@@ -959,7 +959,7 @@ func TestAgentClusterInstallWaitForConditionStatus(t *testing.T) {
 		},
 		{
 			status: hiveextV1Beta1.AgentClusterInstallStatus{
-				Conditions: []v1.ClusterInstallCondition{
+				Conditions: []hivev1.ClusterInstallCondition{
 					{
 						Type:    "Failed",
 						Status:  corev1.ConditionFalse,
@@ -993,12 +993,12 @@ func TestAgentClusterInstallWaitForConditionStatus(t *testing.T) {
 func TestAgentClusterInstallWaitForConditionReason(t *testing.T) {
 	testCases := []struct {
 		status        hiveextV1Beta1.AgentClusterInstallStatus
-		conditionType v1.ClusterInstallConditionType
+		conditionType hivev1.ClusterInstallConditionType
 		reason        string
 	}{
 		{
 			status: hiveextV1Beta1.AgentClusterInstallStatus{
-				Conditions: []v1.ClusterInstallCondition{
+				Conditions: []hivev1.ClusterInstallCondition{
 					{
 						Type:    "Stopped",
 						Status:  corev1.ConditionTrue,
@@ -1012,7 +1012,7 @@ func TestAgentClusterInstallWaitForConditionReason(t *testing.T) {
 		},
 		{
 			status: hiveextV1Beta1.AgentClusterInstallStatus{
-				Conditions: []v1.ClusterInstallCondition{
+				Conditions: []hivev1.ClusterInstallCondition{
 					{
 						Type:    "Failed",
 						Status:  corev1.ConditionFalse,
