@@ -113,7 +113,7 @@ func PullFeatureRule(apiClient *clients.Settings, name, namespace string) (*Node
 	if namespace == "" {
 		glog.V(100).Infof("NodeFeatureRule namespace is empty")
 
-		return nil, fmt.Errorf("NodeFeatureRule 'namespace' cannot be empty")
+		return nil, fmt.Errorf("nodeFeatureRule 'namespace' cannot be empty")
 	}
 
 	if !ruleBuilder.Exists() {
