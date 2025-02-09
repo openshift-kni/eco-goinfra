@@ -78,7 +78,7 @@ func NewNodeFeatureRuleBuilderFromObjectString(apiClient *clients.Settings, almE
 }
 
 // FeatureRulePull loads an existing NodeFeatureRuleBuilder into Builder struct.
-func FeatureRulePull(apiClient *clients.Settings, name, namespace string) (*NodeFeatureRuleBuilder, error) {
+func PullFeatureRule(apiClient *clients.Settings, name, namespace string) (*NodeFeatureRuleBuilder, error) {
 	glog.V(100).Infof("Pulling existing NodeFeatureRule name: %s in namespace: %s", name, namespace)
 
 	if apiClient == nil {
