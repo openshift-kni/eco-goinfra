@@ -51,7 +51,7 @@ func NewNodeFeatureRuleBuilderFromObjectString(apiClient *clients.Settings, almE
 	glog.V(100).Infof(
 		"Initializing Builder definition to NodeFeatureRule object")
 
-	nodeFeatureRuleBuilder := NodeFeatureRuleBuilder{
+	nodeFeatureRuleBuilder := &NodeFeatureRuleBuilder{
 		apiClient:  apiClient,
 		Definition: nodeFeatureRule,
 	}
