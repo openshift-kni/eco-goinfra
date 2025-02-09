@@ -84,7 +84,7 @@ func PullFeatureRule(apiClient *clients.Settings, name, namespace string) (*Node
 	if apiClient == nil {
 		glog.V(100).Info("The apiClient of the NodeFeatureRule is nil")
 
-		return nil, fmt.Errorf("the apiClient of the Policy is nil")
+		return nil, fmt.Errorf("the apiClient of the NodeFeatureRule is nil")
 	}
 
 	err := apiClient.AttachScheme(nfdv1.AddToScheme)
