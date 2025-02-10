@@ -23,7 +23,7 @@ type NodeFeatureRuleBuilder struct {
 	// Created Builder object on the cluster.
 	Object *nfdv1.NodeFeatureRule
 	// api client to interact with the cluster.
-	apiClient *clients.Settings
+	apiClient goclient.Client
 	// errorMsg is processed before Builder object is created.
 	errorMsg string
 }
@@ -51,7 +51,7 @@ func NewNodeFeatureRuleBuilderFromObjectString(apiClient *clients.Settings, almE
 	glog.V(100).Infof(
 		"Initializing Builder definition to NodeFeatureRule object")
 
-	nodeFeatureRuleBuilder := &NodeFeatureRuleBuilder{
+	nodeFeatureRuleBuilder := NodeFeatureRuleBuilder{
 		apiClient:  apiClient,
 		Definition: nodeFeatureRule,
 	}
@@ -77,7 +77,7 @@ func NewNodeFeatureRuleBuilderFromObjectString(apiClient *clients.Settings, almE
 	return &nodeFeatureRuleBuilder
 }
 
-// FeatureRulePull loads an existing NodeFeatureRuleBuilder into Builder struct.
+// PullFeatureRule loads an existing NodeFeatureRuleBuilder into Builder struct.
 func PullFeatureRule(apiClient *clients.Settings, name, namespace string) (*NodeFeatureRuleBuilder, error) {
 	glog.V(100).Infof("Pulling existing NodeFeatureRule name: %s in namespace: %s", name, namespace)
 
@@ -218,11 +218,6 @@ func (builder *NodeFeatureRuleBuilder) Get() (*nfdv1.NodeFeatureRule, error) {
 	return NodeFeatureRule, err
 }
 
-// GetErrorMessage returns builder's error message.
-func (builder *NodeFeatureRuleBuilder) GetErrorMessage() string {
-	return builder.errorMsg
-}
-
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
 func (builder *NodeFeatureRuleBuilder) validate() (bool, error) {
@@ -244,6 +239,12 @@ func (builder *NodeFeatureRuleBuilder) validate() (bool, error) {
 		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
 
 		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
+	}
+
+	if builder.errorMsg != "" {
+		glog.V(100).Infof("The %s builder has error message %s", resourceCRD, builder.errorMsg)
+
+		return false, fmt.Errorf(builder.errorMsg)
 	}
 
 	return true, nil

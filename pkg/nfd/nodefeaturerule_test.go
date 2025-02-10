@@ -2,6 +2,8 @@ package nfd_test
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 	"testing"
 
 	. "github.com/openshift-kni/eco-goinfra/pkg/nfd"
@@ -49,13 +51,14 @@ func TestNewnodeFeatureRuleBuilderFromObjectString(t *testing.T) {
 			name:              "Empty ALM Example",
 			almString:         "",
 			client:            true,
-			expectedErrorText: "NodeFeatureRule definition is nil",
+			expectedErrorText: "error initializing NodeFeatureRule from alm-examples: almExample is an empty string",
 		},
 		{
-			name:              "Invalid ALM Example",
-			almString:         "{invalid}",
-			client:            true,
-			expectedErrorText: "NodeFeatureRule definition is nil",
+			name:      "Invalid ALM Example",
+			almString: "{invalid}",
+			client:    true,
+			expectedErrorText: "error initializing NodeFeatureRule from alm-examples:" +
+				" invalid character 'i' looking for beginning of object key string",
 		},
 		{
 			name:              "No Client Provided",
@@ -74,8 +77,18 @@ func TestNewnodeFeatureRuleBuilderFromObjectString(t *testing.T) {
 
 			builder := NewNodeFeatureRuleBuilderFromObjectString(client, testCase.almString)
 
+			errormessage := ""
+
+			if builder != nil {
+				builderString := fmt.Sprintf("%+v", *builder)
+				re := regexp.MustCompile(`errorMsg:(.+)$`)
+				matches := re.FindStringSubmatch(builderString)
+				errormessage = matches[len(matches)-1]
+				errormessage = strings.TrimRight(errormessage, "}")
+			}
+
 			if testCase.client {
-				assert.Equal(t, testCase.expectedErrorText, builder.GetErrorMessage())
+				assert.Equal(t, testCase.expectedErrorText, errormessage)
 
 				if testCase.expectedErrorText == "" {
 					assert.Equal(t, nodeFeatureRuleExampleName, builder.Definition.Name)
@@ -101,7 +114,7 @@ func TestNodeFeatureRuleBuilderCreate(t *testing.T) {
 		{
 			name:          "Invalid Builder",
 			builder:       buildInvalidNFDRuleTestBuilder(buildTestClientWithDummyNFDRule()),
-			expectedError: fmt.Errorf("can not redefine the undefined NodeFeatureRule"),
+			expectedError: fmt.Errorf("can not redefine the undefined nodeFeatureRule"),
 		},
 	}
 	for _, testCase := range testCases {
@@ -130,7 +143,7 @@ func TestNodeFeatureRuleBuilderExists(t *testing.T) {
 		},
 		{
 			name:           "Non-Existent Object",
-			builder:        buildValidNFDRuleTestBuilder(buildTestClientWithNFDRuleSchemeOnly()),
+			builder:        buildValidNFDRuleTestBuilder(buildTestClientWithNFDRuleScheme()),
 			expectedStatus: false,
 		},
 	}
@@ -157,7 +170,7 @@ func TestNodeFeatureRuleBuilderGet(t *testing.T) {
 		{
 			name: "Invalid Get - Missing Object",
 			builder: buildValidNFDRuleTestBuilder(
-				buildTestClientWithNFDRuleSchemeOnly(),
+				buildTestClientWithNFDRuleScheme(),
 			),
 			expectedError: fmt.Errorf("nodefeaturerules.nfd.openshift.io \"%s\" not found", nodeFeatureRuleExampleName),
 		},
@@ -210,12 +223,6 @@ func buildInvalidNFDRuleTestBuilder(apiClient *clients.Settings) *NodeFeatureRul
 }
 
 func buildTestClientWithNFDRuleScheme() *clients.Settings {
-	return clients.GetTestClients(clients.TestClientParams{
-		SchemeAttachers: nfdRuleTestSchemes,
-	})
-}
-
-func buildTestClientWithNFDRuleSchemeOnly() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
 		SchemeAttachers: nfdRuleTestSchemes,
 	})
