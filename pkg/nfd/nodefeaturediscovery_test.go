@@ -48,12 +48,13 @@ func TestNFDNewBuilderFromObjectString(t *testing.T) {
 		{
 			almString:         "",
 			client:            true,
-			expectedErrorText: "NodeFeatureDiscovery definition is nil",
+			expectedErrorText: "error initializing NodeFeatureDiscovery from alm-examples: almExample is an empty string",
 		},
 		{
-			almString:         "{invalid}",
-			client:            true,
-			expectedErrorText: "NodeFeatureDiscovery definition is nil",
+			almString: "{invalid}",
+			client:    true,
+			//nolint:lll
+			expectedErrorText: "error initializing NodeFeatureDiscovery from alm-examples: invalid character 'i' looking for beginning of object key string",
 		},
 		{
 			almString:         almExample,
@@ -117,7 +118,7 @@ func TestNFDPullPolicy(t *testing.T) {
 			nfdNamespace:        "test-namespace",
 			addToRuntimeObjects: false,
 			client:              true,
-			expectedError:       fmt.Errorf("NodeFeatureDiscovery object test does not exist in namespace test-namespace"),
+			expectedError:       fmt.Errorf("nodeFeatureDiscovery object test does not exist in namespace test-namespace"),
 		},
 		{
 			nfdName:             "test",

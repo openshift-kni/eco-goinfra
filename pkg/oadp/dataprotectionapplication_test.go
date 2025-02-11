@@ -6,7 +6,7 @@ import (
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	oadpv1alpha1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/oadp/api/v1alpha1"
-	v1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/oadp/velero/api/v1"
+	velerov1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/oadp/velero/api/v1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -263,10 +263,10 @@ func TestDPAWithBackupLocation(t *testing.T) {
 	}{
 		{
 			backupLocation: oadpv1alpha1.BackupLocation{
-				Velero: &v1.BackupStorageLocationSpec{
+				Velero: &velerov1.BackupStorageLocationSpec{
 					Provider: "aws",
-					StorageType: v1.StorageType{
-						ObjectStorage: &v1.ObjectStorageLocation{
+					StorageType: velerov1.StorageType{
+						ObjectStorage: &velerov1.ObjectStorageLocation{
 							Bucket: "test-bucket",
 							Prefix: "backup",
 						},
@@ -568,10 +568,10 @@ func generateDataProtectionApplication() *oadpv1alpha1.DataProtectionApplication
 			},
 			BackupLocations: []oadpv1alpha1.BackupLocation{
 				{
-					Velero: &v1.BackupStorageLocationSpec{
+					Velero: &velerov1.BackupStorageLocationSpec{
 						Provider: "aws",
-						StorageType: v1.StorageType{
-							ObjectStorage: &v1.ObjectStorageLocation{
+						StorageType: velerov1.StorageType{
+							ObjectStorage: &velerov1.ObjectStorageLocation{
 								Bucket: "test-bucket",
 								Prefix: "backup",
 							},

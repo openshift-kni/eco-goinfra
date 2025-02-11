@@ -89,6 +89,16 @@ const (
 	CPUPartitioningAllNodes CPUPartitioningMode = "AllNodes"
 )
 
+// CpuArchitecture is used to define the software architecture of a host.
+type CPUArchitecture string
+
+const (
+	// Supported architectures are x86, arm, or multi
+	CPUArchitectureX86_64  CPUArchitecture = "x86_64"
+	CPUArchitectureAarch64 CPUArchitecture = "aarch64"
+	CPUArchitectureMulti   CPUArchitecture = "multi"
+)
+
 // TemplateRef is used to specify the installation CR templates
 type TemplateRef struct {
 	// +required
@@ -156,6 +166,13 @@ type NodeSpec struct {
 	// Hostname is the desired hostname for the host
 	// +required
 	HostName string `json:"hostName"`
+
+	// CPUArchitecture is the software architecture of the node.
+	// If it is not defined here then it is inheirited from the ClusterInstanceSpec.
+	// +kubebuilder:validation:Enum=x86_64;aarch64
+	// +kubebuilder:default:=x86_64
+	// +optional
+	CPUArchitecture CPUArchitecture `json:"cpuArchitecture,omitempty"`
 
 	// Provide guidance about how to choose the device for the image being provisioned.
 	// +kubebuilder:default:=UEFI
@@ -378,6 +395,12 @@ type ClusterInstanceSpec struct {
 	// +optional
 	CPUPartitioning CPUPartitioningMode `json:"cpuPartitioningMode,omitempty"`
 
+	// CPUArchitecture is the default software architecture used for nodes that do not have an architecture defined.
+	// +kubebuilder:validation:Enum=x86_64;aarch64;multi
+	// +kubebuilder:default:=x86_64
+	// +optional
+	CPUArchitecture CPUArchitecture `json:"cpuArchitecture,omitempty"`
+
 	// +kubebuilder:validation:Enum=SNO;HighlyAvailable
 	// +optional
 	ClusterType ClusterType `json:"clusterType,omitempty"`
@@ -471,11 +494,30 @@ type ReinstallHistory struct {
 
 // ReinstallStatus represents the current state and historical details of reinstall operations for a ClusterInstance.
 type ReinstallStatus struct {
+
+	// List of conditions pertaining to reinstall requests.
+	// +optional
+	Conditions []metav1.Condition `json:"conditions,omitempty"`
+
+	// InProgressGeneration is the generation of the ClusterInstance that is being processed for reinstallation.
+	// It corresponds to the Generation field in ReinstallSpec and indicates the latest reinstall request that
+	// the controller is acting upon.
+	// +optional
+	InProgressGeneration string `json:"inProgressGeneration,omitempty"`
+
 	// ObservedGeneration is the generation of the ClusterInstance that has been processed for reinstallation.
 	// It corresponds to the Generation field in ReinstallSpec and indicates the latest reinstall request that
 	// the controller has acted upon.
-	// +required
-	ObservedGeneration string `json:"observedGeneration"`
+	// +optionsl
+	ObservedGeneration string `json:"observedGeneration,omitempty"`
+
+	// RequestStartTime indicates the time at which SiteConfig was requested to reinstall.
+	// +optional
+	RequestStartTime metav1.Time `json:"requestStartTime,omitempty"`
+
+	// RequestEndTime indicates the time at which SiteConfig completed processing the reinstall request.
+	// +optional
+	RequestEndTime metav1.Time `json:"requestEndTime,omitempty"`
 
 	// History maintains a record of all previous reinstallation attempts.
 	// Each entry captures details such as the generation, timestamp, and the differences in the ClusterInstance
@@ -513,6 +555,7 @@ type ClusterInstanceStatus struct {
 	Reinstall *ReinstallStatus `json:"reinstall,omitempty"`
 }
 
+//nolint:lll
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:path=clusterinstances,scope=Namespaced

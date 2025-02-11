@@ -1,7 +1,6 @@
 run:
   go: 1.23
   timeout: 15m0s
-  skip-dirs-use-default: true
   fast: false
 #  modules-download-mode: readonly
 
@@ -52,6 +51,7 @@ linters-settings:
           - "github.com/red-hat-storage/odf-operator"
           - "github.com/stmcginnis/gofish"
           - "github.com/prometheus-operator/prometheus-operator"
+          - "github.com/google/uuid"
   govet:
     disable:
       - printf
@@ -137,6 +137,7 @@ linters:
 output:
   formats: colored-line-number
 issues:
+  exclude-dirs-use-default: true
   exclude-dirs:
     - pkg/schemes
   include:

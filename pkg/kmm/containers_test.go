@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/rh-ecosystem-edge/kernel-module-management/api/v1beta1"
 	"github.com/stretchr/testify/assert"
@@ -129,7 +129,7 @@ func TestModuleLoaderContainerWithImagePullPolicy(t *testing.T) {
 		assert.Equal(t, testCase.expectedError, testBuilder.errorMsg)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, v1.PullPolicy(testCase.imagePolicy), testBuilder.definition.ImagePullPolicy)
+			assert.Equal(t, corev1.PullPolicy(testCase.imagePolicy), testBuilder.definition.ImagePullPolicy)
 		}
 	}
 }

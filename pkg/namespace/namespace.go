@@ -14,7 +14,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/utils/ptr"
 	"k8s.io/utils/strings/slices"
 )
 
@@ -152,12 +151,12 @@ func (builder *Builder) Create() (*Builder, error) {
 		return builder, nil
 	}
 
-	err := builder.apiClient.Create(context.TODO(), builder.Definition)
+	var err error
+
+	builder.Object, err = builder.apiClient.Namespaces().Create(context.TODO(), builder.Definition, metav1.CreateOptions{})
 	if err != nil {
 		return builder, err
 	}
-
-	builder.Object = builder.Definition
 
 	return builder, nil
 }
@@ -297,9 +296,7 @@ func (builder *Builder) CleanObjects(cleanTimeout time.Duration, objects ...sche
 			resource.Resource, builder.Definition.Name)
 
 		err := builder.apiClient.Resource(resource).Namespace(builder.Definition.Name).DeleteCollection(
-			context.TODO(), metav1.DeleteOptions{
-				GracePeriodSeconds: ptr.To(int64(0)),
-			}, metav1.ListOptions{})
+			context.TODO(), metav1.DeleteOptions{}, metav1.ListOptions{})
 
 		if err != nil {
 			glog.V(100).Infof("Failed to remove resources: %s in namespace: %s",
@@ -313,7 +310,7 @@ func (builder *Builder) CleanObjects(cleanTimeout time.Duration, objects ...sche
 				objList, err := builder.apiClient.Resource(resource).Namespace(builder.Definition.Name).List(
 					context.TODO(), metav1.ListOptions{})
 
-				if err != nil || len(objList.Items) > 1 {
+				if err != nil || len(objList.Items) > 0 {
 					// avoid timeout due to default automatically created openshift
 					// configmaps: kube-root-ca.crt openshift-service-ca.crt
 					if resource.Resource == "configmaps" {
