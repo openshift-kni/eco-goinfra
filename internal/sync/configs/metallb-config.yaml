@@ -35,6 +35,8 @@
   replace_imports:
     - old: '"github.com/metallb/metallb-operator/api/v1beta1"'
       new: v1beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/metallb/mlboperator"
+    - old: '"github.com/Masterminds/semver"'
+      new: '"github.com/Masterminds/semver/v3"'
 
 - name: metallb-frr
   sync: true
