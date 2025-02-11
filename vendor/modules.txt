@@ -1528,6 +1528,7 @@ maistra.io/api/core/v2
 # open-cluster-management.io/api v0.15.0
 ## explicit; go 1.22.0
 open-cluster-management.io/api/cluster/v1
+open-cluster-management.io/api/operator/v1
 open-cluster-management.io/api/work/v1
 # open-cluster-management.io/governance-policy-propagator v0.15.0
 ## explicit; go 1.22.0
