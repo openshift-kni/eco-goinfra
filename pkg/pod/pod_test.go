@@ -647,6 +647,56 @@ func TestPodWaitUntilInStatuses(t *testing.T) {
 	}
 }
 
+func TestPodIsHealthy(t *testing.T) {
+	testCases := []struct {
+		exists          bool
+		phase           corev1.PodPhase
+		condition       corev1.PodConditionType
+		expectedHealthy bool
+	}{
+		{
+			exists:          true,
+			phase:           corev1.PodSucceeded,
+			condition:       "",
+			expectedHealthy: true,
+		},
+		{
+			exists:          true,
+			phase:           corev1.PodRunning,
+			condition:       corev1.PodReady,
+			expectedHealthy: true,
+		},
+		{
+			exists:          false,
+			phase:           "",
+			condition:       "",
+			expectedHealthy: false,
+		},
+		{
+			exists:          true,
+			phase:           corev1.PodRunning,
+			condition:       "",
+			expectedHealthy: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		var runtimeObjects []runtime.Object
+
+		if testCase.exists {
+			testPod := buildDummyPodWithPhaseAndCondition(testCase.phase, testCase.condition, false)
+			runtimeObjects = append(runtimeObjects, testPod)
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects: runtimeObjects,
+		})
+		testBuilder := buildValidPodTestBuilder(testSettings)
+
+		assert.Equal(t, testCase.expectedHealthy, testBuilder.IsHealthy())
+	}
+}
+
 func TestPodWaitUntilHealthy(t *testing.T) {
 	testCases := []struct {
 		pod              *corev1.Pod
@@ -844,6 +894,8 @@ func testPodWithTolerationHelper(
 }
 
 // buildDummyPod returns a Pod with the provided name, nsname, and container image.
+//
+//nolint:unparam
 func buildDummyPod(name, nsname, image string) *corev1.Pod {
 	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
