@@ -14,6 +14,9 @@ jobs:
       contents: write  # for peter-evans/create-pull-request to create branch
       pull-requests: write  # for peter-evans/create-pull-request to create a PR
 
+    outputs:
+      pr-url: ${{ steps.create-pr.outputs.pull-request-url }}
+
     runs-on: ubuntu-22.04
     env:
       SHELL: /bin/bash
@@ -30,6 +33,7 @@ jobs:
         run: make lib-sync
 
       - name: Create PR
+        id: create-pr
         uses: peter-evans/create-pull-request@67ccf781d68cd99b580ae25a5c18a1cc84ffff1f # v7.0.6
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_KEY }}
@@ -41,3 +45,28 @@ jobs:
             - sync update external libs
           branch: sync
           delete-branch: true
+
+  makefile:
+    needs: sync-libs
+    uses: ./.github/workflows/makefile.yml
+
+  gotests:
+    needs: sync-libs
+    uses: ./.github/workflows/eco-gotests-integration.yml
+
+  label:
+    needs: [sync-libs, makefile, gotests]
+    if: ${{ needs.sync-libs.result == 'success' && needs.sync-libs.outputs.pr-url }}
+
+    name: Label created PR
+
+    permissions:
+      pull-requests: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Label PR based on CI result
+        run: gh pr edit ${{ needs.sync-libs.outputs.pr-url }} --add-label ci/${{ (needs.makefile.result == 'success' && needs.gotests.result == 'success') && 'success' || 'failure' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
