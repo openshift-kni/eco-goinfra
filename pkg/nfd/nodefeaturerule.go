@@ -69,7 +69,9 @@ func NewNodeFeatureRuleBuilderFromObjectString(apiClient *clients.Settings, almE
 	if nodeFeatureRuleBuilder.Definition == nil {
 		glog.V(100).Infof("The NodeFeatureRule object definition is nil")
 
-		nodeFeatureRuleBuilder.errorMsg = "NodeFeatureRule definition is nil"
+		nodeFeatureRuleBuilder.errorMsg = "nodeFeatureRule definition is nil"
+		
+		return builder
 
 		return &nodeFeatureRuleBuilder
 	}
