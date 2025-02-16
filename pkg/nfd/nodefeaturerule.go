@@ -124,7 +124,7 @@ func PullFeatureRule(apiClient *clients.Settings, name, namespace string) (*Node
 
 	ruleBuilder.Definition = ruleBuilder.Object
 
-	return &ruleBuilder, nil
+	return ruleBuilder, nil
 }
 
 // getNodeFeatureRuleFromAlmExample extracts the NodeFeatureRule from the alm-examples block.
