@@ -119,7 +119,7 @@ func PullFeatureRule(apiClient *clients.Settings, name, namespace string) (*Node
 	}
 
 	if !ruleBuilder.Exists() {
-		return nil, fmt.Errorf("NodeFeatureRule object %s does not exist in namespace %s", name, namespace)
+		return nil, fmt.Errorf("nodeFeatureRule object %s does not exist in namespace %s", name, namespace)
 	}
 
 	ruleBuilder.Definition = ruleBuilder.Object
