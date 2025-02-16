@@ -34,7 +34,7 @@ func NewNodeFeatureRuleBuilderFromObjectString(apiClient *clients.Settings, almE
 		"Initializing new Builder structure from almExample string")
 
 	if apiClient == nil {
-		glog.V(100).Info("The apiClient of the Policy is nil")
+		glog.V(100).Info("The apiClient of the NodeFeatureRule is nil")
 
 		return nil
 	}
