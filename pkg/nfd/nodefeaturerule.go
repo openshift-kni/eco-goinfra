@@ -51,7 +51,7 @@ func NewNodeFeatureRuleBuilderFromObjectString(apiClient *clients.Settings, almE
 	glog.V(100).Infof(
 		"Initializing Builder definition to NodeFeatureRule object")
 
-	nodeFeatureRuleBuilder := &NodeFeatureRuleBuilder{
+	nodeFeatureRuleBuilder := NodeFeatureRuleBuilder{
 		apiClient:  apiClient,
 		Definition: nodeFeatureRule,
 	}
@@ -70,8 +70,6 @@ func NewNodeFeatureRuleBuilderFromObjectString(apiClient *clients.Settings, almE
 		glog.V(100).Infof("The NodeFeatureRule object definition is nil")
 
 		nodeFeatureRuleBuilder.errorMsg = "nodeFeatureRule definition is nil"
-		
-		return builder
 
 		return &nodeFeatureRuleBuilder
 	}
@@ -96,7 +94,7 @@ func PullFeatureRule(apiClient *clients.Settings, name, namespace string) (*Node
 		return nil, err
 	}
 
-	ruleBuilder := NodeFeatureRuleBuilder{
+	ruleBuilder := &NodeFeatureRuleBuilder{
 		apiClient: apiClient,
 		Definition: &nfdv1.NodeFeatureRule{
 			ObjectMeta: metav1.ObjectMeta{

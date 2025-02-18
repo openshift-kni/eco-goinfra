@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	. "github.com/openshift-kni/eco-goinfra/pkg/nfd"
+	nfd "github.com/openshift-kni/eco-goinfra/pkg/nfd"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -75,7 +75,7 @@ func TestNewnodeFeatureRuleBuilderFromObjectString(t *testing.T) {
 				client = buildTestClientWithNFDRuleScheme()
 			}
 
-			builder := NewNodeFeatureRuleBuilderFromObjectString(client, testCase.almString)
+			builder := nfd.NewNodeFeatureRuleBuilderFromObjectString(client, testCase.almString)
 
 			errormessage := ""
 
@@ -103,7 +103,7 @@ func TestNewnodeFeatureRuleBuilderFromObjectString(t *testing.T) {
 func TestNodeFeatureRuleBuilderCreate(t *testing.T) {
 	testCases := []struct {
 		name          string
-		builder       *NodeFeatureRuleBuilder
+		builder       *nfd.NodeFeatureRuleBuilder
 		expectedError error
 	}{
 		{
@@ -133,7 +133,7 @@ func TestNodeFeatureRuleBuilderCreate(t *testing.T) {
 func TestNodeFeatureRuleBuilderExists(t *testing.T) {
 	testCases := []struct {
 		name           string
-		builder        *NodeFeatureRuleBuilder
+		builder        *nfd.NodeFeatureRuleBuilder
 		expectedStatus bool
 	}{
 		{
@@ -159,7 +159,7 @@ func TestNodeFeatureRuleBuilderExists(t *testing.T) {
 func TestNodeFeatureRuleBuilderGet(t *testing.T) {
 	testCases := []struct {
 		name          string
-		builder       *NodeFeatureRuleBuilder
+		builder       *nfd.NodeFeatureRuleBuilder
 		expectedError error
 	}{
 		{
@@ -214,12 +214,12 @@ func buildDummyNFDRule(name, namespace string) *nfdv1.NodeFeatureRule {
 	}
 }
 
-func buildValidNFDRuleTestBuilder(apiClient *clients.Settings) *NodeFeatureRuleBuilder {
-	return NewNodeFeatureRuleBuilderFromObjectString(apiClient, nodeFeatureRuleAlmExample)
+func buildValidNFDRuleTestBuilder(apiClient *clients.Settings) *nfd.NodeFeatureRuleBuilder {
+	return nfd.NewNodeFeatureRuleBuilderFromObjectString(apiClient, nodeFeatureRuleAlmExample)
 }
 
-func buildInvalidNFDRuleTestBuilder(apiClient *clients.Settings) *NodeFeatureRuleBuilder {
-	return NewNodeFeatureRuleBuilderFromObjectString(apiClient, "{invalid}")
+func buildInvalidNFDRuleTestBuilder(apiClient *clients.Settings) *nfd.NodeFeatureRuleBuilder {
+	return nfd.NewNodeFeatureRuleBuilderFromObjectString(apiClient, "{invalid}")
 }
 
 func buildTestClientWithNFDRuleScheme() *clients.Settings {
