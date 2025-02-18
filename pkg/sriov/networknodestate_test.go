@@ -295,17 +295,16 @@ func TestNetworkNodeStateWaitUntilSyncStatus(t *testing.T) {
 func TestNetworkNodeStateGetNumVFs(t *testing.T) {
 	testCases := []struct {
 		netInterface srIovV1.InterfaceExts
-		upInterface  srIovV1.InterfaceExts
 	}{
 		{
 			netInterface: []srIovV1.InterfaceExt{
-				{Name: "eth1", LinkSpeed: "1000Mb", TotalVfs: 5},
+				{Name: "eth1", LinkSpeed: "1000Mb", NumVfs: 5},
 			},
 		},
 		{
 			netInterface: []srIovV1.InterfaceExt{
-				{Name: "eth1", LinkSpeed: "1000Mb", TotalVfs: 5},
-				{Name: "eth1", LinkSpeed: "1000Mb", TotalVfs: 10},
+				{Name: "eth1", LinkSpeed: "1000Mb", NumVfs: 5},
+				{Name: "eth2", LinkSpeed: "1000Mb", NumVfs: 10},
 			},
 		},
 	}
@@ -324,6 +323,41 @@ func TestNetworkNodeStateGetNumVFs(t *testing.T) {
 			vfNum, err := networkNodeStateBuilder.GetNumVFs(netInterface.Name)
 			assert.Nil(t, err)
 			assert.Equal(t, netInterface.NumVfs, vfNum)
+		}
+	}
+}
+
+func TestNetworkNodeStateGetTotalVFs(t *testing.T) {
+	testCases := []struct {
+		netInterface srIovV1.InterfaceExts
+	}{
+		{
+			netInterface: []srIovV1.InterfaceExt{
+				{Name: "eth1", LinkSpeed: "1000Mb", TotalVfs: 5},
+			},
+		},
+		{
+			netInterface: []srIovV1.InterfaceExt{
+				{Name: "eth1", LinkSpeed: "1000Mb", TotalVfs: 5},
+				{Name: "eth2", LinkSpeed: "1000Mb", TotalVfs: 10},
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		networkNodeState := buildNodeNetworkStateWithNics(testCase.netInterface)
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects:  []runtime.Object{networkNodeState},
+			SchemeAttachers: testSchemes,
+		})
+		networkNodeStateBuilder := NewNetworkNodeStateBuilder(testSettings, defaultNodeName, defaultNodeNsName)
+		err := networkNodeStateBuilder.Discover()
+		assert.Nil(t, err)
+
+		for _, netInterface := range testCase.netInterface {
+			totalVFNum, err := networkNodeStateBuilder.GetTotalVFs(netInterface.Name)
+			assert.Nil(t, err)
+			assert.Equal(t, netInterface.TotalVfs, totalVFNum)
 		}
 	}
 }
