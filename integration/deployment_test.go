@@ -30,7 +30,7 @@ func TestDeploymentCreate(t *testing.T) {
 		deploymentName = "create-test"
 	)
 
-	// Create the namespace in the cluster using the namespaces package
+	// Create a namespace in the cluster using the namespaces package
 	namespaceBuilder, err := namespace.NewBuilder(client, testNamespace).Create()
 	assert.Nil(t, err)
 
@@ -69,7 +69,7 @@ func TestDeploymentDelete(t *testing.T) {
 		deploymentName = "delete-test"
 	)
 
-	// Create the namespace in the cluster using the namespaces package
+	// Create a namespace in the cluster using the namespaces package
 	namespaceBuilder, err := namespace.NewBuilder(client, testNamespace).Create()
 	assert.Nil(t, err)
 
@@ -118,7 +118,7 @@ func TestDeploymentWithReplicas(t *testing.T) {
 		deploymentName = "replicas-test"
 	)
 
-	// Create the namespace in the cluster using the namespaces package
+	// Create a namespace in the cluster using the namespaces package
 	namespaceBuilder, err := namespace.NewBuilder(client, testNamespace).Create()
 	assert.Nil(t, err)
 
