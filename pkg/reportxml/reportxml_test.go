@@ -39,16 +39,14 @@ func TestNewConfig(t *testing.T) {
 
 	for _, testCase := range testCases {
 		if testCase.reportCaseTag != "" {
-			assert.Nil(t, os.Setenv("REPORT_CASE_TAG", testCase.reportCaseTag))
-			assert.Nil(t, os.Setenv("REPORT_PARAMETER_TAG", testCase.ParameterTag))
+			t.Setenv("REPORT_CASE_TAG", testCase.reportCaseTag)
+			t.Setenv("REPORT_PARAMETER_TAG", testCase.ParameterTag)
 		}
 
 		setting, err := newConfig()
 		assert.Nil(t, err)
 		assert.NotNil(t, setting)
 		assert.Equal(t, testCase.testSettings, setting)
-		assert.Nil(t, os.Unsetenv("REPORT_CASE_TAG"))
-		assert.Nil(t, os.Unsetenv("REPORT_PARAMETER_TAG"))
 	}
 }
 
