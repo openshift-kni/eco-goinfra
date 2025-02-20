@@ -85,16 +85,14 @@ func (builder *PVCBuilder) WithPVCAccessMode(accessMode string) (*PVCBuilder, er
 
 	if accessMode == "" {
 		glog.V(100).Infof("Empty accessMode for PVC %s", builder.Definition.Name)
-		builder.errorMsg = "Empty accessMode for PVC requested"
 
-		return builder, fmt.Errorf("%s", builder.errorMsg)
+		return builder, fmt.Errorf("empty accessMode for PVC requested")
 	}
 
 	if !validatePVCAccessMode(accessMode) {
 		glog.V(100).Infof("Invalid accessMode for PVC %s", accessMode)
-		builder.errorMsg = fmt.Sprintf("Invalid accessMode for PVC %s", accessMode)
 
-		return builder, fmt.Errorf("%s", builder.errorMsg)
+		return builder, fmt.Errorf("invalid accessMode for PVC %s", accessMode)
 	}
 
 	if builder.Definition.Spec.AccessModes != nil {

@@ -182,17 +182,13 @@ func PullPreflightValidationOCP(apiClient *clients.Settings,
 	if name == "" {
 		glog.V(100).Infof("The name of the preflightvalidationocp is empty")
 
-		builder.errorMsg = "preflightvalidationocp 'name' cannot be empty"
-
-		return builder, fmt.Errorf("%s", builder.errorMsg)
+		return builder, fmt.Errorf("%s", "preflightvalidationocp 'name' cannot be empty")
 	}
 
 	if nsname == "" {
 		glog.V(100).Infof("The namespace of the preflightvalidationocp is empty")
 
-		builder.errorMsg = "preflightvalidationocp 'nsname' cannot be empty"
-
-		return builder, fmt.Errorf("%s", builder.errorMsg)
+		return builder, fmt.Errorf("%s", "preflightvalidationocp 'nsname' cannot be empty")
 	}
 
 	if !builder.Exists() {
