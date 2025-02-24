@@ -175,21 +175,23 @@ func TestClusterServiceDelete(t *testing.T) {
 func TestClusterServiceVersionUpdate(t *testing.T) {
 	testCases := []struct {
 		clusterServiceVersion *ClusterServiceVersionBuilder
-		expectedError     string
-		displayName string
+		expectedError         string
+		displayName           string
 	}{
 		{
 			clusterServiceVersion: buildValidClusterServiceBuilder(buildTestClientWithDummyClusterServiceObject()),
-			expectedError:     "",
-			displayName: "newName",
+			expectedError:         "",
+			displayName:           "newName",
 		},
 	}
 
 	for _, testCase := range testCases {
 		csv, _ := testCase.clusterServiceVersion.Get()
 		assert.Equal(t, csv.Spec.DisplayName, "test")
+
 		testCase.clusterServiceVersion.Definition.Spec.DisplayName = testCase.displayName
-		testCase.clusterServiceVersion.Update()
+
+		_, _ = testCase.clusterServiceVersion.Update()
 		csv, _ = testCase.clusterServiceVersion.Get()
 		assert.Equal(t, csv.Spec.DisplayName, testCase.displayName)
 	}
