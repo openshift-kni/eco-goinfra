@@ -1,0 +1,61 @@
+name: Integration Testing
+
+on:
+  workflow_dispatch:
+  # Triggers the workflow every day
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  integration-k8s:
+    if: github.repository_owner == 'openshift-kni'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-22.04-arm]
+    env:
+      SHELL: /bin/bash
+      KUBECONFIG: '/home/runner/.kube/config'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Setup cluster (k8s)
+        uses: palmsoftware/quick-k8s@v0.0.21
+
+      - name: Run integration tests
+        run: make integration-test
+
+  integration-ocp:
+    if: github.repository_owner == 'openshift-kni'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04]
+    env:
+      SHELL: /bin/bash
+      KUBECONFIG: '/home/runner/.kube/config'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Setup cluster (ocp)
+        uses: palmsoftware/quick-ocp@v0.0.6
+        with:
+          ocpPullSecret: $OCP_PULL_SECRET
+          bundleCache: true
+        env:
+          OCP_PULL_SECRET: ${{ secrets.OCP_PULL_SECRET }}
+
+      - name: Run integration tests
+        run: make integration-test
