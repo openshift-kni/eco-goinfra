@@ -54,8 +54,12 @@ jobs:
     needs: sync-libs
     uses: ./.github/workflows/eco-gotests-integration.yml
 
+  integration:
+    needs: sync-libs
+    uses: ./.github/workflows/integration-testing.yml
+    
   label:
-    needs: [sync-libs, makefile, gotests]
+    needs: [sync-libs, makefile, gotests, integration]
     if: ${{ needs.sync-libs.result == 'success' && needs.sync-libs.outputs.pr-url }}
 
     name: Label created PR
@@ -67,6 +71,7 @@ jobs:
 
     steps:
       - name: Label PR based on CI result
-        run: gh pr edit ${{ needs.sync-libs.outputs.pr-url }} --add-label ci/${{ (needs.makefile.result == 'success' && needs.gotests.result == 'success') && 'success' || 'failure' }}
+        run: gh pr edit ${{ needs.sync-libs.outputs.pr-url }} --add-label ci/$CI_RESULT
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI_RESULT: ${{ (needs.makefile.result == 'success' && needs.gotests.result == 'success' && needs.integration.result == 'success') && 'success' || 'failure' }}
