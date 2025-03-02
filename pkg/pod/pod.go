@@ -457,8 +457,17 @@ func (builder *Builder) ExecCommand(command []string, containerName ...string) (
 			TTY:       true,
 		}, scheme.ParameterCodec)
 
-	exec, err := remotecommand.NewSPDYExecutor(builder.apiClient.Config, "POST", req.URL())
+	spdyExec, err := remotecommand.NewSPDYExecutor(builder.apiClient.Config, "POST", req.URL())
+	if err != nil {
+		return buffer, fmt.Errorf("failed to create new SPDY executor: %w", err)
+	}
 
+	webSocketExec, err := remotecommand.NewWebSocketExecutor(builder.apiClient.Config, "GET", req.URL().String())
+	if err != nil {
+		return buffer, fmt.Errorf("failed to create new WebSocket executor: %w", err)
+	}
+
+	exec, err := remotecommand.NewFallbackExecutor(webSocketExec, spdyExec, func(err error) bool { return err != nil })
 	if err != nil {
 		return buffer, err
 	}
