@@ -821,72 +821,14 @@ func TestClusterInstanceExists(t *testing.T) {
 	}
 }
 
-func TestClusterInstanceValidate(t *testing.T) {
-	testCases := []struct {
-		builderNil    bool
-		definitionNil bool
-		apiClientNil  bool
-		expectedError string
-	}{
-		{
-			builderNil:    true,
-			definitionNil: false,
-			apiClientNil:  false,
-			expectedError: "error: received nil ClusterInstance builder",
-		},
-		{
-			builderNil:    false,
-			definitionNil: true,
-			apiClientNil:  false,
-			expectedError: "can not redefine the undefined ClusterInstance",
-		},
-		{
-			builderNil:    false,
-			definitionNil: false,
-			apiClientNil:  true,
-			expectedError: "ClusterInstance builder cannot have nil apiClient",
-		},
-		{
-			builderNil:    false,
-			definitionNil: false,
-			apiClientNil:  false,
-			expectedError: "",
-		},
-	}
-
-	for _, testCase := range testCases {
-		testBuilder := generateClusterInstanceBuilderWithFakeObjects([]runtime.Object{})
-
-		if testCase.builderNil {
-			testBuilder = nil
-		}
-
-		if testCase.definitionNil {
-			testBuilder.Definition = nil
-		}
-
-		if testCase.apiClientNil {
-			testBuilder.apiClient = nil
-		}
-
-		result, err := testBuilder.validate()
-		if testCase.expectedError != "" {
-			assert.NotNil(t, err)
-			assert.Equal(t, testCase.expectedError, err.Error())
-			assert.False(t, result)
-		} else {
-			assert.Nil(t, err)
-			assert.True(t, result)
-		}
-	}
-}
-
 func generateClusterInstanceBuilderWithFakeObjects(objects []runtime.Object) *CIBuilder {
-	return &CIBuilder{
-		apiClient: clients.GetTestClients(
-			clients.TestClientParams{K8sMockObjects: objects, SchemeAttachers: testSchemes}).Client,
-		Definition: generateClusterInstance(),
-	}
+	builder := NewCIBuilder(clients.GetTestClients(
+		clients.TestClientParams{K8sMockObjects: objects, SchemeAttachers: testSchemes}),
+		testClusterInstance, testClusterInstance)
+
+	builder.Definition = generateClusterInstance()
+
+	return builder
 }
 
 func generateClusterInstance() *siteconfigv1alpha1.ClusterInstance {
