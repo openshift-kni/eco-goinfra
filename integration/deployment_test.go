@@ -95,6 +95,10 @@ func TestDeploymentDelete(t *testing.T) {
 
 	// Create the namespace
 	namespaceBuilder, err = namespaceBuilder.Create()
+	assert.Nil(t, err)
+
+	// Create the namespace
+	namespaceBuilder, err = namespaceBuilder.Create()
 
 	// Defer the deletion of the namespace
 	defer func() {
@@ -153,6 +157,10 @@ func TestDeploymentWithReplicas(t *testing.T) {
 
 	// Preemptively delete the namespace before the test
 	err := namespaceBuilder.DeleteAndWait(time.Duration(30) * time.Second)
+	assert.Nil(t, err)
+
+	// Create the namespace
+	namespaceBuilder, err = namespaceBuilder.Create()
 	assert.Nil(t, err)
 
 	// Create the namespace
