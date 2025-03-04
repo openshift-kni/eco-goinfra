@@ -12,6 +12,8 @@ import (
 	"github.com/openshift-kni/eco-goinfra/pkg/namespace"
 	"github.com/openshift-kni/eco-goinfra/pkg/pod"
 	"github.com/stretchr/testify/assert"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -31,7 +33,15 @@ func TestDeploymentCreate(t *testing.T) {
 	)
 
 	// Create a namespace in the cluster using the namespaces package
-	namespaceBuilder, err := namespace.NewBuilder(client, testNamespace).Create()
+	namespaceBuilder := namespace.NewBuilder(client, testNamespace)
+	assert.NotNil(t, namespaceBuilder)
+
+	// Preemptively delete the namespace before the test
+	err := namespaceBuilder.DeleteAndWait(time.Duration(30) * time.Second)
+	assert.Nil(t, err)
+
+	// Create the namespace
+	namespaceBuilder, err = namespaceBuilder.Create()
 	assert.Nil(t, err)
 
 	// Defer the deletion of the namespace
@@ -44,6 +54,12 @@ func TestDeploymentCreate(t *testing.T) {
 	testContainerBuilder := pod.NewContainerBuilder("test", containerImage, []string{"sleep", "3600"})
 	containerDefinition, err := testContainerBuilder.GetContainerCfg()
 	assert.Nil(t, err)
+
+	// Change the container default security context to something that is allowed in the test environment
+	testContainerBuilder.WithSecurityContext(&corev1.SecurityContext{
+		RunAsUser:  nil,
+		RunAsGroup: nil,
+	})
 
 	deploymentBuilder := deployment.NewBuilder(client, deploymentName, testNamespace, map[string]string{
 		"app": "test",
@@ -70,8 +86,15 @@ func TestDeploymentDelete(t *testing.T) {
 	)
 
 	// Create a namespace in the cluster using the namespaces package
-	namespaceBuilder, err := namespace.NewBuilder(client, testNamespace).Create()
+	namespaceBuilder := namespace.NewBuilder(client, testNamespace)
+	assert.NotNil(t, namespaceBuilder)
+
+	// Preemptively delete the namespace before the test
+	err := namespaceBuilder.DeleteAndWait(time.Duration(30) * time.Second)
 	assert.Nil(t, err)
+
+	// Create the namespace
+	namespaceBuilder, err = namespaceBuilder.Create()
 
 	// Defer the deletion of the namespace
 	defer func() {
@@ -83,6 +106,12 @@ func TestDeploymentDelete(t *testing.T) {
 	testContainerBuilder := pod.NewContainerBuilder("test", containerImage, []string{"sleep", "3600"})
 	containerDefinition, err := testContainerBuilder.GetContainerCfg()
 	assert.Nil(t, err)
+
+	// Change the container default security context to something that is allowed in the test environment
+	testContainerBuilder.WithSecurityContext(&corev1.SecurityContext{
+		RunAsUser:  nil,
+		RunAsGroup: nil,
+	})
 
 	deploymentBuilder := deployment.NewBuilder(client, deploymentName, testNamespace, map[string]string{
 		"app": "test",
@@ -119,8 +148,15 @@ func TestDeploymentWithReplicas(t *testing.T) {
 	)
 
 	// Create a namespace in the cluster using the namespaces package
-	namespaceBuilder, err := namespace.NewBuilder(client, testNamespace).Create()
+	namespaceBuilder := namespace.NewBuilder(client, testNamespace)
+	assert.NotNil(t, namespaceBuilder)
+
+	// Preemptively delete the namespace before the test
+	err := namespaceBuilder.DeleteAndWait(time.Duration(30) * time.Second)
 	assert.Nil(t, err)
+
+	// Create the namespace
+	namespaceBuilder, err = namespaceBuilder.Create()
 
 	// Defer the deletion of the namespace
 	defer func() {
@@ -132,6 +168,12 @@ func TestDeploymentWithReplicas(t *testing.T) {
 	testContainerBuilder := pod.NewContainerBuilder("test", containerImage, []string{"sleep", "3600"})
 	containerDefinition, err := testContainerBuilder.GetContainerCfg()
 	assert.Nil(t, err)
+
+	// Change the container default security context to something that is allowed in the test environment
+	testContainerBuilder.WithSecurityContext(&corev1.SecurityContext{
+		RunAsUser:  nil,
+		RunAsGroup: nil,
+	})
 
 	deploymentBuilder := deployment.NewBuilder(client, deploymentName, testNamespace, map[string]string{
 		"app": "test",
