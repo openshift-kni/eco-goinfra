@@ -12,3 +12,5 @@
       new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1"'
   excludes:
     - "*_test.go"
+    - "*_webhook.go"
+    - "*_validation.go"
