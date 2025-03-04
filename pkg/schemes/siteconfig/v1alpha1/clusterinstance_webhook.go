@@ -68,7 +68,7 @@ func (v *clusterInstanceValidator) ValidateCreate(ctx context.Context, obj runti
 		"namespace", clusterInstance.Namespace,
 		"resourceVersion", clusterInstance.ResourceVersion)
 
-	log.Info("validating create request")
+	log.Info("Validating create request")
 
 	// Reinstall field must not be set during initial installation.
 	if clusterInstance.Spec.Reinstall != nil {
@@ -77,9 +77,12 @@ func (v *clusterInstanceValidator) ValidateCreate(ctx context.Context, obj runti
 		return nil, errors.New(msg)
 	}
 
-	// add create request validation
+	if err := ValidateClusterInstance(clusterInstance); err != nil {
+		log.Error(err, "Validation failed")
+		return nil, fmt.Errorf("validation failed: %w", err)
+	}
 
-	log.Info("validations passed for create request")
+	log.Info("Validations passed for create request")
 	return nil, nil
 }
 
@@ -104,13 +107,52 @@ func (v *clusterInstanceValidator) ValidateUpdate(ctx context.Context, oldObj, n
 	log.Info("validating update request")
 
 	// Allow updates if the object is being deleted (finalizer removal case).
-	if !oldClusterInstance.DeletionTimestamp.IsZero() || !newClusterInstance.DeletionTimestamp.IsZero() {
+	if !newClusterInstance.DeletionTimestamp.IsZero() {
 		return nil, nil
 	}
 
-	// add update request validation
+	// Prevent spec changes during provisioning or reinstall processes.
+	if isProvisioningInProgress(newClusterInstance) || isReinstallInProgress(newClusterInstance) {
+		if hasSpecChanged(oldClusterInstance, newClusterInstance) {
+			log.Error(nil, "Spec update not allowed during provisioning or cluster reinstalls")
+			return nil, errors.New("spec update not allowed during provisioning or cluster reinstalls")
+		}
+		log.Info("Provisioning or Cluster Reinstall is in progress")
+		return nil, nil
+	}
 
-	log.Info("validations passed for update request")
+	// Validate permissible changes after provisioning is completed.
+	if isProvisioningCompleted(newClusterInstance) {
+		reinstallRequested := isReinstallRequested(newClusterInstance)
+		if reinstallRequested {
+			if isReinstallInProgress(newClusterInstance) &&
+				newClusterInstance.Spec.Reinstall.Generation != oldClusterInstance.Spec.Reinstall.Generation {
+				log.Error(nil, "Reinstall Generation update not allowed during reinstall")
+				return nil, errors.New("reinstall Generation update not allowed during reinstall")
+			}
+
+			if err := validateReinstallRequest(newClusterInstance); err != nil {
+				log.Error(err, "Invalid reinstall fields")
+				return nil, fmt.Errorf("invalid reinstall fields: %w", err)
+			}
+		}
+
+		// Validate allowed day-N changes.
+		err := validatePostProvisioningChanges(log, oldClusterInstance, newClusterInstance, reinstallRequested)
+		if err != nil {
+			log.Error(err, "Invalid spec changes detected")
+			return nil, fmt.Errorf("invalid spec changes detected: %w", err)
+		}
+
+	}
+
+	// Perform general validation on the updated ClusterInstance.
+	if err := ValidateClusterInstance(newClusterInstance); err != nil {
+		log.Error(err, "Validation failed")
+		return nil, fmt.Errorf("validation failed: %w", err)
+	}
+
+	log.Info("Validations passed for update request")
 
 	return nil, nil
 }
