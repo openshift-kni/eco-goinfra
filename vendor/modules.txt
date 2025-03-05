@@ -718,11 +718,6 @@ github.com/r3labs/diff/v3
 # github.com/red-hat-storage/odf-operator v0.0.0-20241124050455-02681e6c10df
 ## explicit; go 1.22.7
 github.com/red-hat-storage/odf-operator/api/v1alpha1
-# github.com/rh-ecosystem-edge/kernel-module-management v0.0.0-20240925181841-898c27853e89
-## explicit; go 1.21
-github.com/rh-ecosystem-edge/kernel-module-management/api-hub/v1beta1
-github.com/rh-ecosystem-edge/kernel-module-management/api/v1beta1
-github.com/rh-ecosystem-edge/kernel-module-management/api/v1beta2
 # github.com/robfig/cron v1.2.0
 ## explicit
 github.com/robfig/cron

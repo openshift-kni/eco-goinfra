@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	mcmV1Beta1 "github.com/rh-ecosystem-edge/kernel-module-management/api-hub/v1beta1"
-	"github.com/rh-ecosystem-edge/kernel-module-management/api/v1beta1"
+	mcmV1Beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/kmm-hub/v1beta1"
+	"github.com/openshift-kni/eco-goinfra/pkg/schemes/kmm/v1beta1"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
