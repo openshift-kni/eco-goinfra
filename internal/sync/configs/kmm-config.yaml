@@ -1,0 +1,45 @@
+---
+- name: kmm-v1beta1
+  sync: true
+  repo_link: "https://github.com/rh-ecosystem-edge/kernel-module-management"
+  branch: release-2.3
+  remote_api_directory: api/v1beta1
+  local_api_directory: schemes/kmm/v1beta1
+  replace_imports:
+    - old: '"github.com/rh-ecosystem-edge/kernel-module-management/api/v1beta1"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/kmm/v1beta1"'
+    - old: '"github.com/rh-ecosystem-edge/kernel-module-management/api/v1beta2"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/kmm/v1beta2"'
+  excludes:
+    - "*_test.go"
+    - "testdata"
+
+- name: kmm-v1beta2
+  sync: true
+  repo_link: "https://github.com/rh-ecosystem-edge/kernel-module-management"
+  branch: release-2.3
+  remote_api_directory: api/v1beta2
+  local_api_directory: schemes/kmm/v1beta2
+  replace_imports:
+    - old: '"github.com/rh-ecosystem-edge/kernel-module-management/api/v1beta1"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/kmm/v1beta2"'
+    - old: '"github.com/rh-ecosystem-edge/kernel-module-management/api/v1beta2"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/kmm/v1beta2"'
+  excludes:
+    - "*_test.go"
+    - "testdata"
+
+- name: hmm-hub-v1beta1
+  sync: true
+  repo_link: "https://github.com/rh-ecosystem-edge/kernel-module-management"
+  branch: release-2.3
+  remote_api_directory: api-hub/v1beta1
+  local_api_directory: schemes/kmm-hub/v1beta1
+  replace_imports:
+    - old: '"github.com/rh-ecosystem-edge/kernel-module-management/api-hub/v1beta1"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/kmm-hub/v1beta1"'
+    - old: '"github.com/rh-ecosystem-edge/kernel-module-management/api/v1beta1"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/kmm/v1beta1"'
+  excludes:
+    - "*_test.go"
+    - "testdata"

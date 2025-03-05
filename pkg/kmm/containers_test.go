@@ -6,7 +6,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/rh-ecosystem-edge/kernel-module-management/api/v1beta1"
+	"github.com/openshift-kni/eco-goinfra/pkg/schemes/kmm/v1beta1"
 	"github.com/stretchr/testify/assert"
 )
 

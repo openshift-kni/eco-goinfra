@@ -46,7 +46,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.78.2
 	github.com/red-hat-storage/odf-operator v0.0.0-20241124050455-02681e6c10df // release-4.18
-	github.com/rh-ecosystem-edge/kernel-module-management v0.0.0-20240925181841-898c27853e89 // release-2.2
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stmcginnis/gofish v0.20.0
 	github.com/stretchr/testify v1.10.0
