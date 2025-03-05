@@ -14,21 +14,18 @@ import (
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var (
-	imageRegistryGVK = schema.GroupVersionKind{
-		Group:   APIGroup,
-		Version: APIVersion,
-		Kind:    APIKind,
-	}
 	defaultImageRegistryName      = "cluster"
 	defaultManagementState        = operatorV1.Managed
 	defaultImageRegistryCondition = operatorV1.OperatorCondition{
 		Type:   "Available",
 		Status: operatorV1.ConditionTrue,
 		Reason: "Ready",
+	}
+	testSchemes = []clients.SchemeAttacher{
+		imageregistryV1.Install,
 	}
 )
 
@@ -93,7 +90,8 @@ func TestImageRegistryPull(t *testing.T) {
 
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
-				K8sMockObjects: runtimeObjects,
+				K8sMockObjects:  runtimeObjects,
+				SchemeAttachers: testSchemes,
 			})
 		}
 
@@ -371,7 +369,8 @@ func TestImageRegistryWaitForCondition(t *testing.T) {
 		}
 
 		testSettings := clients.GetTestClients(clients.TestClientParams{
-			K8sMockObjects: runtimeObjects,
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: testSchemes,
 		})
 
 		if testCase.valid {
@@ -395,8 +394,8 @@ func buildInValidImageRegistryBuilder(apiClient *clients.Settings) *Builder {
 
 func buildImageRegistryClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
-		K8sMockObjects: buildDummyImageRegistryObject(),
-		GVK:            []schema.GroupVersionKind{imageRegistryGVK},
+		K8sMockObjects:  buildDummyImageRegistryObject(),
+		SchemeAttachers: testSchemes,
 	})
 }
 
@@ -421,6 +420,13 @@ func buildDummyImageRegistryObject() []runtime.Object {
 // newBuilder method creates new instance of builder (for the unit test propose only).
 func newBuilder(apiClient *clients.Settings, name string, managementState operatorV1.ManagementState) *Builder {
 	glog.V(100).Infof("Initializing new Builder structure with the name: %s", name)
+
+	err := apiClient.AttachScheme(imageregistryV1.Install)
+	if err != nil {
+		glog.V(100).Infof("Failed to attach imageregistry v1 scheme: %v", err)
+
+		return nil
+	}
 
 	builder := &Builder{
 		apiClient:  apiClient.Client,
