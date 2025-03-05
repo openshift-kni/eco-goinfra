@@ -12,6 +12,8 @@ import (
 	"github.com/openshift-kni/eco-goinfra/pkg/namespace"
 	"github.com/openshift-kni/eco-goinfra/pkg/pod"
 	"github.com/stretchr/testify/assert"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -44,6 +46,12 @@ func TestDeploymentCreate(t *testing.T) {
 	testContainerBuilder := pod.NewContainerBuilder("test", containerImage, []string{"sleep", "3600"})
 	containerDefinition, err := testContainerBuilder.GetContainerCfg()
 	assert.Nil(t, err)
+
+	// Change the container default security context to something that is allowed in the test environment
+	testContainerBuilder.WithSecurityContext(&corev1.SecurityContext{
+		RunAsUser:  nil,
+		RunAsGroup: nil,
+	})
 
 	deploymentBuilder := deployment.NewBuilder(client, deploymentName, testNamespace, map[string]string{
 		"app": "test",
@@ -83,6 +91,12 @@ func TestDeploymentDelete(t *testing.T) {
 	testContainerBuilder := pod.NewContainerBuilder("test", containerImage, []string{"sleep", "3600"})
 	containerDefinition, err := testContainerBuilder.GetContainerCfg()
 	assert.Nil(t, err)
+
+	// Change the container default security context to something that is allowed in the test environment
+	testContainerBuilder.WithSecurityContext(&corev1.SecurityContext{
+		RunAsUser:  nil,
+		RunAsGroup: nil,
+	})
 
 	deploymentBuilder := deployment.NewBuilder(client, deploymentName, testNamespace, map[string]string{
 		"app": "test",
@@ -132,6 +146,11 @@ func TestDeploymentWithReplicas(t *testing.T) {
 	testContainerBuilder := pod.NewContainerBuilder("test", containerImage, []string{"sleep", "3600"})
 	containerDefinition, err := testContainerBuilder.GetContainerCfg()
 	assert.Nil(t, err)
+
+	testContainerBuilder.WithSecurityContext(&corev1.SecurityContext{
+		RunAsUser:  nil,
+		RunAsGroup: nil,
+	})
 
 	deploymentBuilder := deployment.NewBuilder(client, deploymentName, testNamespace, map[string]string{
 		"app": "test",
