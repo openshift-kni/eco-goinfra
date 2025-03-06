@@ -34,6 +34,7 @@ func TestDaemonsetCreate(t *testing.T) {
 	}()
 
 	containerDefinition, err := CreateTestContainerDefinition("test", containerImage, []string{"sleep", "3600"})
+	assert.Nil(t, err)
 
 	daemonsetBuilder := daemonset.NewBuilder(client, daemonsetName, testNamespace, map[string]string{
 		"app": "test",
@@ -71,6 +72,7 @@ func TestDaemonsetDelete(t *testing.T) {
 	}()
 
 	containerDefinition, err := CreateTestContainerDefinition("test", containerImage, []string{"sleep", "3600"})
+	assert.Nil(t, err)
 
 	daemonsetBuilder := daemonset.NewBuilder(client, daemonsetName, testNamespace, map[string]string{
 		"app": "test",
