@@ -5,7 +5,6 @@ package integration
 
 import (
 	"testing"
-	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/configmap"
@@ -25,15 +24,7 @@ func TestConfigmapCreate(t *testing.T) {
 
 	// Create a namespace in the cluster using the namespaces package
 	namespaceBuilder := namespace.NewBuilder(client, testNamespace)
-	assert.NotNil(t, namespaceBuilder)
-
-	// Preemptively delete the namespace before the test
-	err := namespaceBuilder.DeleteAndWait(time.Duration(30) * time.Second)
-	assert.Nil(t, err)
-
-	// Create the namespace
-	namespaceBuilder, err = namespaceBuilder.Create()
-	assert.Nil(t, err)
+	assert.Nil(t, PreEmptiveNamespaceDeleteAndSetup(testNamespace, namespaceBuilder))
 
 	// Defer the deletion of the namespace
 	defer func() {
@@ -45,7 +36,7 @@ func TestConfigmapCreate(t *testing.T) {
 	configmapBuilder := configmap.NewBuilder(client, configmapName, testNamespace)
 
 	// Create a configmap in the namespace
-	_, err = configmapBuilder.Create()
+	_, err := configmapBuilder.Create()
 	assert.Nil(t, err)
 
 	// Check if the configmap was created
@@ -66,15 +57,7 @@ func TestConfigmapDelete(t *testing.T) {
 
 	// Create a namespace in the cluster using the namespaces package
 	namespaceBuilder := namespace.NewBuilder(client, testNamespace)
-	assert.NotNil(t, namespaceBuilder)
-
-	// Preemptively delete the namespace before the test
-	err := namespaceBuilder.DeleteAndWait(time.Duration(30) * time.Second)
-	assert.Nil(t, err)
-
-	// Create the namespace
-	namespaceBuilder, err = namespaceBuilder.Create()
-	assert.Nil(t, err)
+	assert.Nil(t, PreEmptiveNamespaceDeleteAndSetup(testNamespace, namespaceBuilder))
 
 	// Defer the deletion of the namespace
 	defer func() {
@@ -86,7 +69,7 @@ func TestConfigmapDelete(t *testing.T) {
 	configmapBuilder := configmap.NewBuilder(client, configmapName, testNamespace)
 
 	// Create a configmap in the namespace
-	_, err = configmapBuilder.Create()
+	_, err := configmapBuilder.Create()
 	assert.Nil(t, err)
 
 	// Check if the configmap was created
