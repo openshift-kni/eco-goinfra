@@ -9,9 +9,7 @@ import (
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/daemonset"
 	"github.com/openshift-kni/eco-goinfra/pkg/namespace"
-	"github.com/openshift-kni/eco-goinfra/pkg/pod"
 	"github.com/stretchr/testify/assert"
-	corev1 "k8s.io/api/core/v1"
 )
 
 func TestDaemonsetCreate(t *testing.T) {
@@ -25,8 +23,8 @@ func TestDaemonsetCreate(t *testing.T) {
 	)
 
 	// Create a namespace in the cluster using the namespaces package
-	namespaceBuilder, err := namespace.NewBuilder(client, testNamespace).Create()
-	assert.Nil(t, err)
+	namespaceBuilder := namespace.NewBuilder(client, testNamespace)
+	assert.Nil(t, PreEmptiveNamespaceDeleteAndSetup(testNamespace, namespaceBuilder))
 
 	// Defer the deletion of the namespace
 	defer func() {
@@ -35,15 +33,7 @@ func TestDaemonsetCreate(t *testing.T) {
 		assert.Nil(t, err)
 	}()
 
-	testContainerBuilder := pod.NewContainerBuilder("test", containerImage, []string{"sleep", "3600"})
-	containerDefinition, err := testContainerBuilder.GetContainerCfg()
-	assert.Nil(t, err)
-
-	// Change the container default security context to something that is allowed in the test environment
-	testContainerBuilder.WithSecurityContext(&corev1.SecurityContext{
-		RunAsUser:  nil,
-		RunAsGroup: nil,
-	})
+	containerDefinition, err := CreateTestContainerDefinition("test", containerImage, []string{"sleep", "3600"})
 
 	daemonsetBuilder := daemonset.NewBuilder(client, daemonsetName, testNamespace, map[string]string{
 		"app": "test",
@@ -70,8 +60,8 @@ func TestDaemonsetDelete(t *testing.T) {
 	)
 
 	// Create a namespace in the cluster using the namespaces package
-	namespaceBuilder, err := namespace.NewBuilder(client, testNamespace).Create()
-	assert.Nil(t, err)
+	namespaceBuilder := namespace.NewBuilder(client, testNamespace)
+	assert.Nil(t, PreEmptiveNamespaceDeleteAndSetup(testNamespace, namespaceBuilder))
 
 	// Defer the deletion of the namespace
 	defer func() {
@@ -80,15 +70,7 @@ func TestDaemonsetDelete(t *testing.T) {
 		assert.Nil(t, err)
 	}()
 
-	testContainerBuilder := pod.NewContainerBuilder("test", containerImage, []string{"sleep", "3600"})
-	containerDefinition, err := testContainerBuilder.GetContainerCfg()
-	assert.Nil(t, err)
-
-	// Change the container default security context to something that is allowed in the test environment
-	testContainerBuilder.WithSecurityContext(&corev1.SecurityContext{
-		RunAsUser:  nil,
-		RunAsGroup: nil,
-	})
+	containerDefinition, err := CreateTestContainerDefinition("test", containerImage, []string{"sleep", "3600"})
 
 	daemonsetBuilder := daemonset.NewBuilder(client, daemonsetName, testNamespace, map[string]string{
 		"app": "test",
