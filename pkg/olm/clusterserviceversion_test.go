@@ -172,6 +172,44 @@ func TestClusterServiceDelete(t *testing.T) {
 	}
 }
 
+func TestClusterServiceVersionUpdate(t *testing.T) {
+	testCases := []struct {
+		testBuilder   *ClusterServiceVersionBuilder
+		expectedError error
+		displayName   string
+	}{
+		{
+			testBuilder:   buildValidClusterServiceBuilder(buildTestClientWithDummyClusterServiceObject()),
+			expectedError: nil,
+			displayName:   "newName",
+		},
+		{
+			testBuilder: buildValidClusterServiceBuilder(
+				clients.GetTestClients(clients.TestClientParams{SchemeAttachers: testSchemes})),
+			expectedError: fmt.Errorf("cannot update non-existent ClusterServiceVersion"),
+			displayName:   "newName",
+		},
+		{
+			testBuilder:   buildInvalidClusterServiceBuilder(),
+			expectedError: fmt.Errorf("ClusterServiceVersion builder cannot have nil apiClient"),
+			displayName:   "newName",
+		},
+	}
+
+	for _, testCase := range testCases {
+		assert.NotEqual(t, testCase.testBuilder.Definition.Spec.DisplayName, testCase.displayName)
+
+		testCase.testBuilder.Definition.Spec.DisplayName = testCase.displayName
+
+		testBuilder, err := testCase.testBuilder.Update()
+		assert.Equal(t, testCase.expectedError, err)
+
+		if testCase.expectedError == nil {
+			assert.Equal(t, testBuilder.Object.Spec.DisplayName, testCase.displayName)
+		}
+	}
+}
+
 func TestClusterServiceGetAlmExamples(t *testing.T) {
 	testCases := []struct {
 		clusterService *ClusterServiceVersionBuilder
@@ -279,6 +317,10 @@ func buildValidClusterServiceBuilder(apiClient *clients.Settings) *ClusterServic
 	return newClusterServiceBuilder(apiClient, "clusterservice", "test-namespace")
 }
 
+func buildInvalidClusterServiceBuilder() *ClusterServiceVersionBuilder {
+	return invalidClusterServiceBuilder("clusterservice", "test-namespace")
+}
+
 func buildTestClientWithDummyClusterServiceObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
 		K8sMockObjects:  buildDummyClusterService(nil, ""),
@@ -338,6 +380,19 @@ func buildDummyClusterService(
 func newClusterServiceBuilder(apiClient *clients.Settings, name, namespace string) *ClusterServiceVersionBuilder {
 	return &ClusterServiceVersionBuilder{
 		apiClient: apiClient,
+		Definition: &oplmV1alpha1.ClusterServiceVersion{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      name,
+				Namespace: namespace,
+			},
+			Spec: oplmV1alpha1.ClusterServiceVersionSpec{
+				DisplayName: "test",
+			}}}
+}
+
+func invalidClusterServiceBuilder(name, namespace string) *ClusterServiceVersionBuilder {
+	return &ClusterServiceVersionBuilder{
+		apiClient: nil,
 		Definition: &oplmV1alpha1.ClusterServiceVersion{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
