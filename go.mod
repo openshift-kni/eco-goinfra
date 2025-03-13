@@ -213,6 +213,8 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 )
 
+require github.com/openshift/node-feature-discovery/api/nfd v0.0.0-20250103121957-354b94ed3e55
+
 replace (
 	github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
 	github.com/k8snetworkplumbingwg/sriov-network-operator => github.com/openshift/sriov-network-operator v0.0.0-20250102160645-f496851fbd0d // release-4.18
