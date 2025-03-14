@@ -33,7 +33,7 @@ require (
 	github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin v0.0.0-20250128160241-57fbcf565b32
 	github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20250129205116-6838db628c2b
 	github.com/openshift-kni/oran-o2ims/api/provisioning v0.0.0-20250123151805-c935b06062f9
-	github.com/openshift/api v3.9.1-0.20191111211345-a27ff30ebf09+incompatible
+	github.com/openshift/api v0.0.0-20241210155609-29859d55727b // release-4.18
 	github.com/openshift/client-go v0.0.0-20241107164952-923091dd2b1a
 	github.com/openshift/cluster-logging-operator v0.0.0-20241003210634-afb65cea19d1 // release-5.9
 	github.com/openshift/cluster-nfd-operator v0.0.0-20250116132220-e601a6278a42 // release-4.18
@@ -216,7 +216,6 @@ require (
 replace (
 	github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
 	github.com/k8snetworkplumbingwg/sriov-network-operator => github.com/openshift/sriov-network-operator v0.0.0-20250102160645-f496851fbd0d // release-4.18
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20241210155609-29859d55727b // release-4.18
 	github.com/portworx/sched-ops => github.com/portworx/sched-ops v1.20.4-rc1
 	k8s.io/client-go => k8s.io/client-go v0.31.5
 )
