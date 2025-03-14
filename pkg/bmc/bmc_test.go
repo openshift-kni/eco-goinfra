@@ -56,6 +56,15 @@ var redfishSystemBootOption0000JSONResponse string
 //go:embed testdata/redfish_v1_system_boot_option_Boot0003.json
 var redfishSystemBootOption0003JSONResponse string
 
+//go:embed testdata/redfish_v1_system_virtual_media.json
+var redfishSystemVirtualMediaJSONResponse string
+
+//go:embed testdata/redfish_v1_system_virtual_media_1.json
+var redfishSystemVirtualMedia1JSONResponse string
+
+//go:embed testdata/redfish_v1_system_virtual_media_2.json
+var redfishSystemVirtualMedia2JSONResponse string
+
 // redfishAuth is used to unmarshall the received login request redfish credentials.
 type redfishAuth struct {
 	UserName string
@@ -63,13 +72,14 @@ type redfishAuth struct {
 }
 
 type redfishAPIResponseCallbacks struct {
-	v1          func(r *http.Request)
-	sessions    func(r *http.Request)
-	system      func(r *http.Request)
-	secureBoot  func(r *http.Request)
-	bootOptions func(r *http.Request)
-	chassis     func(r *http.Request)
-	power       func(r *http.Request)
+	v1           func(r *http.Request)
+	sessions     func(r *http.Request)
+	system       func(r *http.Request)
+	secureBoot   func(r *http.Request)
+	bootOptions  func(r *http.Request)
+	virtualMedia func(r *http.Request)
+	chassis      func(r *http.Request)
+	power        func(r *http.Request)
 }
 
 const (
@@ -739,6 +749,53 @@ func TestBMCSetSystemBootOrderReferences(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestBMCBootFromCD(t *testing.T) {
+	// Create fake redfish endpoint.
+	redfishServer := createFakeRedfishLocalServer(false, redfishAPIResponseCallbacks{})
+	defer redfishServer.Close()
+
+	host := strings.Split(redfishServer.URL, "//")[1]
+
+	testCases := []struct {
+		imageURL       string
+		virtualMediaID string
+		expectedError  error
+	}{
+		{
+			imageURL:       "isoImage",
+			virtualMediaID: "1",
+			expectedError:  nil,
+		},
+		{
+			imageURL:       "",
+			virtualMediaID: "1",
+			expectedError:  fmt.Errorf("isoUrl param cannot be empty"),
+		},
+		{
+			imageURL:       "isoImage",
+			virtualMediaID: "",
+			expectedError:  fmt.Errorf("virtualMediaID param cannot be empty"),
+		},
+		{
+			imageURL:       "isoImage",
+			virtualMediaID: "4",
+			expectedError:  fmt.Errorf("no cd virtual media slot found"),
+		},
+		{
+			imageURL:       "isoImage",
+			virtualMediaID: "2",
+			expectedError:  fmt.Errorf("redfish service does not support VirtualMedia.InsertMedia calls"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		bmc := New(host).WithRedfishUser(defaultUsername, defaultPassword)
+		err := bmc.BootFromCD(testCase.imageURL, testCase.virtualMediaID)
+
+		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
 func getDelayResponseCallbackFn(t *testing.T, respDelay time.Duration) func(r *http.Request) {
 	t.Helper()
 
@@ -837,6 +894,25 @@ func createFakeRedfishLocalServer(secureBootEnabled bool, callbacks redfishAPIRe
 	mux.HandleFunc("/redfish/v1/Systems/System.Embedded.1/BootOptions/Boot0003",
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			_, _ = w.Write([]byte(redfishSystemBootOption0003JSONResponse))
+		}))
+
+	mux.HandleFunc("/redfish/v1/Systems/System.Embedded.1/VirtualMedia",
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if callbacks.virtualMedia != nil {
+				callbacks.virtualMedia(r)
+			}
+
+			_, _ = w.Write([]byte(redfishSystemVirtualMediaJSONResponse))
+		}))
+
+	mux.HandleFunc("/redfish/v1/Systems/System.Embedded.1/VirtualMedia/1",
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, _ = w.Write([]byte(redfishSystemVirtualMedia1JSONResponse))
+		}))
+
+	mux.HandleFunc("/redfish/v1/Systems/System.Embedded.1/VirtualMedia/2",
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, _ = w.Write([]byte(redfishSystemVirtualMedia2JSONResponse))
 		}))
 
 	mux.HandleFunc("GET /redfish/v1/Chassis", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
