@@ -307,6 +307,35 @@ func TestManagedClusterDelete(t *testing.T) {
 	}
 }
 
+func TestManagedClusterDeleteAndWait(t *testing.T) {
+	testCases := []struct {
+		testBuilder   *ManagedClusterBuilder
+		expectedError error
+	}{
+		{
+			testBuilder:   buildValidManagedClusterTestBuilder(buildTestClientWithDummyManagedCluster()),
+			expectedError: nil,
+		},
+		{
+			testBuilder:   buildValidManagedClusterTestBuilder(buildTestClientWithManagedClusterScheme()),
+			expectedError: nil,
+		},
+		{
+			testBuilder:   buildInvalidManagedClusterTestBuilder(buildTestClientWithDummyManagedCluster()),
+			expectedError: fmt.Errorf("managedCluster 'name' cannot be empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		err := testCase.testBuilder.DeleteAndWait(time.Second)
+		assert.Equal(t, testCase.expectedError, err)
+
+		if testCase.expectedError == nil {
+			assert.Nil(t, testCase.testBuilder.Object)
+		}
+	}
+}
+
 func TestManagedClusterUpdate(t *testing.T) {
 	testCases := []struct {
 		alreadyExists bool
