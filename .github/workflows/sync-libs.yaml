@@ -61,7 +61,7 @@ jobs:
     
   label:
     needs: [sync-libs, makefile, gotests, integration]
-    if: ${{ needs.sync-libs.result == 'success' && needs.sync-libs.outputs.pr-url }}
+    if: ${{ !cancelled() && needs.sync-libs.result == 'success' && needs.sync-libs.outputs.pr-url }}
 
     name: Label created PR
 
