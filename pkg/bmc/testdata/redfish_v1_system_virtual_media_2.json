@@ -1,0 +1,11 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#VirtualMedia.VirtualMedia",
+  "@odata.id": "/redfish/v1/Systems/System.Embedded.1/VirtualMedia/2",
+  "@odata.type": "#VirtualMedia.v1_6_1.VirtualMedia",
+  "VirtualMediaEnabled": true,
+  "VirtualMediaReference": "2",
+  "ID": "2",
+  "Image": "",
+  "Inserted": false,
+  "MediaTypes": ["CD", "DVD", "USBStick"]
+}

@@ -1,0 +1,19 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#VirtualMedia.VirtualMedia",
+  "@odata.id": "/redfish/v1/Systems/System.Embedded.1/VirtualMedia/1",
+  "@odata.type": "#VirtualMedia.v1_6_1.VirtualMedia",
+  "VirtualMediaEnabled": true,
+  "VirtualMediaReference": "1",
+  "ID": "1",
+  "Image": "",
+  "Inserted": false,
+  "MediaTypes": ["CD", "DVD", "USBStick"],
+  "Actions": {
+      "#VirtualMedia.EjectMedia": {
+        "target": "/redfish/v1/Systems/System.Embedded.1/VirtualMedia/2/Actions/VirtualMedia.EjectMedia"
+      },
+      "#VirtualMedia.InsertMedia": {
+        "target": "/redfish/v1/Systems/System.Embedded.1/VirtualMedia/2/Actions/VirtualMedia.InsertMedia"
+      }
+    }
+}
