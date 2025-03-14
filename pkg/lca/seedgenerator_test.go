@@ -1,6 +1,7 @@
 package lca
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -309,7 +310,7 @@ func TestSeedGeneratorWaitUntilComplete(t *testing.T) {
 		status        lcasgv1.SeedGeneratorStatus
 	}{
 		{
-			expectedError: fmt.Errorf("seedgenerator did not complete"),
+			expectedError: context.DeadlineExceeded,
 			status: lcasgv1.SeedGeneratorStatus{
 				Conditions: []metav1.Condition{{Status: "True1", Type: "SeedGenCompleted", Reason: "Completed"}},
 			},
