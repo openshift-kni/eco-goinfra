@@ -82,6 +82,10 @@
   replace_imports:
     - old: '"github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"'
       new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/k8s.cni.cncf.io/v1"'
+    # Since replace_imports does not actually check for imports, just does a
+    # find and replace, we can use it to fix this vet error in go 1.24+.
+    - old: "fmt.Errorf(fmt.Sprintf(\"Failed to parse: one or more items did not match comma-delimited format (must consist of lower case alphanumeric characters). Must start and end with an alphanumeric character), mismatch @ '%v'\", allItems[i]))"
+      new: "fmt.Errorf(\"Failed to parse: one or more items did not match comma-delimited format (must consist of lower case alphanumeric characters). Must start and end with an alphanumeric character), mismatch @ '%v'\", allItems[i])"
 
 - name: noobaa-operator
   sync: true
