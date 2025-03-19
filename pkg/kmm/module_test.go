@@ -7,6 +7,7 @@ import (
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/schemes/kmm/v1beta1"
 	"github.com/stretchr/testify/assert"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -512,6 +513,73 @@ func TestModuleWithOptions(t *testing.T) {
 			return builder, fmt.Errorf("error")
 		})
 	assert.Equal(t, "error", testBuilder.errorMsg)
+}
+
+func TestModuleWithToleration(t *testing.T) {
+	var tenSeconds = int64(10)
+
+	testCases := []struct {
+		key         string
+		operator    string
+		value       string
+		effect      string
+		seconds     *int64
+		expectedErr string
+	}{
+		{
+			key:         "",
+			operator:    "test",
+			value:       "test",
+			effect:      "test",
+			seconds:     &tenSeconds,
+			expectedErr: "cannot redefine with empty 'key' value",
+		},
+		{
+			key:         "test",
+			operator:    "",
+			value:       "test",
+			effect:      "test",
+			seconds:     &tenSeconds,
+			expectedErr: "cannot redefine with empty 'operator' value",
+		},
+		{
+			key:         "test",
+			operator:    "test",
+			value:       "test",
+			effect:      "",
+			seconds:     &tenSeconds,
+			expectedErr: "cannot redefine with empty 'effect' value",
+		},
+		{
+			key:         "testkey",
+			operator:    "Equals",
+			value:       "testvalue",
+			effect:      "NoSchedule",
+			expectedErr: "",
+		},
+		{
+			key:         "testkey",
+			operator:    "Equals",
+			value:       "testvalue",
+			effect:      "NoSchedule",
+			expectedErr: "",
+		},
+	}
+	for _, testCase := range testCases {
+		testSettings := buildModuleTestClientWithDummyObject()
+		testBuilder := buildValidTestModule(testSettings).WithToleration(
+			testCase.key, testCase.operator, testCase.value, testCase.effect, testCase.seconds)
+
+		if testCase.expectedErr == "" {
+			assert.Equal(t, testCase.key, testBuilder.Definition.Spec.Tolerations[0].Key)
+			assert.Equal(t, corev1.TaintEffect(testCase.effect), testBuilder.Definition.Spec.Tolerations[0].Effect)
+			assert.Equal(t, corev1.TolerationOperator(testCase.operator), testBuilder.Definition.Spec.Tolerations[0].Operator)
+			assert.Equal(t, testCase.value, testBuilder.Definition.Spec.Tolerations[0].Value)
+			assert.Equal(t, testCase.seconds, testBuilder.Definition.Spec.Tolerations[0].TolerationSeconds)
+		} else {
+			assert.Equal(t, testCase.expectedErr, testBuilder.errorMsg)
+		}
+	}
 }
 
 func TestModuleBuildModuleSpec(t *testing.T) {
