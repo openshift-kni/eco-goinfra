@@ -1,4 +1,4 @@
-name: Integration Testing
+name: Integration Testing (Nightly)
 
 on:
   workflow_dispatch:
@@ -26,10 +26,17 @@ jobs:
           go-version-file: go.mod
 
       - name: Setup cluster (k8s)
-        uses: palmsoftware/quick-k8s@v0.0.22
+        uses: palmsoftware/quick-k8s@v0.0.24
+
+      - name: Wait for pods to be ready
+        run: ./scripts/wait-for-pods.sh
 
       - name: Run integration tests
-        run: make integration-test
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 90
+          max_attempts: 3
+          command: make integration-test
 
   integration-ocp:
     if: github.repository_owner == 'openshift-kni'
@@ -50,7 +57,7 @@ jobs:
           go-version-file: go.mod
 
       - name: Setup cluster (ocp)
-        uses: palmsoftware/quick-ocp@v0.0.6
+        uses: palmsoftware/quick-ocp@v0.0.8
         with:
           ocpPullSecret: $OCP_PULL_SECRET
           bundleCache: true
@@ -58,4 +65,8 @@ jobs:
           OCP_PULL_SECRET: ${{ secrets.OCP_PULL_SECRET }}
 
       - name: Run integration tests
-        run: make integration-test
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 90
+          max_attempts: 3
+          command: make integration-test
