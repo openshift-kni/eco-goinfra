@@ -50,14 +50,20 @@ jobs:
   makefile:
     needs: sync-libs
     uses: ./.github/workflows/makefile.yml
+    with:
+      branch: sync
 
   gotests:
     needs: sync-libs
     uses: ./.github/workflows/eco-gotests-integration.yml
+    with:
+      branch: sync
 
   integration:
     needs: sync-libs
     uses: ./.github/workflows/integration-testing.yml
+    with:
+      branch: sync
     
   label:
     needs: [sync-libs, makefile, gotests, integration]

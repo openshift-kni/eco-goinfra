@@ -2,6 +2,12 @@ name: eco-gotests integration
 
 on:
   workflow_call:
+    inputs:
+      branch:
+        description: Branch to run on
+        required: true
+        default: main
+        type: string
   workflow_dispatch:
   pull_request:
     branches:
@@ -20,6 +26,8 @@ jobs:
       - name: Check out the eco-goinfra code
         if: ${{ !contains(github.event.*.labels.*.name, 'ignore-dep-check') }}
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_call' && inputs.branch || github.sha }}
 
       - name: Set up Go
         if: ${{ !contains(github.event.*.labels.*.name, 'ignore-dep-check') }}

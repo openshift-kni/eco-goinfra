@@ -2,6 +2,12 @@ name: Test Incoming Changes
 
 on:
   workflow_call:
+    inputs:
+      branch:
+        description: Branch to run on
+        required: true
+        default: main
+        type: string
 
   workflow_dispatch:
 
@@ -20,6 +26,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+            ref: ${{ github.event_name == 'workflow_call' && inputs.branch || github.sha }}
       
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -36,6 +44,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_call' && inputs.branch || github.sha }}
       
       - name: Set up Go
         uses: actions/setup-go@v5
