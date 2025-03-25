@@ -1,3 +1,4 @@
+// Package integration provides common functions for integration tests.
 package integration
 
 import (

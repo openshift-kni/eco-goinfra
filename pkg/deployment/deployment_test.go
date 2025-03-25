@@ -248,7 +248,7 @@ func TestWithHugePages(t *testing.T) {
 	// Assert the volumes are added to the spec
 	assert.Equal(t, "hugepages", testBuilder.Definition.Spec.Template.Spec.Volumes[0].Name)
 	assert.Equal(t, corev1.StorageMedium("HugePages"),
-		testBuilder.Definition.Spec.Template.Spec.Volumes[0].VolumeSource.EmptyDir.Medium)
+		testBuilder.Definition.Spec.Template.Spec.Volumes[0].EmptyDir.Medium)
 
 	// Assert the container is updated with the volume mount
 	assert.Equal(t, "hugepages", testBuilder.Definition.Spec.Template.Spec.Containers[0].VolumeMounts[0].Name)

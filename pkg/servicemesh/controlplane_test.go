@@ -288,7 +288,7 @@ func TestControlPlaneUpdate(t *testing.T) {
 			assert.Equal(t, testCase.expectedError, err.Error())
 		} else {
 			assert.Equal(t, testCase.addonEnablement,
-				*testCase.testControlPlane.Definition.Spec.Addons.Grafana.Enablement.Enabled)
+				*testCase.testControlPlane.Definition.Spec.Addons.Grafana.Enabled)
 		}
 	}
 }
@@ -317,10 +317,10 @@ func TestControlPlaneWithAllAddonsDisabled(t *testing.T) {
 			}
 		} else {
 			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testControlPlane, *result.Definition.Spec.Addons.Prometheus.Enablement.Enabled)
-			assert.Equal(t, testCase.testControlPlane, *result.Definition.Spec.Addons.Grafana.Enablement.Enabled)
-			assert.Equal(t, testCase.testControlPlane, *result.Definition.Spec.Addons.Kiali.Enablement.Enabled)
-			assert.Equal(t, testCase.testControlPlane, *result.Definition.Spec.Addons.ThreeScale.Enablement.Enabled)
+			assert.Equal(t, testCase.testControlPlane, *result.Definition.Spec.Addons.Prometheus.Enabled)
+			assert.Equal(t, testCase.testControlPlane, *result.Definition.Spec.Addons.Grafana.Enabled)
+			assert.Equal(t, testCase.testControlPlane, *result.Definition.Spec.Addons.Kiali.Enabled)
+			assert.Equal(t, testCase.testControlPlane, *result.Definition.Spec.Addons.ThreeScale.Enabled)
 		}
 	}
 }
@@ -397,7 +397,7 @@ func TestControlPlaneWithGrafanaAddon(t *testing.T) {
 			}
 		} else {
 			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testEnablement, *result.Definition.Spec.Addons.Grafana.Enablement.Enabled)
+			assert.Equal(t, testCase.testEnablement, *result.Definition.Spec.Addons.Grafana.Enabled)
 
 			if testCase.testEnablement {
 				assert.Equal(t, testCase.testInstall, result.Definition.Spec.Addons.Grafana.Install)
@@ -582,7 +582,7 @@ func TestControlPlaneWithKialiAddon(t *testing.T) {
 			}
 		} else {
 			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testEnablement, *result.Definition.Spec.Addons.Kiali.Enablement.Enabled)
+			assert.Equal(t, testCase.testEnablement, *result.Definition.Spec.Addons.Kiali.Enabled)
 
 			if testCase.testEnablement {
 				assert.Equal(t, testCase.testInstall, result.Definition.Spec.Addons.Kiali.Install)
@@ -727,7 +727,7 @@ func TestControlPlaneWithPrometheusAddon(t *testing.T) {
 			}
 		} else {
 			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testEnablement, *result.Definition.Spec.Addons.Prometheus.Enablement.Enabled)
+			assert.Equal(t, testCase.testEnablement, *result.Definition.Spec.Addons.Prometheus.Enabled)
 
 			if testCase.testEnablement {
 				assert.Equal(t, testCase.testScrape, *result.Definition.Spec.Addons.Prometheus.Scrape)
@@ -769,7 +769,7 @@ func TestControlPlaneWithGatewaysEnablement(t *testing.T) {
 			}
 		} else {
 			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testEnablement, *result.Definition.Spec.Gateways.Enablement.Enabled)
+			assert.Equal(t, testCase.testEnablement, *result.Definition.Spec.Gateways.Enabled)
 		}
 	}
 }

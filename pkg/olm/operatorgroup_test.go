@@ -304,7 +304,7 @@ func TestOperatorGroupUpdate(t *testing.T) {
 		assert.Empty(t, testCase.operatorGroup.Definition.Spec.ServiceAccountName)
 		assert.Nil(t, nil, testCase.operatorGroup.Object)
 		testCase.operatorGroup.Definition.Spec.ServiceAccountName = testCase.serviceAccount
-		testCase.operatorGroup.Definition.ObjectMeta.ResourceVersion = "999"
+		testCase.operatorGroup.Definition.ResourceVersion = "999"
 		_, err := testCase.operatorGroup.Update()
 		assert.Equal(t, testCase.expectedError, err)
 

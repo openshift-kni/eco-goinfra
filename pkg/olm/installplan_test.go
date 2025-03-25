@@ -299,7 +299,7 @@ func TestInstallPlanUpdate(t *testing.T) {
 		assert.Empty(t, testCase.installPlan.Definition.Spec.CatalogSourceNamespace)
 		assert.Nil(t, nil, testCase.installPlan.Object)
 		testCase.installPlan.Definition.Spec.CatalogSourceNamespace = testCase.catalogSourceNamespace
-		testCase.installPlan.Definition.ObjectMeta.ResourceVersion = "999"
+		testCase.installPlan.Definition.ResourceVersion = "999"
 		_, err := testCase.installPlan.Update()
 		assert.Equal(t, testCase.expectedError, err)
 

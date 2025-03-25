@@ -290,7 +290,7 @@ func TestRoleUpdate(t *testing.T) {
 		assert.Empty(t, testCase.testRole.Definition.Labels)
 		assert.Nil(t, nil, testCase.testRole.Object)
 		testCase.testRole.Definition.Labels = map[string]string{"test": "test"}
-		testCase.testRole.Definition.ObjectMeta.ResourceVersion = "999"
+		testCase.testRole.Definition.ResourceVersion = "999"
 		roleBuilder, err := testCase.testRole.Update()
 		assert.Equal(t, testCase.expectedError, err)
 

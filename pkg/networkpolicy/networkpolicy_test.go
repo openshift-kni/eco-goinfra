@@ -405,7 +405,7 @@ func TestNetworkPolicyUpdate(t *testing.T) {
 		// Set some arbitrary values to update
 		testBuilder.Definition.Labels = map[string]string{"test": "test"}
 
-		testBuilder.Definition.ObjectMeta.ResourceVersion = "999"
+		testBuilder.Definition.ResourceVersion = "999"
 		builder, err := testBuilder.Update()
 
 		if testCase.expectedError {

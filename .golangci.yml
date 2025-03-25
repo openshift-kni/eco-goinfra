@@ -89,6 +89,12 @@ linters:
             - github.com/stmcginnis/gofish
             - github.com/prometheus-operator/prometheus-operator
             - github.com/google/uuid
+            - gopkg.in/yaml.v2
+            - gopkg.in/yaml.v3
+            - golang.org/x/crypto/ssh
+            - golang.org/x/exp/slices
+            - gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/types
+            - golang.org/x/net/context
     funlen:
       lines: 90
       statements: 40
@@ -105,9 +111,10 @@ linters:
             - disableStutteringCheck
     staticcheck:
       checks:
-        - -SA1006
-        - ST1001
         - all
+        - -SA1006
+        - -ST1000
+        - ST1001
     wsl:
       strict-append: false
   exclusions:

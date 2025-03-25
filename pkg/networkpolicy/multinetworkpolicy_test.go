@@ -285,7 +285,7 @@ func TestMultiNetworkPolicyUpdate(t *testing.T) {
 			testBuilder.Definition.Spec.PodSelector = metav1.LabelSelector{MatchLabels: map[string]string{"test": "test"}}
 		}
 
-		testBuilder.Definition.ObjectMeta.ResourceVersion = "999"
+		testBuilder.Definition.ResourceVersion = "999"
 		builder, err := testBuilder.Update()
 
 		if testCase.expectedError {

@@ -430,7 +430,7 @@ func TestBackupStorageLocationUpdate(t *testing.T) {
 
 		testBuilder.Definition.Spec.Provider = "testProvider"
 
-		testBuilder.Definition.ObjectMeta.ResourceVersion = "999"
+		testBuilder.Definition.ResourceVersion = "999"
 		bsl, err := testBuilder.Update()
 		assert.Equal(t, testCase.expectedError, err)
 

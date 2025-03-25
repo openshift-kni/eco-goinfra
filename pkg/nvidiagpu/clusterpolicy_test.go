@@ -287,7 +287,7 @@ func TestNvidiaGPUUpdate(t *testing.T) {
 		assert.Nil(t, testCase.clusterPolicy.Definition.Spec.CDI.Enabled)
 		assert.Nil(t, nil, testCase.clusterPolicy.Object)
 		testCase.clusterPolicy.Definition.Spec.CDI.Enabled = &testCase.cdiEnabled
-		testCase.clusterPolicy.Definition.ObjectMeta.ResourceVersion = "999"
+		testCase.clusterPolicy.Definition.ResourceVersion = "999"
 		_, err := testCase.clusterPolicy.Update(false)
 		assert.Equal(t, testCase.expectedError, err)
 
