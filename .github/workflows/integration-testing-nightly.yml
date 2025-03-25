@@ -28,9 +28,6 @@ jobs:
       - name: Setup cluster (k8s)
         uses: palmsoftware/quick-k8s@v0.0.24
 
-      - name: Wait for pods to be ready
-        run: ./scripts/wait-for-pods.sh
-
       - name: Run integration tests
         uses: nick-fields/retry@v3
         with:
