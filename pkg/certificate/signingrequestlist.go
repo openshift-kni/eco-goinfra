@@ -47,7 +47,7 @@ func ListSigningRequests(
 	glog.V(100).Info(logMessage)
 
 	csrList := new(certificatesv1.CertificateSigningRequestList)
-	err = apiClient.Client.List(context.TODO(), csrList, &passedOptions)
+	err = apiClient.List(context.TODO(), csrList, &passedOptions)
 
 	if err != nil {
 		glog.V(100).Infof("Failed to list CertificateSigningRequests: %v", err)

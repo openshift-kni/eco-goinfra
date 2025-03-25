@@ -287,7 +287,7 @@ func TestNFDUpdate(t *testing.T) {
 		assert.Empty(t, testCase.nfd.Definition.Spec.LabelWhiteList)
 		assert.Nil(t, nil, testCase.nfd.Object)
 		testCase.nfd.Definition.Spec.LabelWhiteList = testCase.labelList
-		testCase.nfd.Definition.ObjectMeta.ResourceVersion = "999"
+		testCase.nfd.Definition.ResourceVersion = "999"
 		_, err := testCase.nfd.Update(false)
 		assert.Equal(t, testCase.expectedError, err)
 

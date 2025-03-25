@@ -259,7 +259,7 @@ func TestBFDProfileUpdate(t *testing.T) {
 		assert.Nil(t, testCase.testBFDProfile.Definition.Spec.EchoMode)
 		assert.Nil(t, nil, testCase.testBFDProfile.Object)
 		testCase.testBFDProfile.WithEchoMode(true)
-		testCase.testBFDProfile.Definition.ObjectMeta.ResourceVersion = "999"
+		testCase.testBFDProfile.Definition.ResourceVersion = "999"
 		_, err := testCase.testBFDProfile.Update(false)
 		assert.Equal(t, testCase.expectedError, err)
 

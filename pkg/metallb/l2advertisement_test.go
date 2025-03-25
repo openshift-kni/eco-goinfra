@@ -265,7 +265,7 @@ func TestL2AdvertisementUpdate(t *testing.T) {
 		assert.Nil(t, testCase.testL2Advertisement.Definition.Spec.IPAddressPools)
 		assert.Nil(t, nil, testCase.testL2Advertisement.Object)
 		testCase.testL2Advertisement.WithIPAddressPools(testCase.addressPool)
-		testCase.testL2Advertisement.Definition.ObjectMeta.ResourceVersion = "999"
+		testCase.testL2Advertisement.Definition.ResourceVersion = "999"
 		_, err := testCase.testL2Advertisement.Update(false)
 		assert.Equal(t, testCase.expectedError, err)
 

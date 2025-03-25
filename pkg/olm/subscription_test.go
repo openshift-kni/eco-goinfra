@@ -301,7 +301,7 @@ func TestSubscriptionUpdate(t *testing.T) {
 		assert.Empty(t, testCase.subscription.Definition.Spec.StartingCSV)
 		assert.Nil(t, nil, testCase.subscription.Object)
 		testCase.subscription.Definition.Spec.StartingCSV = testCase.startingCSV
-		testCase.subscription.Definition.ObjectMeta.ResourceVersion = "999"
+		testCase.subscription.Definition.ResourceVersion = "999"
 		_, err := testCase.subscription.Update()
 		assert.Equal(t, testCase.expectedError, err)
 

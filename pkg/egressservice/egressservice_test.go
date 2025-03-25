@@ -330,8 +330,8 @@ func TestGet(t *testing.T) {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 			assert.Empty(t, testEgressService)
 		} else {
-			assert.Equal(t, testCase.name, testEgressService.ObjectMeta.Name)
-			assert.Equal(t, testCase.nsname, testEgressService.ObjectMeta.Namespace)
+			assert.Equal(t, testCase.name, testEgressService.Name)
+			assert.Equal(t, testCase.nsname, testEgressService.Namespace)
 			assert.Equal(t, testCase.sourceIPBy, string(testEgressService.Spec.SourceIPBy))
 		}
 	}

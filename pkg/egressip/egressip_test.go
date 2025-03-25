@@ -339,7 +339,7 @@ func TestEgressIPGet(t *testing.T) {
 			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 			assert.Empty(t, testEgressIP)
 		} else {
-			assert.Equal(t, defaultEgressIPName, testEgressIP.ObjectMeta.Name)
+			assert.Equal(t, defaultEgressIPName, testEgressIP.Name)
 		}
 	}
 }

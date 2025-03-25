@@ -274,7 +274,7 @@ func TestSCCUpdate(t *testing.T) {
 		assert.Empty(t, testCase.scc.Definition.Users)
 		assert.Nil(t, nil, testCase.scc.Object)
 		testCase.scc.Definition.Users = testCase.users
-		testCase.scc.Definition.ObjectMeta.ResourceVersion = "999"
+		testCase.scc.Definition.ResourceVersion = "999"
 		_, err := testCase.scc.Update()
 		assert.Equal(t, testCase.expectedError, err)
 

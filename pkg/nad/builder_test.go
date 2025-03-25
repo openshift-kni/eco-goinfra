@@ -304,7 +304,7 @@ func TestNADUpdate(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Nil(t, nil, testCase.testNetwork.Object)
 		testCase.testNetwork.WithMasterPlugin(masterPlugin)
-		testCase.testNetwork.Definition.ObjectMeta.ResourceVersion = "999"
+		testCase.testNetwork.Definition.ResourceVersion = "999"
 		netBuilder, err := testCase.testNetwork.Update()
 		assert.Equal(t, testCase.expectedError, err)
 

@@ -306,7 +306,7 @@ func TestCatalogSourceUpdate(t *testing.T) {
 		assert.Empty(t, testCase.catalogSource.Definition.Spec.Address)
 		assert.Nil(t, nil, testCase.catalogSource.Object)
 		testCase.catalogSource.Definition.Spec.Address = testCase.address
-		testCase.catalogSource.Definition.ObjectMeta.ResourceVersion = "999"
+		testCase.catalogSource.Definition.ResourceVersion = "999"
 		_, err := testCase.catalogSource.Update(false)
 		assert.Equal(t, testCase.expectedError, err)
 

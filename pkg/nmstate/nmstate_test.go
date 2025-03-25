@@ -263,7 +263,7 @@ func TestNMStateUpdate(t *testing.T) {
 		assert.Empty(t, testCase.testNMState.Definition.Spec.NodeSelector)
 		assert.Nil(t, nil, testCase.testNMState.Object)
 		testCase.testNMState.Definition.Spec.NodeSelector = map[string]string{"test": "test"}
-		testCase.testNMState.Definition.ObjectMeta.ResourceVersion = "999"
+		testCase.testNMState.Definition.ResourceVersion = "999"
 		nmStateBuilder, err := testCase.testNMState.Update(testCase.forceFlag)
 		assert.Equal(t, testCase.expectedError, err)
 

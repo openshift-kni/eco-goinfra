@@ -694,7 +694,7 @@ func TestUpdate(t *testing.T) {
 		assert.Equal(t, "", testCase.testNetwork.Definition.Spec.IPAM)
 		assert.Nil(t, nil, testCase.testNetwork.Object)
 		testCase.testNetwork.WithStaticIpam()
-		testCase.testNetwork.Definition.ObjectMeta.ResourceVersion = "999"
+		testCase.testNetwork.Definition.ResourceVersion = "999"
 		netBuilder, err := testCase.testNetwork.Update(false)
 		assert.Equal(t, testCase.expectedError, err)
 		assert.Equal(t, `{ "type": "static" }`, testCase.testNetwork.Object.Spec.IPAM)

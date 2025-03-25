@@ -361,7 +361,7 @@ func TestOperatorConfigUpdate(t *testing.T) {
 			testCase.webhook = true
 		}
 
-		operatorConfigBuilder.Definition.ObjectMeta.ResourceVersion = "999"
+		operatorConfigBuilder.Definition.ResourceVersion = "999"
 		operatorConfigBuilder, err = operatorConfigBuilder.WithOperatorWebhook(testCase.webhook).Update()
 		assert.Equal(t, nil, err)
 		assert.Equal(t, testCase.webhook, testCase.testOperatorConfig.Object.Spec.EnableOperatorWebhook)

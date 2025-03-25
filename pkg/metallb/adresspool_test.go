@@ -265,7 +265,7 @@ func TestIPAddressPoolUpdate(t *testing.T) {
 		assert.Nil(t, testCase.testIPAddressPool.Definition.Spec.AutoAssign)
 		assert.Nil(t, nil, testCase.testIPAddressPool.Object)
 		testCase.testIPAddressPool.WithAutoAssign(true)
-		testCase.testIPAddressPool.Definition.ObjectMeta.ResourceVersion = "999"
+		testCase.testIPAddressPool.Definition.ResourceVersion = "999"
 		_, err := testCase.testIPAddressPool.Update(false)
 		assert.Equal(t, testCase.expectedError, err)
 

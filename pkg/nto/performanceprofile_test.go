@@ -648,7 +648,7 @@ func TestPerformanceProfileWithAnnotations(t *testing.T) {
 			assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
 		} else {
 			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testAnnotations, result.Definition.ObjectMeta.Annotations)
+			assert.Equal(t, testCase.testAnnotations, result.Definition.Annotations)
 		}
 	}
 }

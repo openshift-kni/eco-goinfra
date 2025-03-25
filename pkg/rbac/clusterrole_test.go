@@ -258,7 +258,7 @@ func TestClusterRoleUpdate(t *testing.T) {
 		assert.Empty(t, testCase.testClusterRole.Definition.Labels)
 		assert.Nil(t, nil, testCase.testClusterRole.Object)
 		testCase.testClusterRole.Definition.Labels = map[string]string{"test": "test"}
-		testCase.testClusterRole.Definition.ObjectMeta.ResourceVersion = "999"
+		testCase.testClusterRole.Definition.ResourceVersion = "999"
 		roleBuilder, err := testCase.testClusterRole.Update()
 		assert.Equal(t, testCase.expectedError, err)
 

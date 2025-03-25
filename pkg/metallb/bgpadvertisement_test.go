@@ -258,7 +258,7 @@ func TestBGPAdvertisementUpdate(t *testing.T) {
 		assert.Nil(t, testCase.testBGPAdvertisement.Definition.Spec.IPAddressPools)
 		assert.Nil(t, nil, testCase.testBGPAdvertisement.Object)
 		testCase.testBGPAdvertisement.WithIPAddressPools(testCase.ipAddressPool)
-		testCase.testBGPAdvertisement.Definition.ObjectMeta.ResourceVersion = "999"
+		testCase.testBGPAdvertisement.Definition.ResourceVersion = "999"
 		_, err := testCase.testBGPAdvertisement.Update(false)
 		assert.Equal(t, testCase.expectedError, err)
 

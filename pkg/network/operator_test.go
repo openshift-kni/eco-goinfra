@@ -175,7 +175,7 @@ func TestOperatorWaitUntilInCondition(t *testing.T) {
 			networkOperator := buildDummyNetworkOperator()
 
 			if testCase.inCondition {
-				networkOperator.Status.OperatorStatus.Conditions = []operatorv1.OperatorCondition{{
+				networkOperator.Status.Conditions = []operatorv1.OperatorCondition{{
 					Type:   operatorv1.OperatorStatusTypeAvailable,
 					Status: operatorv1.ConditionTrue,
 				}}

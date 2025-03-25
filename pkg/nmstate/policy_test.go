@@ -211,7 +211,7 @@ func TestPolicyUpdate(t *testing.T) {
 		testCase.testNMStatePolicy.Definition.Spec.NodeSelector = map[string]string{"test2": "test2"}
 
 		if !testCase.forceFlag {
-			testCase.testNMStatePolicy.Definition.ObjectMeta.ResourceVersion = "999"
+			testCase.testNMStatePolicy.Definition.ResourceVersion = "999"
 		}
 
 		nmStatePolicyBuilder, err := testCase.testNMStatePolicy.Update(testCase.forceFlag)

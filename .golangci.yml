@@ -1,95 +1,12 @@
+version: "2"
 run:
   go: "1.24"
-  timeout: 15m0s
-  fast: false
-#  modules-download-mode: readonly
-
-linters-settings:
-  depguard:
-    rules:
-      main:
-        allow:
-          - "k8s.io/apimachinery"
-          - "k8s.io/api"
-          - "k8s.io/kubectl/pkg/drain"
-          - "k8s.io/kubelet"
-          - "k8s.io/utils"
-          - "k8s.io/client-go"
-          - "github.com/Masterminds/semver/v3"
-          - "github.com/onsi/ginkgo"
-          - "github.com/openshift"
-          - "github.com/nmstate/kubernetes-nmstate"
-          - "github.com/k8snetworkplumbingwg"
-          - "github.com/metallb/metallb-operator"
-          - "github.com/metal3-io/baremetal-operator"
-          - "github.com/operator-framework/operator-lifecycle-manager"
-          - "github.com/ovn-org/ovn-kubernetes/go-controller/pkg/crd/egressservice/v1"
-          - "github.com/ovn-org/ovn-kubernetes/go-controller/pkg/crd/egressip/v1"
-          - "github.com/grafana-operator/grafana-operator"
-          - "github.com/kedacore/keda-olm-operator/apis/keda/v1alpha1"
-          - "github.com/kube-object-storage/lib-bucket-provisioner/pkg/apis/objectbucket.io/v1alpha1"
-          - "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
-          - "github.com/grafana/loki/operator/apis/loki/v1"
-          - "github.com/NVIDIA/gpu-operator/"
-          - "github.com/operator-framework/api"
-          - "github.com/argoproj-labs/argocd-operator/api"
-          - "github.com/golang/glog"
-          - "github.com/rh-ecosystem-edge/kernel-module-management/"
-          - "maistra.io/api/"
-          - "open-cluster-management.io/governance-policy-propagator/api"
-          - "open-cluster-management.io/governance-policy-propagator/api/v1beta1"
-          - "open-cluster-management.io/multicloud-operators-subscription/pkg/apis/apps/placementrule/v1"
-          - "open-cluster-management.io/api"
-          - "github.com/stolostron/klusterlet-addon-controller/pkg/apis"
-          - "sigs.k8s.io/controller-runtime"
-          - "github.com/stretchr/testify"
-          - $gostd
-          - "github.com/stretchr/testify"
-          - "github.com/vmware-tanzu/velero"
-          - "github.com/kelseyhightower/envconfig"
-          - "github.com/red-hat-storage/ocs-operator"
-          - "github.com/red-hat-storage/odf-operator"
-          - "github.com/stmcginnis/gofish"
-          - "github.com/prometheus-operator/prometheus-operator"
-          - "github.com/google/uuid"
-  govet:
-    disable:
-      - printf
-  revive:
-    rules:
-      - name: indent-error-flow
-      - name: var-naming
-      - name: increment-decrement
-      - name: exported
-        arguments:
-          - disableStutteringCheck
-  wsl:
-    strict-append: false
-  gofmt:
-    simplify: true
-  funlen:
-    lines: 90
-    statements: 40
-  unused:
-    check-exported: true
-  staticcheck:
-    # https://staticcheck.io/docs/options#checks
-    checks:
-      - all
-      - "-SA1006"
-  stylecheck:
-    # https://staticcheck.io/docs/options#checks
-    checks:
-      - all
-      - ST1001
-
 linters:
   enable:
     - asciicheck
     - bidichk
     - depguard
     - durationcheck
-    - errcheck
     - errname
     - errorlint
     - exhaustive
@@ -102,52 +19,130 @@ linters:
     - gocyclo
     - godot
     - godox
-    - gofmt
     - goheader
-    - goimports
     - gomodguard
     - goprintffuncname
-    - gosimple
-    - govet
     - importas
-    - ineffassign
     - ireturn
     - lll
     - makezero
     - misspell
     - nakedret
     - nilnil
+    - nlreturn
     - nolintlint
     - predeclared
     - promlinter
     - revive
     - staticcheck
-    - stylecheck
     - thelper
-    - typecheck
     - unconvert
     - unparam
-    - unused
     - usetesting
     - varnamelen
     - wsl
-    - nlreturn
-
-output:
-  formats: colored-line-number
-issues:
-  exclude-dirs-use-default: true
-  exclude-dirs:
-    - pkg/schemes
-  include:
-    - EXC0002 # disable excluding of issues about comments from golint
-    - EXC0012  # EXC0012 revive: Annoying issue about not having a comment. The rare codebase has such comments
-    - EXC0014  # EXC0014 revive: Annoying issue about not having a comment. The rare codebase has such comments
-  exclude-rules:
-    #- # Exclude some linters from running on tests files.
-    - path: 'pkg/polarion'
-      linters:
-        - exhaustive
-
-
-
+  settings:
+    depguard:
+      rules:
+        main:
+          allow:
+            - k8s.io/apimachinery
+            - k8s.io/api
+            - k8s.io/kubectl/pkg/drain
+            - k8s.io/kubelet
+            - k8s.io/utils
+            - k8s.io/client-go
+            - github.com/Masterminds/semver/v3
+            - github.com/onsi/ginkgo
+            - github.com/openshift
+            - github.com/nmstate/kubernetes-nmstate
+            - github.com/k8snetworkplumbingwg
+            - github.com/metallb/metallb-operator
+            - github.com/metal3-io/baremetal-operator
+            - github.com/operator-framework/operator-lifecycle-manager
+            - github.com/ovn-org/ovn-kubernetes/go-controller/pkg/crd/egressservice/v1
+            - github.com/ovn-org/ovn-kubernetes/go-controller/pkg/crd/egressip/v1
+            - github.com/grafana-operator/grafana-operator
+            - github.com/kedacore/keda-olm-operator/apis/keda/v1alpha1
+            - github.com/kube-object-storage/lib-bucket-provisioner/pkg/apis/objectbucket.io/v1alpha1
+            - github.com/kedacore/keda/v2/apis/keda/v1alpha1
+            - github.com/grafana/loki/operator/apis/loki/v1
+            - github.com/NVIDIA/gpu-operator/
+            - github.com/operator-framework/api
+            - github.com/argoproj-labs/argocd-operator/api
+            - github.com/golang/glog
+            - github.com/rh-ecosystem-edge/kernel-module-management/
+            - maistra.io/api/
+            - open-cluster-management.io/governance-policy-propagator/api
+            - open-cluster-management.io/governance-policy-propagator/api/v1beta1
+            - open-cluster-management.io/multicloud-operators-subscription/pkg/apis/apps/placementrule/v1
+            - open-cluster-management.io/api
+            - github.com/stolostron/klusterlet-addon-controller/pkg/apis
+            - sigs.k8s.io/controller-runtime
+            - github.com/stretchr/testify
+            - $gostd
+            - github.com/stretchr/testify
+            - github.com/vmware-tanzu/velero
+            - github.com/kelseyhightower/envconfig
+            - github.com/red-hat-storage/ocs-operator
+            - github.com/red-hat-storage/odf-operator
+            - github.com/stmcginnis/gofish
+            - github.com/prometheus-operator/prometheus-operator
+            - github.com/google/uuid
+            - gopkg.in/yaml.v2
+            - gopkg.in/yaml.v3
+            - golang.org/x/crypto/ssh
+            - golang.org/x/exp/slices
+            - gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/types
+            - golang.org/x/net/context
+    funlen:
+      lines: 90
+      statements: 40
+    govet:
+      disable:
+        - printf
+    revive:
+      rules:
+        - name: indent-error-flow
+        - name: var-naming
+        - name: increment-decrement
+        - name: exported
+          arguments:
+            - disableStutteringCheck
+    staticcheck:
+      checks:
+        - all
+        - -SA1006
+        - -ST1000
+        - ST1001
+    wsl:
+      strict-append: false
+  exclusions:
+    generated: lax
+    presets:
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - exhaustive
+        path: pkg/polarion
+    paths:
+      - pkg/schemes
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    gofmt:
+      simplify: true
+  exclusions:
+    generated: lax
+    paths:
+      - pkg/schemes
+      - third_party$
+      - builtin$
+      - examples$
