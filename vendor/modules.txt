@@ -451,7 +451,7 @@ github.com/mxk/go-flowrate/flowrate
 github.com/nmstate/kubernetes-nmstate/api/names
 github.com/nmstate/kubernetes-nmstate/api/shared
 github.com/nmstate/kubernetes-nmstate/api/v1
-github.com/nmstate/kubernetes-nmstate/api/v1alpha1
+github.com/nmstate/kubernetes-nmstate/api/v1beta1
 # github.com/oklog/ulid v1.3.1
 ## explicit
 github.com/oklog/ulid
