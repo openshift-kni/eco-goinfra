@@ -1,4 +1,4 @@
-package v1alpha1
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -6,10 +6,10 @@ import (
 	"github.com/nmstate/kubernetes-nmstate/api/shared"
 )
 
-// +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:path=nodenetworkstates,shortName=nns,scope=Cluster
-// +kubebuilder:deprecatedversion
+// +kubebuilder:storageversion
+// +kubebuilder:object:root=true
 
 // NodeNetworkState is the Schema for the nodenetworkstates API
 type NodeNetworkState struct {
