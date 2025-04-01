@@ -91,6 +91,39 @@ func TestNewBPGPeerBuilder(t *testing.T) {
 	}
 }
 
+func TestBGPPeerWithDynamicASN(t *testing.T) {
+	testCases := []struct {
+		testBGPPeer   *BGPPeerBuilder
+		dynamicASN    string
+		expectedError string
+	}{
+		{
+			testBGPPeer:   buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
+			dynamicASN:    "internal",
+			expectedError: "",
+		},
+		{
+			testBGPPeer:   buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
+			dynamicASN:    "external",
+			expectedError: "",
+		},
+		{
+			testBGPPeer:   buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
+			dynamicASN:    "ebgp",
+			expectedError: "bgpPeer 'dynamicASN' must be either internal or external",
+		},
+	}
+
+	for _, testCase := range testCases {
+		bgpPeerBuilder := testCase.testBGPPeer.WithDynamicASN(mlbtypes.DynamicASNMode(testCase.dynamicASN))
+		assert.Equal(t, testCase.expectedError, bgpPeerBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, mlbtypes.DynamicASNMode(testCase.dynamicASN), bgpPeerBuilder.Definition.Spec.DynamicASN)
+		}
+	}
+}
+
 func TestBGPPeerWithRouterID(t *testing.T) {
 	testCases := []struct {
 		testBGPPeer   *BGPPeerBuilder
