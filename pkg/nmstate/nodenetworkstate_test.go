@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/nmstate/kubernetes-nmstate/api/shared"
-	nmstateV1alpha1 "github.com/nmstate/kubernetes-nmstate/api/v1alpha1"
+	nmstateV1beta1 "github.com/nmstate/kubernetes-nmstate/api/v1beta1"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
@@ -14,16 +14,16 @@ import (
 )
 
 var (
-	nmstateV1alpha1TestSchemes = []clients.SchemeAttacher{
-		nmstateV1alpha1.AddToScheme,
+	nmstateV1beta1TestSchemes = []clients.SchemeAttacher{
+		nmstateV1beta1.AddToScheme,
 	}
 	sriovExistingInterface = "ensf0"
 	vfNumber               = 10
 )
 
 func TestPullNodeNetworkState(t *testing.T) {
-	generateNodeNetState := func(name string) *nmstateV1alpha1.NodeNetworkState {
-		return &nmstateV1alpha1.NodeNetworkState{
+	generateNodeNetState := func(name string) *nmstateV1beta1.NodeNetworkState {
+		return &nmstateV1beta1.NodeNetworkState{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
 			},
@@ -82,7 +82,7 @@ func TestPullNodeNetworkState(t *testing.T) {
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
 				K8sMockObjects:  runtimeObjects,
-				SchemeAttachers: nmstateV1alpha1TestSchemes,
+				SchemeAttachers: nmstateV1beta1TestSchemes,
 			})
 		}
 
@@ -276,12 +276,12 @@ func buildValidNodeNetworkStateTestBuilder(apiClient *clients.Settings) *StateBu
 func buildTestClientWithDummyNodeNetworkStateObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
 		K8sMockObjects:  buildDummyNodeNetworkStateObject(),
-		SchemeAttachers: nmstateV1alpha1TestSchemes,
+		SchemeAttachers: nmstateV1beta1TestSchemes,
 	})
 }
 
 func buildDummyNodeNetworkStateObject() []runtime.Object {
-	return append([]runtime.Object{}, &nmstateV1alpha1.NodeNetworkState{
+	return append([]runtime.Object{}, &nmstateV1beta1.NodeNetworkState{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: defaultNMStateName,
 		},
@@ -309,7 +309,7 @@ func newNodeNetworkStateBuilder(apiClient *clients.Settings, name string) *State
 		},
 	}
 	byteDesiredState, _ := yaml.Marshal(desiredState)
-	err := apiClient.AttachScheme(nmstateV1alpha1.AddToScheme)
+	err := apiClient.AttachScheme(nmstateV1beta1.AddToScheme)
 
 	if err != nil {
 		return nil
@@ -317,7 +317,7 @@ func newNodeNetworkStateBuilder(apiClient *clients.Settings, name string) *State
 
 	builder := StateBuilder{
 		apiClient: apiClient.Client,
-		Object: &nmstateV1alpha1.NodeNetworkState{
+		Object: &nmstateV1beta1.NodeNetworkState{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
 			},
