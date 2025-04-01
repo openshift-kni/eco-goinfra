@@ -655,6 +655,67 @@ func TestDelete(t *testing.T) {
 	}
 }
 
+func TestDeleteGraceful(t *testing.T) {
+	generateTestDeployment := func() *appsv1.Deployment {
+		return &appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-name",
+				Namespace: "test-namespace",
+			},
+			Status: appsv1.DeploymentStatus{
+				Replicas:      1,
+				ReadyReplicas: 1,
+			},
+		}
+	}
+
+	testCases := []struct {
+		gracefulPeriod    int64
+		gracefulPeriodNil bool
+		expectedError     string
+	}{
+		{
+			gracefulPeriod:    int64(0),
+			gracefulPeriodNil: true,
+			expectedError:     "gracePeriod cannot be nil",
+		},
+		{
+			gracefulPeriod:    int64(-7),
+			gracefulPeriodNil: false,
+			expectedError:     "gracePeriod must be non-negative integer",
+		},
+		{
+			gracefulPeriod:    int64(15),
+			gracefulPeriodNil: false,
+			expectedError:     "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		var (
+			runtimeObjects []runtime.Object
+			gracefulPeriod *int64
+		)
+
+		runtimeObjects = append(runtimeObjects, generateTestDeployment())
+
+		testBuilder := buildTestBuilderWithFakeObjects(runtimeObjects)
+
+		if !testCase.gracefulPeriodNil {
+			gracefulPeriod = &testCase.gracefulPeriod
+		}
+
+		err := testBuilder.DeleteGraceful(gracefulPeriod)
+
+		if testCase.expectedError != "" {
+			assert.NotNil(t, err)
+			assert.Equal(t, testCase.expectedError, err.Error())
+		} else {
+			assert.Nil(t, err)
+		}
+	}
+}
+
 func TestCreateAndWaitUntilReady(t *testing.T) {
 	generateTestDeployment := func() *appsv1.Deployment {
 		return &appsv1.Deployment{
