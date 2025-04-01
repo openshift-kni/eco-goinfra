@@ -675,6 +675,9 @@ github.com/openshift/machine-config-operator/pkg/generated/informers/externalver
 github.com/openshift/machine-config-operator/pkg/generated/informers/externalversions/machineconfiguration.openshift.io/v1
 github.com/openshift/machine-config-operator/pkg/generated/listers/machineconfiguration.openshift.io/v1
 github.com/openshift/machine-config-operator/pkg/version
+# github.com/openshift/node-feature-discovery/api/nfd v0.0.0-20250103121957-354b94ed3e55
+## explicit; go 1.22.0
+github.com/openshift/node-feature-discovery/api/nfd/v1alpha1
 # github.com/ovn-org/ovn-kubernetes/go-controller v0.0.0-20250122211335-e07ba60f758a
 ## explicit; go 1.22.0
 github.com/ovn-org/ovn-kubernetes/go-controller/pkg/crd/egressip/v1
