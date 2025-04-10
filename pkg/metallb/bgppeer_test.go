@@ -86,6 +86,55 @@ func TestNewBPGPeerBuilder(t *testing.T) {
 	}
 }
 
+func TestNewBGPPeerBuilder(t *testing.T) {
+	generateBPGPeer := NewBGPPeerBuilder
+
+	testCases := []struct {
+		name          string
+		namespace     string
+		asn           uint32
+		remoteAsn     uint32
+		expectedError string
+	}{
+		{
+			name:          "bgppeer",
+			namespace:     "test-namespace",
+			asn:           5001,
+			remoteAsn:     5002,
+			expectedError: "",
+		},
+		{
+			name:          "",
+			namespace:     "test-namespace",
+			asn:           5001,
+			remoteAsn:     5002,
+			expectedError: "BGPPeer 'name' cannot be empty",
+		},
+		{
+			name:          "bgppeer",
+			namespace:     "",
+			asn:           5001,
+			remoteAsn:     5002,
+			expectedError: "BGPPeer 'nsname' cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			SchemeAttachers: testSchemes,
+		})
+		testBGPPeerBuilder := generateBPGPeer(
+			testSettings, testCase.name, testCase.namespace, testCase.asn, testCase.remoteAsn)
+		assert.Equal(t, testCase.expectedError, testBGPPeerBuilder.errorMsg)
+		assert.NotNil(t, testBGPPeerBuilder.Definition)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, testCase.name, testBGPPeerBuilder.Definition.Name)
+			assert.Equal(t, testCase.namespace, testBGPPeerBuilder.Definition.Namespace)
+		}
+	}
+}
+
 func TestBGPPeerWithDynamicASN(t *testing.T) {
 	testCases := []struct {
 		testBGPPeer   *BGPPeerBuilder
@@ -119,6 +168,65 @@ func TestBGPPeerWithDynamicASN(t *testing.T) {
 	}
 }
 
+func TestBGPPeerWithBGPPeerIP(t *testing.T) {
+	testCases := []struct {
+		testBGPPeer   *BGPPeerBuilder
+		peerIP        string
+		expectedError string
+	}{
+		{
+			testBGPPeer: buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
+			peerIP:      "172.16.100.1",
+		},
+		{
+			testBGPPeer:   buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
+			peerIP:        "test",
+			expectedError: "BGPPeer 'bgpPeerIP' of the BGPPeer contains invalid ip address",
+		},
+		{
+			testBGPPeer:   buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
+			peerIP:        "",
+			expectedError: "BGPPeer 'bgpPeerIP' of the BGPPeer contains invalid ip address",
+		},
+	}
+
+	for _, testCase := range testCases {
+		bgpPeerBuilder := testCase.testBGPPeer.WithBGPPeerIP(testCase.peerIP)
+		assert.Equal(t, testCase.expectedError, bgpPeerBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, testCase.peerIP, bgpPeerBuilder.Definition.Spec.Address)
+		}
+	}
+}
+
+func TestBGPPeerWithIPUnnumbered(t *testing.T) {
+	testCases := []struct {
+		testBGPPeer   *BGPPeerBuilder
+		interfaceName string
+		expectedError string
+	}{
+		{
+			testBGPPeer:   buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
+			interfaceName: "net1",
+		},
+		{
+			testBGPPeer:   buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
+			interfaceName: "",
+			expectedError: "interface can not be empty string",
+		},
+	}
+
+	for _, testCase := range testCases {
+		bgpPeerBuilder := testCase.testBGPPeer.WithIPUnnumbered(testCase.interfaceName)
+		assert.Equal(t, testCase.expectedError, bgpPeerBuilder.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.Equal(t, testCase.interfaceName, bgpPeerBuilder.Definition.Spec.Interface)
+		}
+	}
+}
+
 func TestBGPPeerWithRouterID(t *testing.T) {
 	testCases := []struct {
 		testBGPPeer   *BGPPeerBuilder
@@ -131,18 +239,13 @@ func TestBGPPeerWithRouterID(t *testing.T) {
 		},
 		{
 			testBGPPeer:   buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
-			routerID:      "test",
-			expectedError: "the routerID of the BGPPeer contains invalid ip address test",
-		},
-		{
-			testBGPPeer:   buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
 			routerID:      "",
 			expectedError: "the routerID of the BGPPeer contains invalid ip address ",
 		},
 		{
-			testBGPPeer:   buildInValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
-			routerID:      "1.1.1.1",
-			expectedError: "BGPPeer 'peerIP' of the BGPPeer contains invalid ip address",
+			testBGPPeer:   buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
+			routerID:      "1.1.1.300",
+			expectedError: "the routerID of the BGPPeer contains invalid ip address 1.1.1.300",
 		},
 	}
 
@@ -159,31 +262,26 @@ func TestBGPPeerWithRouterID(t *testing.T) {
 func TestBGPPeerWithBFDProfile(t *testing.T) {
 	testCases := []struct {
 		testBGPPeer   *BGPPeerBuilder
-		bdfProfile    string
+		bfdProfile    string
 		expectedError string
 	}{
 		{
 			testBGPPeer: buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
-			bdfProfile:  "testprofile",
+			bfdProfile:  "testprofile",
 		},
 		{
 			testBGPPeer:   buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
-			bdfProfile:    "",
+			bfdProfile:    "",
 			expectedError: "The bfdProfile is empty string",
-		},
-		{
-			testBGPPeer:   buildInValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
-			bdfProfile:    "",
-			expectedError: "BGPPeer 'peerIP' of the BGPPeer contains invalid ip address",
 		},
 	}
 
 	for _, testCase := range testCases {
-		bgpPeerBuilder := testCase.testBGPPeer.WithBFDProfile(testCase.bdfProfile)
+		bgpPeerBuilder := testCase.testBGPPeer.WithBFDProfile(testCase.bfdProfile)
 		assert.Equal(t, testCase.expectedError, bgpPeerBuilder.errorMsg)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testCase.bdfProfile, bgpPeerBuilder.Definition.Spec.BFDProfile)
+			assert.Equal(t, testCase.bfdProfile, bgpPeerBuilder.Definition.Spec.BFDProfile)
 		}
 	}
 }
@@ -205,13 +303,8 @@ func TestBGPPeerWithSRCAddress(t *testing.T) {
 		},
 		{
 			testBGPPeer:   buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
-			srcAddress:    "abc",
-			expectedError: "the srcAddress of the BGPPeer contains invalid ip address abc",
-		},
-		{
-			testBGPPeer:   buildInValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
-			srcAddress:    "1.1.1.1",
-			expectedError: "BGPPeer 'peerIP' of the BGPPeer contains invalid ip address",
+			srcAddress:    "172.16.100.300",
+			expectedError: "the srcAddress of the BGPPeer contains invalid ip address 172.16.100.300",
 		},
 	}
 
@@ -234,11 +327,6 @@ func TestBGPPeerWithPort(t *testing.T) {
 		{
 			testBGPPeer: buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
 			port:        10,
-		},
-		{
-			testBGPPeer:   buildInValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
-			port:          0,
-			expectedError: "BGPPeer 'peerIP' of the BGPPeer contains invalid ip address",
 		},
 	}
 
@@ -264,13 +352,6 @@ func TestBGPPeerWithHoldTime(t *testing.T) {
 				Duration: 5 * time.Minute,
 			},
 		},
-		{
-			testBGPPeer: buildInValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
-			holdTime: metav1.Duration{
-				Duration: 5 * time.Minute,
-			},
-			expectedError: "BGPPeer 'peerIP' of the BGPPeer contains invalid ip address",
-		},
 	}
 
 	for _, testCase := range testCases {
@@ -294,13 +375,6 @@ func TestBGPPeerWithKeepalive(t *testing.T) {
 			keepalive: metav1.Duration{
 				Duration: 5 * time.Minute,
 			},
-		},
-		{
-			testBGPPeer: buildInValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
-			keepalive: metav1.Duration{
-				Duration: 5 * time.Minute,
-			},
-			expectedError: "BGPPeer 'peerIP' of the BGPPeer contains invalid ip address",
 		},
 	}
 
@@ -364,11 +438,6 @@ func TestBGPPeerWithNodeSelector(t *testing.T) {
 			nodeSelector: map[string]string{"test": "test1"},
 		},
 		{
-			testBGPPeer:   buildInValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
-			nodeSelector:  map[string]string{"test": "test1"},
-			expectedError: "BGPPeer 'peerIP' of the BGPPeer contains invalid ip address",
-		},
-		{
 			testBGPPeer:   buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
 			nodeSelector:  map[string]string{},
 			expectedError: "BGPPeer 'nodeSelector' cannot be empty map",
@@ -395,11 +464,6 @@ func TestBGPPeerWithPassword(t *testing.T) {
 		{
 			testBGPPeer: buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
 			password:    "test",
-		},
-		{
-			testBGPPeer:   buildInValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
-			password:      "test",
-			expectedError: "BGPPeer 'peerIP' of the BGPPeer contains invalid ip address",
 		},
 		{
 			testBGPPeer:   buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
@@ -432,11 +496,6 @@ func TestBGPPeerWithEBGPMultiHop(t *testing.T) {
 			testBGPPeer:  buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
 			ebgpMultiHop: true,
 		},
-		{
-			testBGPPeer:   buildInValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
-			ebgpMultiHop:  true,
-			expectedError: "BGPPeer 'peerIP' of the BGPPeer contains invalid ip address",
-		},
 	}
 
 	for _, testCase := range testCases {
@@ -458,11 +517,6 @@ func TestBGPPeerWithGracefulRestart(t *testing.T) {
 		{
 			testBGPPeer:     buildValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
 			gracefulRestart: true,
-		},
-		{
-			testBGPPeer:     buildInValidBGPPeerBuilder(buildBGPPeerTestClientWithDummyObject()),
-			gracefulRestart: true,
-			expectedError:   "BGPPeer 'peerIP' of the BGPPeer contains invalid ip address",
 		},
 	}
 
@@ -500,11 +554,8 @@ func TestBGPPeerGVR(t *testing.T) {
 }
 
 func buildValidBGPPeerBuilder(apiClient *clients.Settings) *BGPPeerBuilder {
-	return NewBPGPeerBuilder(apiClient, defaultBGPPeerName, defaultBGPPeerNsName, "192.168.1.1", 1000, 2000)
-}
-
-func buildInValidBGPPeerBuilder(apiClient *clients.Settings) *BGPPeerBuilder {
-	return NewBPGPeerBuilder(apiClient, defaultBGPPeerName, defaultBGPPeerNsName, "", 1000, 2000)
+	return NewBGPPeerBuilder(apiClient, defaultBGPPeerName, defaultBGPPeerNsName, 1000, 2000).
+		WithBGPPeerIP("172.16.1.100")
 }
 
 func buildBGPPeerTestClientWithDummyObject() *clients.Settings {
