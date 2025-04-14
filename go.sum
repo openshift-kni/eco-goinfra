@@ -522,6 +522,8 @@ github.com/openshift/local-storage-operator v0.0.0-20241213132210-fa575fb5f229 h
 github.com/openshift/local-storage-operator v0.0.0-20241213132210-fa575fb5f229/go.mod h1:B9OFaryJwBscSvsD35mN4Ccz0khJePF8Hr/yEthFxwU=
 github.com/openshift/machine-config-operator v0.0.1-0.20231024085435-7e1fb719c1ba h1:WM6K+m2xMAwbQDetKGhV/Rd8yukF3AsU1z74cqoWrz0=
 github.com/openshift/machine-config-operator v0.0.1-0.20231024085435-7e1fb719c1ba/go.mod h1:mSt3ACow31pa1hTRONn+yT5e+KFkgi7G2bFEx5Nj+n0=
+github.com/openshift/node-feature-discovery/api/nfd v0.0.0-20250103121957-354b94ed3e55 h1:WEb5qycjzpGADIS3oMdr702qR9jh/mgquMz6ji5rE8I=
+github.com/openshift/node-feature-discovery/api/nfd v0.0.0-20250103121957-354b94ed3e55/go.mod h1:juZkfV/wKZg53G1YjG7O++JoTrrVnDrwUbHT5N1ab4g=
 github.com/openshift/sriov-network-operator v0.0.0-20250102160645-f496851fbd0d h1:iN1WEXQ+EV9qseYmR3eiZi/kJqJiD4qvCnyw3BY6BsM=
 github.com/openshift/sriov-network-operator v0.0.0-20250102160645-f496851fbd0d/go.mod h1:eazbsvR2U749MqlOPLCGXm4iBEcBGu6w1E4s06uzHX0=
 github.com/orisano/pixelmatch v0.0.0-20220722002657-fb0b55479cde/go.mod h1:nZgzbfBr3hhjoZnS66nKrHmduYNpc34ny7RK4z5/HM0=
