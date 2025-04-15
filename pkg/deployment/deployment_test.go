@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/openshift-kni/eco-goinfra/pkg/common"
 	"github.com/stretchr/testify/assert"
 	multus "gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/types"
 	appsv1 "k8s.io/api/apps/v1"
@@ -802,19 +803,19 @@ func TestValidate(t *testing.T) {
 			builderNil:    true,
 			definitionNil: false,
 			apiClientNil:  false,
-			expectedError: "error: received nil ClusterDeployment builder",
+			expectedError: "error: received nil builder",
 		},
 		{
 			builderNil:    false,
 			definitionNil: true,
 			apiClientNil:  false,
-			expectedError: "can not redefine the undefined ClusterDeployment",
+			expectedError: fmt.Sprintf("can not redefine the undefined %s", common.DeploymentType),
 		},
 		{
 			builderNil:    false,
 			definitionNil: false,
 			apiClientNil:  true,
-			expectedError: "ClusterDeployment builder cannot have nil apiClient",
+			expectedError: fmt.Sprintf("%s builder cannot have nil apiClient", common.DeploymentType),
 		},
 		{
 			builderNil:    false,
