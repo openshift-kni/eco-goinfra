@@ -10,7 +10,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	"github.com/openshift-kni/eco-goinfra/pkg/msg"
+	"github.com/openshift-kni/eco-goinfra/pkg/common"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -686,36 +686,37 @@ func GetGVR() schema.GroupVersionResource {
 	return schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
 }
 
-// validate will check that the builder and builder definition are properly initialized before
-// accessing any member fields.
-func (builder *Builder) validate() (bool, error) {
-	resourceCRD := "ClusterDeployment"
-
-	if builder == nil {
-		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
-
-		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
-	}
-
+// GetDefinition returns the deployment definition.
+func (builder *Builder) GetDefinition() interface{} {
 	if builder.Definition == nil {
-		glog.V(100).Infof("The %s is undefined", resourceCRD)
-
-		return false, fmt.Errorf("%s", msg.UndefinedCrdObjectErrString(resourceCRD))
+		return (*appsv1.Deployment)(nil) // Explicitly return a nil pointer of the correct type
 	}
 
+	return builder.Definition
+}
+
+// GetErrorMsg returns the error message.
+func (builder *Builder) GetErrorMsg() string {
+	return builder.errorMsg
+}
+
+// GetAPIClient returns the API client.
+func (builder *Builder) GetAPIClient() interface{} {
 	if builder.apiClient == nil {
-		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
-
-		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
+		return (*appsv1Typed.AppsV1Interface)(nil) // Explicitly return a nil pointer of the correct type
 	}
 
-	if builder.errorMsg != "" {
-		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
+	return builder.apiClient
+}
 
-		return false, fmt.Errorf("%s", builder.errorMsg)
-	}
+// GetResourceType returns the resource type of the deployment.
+func (builder *Builder) GetResourceType() string {
+	return common.DeploymentType
+}
 
-	return true, nil
+// Replace the validate() method with a call to common.ValidateBuilder.
+func (builder *Builder) validate() (bool, error) {
+	return common.ValidateBuilder(builder)
 }
 
 // WithToleration applies a toleration to the deployment's definition.
