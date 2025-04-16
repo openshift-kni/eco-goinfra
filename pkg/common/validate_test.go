@@ -4,16 +4,17 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	appsv1 "k8s.io/api/apps/v1"
 )
 
-type mockBuilder struct {
-	definitionFunc   func() interface{}
+type mockBuilder[T any] struct {
+	definitionFunc   func() *T
 	errorMsgFunc     func() string
 	apiClientFunc    func() interface{}
 	resourceTypeFunc func() string
 }
 
-func (b *mockBuilder) GetDefinition() interface{} {
+func (b *mockBuilder[T]) GetDefinition() *T {
 	if b.definitionFunc != nil {
 		return b.definitionFunc()
 	}
@@ -21,7 +22,7 @@ func (b *mockBuilder) GetDefinition() interface{} {
 	return nil
 }
 
-func (b *mockBuilder) GetErrorMsg() string {
+func (b *mockBuilder[T]) GetErrorMsg() string {
 	if b.errorMsgFunc != nil {
 		return b.errorMsgFunc()
 	}
@@ -29,7 +30,7 @@ func (b *mockBuilder) GetErrorMsg() string {
 	return ""
 }
 
-func (b *mockBuilder) GetAPIClient() interface{} {
+func (b *mockBuilder[T]) GetAPIClient() interface{} {
 	if b.apiClientFunc != nil {
 		return b.apiClientFunc()
 	}
@@ -37,7 +38,7 @@ func (b *mockBuilder) GetAPIClient() interface{} {
 	return nil
 }
 
-func (b *mockBuilder) GetResourceType() string {
+func (b *mockBuilder[T]) GetResourceType() string {
 	if b.resourceTypeFunc != nil {
 		return b.resourceTypeFunc()
 	}
@@ -47,7 +48,7 @@ func (b *mockBuilder) GetResourceType() string {
 
 func TestValidateBuilder(t *testing.T) {
 	testCases := []struct {
-		definitionReturnValue   interface{}
+		definitionReturnValue   *appsv1.Deployment
 		errorMsgReturnValue     string
 		apiClientReturnValue    interface{}
 		resourceTypeReturnValue string
@@ -63,7 +64,7 @@ func TestValidateBuilder(t *testing.T) {
 			expectedError:           "can not redefine the undefined testResource",
 		},
 		{
-			definitionReturnValue:   struct{}{}, // non-nil definition
+			definitionReturnValue:   &appsv1.Deployment{}, // non-nil definition
 			errorMsgReturnValue:     "",
 			apiClientReturnValue:    nil,
 			resourceTypeReturnValue: "testResource",
@@ -71,7 +72,7 @@ func TestValidateBuilder(t *testing.T) {
 			expectedError:           "testResource builder cannot have nil apiClient",
 		},
 		{
-			definitionReturnValue:   struct{}{}, // non-nil definition
+			definitionReturnValue:   &appsv1.Deployment{}, // non-nil definition
 			errorMsgReturnValue:     "some error message",
 			apiClientReturnValue:    struct{}{}, // non-nil apiClient
 			resourceTypeReturnValue: "testResource",
@@ -79,7 +80,7 @@ func TestValidateBuilder(t *testing.T) {
 			expectedError:           "some error message",
 		},
 		{ // Happy path case
-			definitionReturnValue:   struct{}{}, // non-nil definition
+			definitionReturnValue:   &appsv1.Deployment{}, // non-nil definition
 			errorMsgReturnValue:     "",
 			apiClientReturnValue:    struct{}{}, // non-nil apiClient
 			resourceTypeReturnValue: "testResource",
@@ -89,8 +90,8 @@ func TestValidateBuilder(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testBuilder := &mockBuilder{
-			definitionFunc:   func() interface{} { return testCase.definitionReturnValue },
+		testBuilder := &mockBuilder[appsv1.Deployment]{
+			definitionFunc:   func() *appsv1.Deployment { return testCase.definitionReturnValue },
 			errorMsgFunc:     func() string { return testCase.errorMsgReturnValue },
 			apiClientFunc:    func() interface{} { return testCase.apiClientReturnValue },
 			resourceTypeFunc: func() string { return testCase.resourceTypeReturnValue },
@@ -108,7 +109,7 @@ func TestValidateBuilder(t *testing.T) {
 	}
 
 	// One additional test case for nil builder
-	valid, err := ValidateBuilder(nil)
+	valid, err := ValidateBuilder[appsv1.Deployment](nil)
 	assert.False(t, valid)
 	assert.NotNil(t, err)
 	assert.Equal(t, "error: received nil builder", err.Error())
