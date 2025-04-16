@@ -8,16 +8,16 @@ import (
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 )
 
-// BuilderInterface is an interface that defining Builders.
-type BuilderInterface interface {
-	GetDefinition() interface{}
+// BuilderInterface is a generic interface defining Builders.
+type BuilderInterface[T any] interface {
+	GetDefinition() *T
 	GetErrorMsg() string
 	GetAPIClient() interface{}
 	GetResourceType() string
 }
 
 // ValidateBuilder checks if the builder is valid.
-func ValidateBuilder(builder BuilderInterface) (bool, error) {
+func ValidateBuilder[T any](builder BuilderInterface[T]) (bool, error) {
 	if builder == nil || reflect.ValueOf(builder).IsNil() {
 		glog.V(100).Info("The builder is uninitialized or nil")
 
@@ -27,7 +27,7 @@ func ValidateBuilder(builder BuilderInterface) (bool, error) {
 	resourceType := builder.GetResourceType()
 
 	definition := builder.GetDefinition()
-	if definition == nil || (reflect.ValueOf(definition).Kind() == reflect.Ptr && reflect.ValueOf(definition).IsNil()) {
+	if definition == nil {
 		glog.V(100).Infof("The %s is undefined or has a nil underlying value", resourceType)
 
 		return false, fmt.Errorf("%s", msg.UndefinedCrdObjectErrString(resourceType))

@@ -687,11 +687,7 @@ func GetGVR() schema.GroupVersionResource {
 }
 
 // GetDefinition returns the deployment definition.
-func (builder *Builder) GetDefinition() interface{} {
-	if builder.Definition == nil {
-		return (*appsv1.Deployment)(nil) // Explicitly return a nil pointer of the correct type
-	}
-
+func (builder *Builder) GetDefinition() *appsv1.Deployment {
 	return builder.Definition
 }
 
@@ -716,7 +712,7 @@ func (builder *Builder) GetResourceType() string {
 
 // Replace the validate() method with a call to common.ValidateBuilder.
 func (builder *Builder) validate() (bool, error) {
-	return common.ValidateBuilder(builder)
+	return common.ValidateBuilder[appsv1.Deployment](builder)
 }
 
 // WithToleration applies a toleration to the deployment's definition.
