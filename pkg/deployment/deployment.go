@@ -136,7 +136,7 @@ func Pull(apiClient *clients.Settings, name, nsname string) (*Builder, error) {
 
 // WithNodeSelector applies a nodeSelector to the deployment definition.
 func (builder *Builder) WithNodeSelector(selector map[string]string) *Builder {
-	if valid, _ := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return builder
 	}
 
@@ -150,7 +150,7 @@ func (builder *Builder) WithNodeSelector(selector map[string]string) *Builder {
 
 // WithReplicas sets the desired number of replicas in the deployment definition.
 func (builder *Builder) WithReplicas(replicas int32) *Builder {
-	if valid, _ := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return builder
 	}
 
@@ -164,7 +164,7 @@ func (builder *Builder) WithReplicas(replicas int32) *Builder {
 
 // WithAdditionalContainerSpecs appends a list of container specs to the deployment definition.
 func (builder *Builder) WithAdditionalContainerSpecs(specs []corev1.Container) *Builder {
-	if valid, _ := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return builder
 	}
 
@@ -186,7 +186,7 @@ func (builder *Builder) WithAdditionalContainerSpecs(specs []corev1.Container) *
 
 // WithSecondaryNetwork applies Multus secondary network configuration on deployment definition.
 func (builder *Builder) WithSecondaryNetwork(networks []*multus.NetworkSelectionElement) *Builder {
-	if valid, _ := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return builder
 	}
 
@@ -214,7 +214,7 @@ func (builder *Builder) WithSecondaryNetwork(networks []*multus.NetworkSelection
 
 // WithHugePages sets hugePages on all containers inside the deployment.
 func (builder *Builder) WithHugePages() *Builder {
-	if valid, _ := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return builder
 	}
 
@@ -248,7 +248,7 @@ func (builder *Builder) WithHugePages() *Builder {
 
 // WithSecurityContext sets SecurityContext on deployment definition.
 func (builder *Builder) WithSecurityContext(securityContext *corev1.PodSecurityContext) *Builder {
-	if valid, _ := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return builder
 	}
 
@@ -270,7 +270,7 @@ func (builder *Builder) WithSecurityContext(securityContext *corev1.PodSecurityC
 
 // WithLabel applies label to deployment's definition.
 func (builder *Builder) WithLabel(labelKey, labelValue string) *Builder {
-	if valid, _ := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return builder
 	}
 
@@ -295,7 +295,7 @@ func (builder *Builder) WithLabel(labelKey, labelValue string) *Builder {
 
 // WithServiceAccountName sets the ServiceAccountName on deployment definition.
 func (builder *Builder) WithServiceAccountName(serviceAccountName string) *Builder {
-	if valid, _ := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return builder
 	}
 
@@ -317,7 +317,7 @@ func (builder *Builder) WithServiceAccountName(serviceAccountName string) *Build
 
 // WithVolume attaches given volume to the deployment.
 func (builder *Builder) WithVolume(deployVolume corev1.Volume) *Builder {
-	if valid, _ := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return builder
 	}
 
@@ -341,7 +341,7 @@ func (builder *Builder) WithVolume(deployVolume corev1.Volume) *Builder {
 
 // WithSchedulerName configures a scheduler to process pod's scheduling.
 func (builder *Builder) WithSchedulerName(schedulerName string) *Builder {
-	if valid, _ := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return builder
 	}
 
@@ -363,7 +363,7 @@ func (builder *Builder) WithSchedulerName(schedulerName string) *Builder {
 
 // WithAffinity applies Affinity to the deployment definition.
 func (builder *Builder) WithAffinity(affinity *corev1.Affinity) *Builder {
-	if valid, _ := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return builder
 	}
 
@@ -385,7 +385,7 @@ func (builder *Builder) WithAffinity(affinity *corev1.Affinity) *Builder {
 
 // WithHostNetwork applies a hostnetwork state to the deployment definition.
 func (builder *Builder) WithHostNetwork(enableHostnetwork bool) *Builder {
-	if valid, _ := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return builder
 	}
 
@@ -399,7 +399,7 @@ func (builder *Builder) WithHostNetwork(enableHostnetwork bool) *Builder {
 
 // WithOptions creates deployment with generic mutation options.
 func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
-	if valid, _ := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return builder
 	}
 
@@ -424,7 +424,7 @@ func (builder *Builder) WithOptions(options ...AdditionalOptions) *Builder {
 
 // Create generates a deployment in cluster and stores the created object in struct.
 func (builder *Builder) Create() (*Builder, error) {
-	if valid, err := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return builder, err
 	}
 
@@ -441,7 +441,7 @@ func (builder *Builder) Create() (*Builder, error) {
 
 // Update renovates the existing deployment object with the deployment definition in builder.
 func (builder *Builder) Update() (*Builder, error) {
-	if valid, err := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return builder, err
 	}
 
@@ -456,7 +456,7 @@ func (builder *Builder) Update() (*Builder, error) {
 
 // Delete removes a deployment.
 func (builder *Builder) Delete() error {
-	if valid, err := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return err
 	}
 
@@ -487,7 +487,7 @@ func (builder *Builder) Delete() error {
 // DeleteGraceful removes a deployment while waiting for specified duration(in seconds)
 // the object should be deleted.
 func (builder *Builder) DeleteGraceful(gracePeriod *int64) error {
-	if valid, err := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return err
 	}
 
@@ -528,7 +528,7 @@ func (builder *Builder) DeleteGraceful(gracePeriod *int64) error {
 
 // CreateAndWaitUntilReady creates a deployment in the cluster and waits until the deployment is available.
 func (builder *Builder) CreateAndWaitUntilReady(timeout time.Duration) (*Builder, error) {
-	if valid, err := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return builder, err
 	}
 
@@ -552,7 +552,7 @@ func (builder *Builder) CreateAndWaitUntilReady(timeout time.Duration) (*Builder
 
 // IsReady periodically checks if deployment is in ready status.
 func (builder *Builder) IsReady(timeout time.Duration) bool {
-	if valid, _ := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return false
 	}
 
@@ -587,7 +587,7 @@ func (builder *Builder) IsReady(timeout time.Duration) bool {
 
 // DeleteAndWait deletes a deployment and waits until it is removed from the cluster.
 func (builder *Builder) DeleteAndWait(timeout time.Duration) error {
-	if valid, err := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return err
 	}
 
@@ -613,7 +613,7 @@ func (builder *Builder) DeleteAndWait(timeout time.Duration) error {
 
 // Exists checks whether the given deployment exists.
 func (builder *Builder) Exists() bool {
-	if valid, _ := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return false
 	}
 
@@ -630,7 +630,7 @@ func (builder *Builder) Exists() bool {
 // WaitUntilCondition waits for the duration of the defined timeout or until the
 // deployment gets to a specific condition.
 func (builder *Builder) WaitUntilCondition(condition appsv1.DeploymentConditionType, timeout time.Duration) error {
-	if valid, err := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return err
 	}
 
@@ -661,7 +661,7 @@ func (builder *Builder) WaitUntilCondition(condition appsv1.DeploymentConditionT
 
 // WaitUntilDeleted waits for the duration of the defined timeout or until the deployment is deleted.
 func (builder *Builder) WaitUntilDeleted(timeout time.Duration) error {
-	if valid, err := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return err
 	}
 
@@ -710,14 +710,9 @@ func (builder *Builder) GetResourceType() string {
 	return common.DeploymentType
 }
 
-// Replace the validate() method with a call to common.ValidateBuilder.
-func (builder *Builder) validate() (bool, error) {
-	return common.ValidateBuilder[appsv1.Deployment](builder)
-}
-
 // WithToleration applies a toleration to the deployment's definition.
 func (builder *Builder) WithToleration(toleration corev1.Toleration) *Builder {
-	if valid, _ := builder.validate(); !valid {
+	if err := common.ValidateBuilder[appsv1.Deployment](builder); err != nil {
 		return builder
 	}
 

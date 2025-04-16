@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	"github.com/openshift-kni/eco-goinfra/pkg/common"
 	"github.com/stretchr/testify/assert"
 	multus "gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/types"
 	appsv1 "k8s.io/api/apps/v1"
@@ -790,66 +789,6 @@ func TestWaitUntilCondition(t *testing.T) {
 	err := testBuilder.WaitUntilCondition(appsv1.DeploymentAvailable, time.Second*5)
 
 	assert.Nil(t, err)
-}
-
-func TestValidate(t *testing.T) {
-	testCases := []struct {
-		builderNil    bool
-		definitionNil bool
-		apiClientNil  bool
-		expectedError string
-	}{
-		{
-			builderNil:    true,
-			definitionNil: false,
-			apiClientNil:  false,
-			expectedError: "error: received nil builder",
-		},
-		{
-			builderNil:    false,
-			definitionNil: true,
-			apiClientNil:  false,
-			expectedError: fmt.Sprintf("can not redefine the undefined %s", common.DeploymentType),
-		},
-		{
-			builderNil:    false,
-			definitionNil: false,
-			apiClientNil:  true,
-			expectedError: fmt.Sprintf("%s builder cannot have nil apiClient", common.DeploymentType),
-		},
-		{
-			builderNil:    false,
-			definitionNil: false,
-			apiClientNil:  false,
-			expectedError: "",
-		},
-	}
-
-	for _, testCase := range testCases {
-		testBuilder := buildValidTestBuilder()
-
-		if testCase.builderNil {
-			testBuilder = nil
-		}
-
-		if testCase.definitionNil {
-			testBuilder.Definition = nil
-		}
-
-		if testCase.apiClientNil {
-			testBuilder.apiClient = nil
-		}
-
-		result, err := testBuilder.validate()
-		if testCase.expectedError != "" {
-			assert.NotNil(t, err)
-			assert.Equal(t, testCase.expectedError, err.Error())
-			assert.False(t, result)
-		} else {
-			assert.Nil(t, err)
-			assert.True(t, result)
-		}
-	}
 }
 
 func TestDeploymentWaitUntilDeleted(t *testing.T) {

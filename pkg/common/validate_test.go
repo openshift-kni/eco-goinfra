@@ -97,20 +97,17 @@ func TestValidateBuilder(t *testing.T) {
 			resourceTypeFunc: func() string { return testCase.resourceTypeReturnValue },
 		}
 
-		valid, err := ValidateBuilder(testBuilder)
+		err := ValidateBuilder(testBuilder)
 		if testCase.expectedValid {
-			assert.True(t, valid)
 			assert.Nil(t, err)
 		} else {
-			assert.False(t, valid)
 			assert.NotNil(t, err)
 			assert.Equal(t, testCase.expectedError, err.Error())
 		}
 	}
 
 	// One additional test case for nil builder
-	valid, err := ValidateBuilder[appsv1.Deployment](nil)
-	assert.False(t, valid)
+	err := ValidateBuilder[appsv1.Deployment](nil)
 	assert.NotNil(t, err)
 	assert.Equal(t, "error: received nil builder", err.Error())
 }
