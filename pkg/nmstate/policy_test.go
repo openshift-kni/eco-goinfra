@@ -468,6 +468,77 @@ func TestPolicyWithVlanInterfaceIP(t *testing.T) {
 	}
 }
 
+func TestPolicyWithEthernetInterfaceIP(t *testing.T) {
+	testCases := []struct {
+		testNMStatePolicy *PolicyBuilder
+		expectedError     string
+		sriovInterface    string
+		ipv4              string
+		ipv6              string
+	}{
+		{
+			testNMStatePolicy: buildValidPolicyTestBuilder(buildTestClientWithDummyPolicyObject()),
+			expectedError:     "",
+			sriovInterface:    "ens1",
+			ipv4:              "10.10.10.10",
+			ipv6:              "2001:db8::68",
+		},
+		{
+			testNMStatePolicy: buildValidPolicyTestBuilder(buildTestClientWithDummyPolicyObject()),
+			expectedError:     "nodenetworkconfigurationpolicy 'interfaceName' cannot be empty",
+			sriovInterface:    "",
+			ipv4:              "10.10.10.10",
+			ipv6:              "2001:db8::68",
+		},
+		{
+			testNMStatePolicy: buildValidPolicyTestBuilder(buildTestClientWithDummyPolicyObject()),
+			expectedError:     "ethernet interface 'ipv4Addresses' is an invalid ipv4 address",
+			sriovInterface:    "ens1",
+			ipv4:              "",
+			ipv6:              "2001:db8::68",
+		},
+		{
+			testNMStatePolicy: buildValidPolicyTestBuilder(buildTestClientWithDummyPolicyObject()),
+			expectedError:     "ethernet interface 'ipv6Addresses' is an invalid ipv6 address",
+			sriovInterface:    "ens1",
+			ipv4:              "10.10.10.10",
+			ipv6:              "",
+		},
+	}
+	for _, testCase := range testCases {
+		testPolicy := testCase.testNMStatePolicy.WithEthernetInterface(testCase.sriovInterface,
+			testCase.ipv4, testCase.ipv6)
+		assert.Equal(t, testCase.expectedError, testPolicy.errorMsg)
+
+		desireState := &DesiredState{}
+		if testCase.expectedError == "" {
+			_ = yaml.Unmarshal(testPolicy.Definition.Spec.DesiredState.Raw, desireState)
+			assert.Equal(t, &DesiredState{
+				Interfaces: []NetworkInterface{
+					{
+						Name:  testCase.sriovInterface,
+						Type:  "ethernet",
+						State: "up",
+						Ipv4: InterfaceIpv4{
+							Enabled: true,
+							Address: []InterfaceIPAddress{{
+								PrefixLen: 24,
+								IP:        net.ParseIP(testCase.ipv4),
+							}},
+						},
+						Ipv6: InterfaceIpv6{Enabled: true,
+							Address: []InterfaceIPAddress{{
+								PrefixLen: 64,
+								IP:        net.ParseIP(testCase.ipv6),
+							}},
+						},
+					},
+				},
+			}, desireState)
+		}
+	}
+}
+
 func TestPolicyWithAbsentInterface(t *testing.T) {
 	testCases := []struct {
 		testNMStatePolicy *PolicyBuilder
