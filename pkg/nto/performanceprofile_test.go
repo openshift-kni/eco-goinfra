@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	v2 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/performanceprofile/v2"
+	performanceprofilev2 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/performanceprofile/v2"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
@@ -22,21 +22,21 @@ var (
 	defaultHugePagesNodeOne       = int32(0)
 	defaultHugePagesNodeTwo       = int32(1)
 	defaultHugepageSize           = "2M"
-	defaultHugepages              = []v2.HugePage{
+	defaultHugepages              = []performanceprofilev2.HugePage{
 		{
-			Size:  v2.HugePageSize(defaultHugepageSize),
+			Size:  performanceprofilev2.HugePageSize(defaultHugepageSize),
 			Count: 32768,
 			Node:  &defaultHugePagesNodeOne,
 		},
 	}
-	defaultHugepagesTwoNumaNodes = []v2.HugePage{
+	defaultHugepagesTwoNumaNodes = []performanceprofilev2.HugePage{
 		{
-			Size:  v2.HugePageSize(defaultHugepageSize),
+			Size:  performanceprofilev2.HugePageSize(defaultHugepageSize),
 			Count: 32768,
 			Node:  &defaultHugePagesNodeOne,
 		},
 		{
-			Size:  v2.HugePageSize(defaultHugepageSize),
+			Size:  performanceprofilev2.HugePageSize(defaultHugepageSize),
 			Count: 32768,
 			Node:  &defaultHugePagesNodeTwo,
 		},
@@ -47,13 +47,13 @@ var (
 	defaultDeviceID            = "7654321"
 	emptyString                = ""
 	paoTestSchemes             = []clients.SchemeAttacher{
-		v2.AddToScheme,
+		performanceprofilev2.AddToScheme,
 	}
 )
 
 func TestPullPerformanceProfile(t *testing.T) {
-	generatePerformanceProfile := func(name string) *v2.PerformanceProfile {
-		return &v2.PerformanceProfile{
+	generatePerformanceProfile := func(name string) *performanceprofilev2.PerformanceProfile {
+		return &performanceprofilev2.PerformanceProfile{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
 			},
@@ -344,7 +344,7 @@ func TestPerformanceProfileUpdate(t *testing.T) {
 func TestPerformanceProfileWithHugePages(t *testing.T) {
 	testCases := []struct {
 		testHugePageSize  string
-		testPages         []v2.HugePage
+		testPages         []performanceprofilev2.HugePage
 		expectedErrorText string
 	}{
 		{
@@ -354,7 +354,7 @@ func TestPerformanceProfileWithHugePages(t *testing.T) {
 		},
 		{
 			testHugePageSize: "1G",
-			testPages: []v2.HugePage{
+			testPages: []performanceprofilev2.HugePage{
 				{
 					Size:  "1G",
 					Count: 32768,
@@ -370,9 +370,9 @@ func TestPerformanceProfileWithHugePages(t *testing.T) {
 		},
 		{
 			testHugePageSize: defaultHugepageSize,
-			testPages: []v2.HugePage{
+			testPages: []performanceprofilev2.HugePage{
 				{
-					Size:  v2.HugePageSize(defaultHugepageSize),
+					Size:  performanceprofilev2.HugePageSize(defaultHugepageSize),
 					Count: 32768,
 				},
 			},
@@ -390,7 +390,7 @@ func TestPerformanceProfileWithHugePages(t *testing.T) {
 		},
 		{
 			testHugePageSize:  defaultHugepageSize,
-			testPages:         []v2.HugePage{},
+			testPages:         []performanceprofilev2.HugePage{},
 			expectedErrorText: "'hugePages' argument cannot be empty",
 		},
 	}
@@ -404,7 +404,7 @@ func TestPerformanceProfileWithHugePages(t *testing.T) {
 			assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
 		} else {
 			assert.NotNil(t, result)
-			assert.Equal(t, v2.HugePageSize(testCase.testHugePageSize),
+			assert.Equal(t, performanceprofilev2.HugePageSize(testCase.testHugePageSize),
 				*result.Definition.Spec.HugePages.DefaultHugePagesSize)
 			assert.Equal(t, testCase.testPages, result.Definition.Spec.HugePages.Pages)
 		}
@@ -657,12 +657,12 @@ func TestPerformanceProfileWithAnnotations(t *testing.T) {
 func TestPerformanceProfileWithNet(t *testing.T) {
 	testCases := []struct {
 		testUserLevelNet  bool
-		testDevices       []v2.Device
+		testDevices       []performanceprofilev2.Device
 		expectedErrorText string
 	}{
 		{
 			testUserLevelNet: true,
-			testDevices: []v2.Device{{
+			testDevices: []performanceprofilev2.Device{{
 				InterfaceName: &defaultNetInterfaceNameOne,
 				VendorID:      &defaultVendorID,
 				DeviceID:      &defaultDeviceID,
@@ -671,7 +671,7 @@ func TestPerformanceProfileWithNet(t *testing.T) {
 		},
 		{
 			testUserLevelNet: false,
-			testDevices: []v2.Device{{
+			testDevices: []performanceprofilev2.Device{{
 				InterfaceName: &defaultNetInterfaceNameOne,
 				VendorID:      &defaultVendorID,
 				DeviceID:      &defaultDeviceID,
@@ -680,7 +680,7 @@ func TestPerformanceProfileWithNet(t *testing.T) {
 		},
 		{
 			testUserLevelNet: true,
-			testDevices: []v2.Device{{
+			testDevices: []performanceprofilev2.Device{{
 				InterfaceName: &defaultNetInterfaceNameOne,
 				VendorID:      &defaultVendorID,
 				DeviceID:      &emptyString,
@@ -689,7 +689,7 @@ func TestPerformanceProfileWithNet(t *testing.T) {
 		},
 		{
 			testUserLevelNet: true,
-			testDevices: []v2.Device{{
+			testDevices: []performanceprofilev2.Device{{
 				InterfaceName: &defaultNetInterfaceNameOne,
 				VendorID:      &emptyString,
 				DeviceID:      &defaultDeviceID,
@@ -698,14 +698,14 @@ func TestPerformanceProfileWithNet(t *testing.T) {
 		},
 		{
 			testUserLevelNet: true,
-			testDevices: []v2.Device{{
+			testDevices: []performanceprofilev2.Device{{
 				InterfaceName: &defaultNetInterfaceNameOne,
 			}},
 			expectedErrorText: "",
 		},
 		{
 			testUserLevelNet: true,
-			testDevices: []v2.Device{{
+			testDevices: []performanceprofilev2.Device{{
 				InterfaceName: &emptyString,
 				VendorID:      &defaultVendorID,
 				DeviceID:      &emptyString,
@@ -714,7 +714,7 @@ func TestPerformanceProfileWithNet(t *testing.T) {
 		},
 		{
 			testUserLevelNet: true,
-			testDevices: []v2.Device{{
+			testDevices: []performanceprofilev2.Device{{
 				InterfaceName: &emptyString,
 				VendorID:      &emptyString,
 				DeviceID:      &defaultDeviceID,
@@ -723,7 +723,7 @@ func TestPerformanceProfileWithNet(t *testing.T) {
 		},
 		{
 			testUserLevelNet: true,
-			testDevices: []v2.Device{{
+			testDevices: []performanceprofilev2.Device{{
 				InterfaceName: &defaultNetInterfaceNameOne,
 				VendorID:      &emptyString,
 				DeviceID:      &emptyString,
@@ -732,7 +732,7 @@ func TestPerformanceProfileWithNet(t *testing.T) {
 		},
 		{
 			testUserLevelNet: true,
-			testDevices: []v2.Device{{
+			testDevices: []performanceprofilev2.Device{{
 				InterfaceName: &defaultNetInterfaceNameOne,
 			}, {
 				InterfaceName: &defaultNetInterfaceNameTwo,
@@ -741,7 +741,7 @@ func TestPerformanceProfileWithNet(t *testing.T) {
 		},
 		{
 			testUserLevelNet:  true,
-			testDevices:       []v2.Device{},
+			testDevices:       []performanceprofilev2.Device{},
 			expectedErrorText: "'net' argument cannot be empty",
 		},
 	}
@@ -823,7 +823,7 @@ func buildPerformanceProfileWithDummyObject() *clients.Settings {
 }
 
 func buildDummyPerformanceProfile() []runtime.Object {
-	return append([]runtime.Object{}, &v2.PerformanceProfile{
+	return append([]runtime.Object{}, &performanceprofilev2.PerformanceProfile{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: defaultPerformanceProfileName,
 		},
