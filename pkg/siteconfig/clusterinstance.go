@@ -1,3 +1,4 @@
+//nolint:revive // annoying comment warning, just for PoC
 package siteconfig
 
 import (
@@ -9,13 +10,14 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/openshift-kni/eco-goinfra/pkg/internal/common"
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	aiv1beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/v1beta1"
 	siteconfigv1alpha1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/siteconfig/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -543,28 +545,6 @@ func (builder *CIBuilder) WaitForExtraLabel(kind, label string, timeout time.Dur
 	return builder, nil
 }
 
-// Get fetches the defined ClusterInstance from the cluster.
-func (builder *CIBuilder) Get() (*siteconfigv1alpha1.ClusterInstance, error) {
-	if valid, err := builder.validate(); !valid {
-		return nil, err
-	}
-
-	glog.V(100).Infof("Getting clusterinstance %s in namespace %s",
-		builder.Definition.Name, builder.Definition.Namespace)
-
-	ClusterInstance := &siteconfigv1alpha1.ClusterInstance{}
-	err := builder.apiClient.Get(context.TODO(), goclient.ObjectKey{
-		Name:      builder.Definition.Name,
-		Namespace: builder.Definition.Namespace,
-	}, ClusterInstance)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return ClusterInstance, err
-}
-
 // Create generates an ClusterInstance on the cluster.
 func (builder *CIBuilder) Create() (*CIBuilder, error) {
 	if valid, err := builder.validate(); !valid {
@@ -672,34 +652,85 @@ func (builder *CIBuilder) Exists() bool {
 	return err == nil || !k8serrors.IsNotFound(err)
 }
 
+// This allows us to enforce at compile time that the CIBuilder implements the Builder interface.
+var _ common.Builder[
+	siteconfigv1alpha1.ClusterInstance, *siteconfigv1alpha1.ClusterInstance] = (*CIBuilder)(nil)
+
+// An example of calling the Validate function with inferred types.
+var _ = common.Validate((*CIBuilder)(nil))
+
+func (builder *CIBuilder) GetDefinition() *siteconfigv1alpha1.ClusterInstance {
+	if builder == nil {
+		return nil
+	}
+
+	return builder.Definition
+}
+
+func (builder *CIBuilder) SetDefinition(definition *siteconfigv1alpha1.ClusterInstance) {
+	// Since we treat definition being non-nil as an invariant, it would be good to explicitly state that.
+	if builder == nil || definition == nil {
+		return
+	}
+
+	builder.Definition = definition
+}
+
+func (builder *CIBuilder) GetObject() *siteconfigv1alpha1.ClusterInstance {
+	if builder == nil {
+		return nil
+	}
+
+	return builder.Object
+}
+
+func (builder *CIBuilder) SetObject(object *siteconfigv1alpha1.ClusterInstance) {
+	if builder == nil {
+		return
+	}
+
+	builder.Object = object
+}
+
+func (builder *CIBuilder) GetErrorMessage() string {
+	if builder == nil {
+		return ""
+	}
+
+	return builder.errorMsg
+}
+
+func (builder *CIBuilder) SetErrorMessage(errorMessage string) {
+	// Not sure if we should enforce the constraint that only the first error message is set.
+	if builder == nil || errorMessage != "" {
+		return
+	}
+
+	builder.errorMsg = errorMessage
+}
+
+//nolint:ireturn
+func (builder *CIBuilder) GetClient() goclient.Client {
+	if builder == nil {
+		return nil
+	}
+
+	return builder.apiClient
+}
+
+func (builder *CIBuilder) GetKind() schema.GroupVersionKind {
+	return siteconfigv1alpha1.GroupVersion.WithKind(siteconfigv1alpha1.ClusterInstanceKind)
+}
+
+// Get fetches the defined ClusterInstance from the cluster.
+func (builder *CIBuilder) Get() (*siteconfigv1alpha1.ClusterInstance, error) {
+	return common.Get(builder)
+}
+
 // validate will check that the builder and builder definition are properly initialized before
 // accessing any member fields.
 func (builder *CIBuilder) validate() (bool, error) {
-	resourceCRD := "ClusterInstance"
+	err := common.Validate(builder)
 
-	if builder == nil {
-		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
-
-		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
-	}
-
-	if builder.Definition == nil {
-		glog.V(100).Infof("The %s is undefined", resourceCRD)
-
-		return false, fmt.Errorf("%s", msg.UndefinedCrdObjectErrString(resourceCRD))
-	}
-
-	if builder.apiClient == nil {
-		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
-
-		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
-	}
-
-	if builder.errorMsg != "" {
-		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
-
-		return false, fmt.Errorf("%s", builder.errorMsg)
-	}
-
-	return true, nil
+	return err == nil, err
 }
