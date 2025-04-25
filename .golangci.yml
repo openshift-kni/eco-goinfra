@@ -95,6 +95,13 @@ linters:
             - golang.org/x/exp/slices
             - gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/types
             - golang.org/x/net/context
+        oranapi:
+          files:
+            - pkg/oran/api
+          allow:
+            - $gostd
+            - github.com/openshift-kni/eco-goinfra/pkg/oran/api
+            - github.com/oapi-codegen/runtime
     funlen:
       lines: 90
       statements: 40
