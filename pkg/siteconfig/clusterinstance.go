@@ -718,6 +718,14 @@ func (builder *CIBuilder) GetClient() goclient.Client {
 	return builder.apiClient
 }
 
+func (builder *CIBuilder) SetClient(client goclient.Client) {
+	if builder == nil {
+		return
+	}
+
+	builder.apiClient = client
+}
+
 func (builder *CIBuilder) GetKind() schema.GroupVersionKind {
 	return siteconfigv1alpha1.GroupVersion.WithKind(siteconfigv1alpha1.ClusterInstanceKind)
 }

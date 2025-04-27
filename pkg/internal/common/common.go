@@ -26,6 +26,7 @@ import (
 	"reflect"
 
 	"github.com/golang/glog"
+	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -51,11 +52,110 @@ type Builder[T any, ST objectPointer[T]] interface {
 	GetErrorMessage() string
 	SetErrorMessage(string)
 
-	// We will also need setters of client and kind to be able to implement generic versions of new builder and
-	// pull.
 	GetClient() runtimeclient.Client
-	// Possibly better named GetGroupVersionKind() to be more explicit.
+	SetClient(runtimeclient.Client)
+
+	// GetKind is expected to return an appropriate GVK even for a zero-valued builder. Possibly better named
+	// GetGroupVersionKind() to be more explicit.
 	GetKind() schema.GroupVersionKind
+}
+
+// Similar to the objectPointer type constraint, builderPointer is a type constraint that requires the type be a pointer
+// to B that implements the Builder interface.
+type builderPointer[B, T any, ST objectPointer[T]] interface {
+	*B
+	Builder[T, ST]
+}
+
+// NewNamespacedBuilder is an admittedly pretty cursed way to create a new builder but is completely generic.
+//
+//nolint:ireturn // SB should be a pointer to a struct in practice
+func NewNamespacedBuilder[T any, B any, ST objectPointer[T], SB builderPointer[B, T, ST]](
+	apiClient runtimeclient.Client, schemeAttacher clients.SchemeAttacher, name, nsname string) SB {
+	var builder SB = new(B)
+
+	glog.V(100).Infof("Initializing new %s builder with the following params: name: %s, nsname: %s",
+		builder.GetKind().Kind, name, nsname)
+
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is nil")
+
+		return nil
+	}
+
+	err := schemeAttacher(apiClient.Scheme())
+	if err != nil {
+		glog.V(100).Infof("Failed to attach scheme for %s: %v", builder.GetKind().Kind, err)
+
+		return nil
+	}
+
+	builder.SetClient(apiClient)
+	builder.SetDefinition(new(T))
+	builder.GetDefinition().SetName(name)
+	builder.GetDefinition().SetNamespace(nsname)
+
+	if name == "" {
+		glog.V(100).Infof("The name is empty")
+
+		builder.SetErrorMessage(fmt.Sprintf("name for %s cannot be empty", builder.GetKind().Kind))
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The nsname is empty")
+
+		builder.SetErrorMessage(fmt.Sprintf("nsname for %s cannot be empty", builder.GetKind().Kind))
+	}
+
+	return builder
+}
+
+//nolint:ireturn // SB should be a pointer to a struct in practice
+func PullNamespacedBuilder[T any, B any, ST objectPointer[T], SB builderPointer[B, T, ST]](
+	apiClient runtimeclient.Client, schemeAttacher clients.SchemeAttacher, name, nsname string) (SB, error) {
+	var builder SB = new(B)
+
+	glog.V(100).Infof("Pulling existing %s builder %s in namespace %s", builder.GetKind().Kind, name, nsname)
+
+	if apiClient == nil {
+		glog.V(100).Infof("The apiClient is nil")
+
+		return nil, fmt.Errorf("apiClient cannot be nil")
+	}
+
+	err := schemeAttacher(apiClient.Scheme())
+	if err != nil {
+		glog.V(100).Infof("Failed to attach scheme for %s: %v", builder.GetKind().Kind, err)
+
+		return nil, err
+	}
+
+	builder.SetClient(apiClient)
+	builder.SetDefinition(new(T))
+	builder.GetDefinition().SetName(name)
+	builder.GetDefinition().SetNamespace(nsname)
+
+	if name == "" {
+		glog.V(100).Infof("The name is empty")
+
+		return nil, fmt.Errorf("name for %s cannot be empty", builder.GetKind().Kind)
+	}
+
+	if nsname == "" {
+		glog.V(100).Infof("The nsname is empty")
+
+		return nil, fmt.Errorf("nsname for %s cannot be empty", builder.GetKind().Kind)
+	}
+
+	if !Exists(builder) {
+		glog.V(100).Infof("The %s %s does not exist in namespace %s", builder.GetKind().Kind, name, nsname)
+
+		return nil, fmt.Errorf("%s %s does not exist in namespace %s", builder.GetKind().Kind, name, nsname)
+	}
+
+	builder.SetDefinition(builder.GetObject())
+
+	return builder, nil
 }
 
 func Get[T any, ST objectPointer[T]](builder Builder[T, ST]) (*T, error) {
@@ -72,7 +172,6 @@ func Get[T any, ST objectPointer[T]](builder Builder[T, ST]) (*T, error) {
 			builder.GetKind().Kind, builder.GetDefinition().GetName(), namespace)
 	}
 
-	// *T is not automatically inferred to be convertible to runtimeclient.Object, so we must use ST explicitly.
 	var object ST = new(T)
 	err := builder.GetClient().Get(context.TODO(), runtimeclient.ObjectKeyFromObject(builder.GetDefinition()), object)
 
@@ -81,6 +180,37 @@ func Get[T any, ST objectPointer[T]](builder Builder[T, ST]) (*T, error) {
 	}
 
 	return object, nil
+}
+
+func Exists[T any, ST objectPointer[T]](builder Builder[T, ST]) bool {
+	if err := Validate(builder); err != nil {
+		return false
+	}
+
+	namespace := builder.GetDefinition().GetNamespace()
+	if namespace == "" {
+		glog.V(100).Infof("Checking if %s %s exists", builder.GetKind().Kind, builder.GetDefinition().GetName())
+	} else {
+		glog.V(100).Infof("Checking if %s %s exists in namespace %s",
+			builder.GetKind().Kind, builder.GetDefinition().GetName(), namespace)
+	}
+
+	object, err := Get(builder)
+
+	if err != nil {
+		if namespace == "" {
+			glog.V(100).Infof("Failed to get %s %s: %v", builder.GetKind().Kind, builder.GetDefinition().GetName(), err)
+		} else {
+			glog.V(100).Infof("Failed to get %s %s in namespace %s: %v",
+				builder.GetKind().Kind, builder.GetDefinition().GetName(), namespace, err)
+		}
+
+		return false
+	}
+
+	builder.SetObject(object)
+
+	return true
 }
 
 // Validate checks if the builder is valid. This is defined as being non-nil, having a non-nil client and definition,

@@ -56,11 +56,11 @@ func ListPlacementrulesInAllNamespaces(apiClient *clients.Settings,
 
 	for _, placementRule := range placementRuleList.Items {
 		copiedPlacementRule := placementRule
-		placementRuleBuilder := &PlacementRuleBuilder{
-			apiClient:  apiClient.Client,
-			Object:     &copiedPlacementRule,
-			Definition: &copiedPlacementRule,
-		}
+
+		placementRuleBuilder := &PlacementRuleBuilder{}
+		placementRuleBuilder.SetClient(apiClient.Client)
+		placementRuleBuilder.SetDefinition(&copiedPlacementRule)
+		placementRuleBuilder.SetObject(&copiedPlacementRule)
 
 		placementRuleObjects = append(placementRuleObjects, placementRuleBuilder)
 	}

@@ -97,7 +97,6 @@ type mockBuilder struct {
 	definition   *corev1.Namespace
 	object       *corev1.Namespace
 	errorMessage string
-	kind         schema.GroupVersionKind
 }
 
 func newMockBuilder() *mockBuilder {
@@ -106,7 +105,6 @@ func newMockBuilder() *mockBuilder {
 		definition:   &corev1.Namespace{},
 		object:       &corev1.Namespace{},
 		errorMessage: "",
-		kind:         corev1.SchemeGroupVersion.WithKind("Namespace"),
 	}
 }
 
@@ -139,7 +137,10 @@ func (builder *mockBuilder) GetClient() runtimeclient.Client {
 	return builder.client
 }
 
-// GetKind returns the GroupVersionKind of the underlying object.
+func (builder *mockBuilder) SetClient(client runtimeclient.Client) {
+	builder.client = client
+}
+
 func (builder *mockBuilder) GetKind() schema.GroupVersionKind {
-	return builder.kind
+	return corev1.SchemeGroupVersion.WithKind("Namespace")
 }
