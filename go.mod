@@ -4,6 +4,7 @@ go 1.24.2
 
 require (
 	github.com/Masterminds/semver/v3 v3.3.1
+	github.com/ROCm/gpu-operator v1.2.1
 	github.com/blang/semver/v4 v4.0.0
 	github.com/go-openapi/errors v0.22.0
 	github.com/go-openapi/strfmt v0.23.0

@@ -32,6 +32,8 @@ github.com/Masterminds/sprig/v3 v3.2.3/go.mod h1:rXcFaZ2zZbLRJv/xSysmlgIM1u11eBa
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
 github.com/PuerkitoBio/purell v1.1.1/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
+github.com/ROCm/gpu-operator v1.2.1 h1:/7rLSlPqmoj0MLM7fri16qGx/plRU+oHIKA0ROjuKP0=
+github.com/ROCm/gpu-operator v1.2.1/go.mod h1:X2DamXkiqucmxL3XCod+RKJWxqmPAh0dZYSiCCn+yuA=
 github.com/ViaQ/logerr/v2 v2.1.0 h1:8WwzuNa1x+a6tRUl+6sFel83A/QxlFBUaFW2FyG2zzY=
 github.com/ViaQ/logerr/v2 v2.1.0/go.mod h1:/qoWLm3YG40Sv5u75s4fvzjZ5p36xINzaxU2L+DJ9uw=
 github.com/ajeddeloh/go-json v0.0.0-20170920214419-6a2fe990e083/go.mod h1:otnto4/Icqn88WCcM4bhIJNSgsh9VLBuspyyCfvof9c=
