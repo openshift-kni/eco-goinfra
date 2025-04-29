@@ -1,0 +1,45 @@
+---
+- name: nfd-v1
+  sync: true
+  repo_link: "https://github.com/openshift/cluster-nfd-operator"
+  branch: master
+  remote_api_directory: api/v1
+  local_api_directory: schemes/nfd/v1
+  replace_imports:
+    - old: '"github.com/openshift/cluster-nfd-operator/api/v1"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/nfd/v1"'
+    - old: '"github.com/openshift/cluster-nfd-operator/api/v1"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/nfd/v1"'
+  excludes:
+    - "*_test.go"
+    - "testdata"
+
+- name: nfd-v1alpha1
+  sync: true
+  repo_link: "https://github.com/openshift/cluster-nfd-operator"
+  branch: master
+  remote_api_directory: api/v1alpha1
+  local_api_directory: schemes/nfd/v1alpha1
+  replace_imports:
+    - old: '"github.com/openshift/cluster-nfd-operator/api/v1alpha1"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/nfd/v1alpha1"'
+    - old: '"github.com/openshift/cluster-nfd-operator/api/v1alpha1"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/nfd/v1alpha1"'
+  excludes:
+    - "*_test.go"
+    - "testdata"
+
+- name: nfd-v1temp1
+  sync: true
+  repo_link: "https://github.com/openshift/cluster-nfd-operator"
+  branch: master
+  remote_api_directory: api/v1temp1
+  local_api_directory: schemes/nfd/v1temp1
+  replace_imports:
+    - old: '"github.com/openshift/cluster-nfd-operator/api/v1temp1"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/nfd/v1temp1"'
+    - old: '"github.com/openshift/cluster-nfd-operator/api/v1temp1"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/nfd/v1temp1"'
+  excludes:
+    - "*_test.go"
+    - "testdata"
