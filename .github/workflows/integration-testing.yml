@@ -26,7 +26,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_call' && inputs.branch || github.sha }}
+          ref: ${{ inputs.branch || github.sha }}
 
       - name: Set up Go
         uses: actions/setup-go@v5
