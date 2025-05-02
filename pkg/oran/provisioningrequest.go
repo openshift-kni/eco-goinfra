@@ -414,18 +414,37 @@ func (builder *ProvisioningRequestBuilder) WaitForCondition(
 
 // WaitUntilFulfilled waits up to timeout until the ProvisioningRequest is in the fulfilled phase. Changes to the
 // template will not be accepted until it is fulfilled.
+//
+// This function is equivalent to WaitUntilFulfilledAfter with a zero-valued start time.
 func (builder *ProvisioningRequestBuilder) WaitUntilFulfilled(
 	timeout time.Duration) (*ProvisioningRequestBuilder, error) {
-	if valid, err := builder.validate(); !valid {
+	err := builder.WaitForPhaseAfter(provisioningv1alpha1.StateFulfilled, time.Time{}, timeout)
+	if err != nil {
 		return nil, err
 	}
 
-	glog.V(100).Infof("Waiting up to %s until ProvisioningRequest %s is fulfilled", timeout, builder.Definition.Name)
+	return builder, nil
+}
+
+// WaitForPhaseAfter waits up to timeout until the ProvisioningRequest is in the provided phase and was updated after
+// the provided start time. This can be used to ensure the ProvisioningRequest is not only in the provided phase, but
+// also has been updated after changes are made to the ProvisioningRequest.
+//
+// A zero-valued start time will cause the start time to be ignored and the function will wait until the
+// ProvisioningRequest is in the provided phase regardless of the update time.
+func (builder *ProvisioningRequestBuilder) WaitForPhaseAfter(
+	phase provisioningv1alpha1.ProvisioningPhase, start time.Time, timeout time.Duration) error {
+	if valid, err := builder.validate(); !valid {
+		return err
+	}
+
+	glog.V(100).Infof("Waiting up to %s until ProvisioningRequest %s is fulfilled after %s",
+		timeout, builder.Definition.Name, start)
 
 	if !builder.Exists() {
 		glog.V(100).Infof("ProvisioningRequest %s does not exist", builder.Definition.Name)
 
-		return nil, fmt.Errorf("cannot wait for non-existent ProvisioningRequest")
+		return fmt.Errorf("cannot wait for non-existent ProvisioningRequest")
 	}
 
 	err := wait.PollUntilContextTimeout(
@@ -440,16 +459,18 @@ func (builder *ProvisioningRequestBuilder) WaitUntilFulfilled(
 			}
 
 			builder.Definition = builder.Object
-			fulfilled := builder.Definition.Status.ProvisioningStatus.ProvisioningPhase == provisioningv1alpha1.StateFulfilled
 
-			return fulfilled, nil
+			inPhase := builder.Definition.Status.ProvisioningStatus.ProvisioningPhase == phase
+			updatedAfterStart := builder.Definition.Status.ProvisioningStatus.UpdateTime.After(start)
+
+			return inPhase && (updatedAfterStart || start.IsZero()), nil
 		})
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return builder, nil
+	return nil
 }
 
 // validate checks that the builder, definition, and apiClient are properly initialized and there is no errorMsg.
