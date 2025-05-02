@@ -91,6 +91,7 @@ func TestNewPRBuilder(t *testing.T) {
 
 			if testCase.expectedError == "" {
 				assert.Equal(t, testCase.name, testBuilder.Definition.Name)
+				assert.Equal(t, testCase.name, testBuilder.Definition.Spec.Name)
 				assert.Equal(t, testCase.templateName, testBuilder.Definition.Spec.TemplateName)
 				assert.Equal(t, testCase.templateVersion, testBuilder.Definition.Spec.TemplateVersion)
 			}
@@ -337,16 +338,16 @@ func TestPRUpdate(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		assert.Empty(t, testCase.testBuilder.Definition.Spec.Name)
+		assert.Empty(t, testCase.testBuilder.Definition.Spec.Description)
 
-		testCase.testBuilder.Definition.Spec.Name = "test"
+		testCase.testBuilder.Definition.Spec.Description = "test"
 		testCase.testBuilder.Definition.ResourceVersion = "999"
 
 		testBuilder, err := testCase.testBuilder.Update()
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, "test", testBuilder.Object.Spec.Name)
+			assert.Equal(t, "test", testBuilder.Object.Spec.Description)
 		}
 	}
 }
