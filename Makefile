@@ -1,7 +1,6 @@
 GO_PACKAGES=$(shell go list ./... | grep -v vendor)
-.PHONY: lint \
-        deps-update \
-        vet
+.PHONY: lint deps-update vet lib-sync install test integration-test coverage-html
+
 vet:
 	go vet ${GO_PACKAGES}
 
@@ -14,7 +13,7 @@ deps-update:
 	go mod vendor
 
 lib-sync:
-	export FLAGS_v=100;
+	export FLAGS_v=100; \
 	go run ./internal/sync
 
 install: deps-update
@@ -27,6 +26,6 @@ integration-test:
 	go test -tags=integration ./...
 
 coverage-html:
-	go test -coverprofile=coverage.out ./...
+	go test -coverprofile=coverage.out ./... && \
 	go tool cover -html=coverage.out
 
