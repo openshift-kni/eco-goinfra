@@ -220,3 +220,20 @@ replace (
 	github.com/portworx/sched-ops => github.com/portworx/sched-ops v1.20.4-rc1
 	k8s.io/client-go => k8s.io/client-go v0.31.5
 )
+
+tool github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen
+
+require github.com/oapi-codegen/runtime v1.1.1
+
+require (
+	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
+	github.com/dprotaso/go-yit v0.0.0-20220510233725-9ba8df137936 // indirect
+	github.com/getkin/kin-openapi v0.127.0 // indirect
+	github.com/invopop/yaml v0.3.1 // indirect
+	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
+	github.com/oapi-codegen/oapi-codegen/v2 v2.4.1 // indirect
+	github.com/perimeterx/marshmallow v1.1.5 // indirect
+	github.com/speakeasy-api/openapi-overlay v0.9.0 // indirect
+	github.com/vmware-labs/yaml-jsonpath v0.3.2 // indirect
+	golang.org/x/mod v0.22.0 // indirect
+)

@@ -20,6 +20,9 @@ github.com/ROCm/gpu-operator/api/v1alpha1
 # github.com/ajeddeloh/go-json v0.0.0-20200220154158-5ae607161559
 ## explicit
 github.com/ajeddeloh/go-json
+# github.com/apapsch/go-jsonmerge/v2 v2.0.0
+## explicit; go 1.12
+github.com/apapsch/go-jsonmerge/v2
 # github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 ## explicit; go 1.13
 github.com/asaskevich/govalidator
@@ -138,6 +141,9 @@ github.com/coreos/vcontext/validate
 # github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 ## explicit
 github.com/davecgh/go-spew/spew
+# github.com/dprotaso/go-yit v0.0.0-20220510233725-9ba8df137936
+## explicit; go 1.13
+github.com/dprotaso/go-yit
 # github.com/emicklei/go-restful/v3 v3.12.1
 ## explicit; go 1.13
 github.com/emicklei/go-restful/v3
@@ -177,6 +183,9 @@ github.com/fsnotify/fsnotify/internal
 # github.com/fxamacker/cbor/v2 v2.7.0
 ## explicit; go 1.17
 github.com/fxamacker/cbor/v2
+# github.com/getkin/kin-openapi v0.127.0
+## explicit; go 1.20
+github.com/getkin/kin-openapi/openapi3
 # github.com/ghodss/yaml v1.0.1-0.20220118164431-d8423dcdf344
 ## explicit
 github.com/ghodss/yaml
@@ -342,6 +351,9 @@ github.com/imdario/mergo
 # github.com/inconshreveable/mousetrap v1.1.0
 ## explicit; go 1.18
 github.com/inconshreveable/mousetrap
+# github.com/invopop/yaml v0.3.1
+## explicit; go 1.14
+github.com/invopop/yaml
 # github.com/jinzhu/inflection v1.0.0
 ## explicit
 github.com/jinzhu/inflection
@@ -440,6 +452,9 @@ github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.2
 ## explicit; go 1.12
 github.com/modern-go/reflect2
+# github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
+## explicit
+github.com/mohae/deepcopy
 # github.com/monochromegane/go-gitignore v0.0.0-20200626010858-205db1a8cc00
 ## explicit
 github.com/monochromegane/go-gitignore
@@ -455,6 +470,15 @@ github.com/nmstate/kubernetes-nmstate/api/names
 github.com/nmstate/kubernetes-nmstate/api/shared
 github.com/nmstate/kubernetes-nmstate/api/v1
 github.com/nmstate/kubernetes-nmstate/api/v1beta1
+# github.com/oapi-codegen/oapi-codegen/v2 v2.4.1
+## explicit; go 1.21.0
+github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen
+github.com/oapi-codegen/oapi-codegen/v2/pkg/codegen
+github.com/oapi-codegen/oapi-codegen/v2/pkg/util
+# github.com/oapi-codegen/runtime v1.1.1
+## explicit; go 1.20
+github.com/oapi-codegen/runtime
+github.com/oapi-codegen/runtime/types
 # github.com/oklog/ulid v1.3.1
 ## explicit
 github.com/oklog/ulid
@@ -682,6 +706,9 @@ github.com/openshift/machine-config-operator/pkg/version
 ## explicit; go 1.22.0
 github.com/ovn-org/ovn-kubernetes/go-controller/pkg/crd/egressip/v1
 github.com/ovn-org/ovn-kubernetes/go-controller/pkg/crd/egressservice/v1
+# github.com/perimeterx/marshmallow v1.1.5
+## explicit; go 1.17
+github.com/perimeterx/marshmallow
 # github.com/peterbourgon/diskv v2.0.1+incompatible
 ## explicit
 github.com/peterbourgon/diskv
@@ -736,6 +763,10 @@ github.com/shopspring/decimal
 # github.com/sirupsen/logrus v1.9.3
 ## explicit; go 1.13
 github.com/sirupsen/logrus
+# github.com/speakeasy-api/openapi-overlay v0.9.0
+## explicit; go 1.21.0
+github.com/speakeasy-api/openapi-overlay/pkg/loader
+github.com/speakeasy-api/openapi-overlay/pkg/overlay
 # github.com/spf13/cast v1.7.1
 ## explicit; go 1.19
 github.com/spf13/cast
@@ -773,6 +804,9 @@ github.com/vmihailenco/msgpack/v5/msgpcode
 github.com/vmihailenco/tagparser/v2
 github.com/vmihailenco/tagparser/v2/internal
 github.com/vmihailenco/tagparser/v2/internal/parser
+# github.com/vmware-labs/yaml-jsonpath v0.3.2
+## explicit; go 1.13
+github.com/vmware-labs/yaml-jsonpath/pkg/yamlpath
 # github.com/vmware-tanzu/velero v1.13.2
 ## explicit; go 1.21
 github.com/vmware-tanzu/velero/pkg/apis/velero/shared
@@ -820,6 +854,11 @@ golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 ## explicit; go 1.22.0
 golang.org/x/exp/maps
 golang.org/x/exp/slices
+# golang.org/x/mod v0.22.0
+## explicit; go 1.22.0
+golang.org/x/mod/internal/lazyregexp
+golang.org/x/mod/module
+golang.org/x/mod/semver
 # golang.org/x/net v0.34.0
 ## explicit; go 1.18
 golang.org/x/net/context
@@ -872,7 +911,18 @@ golang.org/x/time/rate
 # golang.org/x/tools v0.29.0
 ## explicit; go 1.22.0
 golang.org/x/tools/cover
+golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/ast/inspector
+golang.org/x/tools/imports
+golang.org/x/tools/internal/event
+golang.org/x/tools/internal/event/core
+golang.org/x/tools/internal/event/keys
+golang.org/x/tools/internal/event/label
+golang.org/x/tools/internal/gocommand
+golang.org/x/tools/internal/gopathwalk
+golang.org/x/tools/internal/imports
+golang.org/x/tools/internal/modindex
+golang.org/x/tools/internal/stdlib
 # gomodules.xyz/jsonpatch/v2 v2.4.0
 ## explicit; go 1.20
 gomodules.xyz/jsonpatch/v2

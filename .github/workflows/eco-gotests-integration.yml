@@ -27,7 +27,7 @@ jobs:
         if: ${{ !contains(github.event.*.labels.*.name, 'ignore-dep-check') }}
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_call' && inputs.branch || github.sha }}
+          ref: ${{ inputs.branch || github.sha }}
 
       - name: Set up Go
         if: ${{ !contains(github.event.*.labels.*.name, 'ignore-dep-check') }}

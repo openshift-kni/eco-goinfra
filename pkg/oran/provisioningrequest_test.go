@@ -91,6 +91,7 @@ func TestNewPRBuilder(t *testing.T) {
 
 			if testCase.expectedError == "" {
 				assert.Equal(t, testCase.name, testBuilder.Definition.Name)
+				assert.Equal(t, testCase.name, testBuilder.Definition.Spec.Name)
 				assert.Equal(t, testCase.templateName, testBuilder.Definition.Spec.TemplateName)
 				assert.Equal(t, testCase.templateVersion, testBuilder.Definition.Spec.TemplateVersion)
 			}
@@ -337,16 +338,16 @@ func TestPRUpdate(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		assert.Empty(t, testCase.testBuilder.Definition.Spec.Name)
+		assert.Empty(t, testCase.testBuilder.Definition.Spec.Description)
 
-		testCase.testBuilder.Definition.Spec.Name = "test"
+		testCase.testBuilder.Definition.Spec.Description = "test"
 		testCase.testBuilder.Definition.ResourceVersion = "999"
 
 		testBuilder, err := testCase.testBuilder.Update()
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, "test", testBuilder.Object.Spec.Name)
+			assert.Equal(t, "test", testBuilder.Object.Spec.Description)
 		}
 	}
 }
@@ -537,6 +538,37 @@ func TestPRWaitUntilFulfilled(t *testing.T) {
 		_, err := testBuilder.WaitUntilFulfilled(time.Second)
 		assert.Equal(t, testCase.expectedError, err)
 	}
+}
+
+// Since the rest of the WaitForPhaseAfter method is tested by the WaitUntilFulfilled test, we only cover the case here
+// where the update time is non-zero. It should not affect coverage since WaitUntilFulfilled calls WaitForPhaseAfter.
+func TestPRWaitForPhaseAfter(t *testing.T) {
+	testDummyPR := buildDummyPR(defaultPRName)
+	testDummyPR.Status.ProvisioningStatus.ProvisioningPhase = provisioningv1alpha1.StateFulfilled
+	testDummyPR.Status.ProvisioningStatus.UpdateTime = metav1.Now()
+	testSettings := clients.GetTestClients(clients.TestClientParams{
+		K8sMockObjects:  []runtime.Object{testDummyPR},
+		SchemeAttachers: provisioningTestSchemes,
+	})
+	testBuilder := buildValidPRTestBuilder(testSettings)
+
+	go func() {
+		t.Helper()
+
+		// Simulate a delay before updating the ProvisioningRequest's update time. Also wait on the test context
+		// to avoid leaking the goroutine.
+		select {
+		case <-time.After(time.Second):
+			testDummyPR.Status.ProvisioningStatus.UpdateTime = metav1.Now()
+			err := testSettings.Update(t.Context(), testDummyPR)
+			assert.NoError(t, err)
+		case <-t.Context().Done():
+		}
+	}()
+
+	// Since the method only polls every 3 seconds, timeout after 4 seconds to ensure that the second pull happens.
+	err := testBuilder.WaitForPhaseAfter(provisioningv1alpha1.StateFulfilled, time.Now(), 4*time.Second)
+	assert.NoError(t, err)
 }
 
 //nolint:unparam

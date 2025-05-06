@@ -117,9 +117,6 @@ type StorageClusterSpec struct {
 	// provisioned by the storagecluster controller to be used in
 	// storageDeviceSets section of the CR.
 	BackingStorageClasses []BackingStorageClass `json:"backingStorageClasses,omitempty"`
-	// DefaultStorageProfile is the default storage profile to use for
-	// the storagerequest as StorageProfile is optional.
-	DefaultStorageProfile string `json:"defaultStorageProfile,omitempty"`
 }
 
 // CSIDriverSpec defines the CSI driver settings for the StorageCluster.
@@ -211,6 +208,9 @@ type ManageCephCluster struct {
 
 	// CephClusterHealthCheckSpec represent the healthcheck for Ceph daemons
 	HealthCheck *rookCephv1.CephClusterHealthCheckSpec `json:"healthCheck,omitempty"`
+
+	// Ceph Config options
+	CephConfig map[string]map[string]string `json:"cephConfig,omitempty"`
 }
 
 // ManageCephConfig defines how to reconcile the Ceph configuration
