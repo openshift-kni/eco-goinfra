@@ -115,7 +115,7 @@ func TestIngressWithPeerPodSelector(t *testing.T) {
 
 	builder = NewIngressRuleBuilder()
 
-	builder.errorMsg = "error"
+	builder.errorMsg = errorStr
 
 	builder.WithPeerPodSelector(metav1.LabelSelector{
 		MatchLabels: map[string]string{
@@ -223,7 +223,7 @@ func TestIngressGetIngressRuleCfg(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, cfg)
 
-	builder.errorMsg = "error"
+	builder.errorMsg = errorStr
 
 	cfg, err = builder.GetIngressRuleCfg()
 	assert.NotNil(t, err)

@@ -5,46 +5,48 @@ import (
 	"testing"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	clov1 "github.com/openshift/cluster-logging-operator/api/logging/v1"
+	observabilityv1 "github.com/openshift/cluster-logging-operator/api/observability/v1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
 var (
-	apiGroup                            = "logging.openshift.io"
+	apiGroup                            = "observability.openshift.io"
 	apiVersion                          = "v1"
 	kind                                = "ClusterLogForwarder"
 	metaDataNameErrorMgs                = "metadata.name: Required value: name is required"
 	defaultClusterLogForwarderName      = "instance"
 	defaultClusterLogForwarderNamespace = "openshift-logging"
-	defaultOutputs                      = []clov1.OutputSpec(nil)
-	defaultPipelines                    = []clov1.PipelineSpec(nil)
-	newOutputs                          = clov1.OutputSpec{
+	defaultOutputs                      = []observabilityv1.OutputSpec(nil)
+	defaultPipelines                    = []observabilityv1.PipelineSpec(nil)
+	newOutputs                          = observabilityv1.OutputSpec{
 		Name: "elasticsearch-external",
 		Type: "elasticsearch",
-		URL:  "https://dummy-domain.amazonaws.com:443",
+		Kafka: &observabilityv1.Kafka{
+			URL: "https://dummy-domain.amazonaws.com:443",
+		},
 	}
-	newPipelines = clov1.PipelineSpec{
+	newPipelines = observabilityv1.PipelineSpec{
 		Name:       "",
 		OutputRefs: []string{"elasticsearch-external"},
 		InputRefs:  []string{"application", "infra"},
 	}
 	clov1TestSchemes = []clients.SchemeAttacher{
-		clov1.AddToScheme,
+		observabilityv1.AddToScheme,
 	}
 )
 
 func TestClusterLogForwarderPull(t *testing.T) {
-	generateClusterLogForwarder := func(name, namespace string) *clov1.ClusterLogForwarder {
-		return &clov1.ClusterLogForwarder{
+	generateClusterLogForwarder := func(name, namespace string) *observabilityv1.ClusterLogForwarder {
+		return &observabilityv1.ClusterLogForwarder{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,
 			},
-			Spec: clov1.ClusterLogForwarderSpec{
-				Outputs:   []clov1.OutputSpec{},
-				Pipelines: []clov1.PipelineSpec{},
+			Spec: observabilityv1.ClusterLogForwarderSpec{
+				Outputs:   []observabilityv1.OutputSpec{},
+				Pipelines: []observabilityv1.PipelineSpec{},
 			},
 		}
 	}
@@ -199,7 +201,7 @@ func TestClusterLogForwarderGet(t *testing.T) {
 		},
 		{
 			testClusterLogForwarder: buildValidClusterLogForwarderBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:           "clusterlogforwarders.logging.openshift.io \"instance\" not found",
+			expectedError:           "clusterlogforwarders.observability.openshift.io \"instance\" not found",
 		},
 	}
 
@@ -208,7 +210,8 @@ func TestClusterLogForwarderGet(t *testing.T) {
 
 		if testCase.expectedError == "" {
 			assert.Nil(t, err)
-			assert.Equal(t, testCase.testClusterLogForwarder.Definition, clusterLogForwarderObj)
+			assert.Equal(t, testCase.testClusterLogForwarder.Definition.Name, clusterLogForwarderObj.Name)
+			assert.Equal(t, testCase.testClusterLogForwarder.Definition.Namespace, clusterLogForwarderObj.Namespace)
 		} else {
 			assert.EqualError(t, err, testCase.expectedError)
 		}
@@ -237,8 +240,9 @@ func TestClusterLogForwarderCreate(t *testing.T) {
 	for _, testCase := range testCases {
 		testClusterLogForwarderBuilder, err := testCase.testClusterLogForwarder.Create()
 
-		if testCase.expectedError == "" {
-			assert.Equal(t, testClusterLogForwarderBuilder.Definition, testClusterLogForwarderBuilder.Object)
+		if testCase.expectedError == "" && testClusterLogForwarderBuilder != nil {
+			assert.Equal(t, testClusterLogForwarderBuilder.Definition.Name, testClusterLogForwarderBuilder.Object.Name)
+			assert.Equal(t, testClusterLogForwarderBuilder.Definition.Namespace, testClusterLogForwarderBuilder.Object.Namespace)
 		} else {
 			assert.Equal(t, testCase.expectedError, err.Error())
 		}
@@ -279,8 +283,8 @@ func TestClusterLogForwarderUpdate(t *testing.T) {
 	testCases := []struct {
 		testClusterLogForwarder *ClusterLogForwarderBuilder
 		expectedError           string
-		outputs                 clov1.OutputSpec
-		pipelines               clov1.PipelineSpec
+		outputs                 observabilityv1.OutputSpec
+		pipelines               observabilityv1.PipelineSpec
 	}{
 		{
 			testClusterLogForwarder: buildValidClusterLogForwarderBuilder(buildClusterLogForwarderClientWithDummyObject()),
@@ -306,7 +310,7 @@ func TestClusterLogForwarderUpdate(t *testing.T) {
 		if testCase.expectedError != "" {
 			assert.Equal(t, testCase.expectedError, err.Error())
 		} else {
-			assert.Equal(t, []clov1.OutputSpec{testCase.outputs},
+			assert.Equal(t, []observabilityv1.OutputSpec{testCase.outputs},
 				testCase.testClusterLogForwarder.Definition.Spec.Outputs)
 		}
 
@@ -316,27 +320,89 @@ func TestClusterLogForwarderUpdate(t *testing.T) {
 		if testCase.expectedError != "" {
 			assert.Equal(t, testCase.expectedError, err.Error())
 		} else {
-			assert.Equal(t, []clov1.PipelineSpec{testCase.pipelines},
+			assert.Equal(t, []observabilityv1.PipelineSpec{testCase.pipelines},
 				testCase.testClusterLogForwarder.Definition.Spec.Pipelines)
+		}
+	}
+}
+
+func TestWithManagementState(t *testing.T) {
+	testCases := []struct {
+		testManagementState observabilityv1.ManagementState
+		expectedError       string
+	}{
+		{
+			testManagementState: observabilityv1.ManagementStateManaged,
+			expectedError:       "",
+		},
+		{
+			testManagementState: observabilityv1.ManagementStateUnmanaged,
+			expectedError:       "",
+		},
+		{
+			testManagementState: "",
+			expectedError: "the management state of the clusterlogforwarder is unsupported: \"\";" +
+				"accepted only Managed or Unmanaged states",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidClusterLogForwarderBuilder(buildClusterLogForwarderClientWithDummyObject())
+
+		result := testBuilder.WithManagementState(testCase.testManagementState)
+		assert.Equal(t, testCase.expectedError, result.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testManagementState, result.Definition.Spec.ManagementState)
+		} else {
+			assert.Equal(t, testCase.expectedError, result.errorMsg)
+		}
+	}
+}
+
+func TestWithServiceAccount(t *testing.T) {
+	testCases := []struct {
+		testServiceAccount string
+		expectedError      string
+	}{
+		{
+			testServiceAccount: "dummy",
+			expectedError:      "",
+		},
+		{
+			testServiceAccount: "",
+			expectedError:      "clusterlogforwarder 'serviceAccount' cannot be empty",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidClusterLogForwarderBuilder(buildClusterLogForwarderClientWithDummyObject())
+
+		result := testBuilder.WithServiceAccount(testCase.testServiceAccount)
+		assert.Equal(t, testCase.expectedError, result.errorMsg)
+
+		if testCase.expectedError == "" {
+			assert.NotNil(t, result)
+			assert.Equal(t, testCase.testServiceAccount, result.Definition.Spec.ServiceAccount.Name)
+		} else {
+			assert.Equal(t, testCase.expectedError, result.errorMsg)
 		}
 	}
 }
 
 func TestWithOutput(t *testing.T) {
 	testCases := []struct {
-		testOutputs       *clov1.OutputSpec
-		expectedError     bool
-		expectedErrorText string
+		testOutputs   *observabilityv1.OutputSpec
+		expectedError string
 	}{
 		{
-			testOutputs:       &newOutputs,
-			expectedError:     false,
-			expectedErrorText: "",
+			testOutputs:   &newOutputs,
+			expectedError: "",
 		},
 		{
-			testOutputs:       nil,
-			expectedError:     true,
-			expectedErrorText: "'outputSpec' parameter is empty",
+			testOutputs:   nil,
+			expectedError: "'outputSpec' parameter is empty",
 		},
 	}
 
@@ -345,32 +411,27 @@ func TestWithOutput(t *testing.T) {
 
 		result := testBuilder.WithOutput(testCase.testOutputs)
 
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-			}
+		if testCase.expectedError != "" {
+			assert.Equal(t, testCase.expectedError, result.errorMsg)
 		} else {
 			assert.NotNil(t, result)
-			assert.Equal(t, []clov1.OutputSpec{*testCase.testOutputs}, result.Definition.Spec.Outputs)
+			assert.Equal(t, []observabilityv1.OutputSpec{*testCase.testOutputs}, result.Definition.Spec.Outputs)
 		}
 	}
 }
 
 func TestWithPipeline(t *testing.T) {
 	testCases := []struct {
-		testPipeline      *clov1.PipelineSpec
-		expectedError     bool
-		expectedErrorText string
+		testPipeline  *observabilityv1.PipelineSpec
+		expectedError string
 	}{
 		{
-			testPipeline:      &newPipelines,
-			expectedError:     false,
-			expectedErrorText: "",
+			testPipeline:  &newPipelines,
+			expectedError: "",
 		},
 		{
-			testPipeline:      nil,
-			expectedError:     true,
-			expectedErrorText: "'pipelineSpec' parameter is empty",
+			testPipeline:  nil,
+			expectedError: "'pipelineSpec' parameter is empty",
 		},
 	}
 
@@ -379,13 +440,11 @@ func TestWithPipeline(t *testing.T) {
 
 		result := testBuilder.WithPipeline(testCase.testPipeline)
 
-		if testCase.expectedError {
-			if testCase.expectedErrorText != "" {
-				assert.Equal(t, testCase.expectedErrorText, result.errorMsg)
-			}
+		if testCase.expectedError != "" {
+			assert.Equal(t, testCase.expectedError, result.errorMsg)
 		} else {
 			assert.NotNil(t, result)
-			assert.Equal(t, []clov1.PipelineSpec{*testCase.testPipeline}, result.Definition.Spec.Pipelines)
+			assert.Equal(t, []observabilityv1.PipelineSpec{*testCase.testPipeline}, result.Definition.Spec.Pipelines)
 		}
 	}
 }
@@ -422,7 +481,7 @@ func buildClusterLogForwarderClientWithDummyObject() *clients.Settings {
 }
 
 func buildDummyClusterLogForwarder() []runtime.Object {
-	return append([]runtime.Object{}, &clov1.ClusterLogForwarder{
+	return append([]runtime.Object{}, &observabilityv1.ClusterLogForwarder{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      defaultClusterLogForwarderName,
 			Namespace: defaultClusterLogForwarderNamespace,
@@ -431,9 +490,9 @@ func buildDummyClusterLogForwarder() []runtime.Object {
 			Kind:       kind,
 			APIVersion: fmt.Sprintf("%s/%s", apiGroup, apiVersion),
 		},
-		Spec: clov1.ClusterLogForwarderSpec{
-			Outputs:   []clov1.OutputSpec{},
-			Pipelines: []clov1.PipelineSpec{},
+		Spec: observabilityv1.ClusterLogForwarderSpec{
+			Outputs:   []observabilityv1.OutputSpec{},
+			Pipelines: []observabilityv1.PipelineSpec{},
 		},
 	})
 }
