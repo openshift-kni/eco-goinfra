@@ -539,6 +539,49 @@ func TestPolicyWithEthernetInterfaceIP(t *testing.T) {
 	}
 }
 
+func TestPolicyWithEthernetIPv6LinkLocalInterface(t *testing.T) {
+	testCases := []struct {
+		testNMStatePolicy *PolicyBuilder
+		expectedError     string
+		sriovInterface    string
+	}{
+		{
+			testNMStatePolicy: buildValidPolicyTestBuilder(buildTestClientWithDummyPolicyObject()),
+			expectedError:     "",
+			sriovInterface:    "ens1",
+		},
+		{
+			testNMStatePolicy: buildValidPolicyTestBuilder(buildTestClientWithDummyPolicyObject()),
+			expectedError:     "nodenetworkconfigurationpolicy 'interfaceName' cannot be empty",
+			sriovInterface:    "",
+		},
+	}
+	for _, testCase := range testCases {
+		testPolicy := testCase.testNMStatePolicy.WithEthernetIPv6LinkLocalInterface(testCase.sriovInterface)
+		assert.Equal(t, testCase.expectedError, testPolicy.errorMsg)
+
+		desireState := &DesiredState{}
+		if testCase.expectedError == "" {
+			_ = yaml.Unmarshal(testPolicy.Definition.Spec.DesiredState.Raw, desireState)
+			assert.Equal(t, &DesiredState{
+				Interfaces: []NetworkInterface{
+					{
+						Name:  testCase.sriovInterface,
+						Type:  "ethernet",
+						State: "up",
+						Ipv4: InterfaceIpv4{
+							Enabled: false,
+						},
+						Ipv6: InterfaceIpv6{
+							Enabled: true,
+						},
+					},
+				},
+			}, desireState)
+		}
+	}
+}
+
 func TestPolicyWithAbsentInterface(t *testing.T) {
 	testCases := []struct {
 		testNMStatePolicy *PolicyBuilder
