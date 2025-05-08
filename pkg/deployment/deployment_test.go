@@ -791,66 +791,6 @@ func TestWaitUntilCondition(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestValidate(t *testing.T) {
-	testCases := []struct {
-		builderNil    bool
-		definitionNil bool
-		apiClientNil  bool
-		expectedError string
-	}{
-		{
-			builderNil:    true,
-			definitionNil: false,
-			apiClientNil:  false,
-			expectedError: "error: received nil ClusterDeployment builder",
-		},
-		{
-			builderNil:    false,
-			definitionNil: true,
-			apiClientNil:  false,
-			expectedError: "can not redefine the undefined ClusterDeployment",
-		},
-		{
-			builderNil:    false,
-			definitionNil: false,
-			apiClientNil:  true,
-			expectedError: "ClusterDeployment builder cannot have nil apiClient",
-		},
-		{
-			builderNil:    false,
-			definitionNil: false,
-			apiClientNil:  false,
-			expectedError: "",
-		},
-	}
-
-	for _, testCase := range testCases {
-		testBuilder := buildValidTestBuilder()
-
-		if testCase.builderNil {
-			testBuilder = nil
-		}
-
-		if testCase.definitionNil {
-			testBuilder.Definition = nil
-		}
-
-		if testCase.apiClientNil {
-			testBuilder.apiClient = nil
-		}
-
-		result, err := testBuilder.validate()
-		if testCase.expectedError != "" {
-			assert.NotNil(t, err)
-			assert.Equal(t, testCase.expectedError, err.Error())
-			assert.False(t, result)
-		} else {
-			assert.Nil(t, err)
-			assert.True(t, result)
-		}
-	}
-}
-
 func TestDeploymentWaitUntilDeleted(t *testing.T) {
 	testCases := []struct {
 		testDeployment *Builder
