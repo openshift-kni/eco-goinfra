@@ -1,0 +1,13 @@
+---
+# ptp-operator depends on openshift/api v0.0.1 which is a really old version but
+# still considered higher than the versions based on git SHA which are more
+# recent. Since this causes issues with every other dependency, we need to sync
+# the types from the ptp-operator repo.
+- name: ptp-operator
+  sync: true
+  repo_link: "https://github.com/openshift/ptp-operator"
+  branch: main
+  remote_api_directory: api/v1
+  local_api_directory: schemes/ptp/v1
+  excludes:
+    - "*_webhook.go"
