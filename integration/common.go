@@ -3,12 +3,20 @@ package integration
 
 import (
 	"errors"
+	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/namespace"
 	"github.com/openshift-kni/eco-goinfra/pkg/pod"
 	corev1 "k8s.io/api/core/v1"
 )
+
+// CreateRandomNamespace generates a random namespace name for testing.
+func CreateRandomNamespace() string {
+	// Generate a random namespace name with rand library
+	return fmt.Sprintf("test-namespace-%d", rand.Intn(100000))
+}
 
 // PreEmptiveNamespaceDeleteAndSetup deletes the namespace preemptively and sets it up for the test.
 func PreEmptiveNamespaceDeleteAndSetup(namespace string, namespaceBuilder *namespace.Builder) error {

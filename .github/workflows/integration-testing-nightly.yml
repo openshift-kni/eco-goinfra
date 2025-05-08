@@ -27,6 +27,8 @@ jobs:
 
       - name: Setup cluster (k8s)
         uses: palmsoftware/quick-k8s@v0.0.28
+        with:
+          waitForPodsReady: true
 
       - name: Run integration tests
         uses: nick-fields/retry@v3

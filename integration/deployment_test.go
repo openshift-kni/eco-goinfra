@@ -25,7 +25,7 @@ func TestDeploymentCreate(t *testing.T) {
 	assert.NotNil(t, client)
 
 	var (
-		testNamespace  = "egi-deployment-create-ns"
+		testNamespace  = CreateRandomNamespace()
 		deploymentName = "create-test"
 	)
 
@@ -63,7 +63,7 @@ func TestDeploymentDelete(t *testing.T) {
 	assert.NotNil(t, client)
 
 	var (
-		testNamespace  = "egi-deployment-delete-ns"
+		testNamespace  = CreateRandomNamespace()
 		deploymentName = "delete-test"
 	)
 
@@ -111,7 +111,7 @@ func TestDeploymentWithReplicas(t *testing.T) {
 	assert.NotNil(t, client)
 
 	var (
-		testNamespace  = "egi-deployment-replicas-ns"
+		testNamespace  = CreateRandomNamespace()
 		deploymentName = "replicas-test"
 	)
 

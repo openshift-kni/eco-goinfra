@@ -19,7 +19,7 @@ func TestNetworkPolicyCreate(t *testing.T) {
 	assert.NotNil(t, client)
 
 	var (
-		testNamespace     = "egi-networkpolicy-create-test"
+		testNamespace     = CreateRandomNamespace()
 		testNetworkPolicy = "egi-networkpolicy-create-test"
 	)
 
@@ -63,7 +63,7 @@ func TestNetworkPolicyDelete(t *testing.T) {
 	assert.NotNil(t, client)
 
 	var (
-		testNamespace     = "egi-networkpolicy-delete-test"
+		testNamespace     = CreateRandomNamespace()
 		testNetworkPolicy = "egi-networkpolicy-delete-test"
 	)
 

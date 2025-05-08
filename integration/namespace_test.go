@@ -21,7 +21,7 @@ func TestNamespaceCreate(t *testing.T) {
 	assert.NotNil(t, client)
 
 	var (
-		testNamespace = "egi-namespace-create-test"
+		testNamespace = CreateRandomNamespace()
 	)
 
 	// Create a namespace in the cluster using the namespaces package

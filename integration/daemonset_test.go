@@ -18,7 +18,7 @@ func TestDaemonsetCreate(t *testing.T) {
 	assert.NotNil(t, client)
 
 	var (
-		testNamespace = "egi-daemonset-create-ns"
+		testNamespace  = CreateRandomNamespace()
 		daemonsetName = "create-test"
 	)
 
@@ -56,7 +56,7 @@ func TestDaemonsetDelete(t *testing.T) {
 	assert.NotNil(t, client)
 
 	var (
-		testNamespace = "egi-daemonset-delete-ns"
+		testNamespace  = CreateRandomNamespace()
 		daemonsetName = "delete-test"
 	)
 
