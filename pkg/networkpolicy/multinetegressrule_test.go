@@ -9,6 +9,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	errorStr = "error"
+)
+
 func TestNewEgressRuleBuilder(t *testing.T) {
 	builder := NewEgressRuleBuilder()
 
@@ -115,8 +119,7 @@ func TestEgressWithPeerPodSelector(t *testing.T) {
 
 	builder = NewEgressRuleBuilder()
 
-	//nolint:goconst
-	builder.errorMsg = "error"
+	builder.errorMsg = errorStr
 
 	builder.WithPeerPodSelector(metav1.LabelSelector{
 		MatchLabels: map[string]string{
@@ -261,7 +264,7 @@ func TestEgressGetEgressRuleCfg(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, cfg)
 
-	builder.errorMsg = "error"
+	builder.errorMsg = errorStr
 
 	cfg, err = builder.GetEgressRuleCfg()
 	assert.NotNil(t, err)
