@@ -28,3 +28,17 @@
   excludes:
     - "*_test.go"
     - "testdata"
+
+- name: nfd-feature_v1alpha1
+  sync: true
+  repo_link: "https://github.com/openshift/node-feature-discovery/"
+  branch: master
+  remote_api_directory: api/nfd/v1alpha1
+  local_api_directory: schemes/nfd/feature/v1alpha1
+  replace_imports:
+    - old: '"github.com/openshift/node-feature-discovery/api/v1alpha1"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/nfd/feature/v1alpha1"'
+
+  excludes:
+    - "*_test.go"
+    - "testdata"
