@@ -3,6 +3,8 @@ package argocd
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -300,7 +302,67 @@ func TestApplicationWithGitDetails(t *testing.T) {
 	}
 }
 
-func TestImageRegistryWaitForCondition(t *testing.T) {
+func TestApplicationWithGitPathAppended(t *testing.T) {
+	const testPath = "test/path"
+
+	testCases := []struct {
+		name                   string
+		testApplicationBuilder *ApplicationBuilder
+		hasSource              bool
+		elements               []string
+		expectedPath           string
+		expectedError          string
+	}{
+		{
+			name:                   "valid-builder-with-source",
+			testApplicationBuilder: buildValidApplicationBuilder(buildApplicationTestClientWithScheme()),
+			hasSource:              true,
+			elements:               []string{"element1", "element2"},
+			expectedPath:           fmt.Sprintf("%s/%s/%s", testPath, "element1", "element2"),
+			expectedError:          "",
+		},
+		{
+			name:                   "no-source",
+			testApplicationBuilder: buildValidApplicationBuilder(buildApplicationTestClientWithScheme()),
+			hasSource:              false,
+			elements:               []string{"element"},
+			expectedPath:           "",
+			expectedError:          "cannot append to git path because the source is nil",
+		},
+		{
+			name:                   "no-elements",
+			testApplicationBuilder: buildValidApplicationBuilder(buildApplicationTestClientWithScheme()),
+			hasSource:              true,
+			elements:               []string{},
+			expectedPath:           testPath,
+			expectedError:          "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			if testCase.hasSource {
+				testCase.testApplicationBuilder.Definition.Spec.Source = &argocdtypes.ApplicationSource{
+					Path: testPath,
+				}
+			} else {
+				// buildDummyAppplication already sets the source so we must reset it to nil.
+				testCase.testApplicationBuilder.Definition.Spec.Source = nil
+			}
+
+			applicationBuilder := testCase.testApplicationBuilder.WithGitPathAppended(testCase.elements...)
+			assert.Equal(t, testCase.expectedError, applicationBuilder.errorMsg)
+
+			if testCase.expectedError == "" {
+				assert.Equal(t, testCase.expectedPath, applicationBuilder.Definition.Spec.Source.Path)
+			}
+		})
+	}
+}
+
+func TestApplicationWaitForCondition(t *testing.T) {
 	testCases := []struct {
 		exists        bool
 		conditionMet  bool
@@ -346,6 +408,180 @@ func TestImageRegistryWaitForCondition(t *testing.T) {
 
 		_, err := testBuilder.WaitForCondition(defaultApplicationCondition, time.Second)
 		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
+func TestApplicationDoesGitPathExist(t *testing.T) {
+	testCases := []struct {
+		name      string
+		hasSource bool
+		validURL  bool
+		exists    bool
+	}{
+		{
+			name:      "exists",
+			hasSource: true,
+			validURL:  true,
+			exists:    true,
+		},
+		{
+			name:      "no-source",
+			hasSource: false,
+			validURL:  true,
+			exists:    false,
+		},
+		{
+			name:      "invalid-url",
+			hasSource: true,
+			validURL:  false,
+			exists:    false,
+		},
+		{
+			name:      "does-not-exist",
+			hasSource: true,
+			validURL:  true,
+			exists:    false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			var (
+				requestedPath   string
+				requestedMethod string
+			)
+
+			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+				requestedPath = request.URL.Path
+				requestedMethod = request.Method
+
+				if testCase.exists {
+					writer.WriteHeader(http.StatusOK)
+
+					return
+				}
+
+				writer.WriteHeader(http.StatusNotFound)
+			}))
+			defer server.Close()
+
+			var serverURL string
+
+			if testCase.validURL {
+				serverURL = server.URL
+			} else {
+				serverURL = "invalid-url"
+			}
+
+			testBuilder := buildValidApplicationBuilder(buildApplicationTestClientWithScheme())
+
+			if testCase.hasSource {
+				testBuilder.Definition.Spec.Source = &argocdtypes.ApplicationSource{
+					RepoURL:        serverURL,
+					Path:           "some/path",
+					TargetRevision: "main",
+				}
+			}
+
+			exists := testBuilder.DoesGitPathExist("test")
+			assert.Equal(t, testCase.exists, exists)
+
+			if requestedMethod != "" {
+				assert.Equal(t, http.MethodHead, requestedMethod)
+			}
+
+			if requestedPath != "" {
+				assert.Equal(t, "/raw/main/some/path/test/kustomization.yaml", requestedPath)
+			}
+		})
+	}
+}
+
+func TestApplicationWaitForSourceUpdate(t *testing.T) {
+	var expectedSource = argocdtypes.ApplicationSource{
+		TargetRevision: "main",
+	}
+
+	testCases := []struct {
+		name          string
+		sourceExists  bool
+		sourceUpdated bool
+		synced        bool
+		expectSynced  bool
+		expectedError error
+	}{
+		{
+			name:          "source-synced",
+			sourceExists:  true,
+			sourceUpdated: true,
+			synced:        true,
+			expectSynced:  true,
+			expectedError: nil,
+		},
+		{
+			name:          "source-not-updated",
+			sourceExists:  true,
+			sourceUpdated: false,
+			synced:        true,
+			expectSynced:  true,
+			expectedError: context.DeadlineExceeded,
+		},
+		{
+			name:          "source-updated-not-synced",
+			sourceExists:  true,
+			sourceUpdated: true,
+			synced:        false,
+			expectSynced:  true,
+			expectedError: context.DeadlineExceeded,
+		},
+		{
+			name:          "source-not-synced-expect-synced-false",
+			sourceExists:  true,
+			sourceUpdated: true,
+			synced:        false,
+			expectSynced:  false,
+			expectedError: nil,
+		},
+		{
+			name:          "source-does-not-exist",
+			sourceExists:  false,
+			sourceUpdated: true,
+			synced:        true,
+			expectSynced:  true,
+			expectedError: context.DeadlineExceeded,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			testApp := buildDummyApplication(defaultApplicationName, defaultApplicationNsName)
+
+			if !testCase.sourceExists {
+				testApp.Spec.Source = nil
+			} else {
+				testApp.Spec.Source = &expectedSource
+			}
+
+			if testCase.sourceUpdated {
+				testApp.Status.Sync.ComparedTo.Source = expectedSource
+			}
+
+			if testCase.synced {
+				testApp.Status.Sync.Status = argocdtypes.SyncStatusCodeSynced
+			}
+
+			testBuilder := buildValidApplicationBuilder(clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects:  []runtime.Object{testApp},
+				SchemeAttachers: appsTestSchemes,
+			}))
+
+			err := testBuilder.WaitForSourceUpdate(testCase.expectSynced, time.Second)
+			assert.Equal(t, testCase.expectedError, err)
+		})
 	}
 }
 
