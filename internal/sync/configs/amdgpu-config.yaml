@@ -1,0 +1,13 @@
+---
+- name: amd-gpu-operator-api-v1alpha1
+  sync: true
+  repo_link: "https://github.com/ROCm/gpu-operator"
+  branch: release-v1.2.1
+  remote_api_directory: api/v1alpha1
+  local_api_directory: schemes/amd/gpu-operator/api/v1alpha1
+  replace_imports:
+    - old: '"https://github.com/ROCm/gpu-operator/api/v1alpha1"'
+      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/amd/gpu-operator/api/v1alpha1"'
+  excludes:
+    - "*_test.go"
+    - "testdata"
