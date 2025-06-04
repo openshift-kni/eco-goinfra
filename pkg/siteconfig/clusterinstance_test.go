@@ -19,6 +19,9 @@ import (
 var (
 	// defaultClusterInstanceCondition  is a variable which depicts default value of ClusterInstance condition types.
 	defaultClusterInstanceCondition = metav1.Condition{Type: "", Status: metav1.ConditionTrue}
+
+	// defaultClusterInstanceReinstallCondition depicts default value of ClusterInstanceReinstall condition types.
+	defaultClusterInstanceReinstallCondition = metav1.Condition{Type: "", Status: metav1.ConditionTrue}
 )
 
 const (
@@ -588,6 +591,79 @@ func TestClusterInstanceWaitForCondition(t *testing.T) {
 		}
 
 		_, err := clusterInstanceBuilder.WaitForCondition(testCase.condition, time.Second)
+		assert.Equal(t, testCase.expectedError, err)
+	}
+}
+
+func TestClusterInstanceWaitForReinstallCondition(t *testing.T) {
+	testCases := []struct {
+		condition     metav1.Condition
+		exists        bool
+		conditionMet  bool
+		valid         bool
+		expectedError error
+	}{
+		{
+			condition:     defaultClusterInstanceReinstallCondition,
+			exists:        true,
+			conditionMet:  true,
+			valid:         true,
+			expectedError: nil,
+		},
+		{
+			condition:    defaultClusterInstanceReinstallCondition,
+			exists:       false,
+			conditionMet: true,
+			valid:        true,
+			expectedError: fmt.Errorf("clusterinstance object %s does not exist in namespace %s",
+				testClusterInstance, testClusterInstance),
+		},
+		{
+			condition:     defaultClusterInstanceReinstallCondition,
+			exists:        true,
+			conditionMet:  false,
+			valid:         true,
+			expectedError: context.DeadlineExceeded,
+		},
+		{
+			condition:     defaultClusterInstanceReinstallCondition,
+			exists:        true,
+			conditionMet:  true,
+			valid:         false,
+			expectedError: fmt.Errorf("clusterinstance 'nsname' cannot be empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		var (
+			runtimeObjects         []runtime.Object
+			clusterInstanceBuilder *CIBuilder
+		)
+
+		if testCase.exists {
+			clusterinstance := generateClusterInstance()
+
+			if testCase.conditionMet {
+				clusterinstance.Status.Reinstall = &siteconfigv1alpha1.ReinstallStatus{}
+				clusterinstance.Status.Reinstall.Conditions = append(clusterinstance.Status.Reinstall.Conditions,
+					testCase.condition)
+			}
+
+			runtimeObjects = append(runtimeObjects, clusterinstance)
+		}
+
+		testSettings := clients.GetTestClients(clients.TestClientParams{
+			K8sMockObjects:  runtimeObjects,
+			SchemeAttachers: testSchemes,
+		})
+
+		if testCase.valid {
+			clusterInstanceBuilder = buildValidClusterInstanceTestBuilder(testSettings)
+		} else {
+			clusterInstanceBuilder = buildInvalidClusterInstanceTestBuilder(testSettings)
+		}
+
+		_, err := clusterInstanceBuilder.WaitForReinstallCondition(testCase.condition, time.Second)
 		assert.Equal(t, testCase.expectedError, err)
 	}
 }
