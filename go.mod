@@ -1,6 +1,6 @@
 module github.com/openshift-kni/eco-goinfra
 
-go 1.24.3
+go 1.24.4
 
 require (
 	github.com/Masterminds/semver/v3 v3.3.1
