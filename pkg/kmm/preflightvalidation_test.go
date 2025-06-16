@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/kmm/v1beta1"
+	kmmv1beta2 "github.com/openshift-kni/eco-goinfra/pkg/schemes/kmm/v1beta2"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,21 +13,24 @@ import (
 )
 
 var (
+	testSchemes = []clients.SchemeAttacher{
+		kmmv1beta2.AddToScheme,
+	}
 	defaultPreflightName      = "preflight"
 	defaultPreflightNamespace = "preflightns"
 )
 
-func TestNewPreflightValidationOCPBuilder(t *testing.T) {
+func TestNewPreflightValidationBuilder(t *testing.T) {
 	testCases := []struct {
 		name              string
 		namespace         string
-		expectedPreflight *v1beta1.PreflightValidationOCP
+		expectedPreflight *kmmv1beta2.PreflightValidation
 		expectedErr       string
 	}{
 		{
 			name:      defaultPreflightName,
 			namespace: defaultPreflightNamespace,
-			expectedPreflight: &v1beta1.PreflightValidationOCP{
+			expectedPreflight: &kmmv1beta2.PreflightValidation{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      defaultPreflightName,
 					Namespace: defaultPreflightNamespace,
@@ -39,20 +42,20 @@ func TestNewPreflightValidationOCPBuilder(t *testing.T) {
 			name:              defaultPreflightName,
 			namespace:         "",
 			expectedPreflight: nil,
-			expectedErr:       "PreflightValidationOCP 'nsname' cannot be empty",
+			expectedErr:       "PreflightValidation 'nsname' cannot be empty",
 		},
 		{
 			name:              "",
 			namespace:         defaultPreflightNamespace,
 			expectedPreflight: nil,
-			expectedErr:       "PreflightValidationOCP 'name' cannot be empty",
+			expectedErr:       "PreflightValidation 'name' cannot be empty",
 		},
 	}
 
 	for _, testCase := range testCases {
 		testSettings := clients.GetTestClients(clients.TestClientParams{})
 
-		testBuilder := NewPreflightValidationOCPBuilder(testSettings, testCase.name, testCase.namespace)
+		testBuilder := NewPreflightValidationBuilder(testSettings, testCase.name, testCase.namespace)
 
 		if testCase.expectedErr == "" {
 			assert.NotNil(t, testBuilder)
@@ -64,49 +67,30 @@ func TestNewPreflightValidationOCPBuilder(t *testing.T) {
 	}
 }
 
-func TestPreflightValidationWithReleaseImage(t *testing.T) {
+func TestPreflightValidationWithKernelVersion(t *testing.T) {
 	testCases := []struct {
-		image       string
-		expecterErr string
+		kernelVersion string
+		expectedErr   string
 	}{
 		{
-			image:       "some-image",
-			expecterErr: "",
+			kernelVersion: "some-kernel",
+			expectedErr:   "",
 		},
 		{
-			image:       "",
-			expecterErr: "invald 'image' argument can not be nil",
+			kernelVersion: "",
+			expectedErr:   "invalid 'kernelVersion' argument can not be nil",
 		},
 	}
 
 	for _, testCase := range testCases {
 		testBuilder := buildValidTestPreflight(buildPreflightTestClientWithDummyObject())
-		testBuilder.WithReleaseImage(testCase.image)
+		testBuilder.WithKernelVersion(testCase.kernelVersion)
 
-		if testCase.expecterErr == "" {
-			assert.Equal(t, testBuilder.Definition.Spec.ReleaseImage, testCase.image)
+		if testCase.expectedErr == "" {
+			assert.Equal(t, testBuilder.Definition.Spec.KernelVersion, testCase.kernelVersion)
 		} else {
-			assert.Equal(t, testCase.expecterErr, testBuilder.errorMsg)
+			assert.Equal(t, testCase.expectedErr, testBuilder.errorMsg)
 		}
-	}
-}
-
-func TestPreflightValidationWithUseRTKernel(t *testing.T) {
-	testCases := []struct {
-		useRT bool
-	}{
-		{
-			useRT: true,
-		},
-		{
-			useRT: false,
-		},
-	}
-
-	for _, testCase := range testCases {
-		testBuilder := buildValidTestPreflight(buildPreflightTestClientWithDummyObject())
-		testBuilder.WithUseRTKernel(testCase.useRT)
-		assert.Equal(t, testCase.useRT, testBuilder.Definition.Spec.UseRTKernel)
 	}
 }
 
@@ -132,20 +116,20 @@ func TestPreflightValidationWithPushBuiltImage(t *testing.T) {
 func TestPreflightValidationWithOptions(t *testing.T) {
 	testBuilder := buildValidTestPreflight(buildPreflightTestClientWithDummyObject())
 
-	testBuilder.WithOptions(func(builder *PreflightValidationOCPBuilder) (*PreflightValidationOCPBuilder, error) {
+	testBuilder.WithOptions(func(builder *PreflightValidationBuilder) (*PreflightValidationBuilder, error) {
 		return builder, nil
 	})
 
 	assert.Equal(t, "", testBuilder.errorMsg)
 
-	testBuilder.WithOptions(func(builder *PreflightValidationOCPBuilder) (*PreflightValidationOCPBuilder, error) {
+	testBuilder.WithOptions(func(builder *PreflightValidationBuilder) (*PreflightValidationBuilder, error) {
 		return builder, fmt.Errorf("error")
 	})
 
 	assert.Equal(t, "error", testBuilder.errorMsg)
 }
 
-func TestPullPreflightValidationOCP(t *testing.T) {
+func TestPullPreflightValidation(t *testing.T) {
 	testCases := []struct {
 		name                string
 		namespace           string
@@ -163,21 +147,21 @@ func TestPullPreflightValidationOCP(t *testing.T) {
 		{
 			name:                "",
 			namespace:           "testns",
-			expectedError:       fmt.Errorf("preflightvalidationocp 'name' cannot be empty"),
+			expectedError:       fmt.Errorf("preflightvalidation 'name' cannot be empty"),
 			addToRuntimeObjects: true,
 			client:              true,
 		},
 		{
 			name:                "test",
 			namespace:           "",
-			expectedError:       fmt.Errorf("preflightvalidationocp 'nsname' cannot be empty"),
+			expectedError:       fmt.Errorf("preflightvalidation 'nsname' cannot be empty"),
 			addToRuntimeObjects: true,
 			client:              true,
 		},
 		{
 			name:                "test",
 			namespace:           "testns",
-			expectedError:       fmt.Errorf("preflightvalidationocp object test doesn't exist in namespace testns"),
+			expectedError:       fmt.Errorf("preflightvalidation object test doesn't exist in namespace testns"),
 			addToRuntimeObjects: false,
 			client:              true,
 		},
@@ -205,11 +189,11 @@ func TestPullPreflightValidationOCP(t *testing.T) {
 		if testCase.client {
 			testSettings = clients.GetTestClients(clients.TestClientParams{
 				K8sMockObjects:  runtimeObjects,
-				SchemeAttachers: testSchemesV1beta1,
+				SchemeAttachers: testSchemes,
 			})
 		}
 
-		builderResult, err := PullPreflightValidationOCP(testSettings, testCase.name, testCase.namespace)
+		builderResult, err := PullPreflightValidation(testSettings, testCase.name, testCase.namespace)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil {
@@ -221,7 +205,7 @@ func TestPullPreflightValidationOCP(t *testing.T) {
 
 func TestPreflightValidationCreate(t *testing.T) {
 	testCases := []struct {
-		testPreflight *PreflightValidationOCPBuilder
+		testPreflight *PreflightValidationBuilder
 		expectedError string
 	}{
 		{
@@ -230,7 +214,7 @@ func TestPreflightValidationCreate(t *testing.T) {
 		},
 		{
 			testPreflight: buildInValidTestPreflight(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: "PreflightValidationOCP 'nsname' cannot be empty",
+			expectedError: "PreflightValidation 'nsname' cannot be empty",
 		},
 		{
 			testPreflight: buildValidTestPreflight(buildPreflightTestClientWithDummyObject()),
@@ -251,31 +235,31 @@ func TestPreflightValidationCreate(t *testing.T) {
 
 func TestPreflightValidationUpdate(t *testing.T) {
 	testCases := []struct {
-		testPreflight *PreflightValidationOCPBuilder
+		testPreflight *PreflightValidationBuilder
 		expectedError error
-		releaseImage  string
+		kernelVersion string
 	}{
 		{
 			testPreflight: buildInValidTestPreflight(buildPreflightTestClientWithDummyObject()),
-			expectedError: fmt.Errorf("PreflightValidationOCP 'nsname' cannot be empty"),
-			releaseImage:  "testimage",
+			expectedError: fmt.Errorf("PreflightValidation 'nsname' cannot be empty"),
+			kernelVersion: "testkernel",
 		},
 		{
 			testPreflight: buildValidTestPreflight(buildPreflightTestClientWithDummyObject()),
 			expectedError: nil,
-			releaseImage:  "testimage",
+			kernelVersion: "testkernel",
 		},
 		{
 			testPreflight: buildValidTestPreflight(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: fmt.Errorf("preflightvalidationocps.kmm.sigs.x-k8s.io \"preflight\" not found"),
+			expectedError: fmt.Errorf("preflightvalidations.kmm.sigs.x-k8s.io \"preflight\" not found"),
 		},
 	}
 
 	for _, testCase := range testCases {
-		assert.Equal(t, "", testCase.testPreflight.Definition.Spec.ReleaseImage)
+		assert.Equal(t, "", testCase.testPreflight.Definition.Spec.KernelVersion)
 		testCase.testPreflight.Definition.ResourceVersion = "999"
-		assert.Equal(t, "", testCase.testPreflight.Definition.Spec.ReleaseImage)
-		testCase.testPreflight.Definition.Spec.ReleaseImage = testCase.releaseImage
+		assert.Equal(t, "", testCase.testPreflight.Definition.Spec.KernelVersion)
+		testCase.testPreflight.Definition.Spec.KernelVersion = testCase.kernelVersion
 		_, err := testCase.testPreflight.Update()
 
 		if errors.IsNotFound(err) {
@@ -285,7 +269,7 @@ func TestPreflightValidationUpdate(t *testing.T) {
 		}
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, testCase.releaseImage, testCase.testPreflight.Object.Spec.ReleaseImage)
+			assert.Equal(t, testCase.kernelVersion, testCase.testPreflight.Object.Spec.KernelVersion)
 			assert.Equal(t, testCase.testPreflight.Object, testCase.testPreflight.Definition)
 		}
 	}
@@ -293,7 +277,7 @@ func TestPreflightValidationUpdate(t *testing.T) {
 
 func TestPreflightValidationExists(t *testing.T) {
 	testCases := []struct {
-		testPreflight  *PreflightValidationOCPBuilder
+		testPreflight  *PreflightValidationBuilder
 		expectedStatus bool
 	}{
 		{
@@ -318,7 +302,7 @@ func TestPreflightValidationExists(t *testing.T) {
 
 func TestPreflightValidationDelete(t *testing.T) {
 	testCases := []struct {
-		testPreflight *PreflightValidationOCPBuilder
+		testPreflight *PreflightValidationBuilder
 		expectedError error
 	}{
 		{
@@ -327,7 +311,7 @@ func TestPreflightValidationDelete(t *testing.T) {
 		},
 		{
 			testPreflight: buildInValidTestPreflight(buildPreflightTestClientWithDummyObject()),
-			expectedError: fmt.Errorf("PreflightValidationOCP 'nsname' cannot be empty"),
+			expectedError: fmt.Errorf("PreflightValidation 'nsname' cannot be empty"),
 		},
 		{
 			testPreflight: buildValidTestPreflight(clients.GetTestClients(clients.TestClientParams{})),
@@ -347,7 +331,7 @@ func TestPreflightValidationDelete(t *testing.T) {
 
 func TestPreflightValidationGet(t *testing.T) {
 	testCases := []struct {
-		testPreflight *PreflightValidationOCPBuilder
+		testPreflight *PreflightValidationBuilder
 		expectedError error
 	}{
 		{
@@ -356,7 +340,7 @@ func TestPreflightValidationGet(t *testing.T) {
 		},
 		{
 			testPreflight: buildInValidTestPreflight(buildPreflightTestClientWithDummyObject()),
-			expectedError: fmt.Errorf("PreflightValidationOCP 'nsname' cannot be empty"),
+			expectedError: fmt.Errorf("PreflightValidation 'nsname' cannot be empty"),
 		},
 	}
 
@@ -371,15 +355,15 @@ func TestPreflightValidationGet(t *testing.T) {
 	}
 }
 
-func buildValidTestPreflight(apiClient *clients.Settings) *PreflightValidationOCPBuilder {
-	preflightBuilder := NewPreflightValidationOCPBuilder(apiClient, defaultPreflightName, defaultPreflightNamespace)
+func buildValidTestPreflight(apiClient *clients.Settings) *PreflightValidationBuilder {
+	preflightBuilder := NewPreflightValidationBuilder(apiClient, defaultPreflightName, defaultPreflightNamespace)
 	preflightBuilder.Definition.ResourceVersion = "999"
 
 	return preflightBuilder
 }
 
-func buildInValidTestPreflight(apiClient *clients.Settings) *PreflightValidationOCPBuilder {
-	preflightBuilder := NewPreflightValidationOCPBuilder(apiClient, defaultPreflightName, "")
+func buildInValidTestPreflight(apiClient *clients.Settings) *PreflightValidationBuilder {
+	preflightBuilder := NewPreflightValidationBuilder(apiClient, defaultPreflightName, "")
 	preflightBuilder.Definition.ResourceVersion = "999"
 
 	return preflightBuilder
@@ -388,25 +372,25 @@ func buildInValidTestPreflight(apiClient *clients.Settings) *PreflightValidation
 func buildPreflightTestClientWithDummyObject() *clients.Settings {
 	return clients.GetTestClients(clients.TestClientParams{
 		K8sMockObjects:  buildDummyPreflight(),
-		SchemeAttachers: testSchemesV1beta1,
+		SchemeAttachers: testSchemes,
 	})
 }
 
 func buildDummyPreflight() []runtime.Object {
-	return append([]runtime.Object{}, &v1beta1.PreflightValidationOCP{
+	return append([]runtime.Object{}, &kmmv1beta2.PreflightValidation{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      defaultPreflightName,
 			Namespace: defaultPreflightNamespace,
 		},
 
-		Spec: v1beta1.PreflightValidationOCPSpec{
-			ReleaseImage: "",
+		Spec: kmmv1beta2.PreflightValidationSpec{
+			KernelVersion: "",
 		},
 	})
 }
 
-func generatePreflight(name, nsname string) *v1beta1.PreflightValidationOCP {
-	return &v1beta1.PreflightValidationOCP{
+func generatePreflight(name, nsname string) *kmmv1beta2.PreflightValidation {
+	return &kmmv1beta2.PreflightValidation{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: nsname,
