@@ -26,7 +26,7 @@ jobs:
           go-version-file: go.mod
 
       - name: Setup cluster (k8s)
-        uses: palmsoftware/quick-k8s@v0.0.34
+        uses: palmsoftware/quick-k8s@v0.0.35
         with:
           waitForPodsReady: true
 
