@@ -303,7 +303,7 @@ type DevicePluginSpec struct {
 	Container DevicePluginContainerSpec `json:"container"`
 
 	// +optional
-	// InitContainer allows defines the init container that will be used by the device plugin
+	// InitContainer defines the init container that will be used by the device plugin
 	InitContainer *DevicePluginContainerSpec `json:"initContainer,omitempty"`
 
 	// +optional
