@@ -608,7 +608,7 @@ func TestModuleBuildModuleSpec(t *testing.T) {
 
 func buildValidTestModule(apiClient *clients.Settings) *ModuleBuilder {
 	moduleBuilder := NewModuleBuilder(apiClient, defaultModuleName, defaultModuleNamespace)
-	moduleBuilder.Definition.Spec.ModuleLoader = v1beta1.ModuleLoaderSpec{ServiceAccountName: "Test"}
+	moduleBuilder.Definition.Spec.ModuleLoader = &v1beta1.ModuleLoaderSpec{ServiceAccountName: "Test"}
 
 	return moduleBuilder
 }
