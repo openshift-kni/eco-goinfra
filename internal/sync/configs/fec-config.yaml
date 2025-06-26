@@ -20,4 +20,14 @@
   excludes:
     - "*_test.go"
     - "*_webhook.go"
+
+- name: vrb
+  sync: true
+  repo_link: "https://github.com/intel/sriov-fec-operator"
+  branch: main
+  remote_api_directory: api/sriovvrb/v1
+  local_api_directory: schemes/fec/vrbtypes
+  excludes:
+    - "*_test.go"
+    - "*_webhook.go"
 ...
