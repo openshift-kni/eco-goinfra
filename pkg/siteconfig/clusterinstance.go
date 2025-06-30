@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"github.com/openshift-kni/eco-goinfra/internal/commonbuilder"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	aiv1beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/v1beta1"
@@ -22,6 +23,7 @@ import (
 
 // CIBuilder provides struct for the ClusterInstance object.
 type CIBuilder struct {
+	commonbuilder.CommonBuilder
 	// ClusterInstance definition. Used to create a clusterinstance object.
 	Definition *siteconfigv1alpha1.ClusterInstance
 	// Created clusterinstance object.
@@ -61,6 +63,8 @@ func NewCIBuilder(apiClient *clients.Settings, name, nsname string) *CIBuilder {
 			},
 		},
 	}
+
+	builder.CommonBuilder = commonbuilder.New(builder)
 
 	if name == "" {
 		glog.V(100).Infof("The name of the clusterinstance is empty")
@@ -110,6 +114,8 @@ func PullClusterInstance(apiClient *clients.Settings, name, nsname string) (*CIB
 		},
 	}
 
+	builder.CommonBuilder = commonbuilder.New(builder)
+
 	if name == "" {
 		glog.V(100).Infof("The name of the clusterinstance is empty")
 
@@ -133,7 +139,7 @@ func PullClusterInstance(apiClient *clients.Settings, name, nsname string) (*CIB
 
 // WithPullSecretRef sets a reference to the pull-secret to be used by the clusterinstance.
 func (builder *CIBuilder) WithPullSecretRef(secretRef string) *CIBuilder {
-	if valid, _ := builder.validate(); !valid {
+	if valid, _ := builder.Validate(); !valid {
 		return builder
 	}
 
@@ -157,7 +163,7 @@ func (builder *CIBuilder) WithPullSecretRef(secretRef string) *CIBuilder {
 
 // WithClusterTemplateRef specifies the cluster template to use for the clusterinstance.
 func (builder *CIBuilder) WithClusterTemplateRef(clusterTemplateName, clusterTemplateNamespace string) *CIBuilder {
-	if valid, _ := builder.validate(); !valid {
+	if valid, _ := builder.Validate(); !valid {
 		return builder
 	}
 
@@ -190,7 +196,7 @@ func (builder *CIBuilder) WithClusterTemplateRef(clusterTemplateName, clusterTem
 
 // WithBaseDomain sets the base domain for the clusterinstance.
 func (builder *CIBuilder) WithBaseDomain(baseDomain string) *CIBuilder {
-	if valid, _ := builder.validate(); !valid {
+	if valid, _ := builder.Validate(); !valid {
 		return builder
 	}
 
@@ -212,7 +218,7 @@ func (builder *CIBuilder) WithBaseDomain(baseDomain string) *CIBuilder {
 
 // WithClusterImageSetRef sets the clusterimageset used for installation in the clusterinstance.
 func (builder *CIBuilder) WithClusterImageSetRef(imageSet string) *CIBuilder {
-	if valid, _ := builder.validate(); !valid {
+	if valid, _ := builder.Validate(); !valid {
 		return builder
 	}
 
@@ -234,7 +240,7 @@ func (builder *CIBuilder) WithClusterImageSetRef(imageSet string) *CIBuilder {
 
 // WithClusterName adds a cluster name to the clusterinstance.
 func (builder *CIBuilder) WithClusterName(clusterName string) *CIBuilder {
-	if valid, _ := builder.validate(); !valid {
+	if valid, _ := builder.Validate(); !valid {
 		return builder
 	}
 
@@ -256,7 +262,7 @@ func (builder *CIBuilder) WithClusterName(clusterName string) *CIBuilder {
 
 // WithSSHPubKey adds the provided public SSH key for accessing the nodes.
 func (builder *CIBuilder) WithSSHPubKey(sshPubKey string) *CIBuilder {
-	if valid, _ := builder.validate(); !valid {
+	if valid, _ := builder.Validate(); !valid {
 		return builder
 	}
 
@@ -278,7 +284,7 @@ func (builder *CIBuilder) WithSSHPubKey(sshPubKey string) *CIBuilder {
 
 // WithMachineNetwork adds the machineNetwork belonging to the node(s) to the clusterinstance.
 func (builder *CIBuilder) WithMachineNetwork(machineNetwork string) *CIBuilder {
-	if valid, _ := builder.validate(); !valid {
+	if valid, _ := builder.Validate(); !valid {
 		return builder
 	}
 
@@ -303,7 +309,7 @@ func (builder *CIBuilder) WithMachineNetwork(machineNetwork string) *CIBuilder {
 
 // WithProxy adds the specified proxy to the clusterinstance.
 func (builder *CIBuilder) WithProxy(proxy *aiv1beta1.Proxy) *CIBuilder {
-	if valid, _ := builder.validate(); !valid {
+	if valid, _ := builder.Validate(); !valid {
 		return builder
 	}
 
@@ -325,7 +331,7 @@ func (builder *CIBuilder) WithProxy(proxy *aiv1beta1.Proxy) *CIBuilder {
 
 // WithNode adds the specified node spec to the clusterinstance.
 func (builder *CIBuilder) WithNode(node *siteconfigv1alpha1.NodeSpec) *CIBuilder {
-	if valid, _ := builder.validate(); !valid {
+	if valid, _ := builder.Validate(); !valid {
 		return builder
 	}
 
@@ -347,7 +353,7 @@ func (builder *CIBuilder) WithNode(node *siteconfigv1alpha1.NodeSpec) *CIBuilder
 
 // WithExtraManifests includes manifests via configmap name.
 func (builder *CIBuilder) WithExtraManifests(extraManifestsName string) *CIBuilder {
-	if valid, _ := builder.validate(); !valid {
+	if valid, _ := builder.Validate(); !valid {
 		return builder
 	}
 
@@ -371,7 +377,7 @@ func (builder *CIBuilder) WithExtraManifests(extraManifestsName string) *CIBuild
 
 // WithCABundle sets a CA bundle via configmap name.
 func (builder *CIBuilder) WithCABundle(caBundleConfigMapName string) *CIBuilder {
-	if valid, _ := builder.validate(); !valid {
+	if valid, _ := builder.Validate(); !valid {
 		return builder
 	}
 
@@ -394,7 +400,7 @@ func (builder *CIBuilder) WithCABundle(caBundleConfigMapName string) *CIBuilder 
 
 // WithExtraLabels applies extraLabels to ClusterInstance definition.
 func (builder *CIBuilder) WithExtraLabels(key string, labels map[string]string) *CIBuilder {
-	if valid, _ := builder.validate(); !valid {
+	if valid, _ := builder.Validate(); !valid {
 		return builder
 	}
 
@@ -440,7 +446,7 @@ func (builder *CIBuilder) WithExtraLabels(key string, labels map[string]string) 
 // For the message field, it matches if the message contains the expected.
 // Zero fields in the expected condition are ignored.
 func (builder *CIBuilder) WaitForCondition(expected metav1.Condition, timeout time.Duration) (*CIBuilder, error) {
-	if valid, err := builder.validate(); !valid {
+	if valid, err := builder.Validate(); !valid {
 		return builder, err
 	}
 
@@ -557,7 +563,7 @@ func (builder *CIBuilder) WaitForReinstallCondition(expected metav1.Condition,
 
 // WaitForExtraLabel waits up to timeout until the ExtraLabel label exists for manifest of kind.
 func (builder *CIBuilder) WaitForExtraLabel(kind, label string, timeout time.Duration) (*CIBuilder, error) {
-	if valid, err := builder.validate(); !valid {
+	if valid, err := builder.Validate(); !valid {
 		return nil, err
 	}
 
@@ -609,7 +615,7 @@ func (builder *CIBuilder) WaitForExtraLabel(kind, label string, timeout time.Dur
 
 // Get fetches the defined ClusterInstance from the cluster.
 func (builder *CIBuilder) Get() (*siteconfigv1alpha1.ClusterInstance, error) {
-	if valid, err := builder.validate(); !valid {
+	if valid, err := builder.Validate(); !valid {
 		return nil, err
 	}
 
@@ -631,7 +637,7 @@ func (builder *CIBuilder) Get() (*siteconfigv1alpha1.ClusterInstance, error) {
 
 // Create generates an ClusterInstance on the cluster.
 func (builder *CIBuilder) Create() (*CIBuilder, error) {
-	if valid, err := builder.validate(); !valid {
+	if valid, err := builder.Validate(); !valid {
 		return builder, err
 	}
 
@@ -651,7 +657,7 @@ func (builder *CIBuilder) Create() (*CIBuilder, error) {
 
 // Update modifies an existing ClusterInstance on the cluster.
 func (builder *CIBuilder) Update(force bool) (*CIBuilder, error) {
-	if valid, err := builder.validate(); !valid {
+	if valid, err := builder.Validate(); !valid {
 		return builder, err
 	}
 
@@ -694,7 +700,7 @@ func (builder *CIBuilder) Update(force bool) (*CIBuilder, error) {
 
 // Delete removes an ClusterInstance from the cluster.
 func (builder *CIBuilder) Delete() error {
-	if valid, err := builder.validate(); !valid {
+	if valid, err := builder.Validate(); !valid {
 		return err
 	}
 
@@ -723,7 +729,7 @@ func (builder *CIBuilder) Delete() error {
 
 // Exists checks if the defined ClusterInstance has already been created.
 func (builder *CIBuilder) Exists() bool {
-	if valid, _ := builder.validate(); !valid {
+	if valid, _ := builder.Validate(); !valid {
 		return false
 	}
 
@@ -736,34 +742,22 @@ func (builder *CIBuilder) Exists() bool {
 	return err == nil || !k8serrors.IsNotFound(err)
 }
 
-// validate will check that the builder and builder definition are properly initialized before
-// accessing any member fields.
-func (builder *CIBuilder) validate() (bool, error) {
-	resourceCRD := "ClusterInstance"
+// GetClient returns builder client.
+func (builder *CIBuilder) GetClient() goclient.Client {
+	return builder.apiClient
+}
 
-	if builder == nil {
-		glog.V(100).Infof("The %s builder is uninitialized", resourceCRD)
+// GetDefinition returns builder definition.
+func (builder *CIBuilder) GetDefinition() goclient.Object {
+	return builder.Definition
+}
 
-		return false, fmt.Errorf("error: received nil %s builder", resourceCRD)
-	}
+// GetErrorMsg returns builder errorMsg.
+func (builder *CIBuilder) GetErrorMsg() string {
+	return builder.errorMsg
+}
 
-	if builder.Definition == nil {
-		glog.V(100).Infof("The %s is undefined", resourceCRD)
-
-		return false, fmt.Errorf("%s", msg.UndefinedCrdObjectErrString(resourceCRD))
-	}
-
-	if builder.apiClient == nil {
-		glog.V(100).Infof("The %s builder apiclient is nil", resourceCRD)
-
-		return false, fmt.Errorf("%s builder cannot have nil apiClient", resourceCRD)
-	}
-
-	if builder.errorMsg != "" {
-		glog.V(100).Infof("The %s builder has error message: %s", resourceCRD, builder.errorMsg)
-
-		return false, fmt.Errorf("%s", builder.errorMsg)
-	}
-
-	return true, nil
+// GetKind returns builder kind.
+func (builder *CIBuilder) GetKind() string {
+	return siteconfigv1alpha1.ClusterInstanceKind
 }
