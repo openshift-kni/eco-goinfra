@@ -1,0 +1,11 @@
+---
+- name: pfstatus
+  sync: true
+  repo_link: "https://github.com/openshift/pf-status-relay-operator"
+  branch: main
+  remote_api_directory: api/v1alpha1
+  local_api_directory: schemes/pfstatus/pfstatustypes
+  excludes:
+    - "*_test.go"
+    - "*_webhook.go"
+...
