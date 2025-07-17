@@ -128,6 +128,8 @@ linters:
 output:
   format: colored-line-number
 issues:
+  exclude-files:
+    - pkg/metallb/mlbtypesv1beta2/bgppeer_types.go # Code taken from another repo so no need to apply our linter
   include:
     - EXC0002 # disable excluding of issues about comments from golint
     - EXC0012  # EXC0012 revive: Annoying issue about not having a comment. The rare codebase has such comments
