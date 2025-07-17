@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	"github.com/openshift-kni/eco-goinfra/pkg/metallb/mlbtypes"
+	"github.com/openshift-kni/eco-goinfra/pkg/metallb/mlbtypesv1beta2"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -15,7 +15,7 @@ import (
 var (
 	bgpPeerGVK = schema.GroupVersionKind{
 		Group:   APIGroup,
-		Version: APIVersion,
+		Version: APIVersionv2,
 		Kind:    bpgPeerKind,
 	}
 	defaultBGPPeerName   = "default-bgp-peer"
@@ -115,11 +115,11 @@ func TestBGPPeerWithDynamicASN(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		bgpPeerBuilder := testCase.testBGPPeer.WithDynamicASN(mlbtypes.DynamicASNMode(testCase.dynamicASN))
+		bgpPeerBuilder := testCase.testBGPPeer.WithDynamicASN(mlbtypesv1beta2.DynamicASNMode(testCase.dynamicASN))
 		assert.Equal(t, testCase.expectedError, bgpPeerBuilder.errorMsg)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, mlbtypes.DynamicASNMode(testCase.dynamicASN), bgpPeerBuilder.Definition.Spec.DynamicASN)
+			assert.Equal(t, mlbtypesv1beta2.DynamicASNMode(testCase.dynamicASN), bgpPeerBuilder.Definition.Spec.DynamicASN)
 		}
 	}
 }
@@ -283,7 +283,7 @@ func TestBGPPeerWithHoldTime(t *testing.T) {
 		assert.Equal(t, testCase.expectedError, bgpPeerBuilder.errorMsg)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testCase.holdTime, bgpPeerBuilder.Definition.Spec.HoldTime)
+			assert.Equal(t, testCase.holdTime, *bgpPeerBuilder.Definition.Spec.HoldTime)
 		}
 	}
 }
@@ -314,7 +314,7 @@ func TestBGPPeerWithKeepalive(t *testing.T) {
 		assert.Equal(t, testCase.expectedError, bgpPeerBuilder.errorMsg)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, testCase.keepalive, bgpPeerBuilder.Definition.Spec.KeepaliveTime)
+			assert.Equal(t, testCase.keepalive, *bgpPeerBuilder.Definition.Spec.KeepaliveTime)
 		}
 	}
 }
@@ -346,7 +346,7 @@ func TestBGPPeerWithNodeSelector(t *testing.T) {
 		assert.Equal(t, testCase.expectedError, bgpPeerBuilder.errorMsg)
 
 		if testCase.expectedError == "" {
-			assert.Equal(t, mlbtypes.NodeSelector{MatchLabels: testCase.nodeSelector},
+			assert.Equal(t, metav1.LabelSelector{MatchLabels: testCase.nodeSelector},
 				bgpPeerBuilder.Definition.Spec.NodeSelectors[0])
 		}
 	}
@@ -434,7 +434,7 @@ func TestBGPPeerWithOptions(t *testing.T) {
 func TestBGPPeerGVR(t *testing.T) {
 	assert.Equal(t, GetBGPPeerGVR(),
 		schema.GroupVersionResource{
-			Group: APIGroup, Version: APIVersion, Resource: "bgppeers",
+			Group: APIGroup, Version: APIVersionv2, Resource: "bgppeers",
 		})
 }
 
