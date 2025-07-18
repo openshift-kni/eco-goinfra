@@ -882,3 +882,60 @@ func TestDeploymentWaitUntilDeleted(t *testing.T) {
 		}
 	}
 }
+
+func TestWithTerminationGracePeriodSeconds(t *testing.T) {
+	testCases := []struct {
+		terminationGracePeriodSeconds int64
+		expectedErrMsg                string
+		builderValid                  bool
+	}{
+		{
+			terminationGracePeriodSeconds: 30,
+			expectedErrMsg:                "",
+			builderValid:                  true,
+		},
+		{
+			terminationGracePeriodSeconds: 0,
+			expectedErrMsg:                "",
+			builderValid:                  true,
+		},
+		{
+			terminationGracePeriodSeconds: 300,
+			expectedErrMsg:                "",
+			builderValid:                  true,
+		},
+		{
+			terminationGracePeriodSeconds: 60,
+			expectedErrMsg:                "",
+			builderValid:                  false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidTestBuilder()
+
+		if !testCase.builderValid {
+			testBuilder.errorMsg = "test error"
+		}
+
+		originalTerminationGracePeriodSeconds := testBuilder.Definition.Spec.Template.Spec.TerminationGracePeriodSeconds
+
+		result := testBuilder.WithTerminationGracePeriodSeconds(testCase.terminationGracePeriodSeconds)
+
+		// Verify the method returns the builder for chaining
+		assert.Equal(t, testBuilder, result)
+
+		if testCase.builderValid {
+			// For valid builders, the value should be set
+			assert.NotNil(t, testBuilder.Definition.Spec.Template.Spec.TerminationGracePeriodSeconds)
+			assert.Equal(t, testCase.terminationGracePeriodSeconds,
+				*testBuilder.Definition.Spec.Template.Spec.TerminationGracePeriodSeconds)
+			assert.Equal(t, testCase.expectedErrMsg, testBuilder.errorMsg)
+		} else {
+			// For invalid builders, the value should not be changed
+			assert.Equal(t, originalTerminationGracePeriodSeconds,
+				testBuilder.Definition.Spec.Template.Spec.TerminationGracePeriodSeconds)
+			assert.NotEqual(t, "", testBuilder.errorMsg) // Error message should remain
+		}
+	}
+}
