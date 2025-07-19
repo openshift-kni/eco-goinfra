@@ -29,9 +29,8 @@ require (
 	github.com/openshift-kni/cluster-group-upgrades-operator v0.0.0-20250715163214-56f0876892dc // release-4.19
 	github.com/openshift-kni/lifecycle-agent v0.0.0-20250715161102-71395a52711a // release-4.19
 	github.com/openshift-kni/numaresources-operator v0.4.18-0.2024100201.0.20250715062915-7cc48e4830bd // release-4.19
-	github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin v0.0.0-20250128160241-57fbcf565b32
-	github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20250129205116-6838db628c2b
-	github.com/openshift-kni/oran-o2ims/api/provisioning v0.0.0-20250123151805-c935b06062f9
+	github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20250716190952-206606893d4d
+	github.com/openshift-kni/oran-o2ims/api/provisioning v0.0.0-20250716190952-206606893d4d
 	github.com/openshift/api v0.0.0-20250529074221-97812373b6b4 // release-4.19
 	github.com/openshift/client-go v0.0.0-20250425165505-5f55ff6979a1 // release-4.19
 	github.com/openshift/cluster-nfd-operator v0.0.0-20250619073832-dbf21174e0c0 // release-4.19
@@ -160,6 +159,7 @@ require (
 	github.com/oapi-codegen/oapi-codegen/v2 v2.4.1 // indirect
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/oklog/ulid v1.3.1 // indirect
+	github.com/openshift-kni/oran-o2ims/api/common v0.0.0-20250716190952-206606893d4d // indirect
 	github.com/openshift/cluster-logging-operator/api/observability v0.0.0-20250422180113-5bae4ccfc5ef
 	github.com/openshift/library-go v0.0.0-20250313122028-477d5d90df06 // indirect
 	github.com/openshift/machine-config-operator v0.0.1-0.20250320230514-53e78f3692ee // indirect
