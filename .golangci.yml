@@ -139,6 +139,8 @@ linters:
       - third_party$
       - builtin$
       - examples$
+      # This package in oran is entirely generated code so there is no need to check it.
+      - pkg/oran/api/internal/common
 formatters:
   enable:
     - gofmt
