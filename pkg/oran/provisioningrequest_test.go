@@ -248,7 +248,7 @@ func TestPRGet(t *testing.T) {
 		},
 		{
 			testBuilder:   buildValidPRTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError: fmt.Sprintf("provisioningrequests.o2ims.provisioning.oran.org \"%s\" not found", defaultPRName),
+			expectedError: fmt.Sprintf("provisioningrequests.clcm.openshift.io \"%s\" not found", defaultPRName),
 		},
 	}
 

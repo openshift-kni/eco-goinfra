@@ -110,7 +110,7 @@ func TestClusterTemplateGet(t *testing.T) {
 		{
 			testBuilder: buildValidClusterTemplateTestBuilder(clients.GetTestClients(clients.TestClientParams{})),
 			expectedError: fmt.Sprintf(
-				"clustertemplates.o2ims.provisioning.oran.org \"%s\" not found", defaultClusterTemplateName),
+				"clustertemplates.clcm.openshift.io \"%s\" not found", defaultClusterTemplateName),
 		},
 	}
 
