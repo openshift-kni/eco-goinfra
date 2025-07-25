@@ -17,7 +17,6 @@ import (
 var (
 	defaultStorageClusterName      = "ocs-storagecluster"
 	defaultStorageClusterNamespace = "openshift-storage"
-	defaultManageNodes             = false
 	defaultStorageClassName        = "ocs-storagecluster-cephfs"
 	defaultVolumeMode              = corev1.PersistentVolumeBlock
 	errStorageClusterNotExists     = fmt.Errorf("storageCluster object ocs-storagecluster does not exist in " +
@@ -316,59 +315,30 @@ func TestStorageClusterUpdate(t *testing.T) {
 	testCases := []struct {
 		testStorageCluster *StorageClusterBuilder
 		expectedError      error
-		manageNodes        bool
+		flexibleScaling    bool
 	}{
 		{
 			testStorageCluster: buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
 			expectedError:      nil,
-			manageNodes:        true,
+			flexibleScaling:    true,
 		},
 		{
 			testStorageCluster: buildInValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
 			expectedError:      fmt.Errorf("storageCluster 'name' cannot be empty"),
-			manageNodes:        true,
+			flexibleScaling:    true,
 		},
 	}
 
 	for _, testCase := range testCases {
-		assert.Equal(t, defaultManageNodes, testCase.testStorageCluster.Definition.Spec.ManageNodes)
+		assert.False(t, testCase.testStorageCluster.Definition.Spec.FlexibleScaling)
 		assert.Nil(t, nil, testCase.testStorageCluster.Object)
-		testCase.testStorageCluster.WithManageNodes(testCase.manageNodes)
+		testCase.testStorageCluster.WithFlexibleScaling(testCase.flexibleScaling)
 		_, err := testCase.testStorageCluster.Update()
 
 		if testCase.expectedError == nil {
-			assert.Equal(t, testCase.manageNodes, testCase.testStorageCluster.Definition.Spec.ManageNodes)
+			assert.Equal(t, testCase.flexibleScaling, testCase.testStorageCluster.Definition.Spec.FlexibleScaling)
 		} else {
 			assert.Equal(t, testCase.expectedError, err)
-		}
-	}
-}
-
-func TestStorageClusterWithManageNodes(t *testing.T) {
-	testCases := []struct {
-		testManageNodes bool
-		expectedError   string
-	}{
-		{
-			testManageNodes: true,
-			expectedError:   "",
-		},
-		{
-			testManageNodes: false,
-			expectedError:   "",
-		},
-	}
-
-	for _, testCase := range testCases {
-		testBuilder := buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject())
-
-		result := testBuilder.WithManageNodes(testCase.testManageNodes)
-
-		if testCase.expectedError != "" {
-			assert.Equal(t, testCase.expectedError, result.errorMsg)
-		} else {
-			assert.NotNil(t, result)
-			assert.Equal(t, testCase.testManageNodes, result.Definition.Spec.ManageNodes)
 		}
 	}
 }
