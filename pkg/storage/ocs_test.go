@@ -35,7 +35,6 @@ func TestSorageClusterPull(t *testing.T) {
 				Namespace: namespace,
 			},
 			Spec: ocsoperatorv1.StorageClusterSpec{
-				ManageNodes: false,
 				ManagedResources: ocsoperatorv1.ManagedResourcesSpec{
 					CephBlockPools: ocsoperatorv1.ManageCephBlockPools{
 						ReconcileStrategy: "manage",
@@ -339,32 +338,6 @@ func TestStorageClusterUpdate(t *testing.T) {
 			assert.Equal(t, testCase.flexibleScaling, testCase.testStorageCluster.Definition.Spec.FlexibleScaling)
 		} else {
 			assert.Equal(t, testCase.expectedError, err)
-		}
-	}
-}
-
-func TestStorageClusterGetManageNodes(t *testing.T) {
-	testCases := []struct {
-		testStorageCluster *StorageClusterBuilder
-		expectedError      error
-	}{
-		{
-			testStorageCluster: buildValidStorageClusterBuilder(buildStorageClusterClientWithDummyObject()),
-			expectedError:      nil,
-		},
-		{
-			testStorageCluster: buildValidStorageClusterBuilder(clients.GetTestClients(clients.TestClientParams{})),
-			expectedError:      errStorageClusterNotExists,
-		},
-	}
-
-	for _, testCase := range testCases {
-		currentStorageClusterManageNodesValue, err := testCase.testStorageCluster.GetManageNodes()
-
-		if testCase.expectedError == nil {
-			assert.Equal(t, currentStorageClusterManageNodesValue, testCase.testStorageCluster.Object.Spec.ManageNodes)
-		} else {
-			assert.Equal(t, testCase.expectedError.Error(), err.Error())
 		}
 	}
 }
@@ -718,7 +691,6 @@ func buildDummyStorageCluster() []runtime.Object {
 			Namespace: defaultStorageClusterNamespace,
 		},
 		Spec: ocsoperatorv1.StorageClusterSpec{
-			ManageNodes:        false,
 			ManagedResources:   ocsoperatorv1.ManagedResourcesSpec{},
 			MonDataDirHostPath: "",
 			MultiCloudGateway:  nil,

@@ -243,23 +243,6 @@ func (builder *StorageClusterBuilder) Update() (*StorageClusterBuilder, error) {
 	return builder, nil
 }
 
-// GetManageNodes fetches storageCluster manageNodes value.
-func (builder *StorageClusterBuilder) GetManageNodes() (bool, error) {
-	if valid, err := builder.validate(); !valid {
-		return false, err
-	}
-
-	glog.V(100).Infof("Getting storageCluster %s in namespace %s manageNodes configuration",
-		builder.Definition.Name, builder.Definition.Namespace)
-
-	if !builder.Exists() {
-		return false, fmt.Errorf("storageCluster object %s does not exist in namespace %s",
-			builder.Definition.Name, builder.Definition.Namespace)
-	}
-
-	return builder.Object.Spec.ManageNodes, nil
-}
-
 // GetManagedResources fetches storageCluster managedResources value.
 func (builder *StorageClusterBuilder) GetManagedResources() (*ocsoperatorv1.ManagedResourcesSpec, error) {
 	if valid, err := builder.validate(); !valid {
