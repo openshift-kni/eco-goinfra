@@ -328,21 +328,6 @@ func (builder *StorageClusterBuilder) GetStorageDeviceSets() ([]ocsoperatorv1.St
 	return builder.Object.Spec.StorageDeviceSets, nil
 }
 
-// WithManageNodes sets the storageCluster's managedNodes value.
-func (builder *StorageClusterBuilder) WithManageNodes(expectedManagedNodesValue bool) *StorageClusterBuilder {
-	if valid, _ := builder.validate(); !valid {
-		return builder
-	}
-
-	glog.V(100).Infof(
-		"Setting storageCluster %s in namespace %s with managedNodes value: %t",
-		builder.Definition.Name, builder.Definition.Namespace, expectedManagedNodesValue)
-
-	builder.Definition.Spec.ManageNodes = expectedManagedNodesValue
-
-	return builder
-}
-
 // WithFlexibleScaling sets the storageCluster's flexibleScaling value.
 func (builder *StorageClusterBuilder) WithFlexibleScaling(flexibleScaling bool) *StorageClusterBuilder {
 	if valid, _ := builder.validate(); !valid {
