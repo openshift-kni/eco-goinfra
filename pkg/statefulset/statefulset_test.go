@@ -222,6 +222,92 @@ func TestDelete(t *testing.T) {
 	}
 }
 
+func TestWithPodAnnotations(t *testing.T) {
+	testCases := []struct {
+		testName            string
+		annotations         map[string]string
+		existingAnnotations map[string]string
+		expectedAnnotations map[string]string
+		expectedError       bool
+		expectedErrorMsg    string
+	}{
+		{
+			testName: "Successfully add annotations to empty pod template",
+			annotations: map[string]string{
+				"app.kubernetes.io/version": "v1.0.0",
+				"custom.annotation/key":     "value",
+			},
+			existingAnnotations: nil,
+			expectedAnnotations: map[string]string{
+				"app.kubernetes.io/version": "v1.0.0",
+				"custom.annotation/key":     "value",
+			},
+			expectedError:    false,
+			expectedErrorMsg: "",
+		},
+		{
+			testName: "Successfully merge annotations with existing ones",
+			annotations: map[string]string{
+				"new.annotation/key": "new-value",
+			},
+			existingAnnotations: map[string]string{
+				"existing.annotation/key": "existing-value",
+			},
+			expectedAnnotations: map[string]string{
+				"existing.annotation/key": "existing-value",
+				"new.annotation/key":      "new-value",
+			},
+			expectedError:    false,
+			expectedErrorMsg: "",
+		},
+		{
+			testName: "Successfully overwrite existing annotation",
+			annotations: map[string]string{
+				"shared.annotation/key": "new-value",
+			},
+			existingAnnotations: map[string]string{
+				"shared.annotation/key": "old-value",
+				"other.annotation/key":  "other-value",
+			},
+			expectedAnnotations: map[string]string{
+				"shared.annotation/key": "new-value",
+				"other.annotation/key":  "other-value",
+			},
+			expectedError:    false,
+			expectedErrorMsg: "",
+		},
+		{
+			testName:            "Fail with nil annotations",
+			annotations:         nil,
+			existingAnnotations: nil,
+			expectedAnnotations: nil,
+			expectedError:       true,
+			expectedErrorMsg:    "cannot accept nil or empty annotations",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.testName, func(t *testing.T) {
+			testBuilder := buildTestBuilderWithFakeObjects([]runtime.Object{})
+
+			// Set existing annotations if provided
+			if testCase.existingAnnotations != nil {
+				testBuilder.Definition.Spec.Template.Annotations = testCase.existingAnnotations
+			}
+
+			// Call the method
+			result := testBuilder.WithPodAnnotations(testCase.annotations)
+
+			if testCase.expectedError {
+				assert.Equal(t, testCase.expectedErrorMsg, result.errorMsg)
+			} else {
+				assert.Empty(t, result.errorMsg)
+				assert.Equal(t, testCase.expectedAnnotations, result.Definition.Spec.Template.Annotations)
+			}
+		})
+	}
+}
+
 func buildTestBuilderWithFakeObjects(runtimeObjects []runtime.Object) *Builder {
 	testSettings := clients.GetTestClients(clients.TestClientParams{
 		K8sMockObjects: runtimeObjects,
