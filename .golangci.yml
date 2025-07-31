@@ -124,6 +124,13 @@ linters:
         - ST1001
     wsl:
       strict-append: false
+    ireturn:
+      allow:
+        - anon
+        - error
+        - empty
+        - stdlib
+        - sigs.k8s.io/controller-runtime/pkg/client
   exclusions:
     generated: lax
     presets:
