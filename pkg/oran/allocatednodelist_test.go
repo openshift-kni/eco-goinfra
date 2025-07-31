@@ -10,27 +10,27 @@ import (
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func TestListNodePools(t *testing.T) {
+func TestListAllocatedNodes(t *testing.T) {
 	testCases := []struct {
-		nodePools     []*NodePoolBuilder
+		nodes         []*AllocatedNodeBuilder
 		listOptions   []runtimeclient.ListOptions
 		client        bool
 		expectedError error
 	}{
 		{
-			nodePools:     []*NodePoolBuilder{buildValidNodePoolTestBuilder(buildTestClientWithDummyNodePool())},
+			nodes:         []*AllocatedNodeBuilder{buildValidAllocatedNodeTestBuilder(buildTestClientWithDummyAllocatedNode())},
 			listOptions:   nil,
 			client:        true,
 			expectedError: nil,
 		},
 		{
-			nodePools:     []*NodePoolBuilder{buildValidNodePoolTestBuilder(buildTestClientWithDummyNodePool())},
+			nodes:         []*AllocatedNodeBuilder{buildValidAllocatedNodeTestBuilder(buildTestClientWithDummyAllocatedNode())},
 			listOptions:   []runtimeclient.ListOptions{{LabelSelector: labels.NewSelector()}},
 			client:        true,
 			expectedError: nil,
 		},
 		{
-			nodePools: []*NodePoolBuilder{buildValidNodePoolTestBuilder(buildTestClientWithDummyNodePool())},
+			nodes: []*AllocatedNodeBuilder{buildValidAllocatedNodeTestBuilder(buildTestClientWithDummyAllocatedNode())},
 			listOptions: []runtimeclient.ListOptions{
 				{LabelSelector: labels.NewSelector()},
 				{LabelSelector: labels.NewSelector()},
@@ -39,10 +39,10 @@ func TestListNodePools(t *testing.T) {
 			expectedError: fmt.Errorf("error: more than one ListOptions was passed"),
 		},
 		{
-			nodePools:     []*NodePoolBuilder{buildValidNodePoolTestBuilder(buildTestClientWithDummyNodePool())},
+			nodes:         []*AllocatedNodeBuilder{buildValidAllocatedNodeTestBuilder(buildTestClientWithDummyAllocatedNode())},
 			listOptions:   nil,
 			client:        false,
-			expectedError: fmt.Errorf("failed to list nodePools, 'apiClient' parameter is nil"),
+			expectedError: fmt.Errorf("failed to list allocatedNodes, 'apiClient' parameter is nil"),
 		},
 	}
 
@@ -50,14 +50,14 @@ func TestListNodePools(t *testing.T) {
 		var testSettings *clients.Settings
 
 		if testCase.client {
-			testSettings = buildTestClientWithDummyNodePool()
+			testSettings = buildTestClientWithDummyAllocatedNode()
 		}
 
-		builders, err := ListNodePools(testSettings, testCase.listOptions...)
+		builders, err := ListAllocatedNodes(testSettings, testCase.listOptions...)
 		assert.Equal(t, testCase.expectedError, err)
 
 		if testCase.expectedError == nil && len(testCase.listOptions) == 0 {
-			assert.Equal(t, len(testCase.nodePools), len(builders))
+			assert.Equal(t, len(testCase.nodes), len(builders))
 		}
 	}
 }
