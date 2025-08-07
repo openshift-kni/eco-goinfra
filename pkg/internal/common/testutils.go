@@ -46,11 +46,7 @@ func buildDummyClusterScopedResource() *corev1.Namespace {
 
 // mockClusterScopedBuilder implements the Builder interface for testing using a cluster-scoped resource.
 type mockClusterScopedBuilder struct {
-	apiClient    runtimeclient.Client
-	definition   *corev1.Namespace
-	object       *corev1.Namespace
-	errorMessage string
-	gvk          schema.GroupVersionKind
+	EmbeddableBuilder[corev1.Namespace, *corev1.Namespace]
 }
 
 // Compile-time check to ensure mockClusterScopedBuilder implements Builder interface.
@@ -58,60 +54,28 @@ var _ Builder[corev1.Namespace, *corev1.Namespace] = (*mockClusterScopedBuilder)
 
 func buildValidMockClusterScopedBuilder(client runtimeclient.Client) *mockClusterScopedBuilder {
 	return &mockClusterScopedBuilder{
-		apiClient:    client,
-		definition:   buildDummyClusterScopedResource(),
-		object:       buildDummyClusterScopedResource(),
-		errorMessage: "",
+		EmbeddableBuilder: EmbeddableBuilder[corev1.Namespace, *corev1.Namespace]{
+			apiClient:    client,
+			Definition:   buildDummyClusterScopedResource(),
+			Object:       buildDummyClusterScopedResource(),
+			errorMessage: "",
+		},
 	}
 }
 
 func buildInvalidMockClusterScopedBuilder(client runtimeclient.Client) *mockClusterScopedBuilder {
 	return &mockClusterScopedBuilder{
-		apiClient:    client,
-		definition:   buildDummyClusterScopedResource(),
-		object:       buildDummyClusterScopedResource(),
-		errorMessage: defaultErrorMessage,
+		EmbeddableBuilder: EmbeddableBuilder[corev1.Namespace, *corev1.Namespace]{
+			apiClient:    client,
+			Definition:   buildDummyClusterScopedResource(),
+			Object:       buildDummyClusterScopedResource(),
+			errorMessage: defaultErrorMessage,
+		},
 	}
-}
-
-func (builder *mockClusterScopedBuilder) GetDefinition() *corev1.Namespace {
-	return builder.definition
-}
-
-func (builder *mockClusterScopedBuilder) SetDefinition(definition *corev1.Namespace) {
-	builder.definition = definition
-}
-
-func (builder *mockClusterScopedBuilder) GetObject() *corev1.Namespace {
-	return builder.object
-}
-
-func (builder *mockClusterScopedBuilder) SetObject(object *corev1.Namespace) {
-	builder.object = object
-}
-
-func (builder *mockClusterScopedBuilder) GetErrorMessage() string {
-	return builder.errorMessage
-}
-
-func (builder *mockClusterScopedBuilder) SetErrorMessage(errorMessage string) {
-	builder.errorMessage = errorMessage
-}
-
-func (builder *mockClusterScopedBuilder) GetClient() runtimeclient.Client {
-	return builder.apiClient
-}
-
-func (builder *mockClusterScopedBuilder) SetClient(client runtimeclient.Client) {
-	builder.apiClient = client
 }
 
 func (builder *mockClusterScopedBuilder) GetGVK() schema.GroupVersionKind {
 	return clusterScopedGVK
-}
-
-func (builder *mockClusterScopedBuilder) SetGVK(gvk schema.GroupVersionKind) {
-	builder.gvk = gvk
 }
 
 // buildDummyNamespacedResource creates a dummy cluster-scoped resource for testing. In this case, it is a ConfigMap,
@@ -127,52 +91,12 @@ func buildDummyNamespacedResource(name, namespace string) *corev1.ConfigMap {
 
 // mockNamespacedBuilder implements the Builder interface for testing using a namespaced resource.
 type mockNamespacedBuilder struct {
-	apiClient    runtimeclient.Client
-	definition   *corev1.ConfigMap
-	object       *corev1.ConfigMap
-	errorMessage string
-	gvk          schema.GroupVersionKind
+	EmbeddableBuilder[corev1.ConfigMap, *corev1.ConfigMap]
 }
 
 // Compile-time check to ensure mockNamespacedBuilder implements Builder interface.
 var _ Builder[corev1.ConfigMap, *corev1.ConfigMap] = (*mockNamespacedBuilder)(nil)
 
-func (builder *mockNamespacedBuilder) GetDefinition() *corev1.ConfigMap {
-	return builder.definition
-}
-
-func (builder *mockNamespacedBuilder) SetDefinition(definition *corev1.ConfigMap) {
-	builder.definition = definition
-}
-
-func (builder *mockNamespacedBuilder) GetObject() *corev1.ConfigMap {
-	return builder.object
-}
-
-func (builder *mockNamespacedBuilder) SetObject(object *corev1.ConfigMap) {
-	builder.object = object
-}
-
-func (builder *mockNamespacedBuilder) GetErrorMessage() string {
-	return builder.errorMessage
-}
-
-func (builder *mockNamespacedBuilder) SetErrorMessage(errorMessage string) {
-	builder.errorMessage = errorMessage
-}
-
-func (builder *mockNamespacedBuilder) GetClient() runtimeclient.Client {
-	return builder.apiClient
-}
-
-func (builder *mockNamespacedBuilder) SetClient(client runtimeclient.Client) {
-	builder.apiClient = client
-}
-
 func (builder *mockNamespacedBuilder) GetGVK() schema.GroupVersionKind {
 	return namespacedGVK
-}
-
-func (builder *mockNamespacedBuilder) SetGVK(gvk schema.GroupVersionKind) {
-	builder.gvk = gvk
 }
