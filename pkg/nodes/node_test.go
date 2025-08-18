@@ -18,6 +18,7 @@ const (
 	defaultNodeLabel        = "node-role.kubernetes.io/control-plane"
 	defaultExternalNetworks = `{"ipv4":"10.0.0.0/8","ipv6":"fd00::/8"}`
 	defaultExternalIPv4     = "10.0.0.0/8"
+	defaultExternalIPv6     = "fd00::/8"
 )
 
 func TestNodePull(t *testing.T) {
@@ -296,6 +297,49 @@ func TestNodeExternalIPv4Network(t *testing.T) {
 
 		if testCase.expectedError == nil {
 			assert.Equal(t, defaultExternalIPv4, externalIPv4)
+		}
+	}
+}
+
+func TestNodeExternalIPv6Network(t *testing.T) {
+	testCases := []struct {
+		objectNil         bool
+		externalAddresses string
+		expectedError     error
+	}{
+		{
+			objectNil:         false,
+			externalAddresses: defaultExternalNetworks,
+			expectedError:     nil,
+		},
+		{
+			objectNil:         true,
+			externalAddresses: defaultExternalNetworks,
+			expectedError:     fmt.Errorf("cannot collect external networks when node object is nil"),
+		},
+		{
+			objectNil:         false,
+			externalAddresses: "",
+			expectedError:     fmt.Errorf("node %s does not have external addresses annotation", defaultNodeName),
+		},
+	}
+
+	for _, testCase := range testCases {
+		testBuilder := buildValidNodeTestBuilder(buildTestClientWithDummyNode())
+
+		if !testCase.objectNil {
+			testBuilder.Object = testBuilder.Definition
+
+			if testCase.externalAddresses != "" {
+				testBuilder.Object.Annotations = map[string]string{ovnExternalAddresses: testCase.externalAddresses}
+			}
+		}
+
+		externalIPv6, err := testBuilder.ExternalIPv6Network()
+		assert.Equal(t, testCase.expectedError, err)
+
+		if testCase.expectedError == nil {
+			assert.Equal(t, defaultExternalIPv6, externalIPv6)
 		}
 	}
 }
