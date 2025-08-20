@@ -99,6 +99,43 @@ func TestNodesListExternalIPv4Networks(t *testing.T) {
 	}
 }
 
+func TestNodesListExternalIPv6Networks(t *testing.T) {
+	testCases := []struct {
+		client        bool
+		expectedError error
+	}{
+		{
+			client:        true,
+			expectedError: nil,
+		},
+		{
+			client:        false,
+			expectedError: fmt.Errorf("failed to list node objects, 'apiClient' parameter is empty"),
+		},
+	}
+
+	for _, testCase := range testCases {
+		var testSettings *clients.Settings
+
+		if testCase.client {
+			node := buildDummyNode(defaultNodeName)
+			node.Annotations = map[string]string{
+				ovnExternalAddresses: defaultExternalNetworks,
+			}
+			testSettings = clients.GetTestClients(clients.TestClientParams{
+				K8sMockObjects: []runtime.Object{node},
+			})
+		}
+
+		ipv6Networks, err := ListExternalIPv6Networks(testSettings)
+		assert.Equal(t, testCase.expectedError, err)
+
+		if testCase.expectedError == nil {
+			assert.Equal(t, []string{defaultExternalIPv6}, ipv6Networks)
+		}
+	}
+}
+
 func TestNodesWaitForAllNodesAreReady(t *testing.T) {
 	testCases := []struct {
 		client        bool
