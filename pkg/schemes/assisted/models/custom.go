@@ -9,7 +9,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/pkg/validations"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/assisted/pkg/validations"
 )
 
 // DomainResolutionRequestDomain is a struct to hold the domain resolution request domain

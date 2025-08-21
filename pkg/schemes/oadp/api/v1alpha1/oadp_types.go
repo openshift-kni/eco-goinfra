@@ -17,8 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/oadp/pkg/common"
-	velero "github.com/openshift-kni/eco-goinfra/pkg/schemes/oadp/velero/api/v1"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/oadp/pkg/common"
+	velero "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/oadp/velero/api/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

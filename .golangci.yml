@@ -95,6 +95,7 @@ linters:
             - golang.org/x/exp/slices
             - gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/types
             - golang.org/x/net/context
+            - github.com/rh-ecosystem-edge/eco-goinfra
         oranapi:
           files:
             - pkg/oran/api

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	v1beta2 "github.com/openshift-kni/eco-goinfra/pkg/schemes/metallb/mlbtypesv1beta2"
+	v1beta2 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/metallb/mlbtypesv1beta2"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

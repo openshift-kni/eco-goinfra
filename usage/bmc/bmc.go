@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/bmc"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/bmc"
 )
 
 // CLI flags.

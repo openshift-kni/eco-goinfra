@@ -5,7 +5,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/operators"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/operators"
 )
 
 const (

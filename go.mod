@@ -1,4 +1,4 @@
-module github.com/openshift-kni/eco-goinfra
+module github.com/rh-ecosystem-edge/eco-goinfra
 
 go 1.24.5
 
@@ -30,7 +30,7 @@ require (
 	github.com/openshift-kni/lifecycle-agent v0.0.0-20250715161102-71395a52711a // release-4.19
 	github.com/openshift-kni/numaresources-operator v0.4.18-0.2024100201.0.20250715062915-7cc48e4830bd // release-4.19
 	github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin v0.0.0-20250128160241-57fbcf565b32
-	github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20250129205116-6838db628c2b
+	github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20250130153422-72163e75c543
 	github.com/openshift-kni/oran-o2ims/api/provisioning v0.0.0-20250123151805-c935b06062f9
 	github.com/openshift/api v0.0.0-20250529074221-97812373b6b4 // release-4.19
 	github.com/openshift/client-go v0.0.0-20250425165505-5f55ff6979a1 // release-4.19
@@ -114,7 +114,6 @@ require (
 	github.com/go-openapi/loads v0.22.0 // indirect
 	github.com/go-openapi/spec v0.21.0 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
-	github.com/go-test/deep v1.1.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/btree v1.1.3 // indirect
