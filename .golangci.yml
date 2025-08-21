@@ -47,6 +47,7 @@ linters-settings:
           - "github.com/red-hat-storage/ocs-operator"
           - "github.com/stmcginnis/gofish"
           - "github.com/prometheus-operator/prometheus-operator"
+          - "github.com/rh-ecosystem-edge/eco-goinfra"
   revive:
     rules:
       - name: indent-error-flow

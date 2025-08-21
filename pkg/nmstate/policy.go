@@ -12,8 +12,8 @@ import (
 	nmstateShared "github.com/nmstate/kubernetes-nmstate/api/shared"
 	nmstateV1 "github.com/nmstate/kubernetes-nmstate/api/v1"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	"github.com/openshift-kni/eco-goinfra/pkg/msg"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/msg"
 
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"

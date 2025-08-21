@@ -5,9 +5,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/argocd/argocdtypes"
-	"github.com/openshift-kni/eco-goinfra/pkg/metallb/mlbtypes"
-	"github.com/openshift-kni/eco-goinfra/pkg/oadp/oadptypes"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/argocd/argocdtypes"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/metallb/mlbtypes"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/oadp/oadptypes"
 
 	"github.com/golang/glog"
 	"k8s.io/client-go/dynamic"
