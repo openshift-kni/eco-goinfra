@@ -13,4 +13,4 @@ output-options:
   name-normalizer: ToCamelCaseWithDigits
 
 import-mapping:
-  ../common/openapi.yaml: "github.com/openshift-kni/eco-goinfra/pkg/oran/api/internal/common"
+  ../common/openapi.yaml: "github.com/rh-ecosystem-edge/eco-goinfra/pkg/oran/api/internal/common"

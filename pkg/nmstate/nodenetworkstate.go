@@ -9,8 +9,8 @@ import (
 	"github.com/golang/glog"
 	"golang.org/x/exp/slices"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	"github.com/openshift-kni/eco-goinfra/pkg/msg"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/msg"
 
 	nmstateV1beta1 "github.com/nmstate/kubernetes-nmstate/api/v1beta1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"

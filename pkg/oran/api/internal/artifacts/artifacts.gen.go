@@ -14,7 +14,7 @@ import (
 
 	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
-	externalRef0 "github.com/openshift-kni/eco-goinfra/pkg/oran/api/internal/common"
+	externalRef0 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/oran/api/internal/common"
 )
 
 const (

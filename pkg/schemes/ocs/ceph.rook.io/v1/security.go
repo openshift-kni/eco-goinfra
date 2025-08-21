@@ -20,8 +20,8 @@ import (
 	"strings"
 
 	"github.com/hashicorp/vault/api"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/libopenstorage/secrets"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/libopenstorage/secrets/vault"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/libopenstorage/secrets"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/libopenstorage/secrets/vault"
 )
 
 var (

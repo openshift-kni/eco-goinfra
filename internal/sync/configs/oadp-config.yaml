@@ -7,11 +7,11 @@
   local_api_directory: schemes/oadp/api/v1alpha1
   replace_imports:
     - old: '"github.com/openshift/oadp-operator/pkg/common"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/oadp/pkg/common"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/oadp/pkg/common"'
     - old: '"github.com/openshift/oadp-operator/pkg/velero/server"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/oadp/pkg/velero/server"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/oadp/pkg/velero/server"'
     - old: '"github.com/vmware-tanzu/velero/pkg/apis/velero/v1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/oadp/velero/api/v1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/oadp/velero/api/v1"'
 
 - name: oadp-common-pkg
   sync: false
@@ -21,7 +21,7 @@
   local_api_directory: schemes/oadp/pkg/common
   replace_imports:
     - old: '"github.com/vmware-tanzu/velero/pkg/restore"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/oadp/velero/pkg/restore"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/oadp/velero/pkg/restore"'
   excludes:
     - "*_test.go"
 

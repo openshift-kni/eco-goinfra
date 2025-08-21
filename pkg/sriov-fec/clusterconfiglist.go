@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	sriovfectypes "github.com/openshift-kni/eco-goinfra/pkg/schemes/fec/fectypes"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
+	sriovfectypes "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/fec/fectypes"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

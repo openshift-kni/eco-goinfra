@@ -7,9 +7,9 @@
   local_api_directory: schemes/nfd/v1
   replace_imports:
     - old: '"github.com/openshift/cluster-nfd-operator/api/v1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/nfd/v1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/nfd/v1"'
     - old: '"github.com/openshift/cluster-nfd-operator/api/v1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/nfd/v1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/nfd/v1"'
   excludes:
     - "*_test.go"
     - "testdata"
@@ -22,9 +22,9 @@
   local_api_directory: schemes/nfd/v1alpha1
   replace_imports:
     - old: '"github.com/openshift/cluster-nfd-operator/api/v1alpha1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/nfd/v1alpha1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/nfd/v1alpha1"'
     - old: '"github.com/openshift/cluster-nfd-operator/api/v1alpha1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/nfd/v1alpha1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/nfd/v1alpha1"'
   excludes:
     - "*_test.go"
     - "testdata"
@@ -37,7 +37,7 @@
   local_api_directory: schemes/nfd/feature/v1alpha1
   replace_imports:
     - old: '"github.com/openshift/node-feature-discovery/api/v1alpha1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/nfd/feature/v1alpha1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/nfd/feature/v1alpha1"'
 
   excludes:
     - "*_test.go"

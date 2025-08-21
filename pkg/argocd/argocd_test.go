@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	argocdoperator "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdoperator"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
+	argocdoperator "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/argocd/argocdoperator"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

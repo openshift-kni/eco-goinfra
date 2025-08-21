@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/oran/api/internal/common"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/oran/api/internal/common"
 )
 
 // unimplementedError is an opaque error type that indicates that a method is not implemented for a specific client

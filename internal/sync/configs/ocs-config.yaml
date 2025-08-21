@@ -7,11 +7,11 @@
   local_api_directory: schemes/ocs/operatorv1
   replace_imports:
     - old: 'nbv1 "github.com/noobaa/noobaa-operator/v5/pkg/apis/noobaa/v1alpha1"'
-      new: 'nbv1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/noobaa"'
+      new: 'nbv1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/noobaa"'
     - old: '"github.com/noobaa/noobaa-operator/v5/pkg/apis/noobaa/v1alpha1"'
-      new: 'v1alpha1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/noobaa"'
+      new: 'v1alpha1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/noobaa"'
     - old: '"github.com/rook/rook/pkg/apis/ceph.rook.io/v1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/ceph.rook.io/v1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/ceph.rook.io/v1"'
 
 - name: rook
   sync: true
@@ -23,17 +23,17 @@
     - "*test.go"
   replace_imports:
     - old: '"github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/k8s.cni.cncf.io/v1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/k8s.cni.cncf.io/v1"'
     - old: '"github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/utils"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/nadutils"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/nadutils"'
     - old: '"github.com/kube-object-storage/lib-bucket-provisioner/pkg/apis/objectbucket.io/v1alpha1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/objectbucket.io/v1alpha1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/objectbucket.io/v1alpha1"'
     - old: '"github.com/rook/rook/pkg/apis/ceph.rook.io"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/ceph.rook.io"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/ceph.rook.io"'
     - old: '"github.com/libopenstorage/secrets"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/libopenstorage/secrets"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/libopenstorage/secrets"'
     - old: '"github.com/libopenstorage/secrets/vault"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/libopenstorage/secrets/vault"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/libopenstorage/secrets/vault"'
 
 - name: bucket
   sync: true
@@ -45,7 +45,7 @@
     - "*test.go"
   replace_imports:
     - old: '"github.com/kube-object-storage/lib-bucket-provisioner/pkg/apis/objectbucket.io"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/objectbucket.io"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/objectbucket.io"'
 
 - name: provisioner
   sync: true
@@ -57,7 +57,7 @@
     - "*test.go"
   replace_imports:
     - old: '"github.com/kube-object-storage/lib-bucket-provisioner/pkg/apis/objectbucket.io/v1alpha1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/objectbucket.io/v1alpha1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/objectbucket.io/v1alpha1"'
 
 - name: nad
   sync: true
@@ -69,7 +69,7 @@
     - "*test.go"
   replace_imports:
     - old: '"github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/k8s.cni.cncf.io"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/k8s.cni.cncf.io"'
 
 - name: nad
   sync: true
@@ -81,7 +81,7 @@
     - "*test.go"
   replace_imports:
     - old: '"github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/k8s.cni.cncf.io/v1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/k8s.cni.cncf.io/v1"'
     # Since replace_imports does not actually check for imports, just does a
     # find and replace, we can use it to fix this vet error in go 1.24+.
     - old: "fmt.Errorf(fmt.Sprintf(\"Failed to parse: one or more items did not match comma-delimited format (must consist of lower case alphanumeric characters). Must start and end with an alphanumeric character), mismatch @ '%v'\", allItems[i]))"
@@ -100,9 +100,9 @@
     - cnpg_types.go
   replace_imports:
     - old: '"github.com/kube-object-storage/lib-bucket-provisioner/pkg/apis/objectbucket.io/v1alpha1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/objectbucket.io/v1alpha1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/objectbucket.io/v1alpha1"'
     - old: '"github.com/kube-object-storage/lib-bucket-provisioner/pkg/provisioner/api"'
-      new: api "github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/provisioner"
+      new: api "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/provisioner"
 
 - name: secret
   sync: true
@@ -128,7 +128,7 @@
     - "*test.go"
   replace_imports:
     - old: '"github.com/libopenstorage/secrets"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/libopenstorage/secrets"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/libopenstorage/secrets"'
     - old: '"github.com/libopenstorage/secrets/vault/utils"'
-      new:  '"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/libopenstorage/secrets/vault/utils"'
+      new:  '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/libopenstorage/secrets/vault/utils"'
 ...

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/oran/api/internal/artifacts"
-	"github.com/openshift-kni/eco-goinfra/pkg/oran/api/internal/provisioning"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/oran/api/internal/artifacts"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/oran/api/internal/provisioning"
 )
 
 // ClientType is a string that represents the type of client being used. It is used to identify the client type in error

@@ -7,13 +7,13 @@
   local_api_directory: schemes/nvidiagpu/nvidiagputypes
   replace_imports:
     - old: '"github.com/NVIDIA/k8s-kata-manager/api/v1alpha1/config"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/nvidiagpu/k8skatamanager/v1alpha1/config"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/nvidiagpu/k8skatamanager/v1alpha1/config"'
     - old: '"github.com/NVIDIA/k8s-operator-libs/api/upgrade/v1alpha1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/nvidiagpu/k8skoperatorlibs/upgrade/v1alpha1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/nvidiagpu/k8skoperatorlibs/upgrade/v1alpha1"'
     - old: '"github.com/NVIDIA/gpu-operator/internal/consts"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/nvidiagpu/nvidiagputypes/internal/consts"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/nvidiagpu/nvidiagputypes/internal/consts"'
     - old: '"golang.org/x/mod/semver"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/nvidiagpu/semver"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/nvidiagpu/semver"'
 
 - name: nvidiagpu
   sync: true

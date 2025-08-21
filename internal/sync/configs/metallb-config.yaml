@@ -7,7 +7,7 @@
   local_api_directory: schemes/metallb/mlbtypes
   replace_imports:
     - old: '"go.universe.tf/metallb/api/v1beta2"'
-      new: v1beta2 "github.com/openshift-kni/eco-goinfra/pkg/schemes/metallb/mlbtypesv1beta2"
+      new: v1beta2 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/metallb/mlbtypesv1beta2"
 
 - name: metallb
   sync: true
@@ -24,7 +24,7 @@
   local_api_directory: schemes/metallb/mlboperator
   replace_imports:
     - old: '"github.com/metallb/metallb-operator/pkg/params"'
-      new: params "github.com/openshift-kni/eco-goinfra/pkg/schemes/metallb/mlboperatorparams"
+      new: params "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/metallb/mlboperatorparams"
 
 - name: metallb-operator
   sync: true
@@ -34,7 +34,7 @@
   local_api_directory: schemes/metallb/mlboperatorparams
   replace_imports:
     - old: '"github.com/metallb/metallb-operator/api/v1beta1"'
-      new: v1beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/metallb/mlboperator"
+      new: v1beta1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/metallb/mlboperator"
     - old: '"github.com/Masterminds/semver"'
       new: '"github.com/Masterminds/semver/v3"'
 

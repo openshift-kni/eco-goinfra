@@ -7,8 +7,8 @@
   local_api_directory: schemes/imagebasedgroupupgrades
   replace_imports:
     - old: '"github.com/openshift-kni/cluster-group-upgrades-operator/pkg/api/imagebasedgroupupgrades/v1alpha1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedgroupupgrades/v1alpha1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedgroupupgrades/v1alpha1"'
     - old: '"github.com/openshift-kni/cluster-group-upgrades-operator/pkg/api/imagebasedgroupupgrades"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedgroupupgrades"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedgroupupgrades"'
   excludes:
     - "*_test.go"
