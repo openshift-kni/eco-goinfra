@@ -9,7 +9,7 @@
 package v1
 
 import (
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/scheme"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/hive/scheme"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 

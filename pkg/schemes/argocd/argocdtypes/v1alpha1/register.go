@@ -1,7 +1,7 @@
 package v1alpha1
 
 import (
-	application "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdtypes"
+	application "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/argocd/argocdtypes"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"

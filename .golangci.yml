@@ -51,6 +51,7 @@ linters-settings:
           - "github.com/red-hat-storage/odf-operator"
           - "github.com/stmcginnis/gofish"
           - "github.com/prometheus-operator/prometheus-operator"
+          - "github.com/rh-ecosystem-edge/eco-goinfra"
   govet:
     disable:
       - printf

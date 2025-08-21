@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/oadp/velero/pkg/restore"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/oadp/velero/pkg/restore"
 	corev1 "k8s.io/api/core/v1"
 )
 

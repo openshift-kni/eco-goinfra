@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	v2 "github.com/openshift/cluster-node-tuning-operator/pkg/apis/performanceprofile/v2"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 

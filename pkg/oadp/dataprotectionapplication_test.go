@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	oadpv1alpha1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/oadp/api/v1alpha1"
-	v1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/oadp/velero/api/v1"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
+	oadpv1alpha1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/oadp/api/v1alpha1"
+	v1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/oadp/velero/api/v1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"

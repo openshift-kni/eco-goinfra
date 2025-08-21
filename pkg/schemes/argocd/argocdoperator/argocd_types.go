@@ -21,7 +21,7 @@ import (
 
 	routev1 "github.com/openshift/api/route/v1"
 
-	common "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdoperatorcommon"
+	common "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/argocd/argocdoperatorcommon"
 
 	autoscaling "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"

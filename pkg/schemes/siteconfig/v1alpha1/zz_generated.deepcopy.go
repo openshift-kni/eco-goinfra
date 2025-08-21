@@ -22,8 +22,8 @@ package v1alpha1
 
 import (
 	metal3_iov1alpha1 "github.com/metal3-io/baremetal-operator/apis/metal3.io/v1alpha1"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/v1beta1"
-	hivev1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/assisted/api/v1beta1"
+	hivev1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/hive/api/v1"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"

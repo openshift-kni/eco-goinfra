@@ -4,8 +4,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/package-server/operators"
-	operatorsv1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/package-server/operators/v1"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/package-server/operators"
+	operatorsv1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/package-server/operators/v1"
 )
 
 // Install registers API groups and adds types to a scheme.

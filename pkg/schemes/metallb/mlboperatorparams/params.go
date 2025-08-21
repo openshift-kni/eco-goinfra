@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	v1beta1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/metallb/mlboperator"
+	v1beta1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/metallb/mlboperator"
 )
 
 type ImageInfo struct {

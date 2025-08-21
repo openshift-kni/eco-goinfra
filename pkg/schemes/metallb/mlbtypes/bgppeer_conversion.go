@@ -3,7 +3,7 @@
 package mlbtypes
 
 import (
-	v1beta2 "github.com/openshift-kni/eco-goinfra/pkg/schemes/metallb/mlbtypesv1beta2"
+	v1beta2 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/metallb/mlbtypesv1beta2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 )
