@@ -21,7 +21,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	apicfgv1 "github.com/openshift/api/config/v1"
-	hivev1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1"
+	hivev1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1"
 )
 
 const (

@@ -6,9 +6,9 @@ package integration
 import (
 	"testing"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	"github.com/openshift-kni/eco-goinfra/pkg/daemonset"
-	"github.com/openshift-kni/eco-goinfra/pkg/namespace"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/daemonset"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/namespace"
 	"github.com/stretchr/testify/assert"
 )
 

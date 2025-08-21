@@ -1,8 +1,8 @@
 package noobaa
 
 import (
-	obv1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/objectbucket.io/v1alpha1"
-	api "github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/provisioner"
+	obv1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/objectbucket.io/v1alpha1"
+	api "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/provisioner"
 )
 
 // ObjectBucketFinalizer is the name of the ObjectBucket finalizer

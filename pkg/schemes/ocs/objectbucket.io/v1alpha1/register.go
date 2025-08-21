@@ -24,7 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	objectbucketio "github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/objectbucket.io"
+	objectbucketio "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/objectbucket.io"
 )
 
 // SchemeGroupVersion is group version used to register these objects

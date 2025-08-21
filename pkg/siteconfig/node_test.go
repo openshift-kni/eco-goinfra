@@ -3,7 +3,7 @@ package siteconfig
 import (
 	"testing"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/v1beta1"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/assisted/api/v1beta1"
 	"github.com/stretchr/testify/assert"
 )
 

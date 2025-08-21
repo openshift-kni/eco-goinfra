@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
 )
 
 func main() {

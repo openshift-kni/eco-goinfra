@@ -24,8 +24,8 @@ package v1
 import (
 	unsafe "unsafe"
 
-	v1alpha1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/operators/v1alpha1"
-	operators "github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/package-server/operators"
+	v1alpha1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/operators/v1alpha1"
+	operators "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/package-server/operators"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"

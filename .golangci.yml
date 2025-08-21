@@ -52,6 +52,7 @@ linters-settings:
           - "github.com/stmcginnis/gofish"
           - "github.com/prometheus-operator/prometheus-operator"
           - "github.com/google/uuid"
+          - "github.com/rh-ecosystem-edge/eco-goinfra"
   govet:
     disable:
       - printf

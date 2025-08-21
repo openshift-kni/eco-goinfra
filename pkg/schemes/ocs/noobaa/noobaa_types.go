@@ -262,7 +262,7 @@ type BucketLoggingSpec struct {
 	BucketLoggingPVC *string `json:"bucketLoggingPVC,omitempty"`
 }
 
-//BucketNotificationsSpec controls bucket notification configuration
+// BucketNotificationsSpec controls bucket notification configuration
 type BucketNotificationsSpec struct {
 	// Enabled - whether bucket notifications is enabled
 	Enabled bool `json:"enabled"`
