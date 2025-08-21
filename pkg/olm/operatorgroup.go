@@ -7,8 +7,8 @@ import (
 	"github.com/golang/glog"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	"github.com/openshift-kni/eco-goinfra/pkg/msg"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/msg"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	olmv1 "github.com/operator-framework/api/pkg/operators/v1"

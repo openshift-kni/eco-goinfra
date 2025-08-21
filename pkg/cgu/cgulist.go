@@ -6,7 +6,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/cluster-group-upgrades-operator/pkg/api/clustergroupupgrades/v1alpha1"
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
