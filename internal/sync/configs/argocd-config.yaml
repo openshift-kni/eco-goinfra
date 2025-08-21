@@ -8,7 +8,7 @@
   local_api_directory: schemes/argocd/argocdoperator
   replace_imports:
     - old: '"github.com/argoproj-labs/argocd-operator/common"'
-      new: common "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdoperatorcommon"
+      new: common "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/argocd/argocdoperatorcommon"
   excludes:
     - "*_test.go"
     - "testdata"
@@ -32,11 +32,11 @@
   local_api_directory: schemes/argocd/argocdtypes
   replace_imports:
     - old: '"github.com/argoproj/argo-cd/v2/pkg/apis/application"'
-      new: application "github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/argocdtypes"
+      new: application "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/argocd/argocdtypes"
     - old: synccommon "github.com/argoproj/gitops-engine/pkg/sync/common"
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/synccommon"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/argocd/gitopsengine/synccommon"'
     - old: '"github.com/argoproj/gitops-engine/pkg/health"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/health"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/argocd/gitopsengine/health"'
   excludes:
     - "*_test.go"
     - "doc.go"

@@ -21,8 +21,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	bktv1alpha1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/objectbucket.io/v1alpha1"
-	cephrookio "github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/ceph.rook.io"
+	cephrookio "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/ceph.rook.io"
+	bktv1alpha1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/objectbucket.io/v1alpha1"
 )
 
 const (

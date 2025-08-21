@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	kmmv1beta2 "github.com/openshift-kni/eco-goinfra/pkg/schemes/kmm/v1beta2"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
+	kmmv1beta2 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/kmm/v1beta2"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/oran/api/filter"
-	"github.com/openshift-kni/eco-goinfra/pkg/oran/api/internal/artifacts"
-	"github.com/openshift-kni/eco-goinfra/pkg/oran/api/internal/common"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/oran/api/filter"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/oran/api/internal/artifacts"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/oran/api/internal/common"
 	"k8s.io/utils/ptr"
 )
 

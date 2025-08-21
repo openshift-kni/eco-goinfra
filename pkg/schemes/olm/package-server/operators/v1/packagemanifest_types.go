@@ -1,8 +1,8 @@
 package v1
 
 import (
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/version"
-	operatorv1alpha1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/operators/v1alpha1"
+	operatorv1alpha1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/operators/v1alpha1"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/version"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

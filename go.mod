@@ -1,4 +1,4 @@
-module github.com/openshift-kni/eco-goinfra
+module github.com/rh-ecosystem-edge/eco-goinfra
 
 go 1.24.5
 
@@ -113,7 +113,6 @@ require (
 	github.com/go-openapi/loads v0.22.0 // indirect
 	github.com/go-openapi/spec v0.21.0 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
-	github.com/go-test/deep v1.1.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/btree v1.1.3 // indirect
@@ -225,6 +224,8 @@ require (
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.7.0 // indirect
 )
+
+require github.com/go-test/deep v1.1.0 // indirect
 
 replace (
 	github.com/imdario/mergo => github.com/imdario/mergo v0.3.16

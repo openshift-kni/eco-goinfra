@@ -7,7 +7,7 @@
   local_api_directory: schemes/amd/gpu-operator/api/v1alpha1
   replace_imports:
     - old: '"https://github.com/ROCm/gpu-operator/api/v1alpha1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/amd/gpu-operator/api/v1alpha1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/amd/gpu-operator/api/v1alpha1"'
   excludes:
     - "*_test.go"
     - "testdata"

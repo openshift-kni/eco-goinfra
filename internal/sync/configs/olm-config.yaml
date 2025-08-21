@@ -9,17 +9,17 @@
     - "*_test.go"
   replace_imports:
     - old: '"github.com/operator-framework/api/pkg/operators/v1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/operators/v1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/operators/v1"'
     - old: '"github.com/operator-framework/api/pkg/operators/v1alpha1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/operators/v1alpha1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/operators/v1alpha1"'
     - old: '"github.com/operator-framework/api/pkg/operators/v1alpha2"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/operators/v1alpha2"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/operators/v1alpha2"'
     - old: '"github.com/operator-framework/api/pkg/operators/install"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/operators/install"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/operators/install"'
     - old: '"github.com/operator-framework/api/pkg/lib/version"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/version"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/version"'
     - old: '"github.com/operator-framework/api/pkg/operators"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/operators"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/operators"'
 
 - name: olm-version
   sync: true
@@ -41,15 +41,15 @@
     - "packagemanifest.go"
   replace_imports:
     - old: '"github.com/operator-framework/api/pkg/operators/v1alpha1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/operators/v1alpha1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/operators/v1alpha1"'
     - old: '"github.com/operator-framework/operator-registry/pkg/registry"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/registry"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/registry"'
     - old: '"github.com/operator-framework/api/pkg/lib/version"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/version"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/version"'
     - old: '"github.com/operator-framework/api/pkg/operators"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/operators"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/operators"'
     - old: '"github.com/operator-framework/operator-lifecycle-manager/pkg/package-server/apis/operators"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/package-server/operators"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/package-server/operators"'
     - old: '"github.com/operator-framework/operator-lifecycle-manager/pkg/package-server/apis/operators/v1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/package-server/operators/v1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/package-server/operators/v1"'
 ...

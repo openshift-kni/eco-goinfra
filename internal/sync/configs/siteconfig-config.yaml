@@ -7,9 +7,9 @@
   local_api_directory: schemes/siteconfig/v1alpha1
   replace_imports:
     - old: '"github.com/openshift/assisted-service/api/v1beta1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/assisted/api/v1beta1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/assisted/api/v1beta1"'
     - old: '"github.com/openshift/hive/apis/hive/v1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/hive/api/v1"'
   excludes:
     - "*_test.go"
     - "*_webhook.go"

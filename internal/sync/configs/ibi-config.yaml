@@ -7,7 +7,7 @@
   local_api_directory: schemes/imagebasedinstall/api/hiveextensions/v1alpha1
   replace_imports:
     - old: '"github.com/openshift/hive/apis/hive/v1"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1"'
   excludes:
     - "*_test.go"
 
@@ -26,26 +26,26 @@
   local_api_directory: schemes/imagebasedinstall/hive/api/v1
   replace_imports:
     - old: '"github.com/openshift/hive/apis/scheme"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/scheme"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/scheme"'
     - old: '"github.com/openshift/hive/apis/hive/v1/agent"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/agent"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/agent"'
     - old: '"github.com/openshift/hive/apis/hive/v1/aws"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/aws"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/aws"'
     - old: '"github.com/openshift/hive/apis/hive/v1/azure"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/azure"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/azure"'
     - old: '"github.com/openshift/hive/apis/hive/v1/baremetal"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/baremetal"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/baremetal"'
     - old: '"github.com/openshift/hive/apis/hive/v1/gcp"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/gcp"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/gcp"'
     - old: '"github.com/openshift/hive/apis/hive/v1/ibmcloud"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/ibmcloud"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/ibmcloud"'
     - old: '"github.com/openshift/hive/apis/hive/v1/none"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/none"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/none"'
     - old: '"github.com/openshift/hive/apis/hive/v1/openstack"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/openstack"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/openstack"'
     - old: '"github.com/openshift/hive/apis/hive/v1/ovirt"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/ovirt"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/ovirt"'
     - old: '"github.com/openshift/hive/apis/hive/v1/vsphere"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/vsphere"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/vsphere"'
     - old: '"github.com/openshift/hive/apis/hive/v1/metricsconfig"'
-      new: '"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/metricsconfig"'
+      new: '"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/metricsconfig"'

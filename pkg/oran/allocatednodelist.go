@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	pluginsv1alpha1 "github.com/openshift-kni/oran-o2ims/api/hardwaremanagement/plugins/v1alpha1"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 

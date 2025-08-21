@@ -22,7 +22,7 @@ package v1alpha1
 
 import (
 	configv1 "github.com/openshift/api/config/v1"
-	hivev1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1"
+	hivev1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )

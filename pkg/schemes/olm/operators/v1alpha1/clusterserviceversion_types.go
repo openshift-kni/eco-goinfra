@@ -13,7 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/version"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/version"
 )
 
 const (

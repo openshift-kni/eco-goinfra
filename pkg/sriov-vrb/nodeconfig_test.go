@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	sriovvrbtypes "github.com/openshift-kni/eco-goinfra/pkg/schemes/fec/vrbtypes"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
+	sriovvrbtypes "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/fec/vrbtypes"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
