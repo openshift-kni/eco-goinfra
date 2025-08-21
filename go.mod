@@ -1,6 +1,8 @@
 module github.com/rh-ecosystem-edge/eco-goinfra
 
-go 1.24.5
+go 1.25
+
+toolchain go1.25.0
 
 require (
 	github.com/Masterminds/semver/v3 v3.4.0
