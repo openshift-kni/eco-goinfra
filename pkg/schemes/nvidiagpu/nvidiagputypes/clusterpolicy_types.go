@@ -21,14 +21,14 @@ import (
 	"os"
 	"strings"
 
-	kata_v1alpha1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/nvidiagpu/k8skatamanager/v1alpha1/config"
-	upgrade_v1alpha1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/nvidiagpu/k8skoperatorlibs/upgrade/v1alpha1"
 	promv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/nvidiagpu/semver"
+	kata_v1alpha1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/nvidiagpu/k8skatamanager/v1alpha1/config"
+	upgrade_v1alpha1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/nvidiagpu/k8skoperatorlibs/upgrade/v1alpha1"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/nvidiagpu/semver"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/nvidiagpu/nvidiagputypes/internal/consts"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/nvidiagpu/nvidiagputypes/internal/consts"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!

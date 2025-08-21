@@ -9,7 +9,7 @@ import (
 
 	"github.com/golang/glog"
 	srIovV1 "github.com/k8snetworkplumbingwg/sriov-network-operator/api/v1"
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 

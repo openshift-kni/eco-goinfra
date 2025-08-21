@@ -26,7 +26,7 @@ import (
 	cni100 "github.com/containernetworking/cni/pkg/types/100"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	v1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/k8s.cni.cncf.io/v1"
+	v1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/k8s.cni.cncf.io/v1"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"

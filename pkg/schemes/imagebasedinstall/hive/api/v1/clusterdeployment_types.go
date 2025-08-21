@@ -5,16 +5,16 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/agent"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/aws"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/azure"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/baremetal"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/gcp"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/ibmcloud"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/none"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/openstack"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/ovirt"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/vsphere"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/agent"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/aws"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/azure"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/baremetal"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/gcp"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/ibmcloud"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/none"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/openstack"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/ovirt"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/vsphere"
 )
 
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
