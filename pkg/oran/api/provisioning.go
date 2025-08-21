@@ -357,8 +357,6 @@ func provisioningRequestFromInfo(
 
 // unwrapOrDefault functions the same as Option::unwrap_or_default in Rust. If T is nil, it returns the zero value of T.
 // Otherwise, it returns a dereferenced T.
-//
-//nolint:ireturn // T is expected to be a concrete type, so the return should not be an interface.
 func unwrapOrDefault[T any](value *T) T {
 	if value == nil {
 		return *new(T)

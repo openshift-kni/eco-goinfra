@@ -109,10 +109,30 @@ linters:
     govet:
       disable:
         - printf
+    ireturn:
+      # Allow cannot be used with reject and is not additive with defaults so
+      # they must be specified explicitly.
+      allow:
+        - anon
+        - error
+        - empty
+        - stdlib
+        - generic
+        # Allow returning the controller-runtime Client interface.
+        - client\.Client$
     revive:
       rules:
         - name: indent-error-flow
         - name: var-naming
+          arguments:
+            # initialism allowlist
+            - []
+            # initialism denylist
+            - []
+            # This is so that our common package does not cause errors for the
+            # var-naming rule. builder may be a better name, but would cause
+            # confusion with method receivers.
+            - [{ skip-package-name-checks: true }]
         - name: increment-decrement
         - name: exported
           arguments:
