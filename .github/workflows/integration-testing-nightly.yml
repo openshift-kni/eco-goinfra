@@ -8,7 +8,7 @@ on:
 
 jobs:
   integration-k8s:
-    if: github.repository_owner == 'openshift-kni'
+    if: github.repository_owner == 'rh-ecosystem-edge'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -38,7 +38,7 @@ jobs:
           command: make integration-test
 
   integration-ocp:
-    if: github.repository_owner == 'openshift-kni'
+    if: github.repository_owner == 'rh-ecosystem-edge'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
