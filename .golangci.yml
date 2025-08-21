@@ -33,6 +33,7 @@ linters-settings:
           - "open-cluster-management.io/governance-policy-propagator/api"
           - "sigs.k8s.io/controller-runtime"
           - $gostd
+          - "github.com/rh-ecosystem-edge/eco-goinfra"
   revive:
     rules:
       - name: indent-error-flow
