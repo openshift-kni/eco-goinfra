@@ -5,7 +5,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	k8scnicncfio "github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/k8s.cni.cncf.io"
+	k8scnicncfio "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/k8s.cni.cncf.io"
 )
 
 // SchemeGroupVersion is group version used to register these objects

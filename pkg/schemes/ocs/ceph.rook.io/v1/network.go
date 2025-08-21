@@ -22,9 +22,9 @@ import (
 	"net"
 	"strings"
 
-	nadv1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/k8s.cni.cncf.io/v1"
-	nadutils "github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/nadutils"
 	"github.com/pkg/errors"
+	nadv1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/k8s.cni.cncf.io/v1"
+	nadutils "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/nadutils"
 )
 
 // IsMultus get whether to use multus network provider

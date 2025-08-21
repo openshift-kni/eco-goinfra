@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/kmm/v1beta2"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/kmm/v1beta2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 )

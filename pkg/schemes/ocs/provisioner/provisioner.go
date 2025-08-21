@@ -19,7 +19,7 @@ package provisioner
 import (
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/objectbucket.io/v1alpha1"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/objectbucket.io/v1alpha1"
 )
 
 // All provisioners must implement the Provisioner interface which defines the

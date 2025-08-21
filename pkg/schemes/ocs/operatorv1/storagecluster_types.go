@@ -20,10 +20,10 @@ import (
 	"os"
 	"time"
 
-	nbv1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/noobaa"
 	quotav1 "github.com/openshift/api/quota/v1"
 	conditionsv1 "github.com/openshift/custom-resource-status/conditions/v1"
-	rookCephv1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/ocs/ceph.rook.io/v1"
+	rookCephv1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/ceph.rook.io/v1"
+	nbv1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/ocs/noobaa"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"

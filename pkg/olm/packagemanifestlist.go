@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	operatorv1 "github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/package-server/operators/v1"
+	operatorv1 "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/package-server/operators/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/golang/glog"
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
 )
 
 // ListPackageManifest returns PackageManifest inventory in the given namespace.

@@ -218,8 +218,8 @@ github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0/go.mod h1:fyg78
 github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572/go.mod h1:9Pwr4B2jHnOSGXyyzV8ROjYa2ojvAY6HCGYYfMoC3Ls=
 github.com/go-task/slim-sprig/v3 v3.0.0 h1:sUs3vkvUymDpBKi3qH1YSqBQk9+9D/8M2mN1vB6EwHI=
 github.com/go-task/slim-sprig/v3 v3.0.0/go.mod h1:W848ghGpv3Qj3dhTPRyJypKRiqCdHZiAzKg9hl15HA8=
-github.com/go-test/deep v1.1.0 h1:WOcxcdHcvdgThNXjw0t76K42FXTU7HpNQWHpA2HHNlg=
-github.com/go-test/deep v1.1.0/go.mod h1:5C2ZWiW0ErCdrYzpqxLbTX7MG14M9iiw8DgHncVwcsE=
+github.com/go-test/deep v1.0.8 h1:TDsG77qcSprGbC6vTN8OuXp5g+J+b5Pcguhf7Zt61VM=
+github.com/go-test/deep v1.0.8/go.mod h1:5C2ZWiW0ErCdrYzpqxLbTX7MG14M9iiw8DgHncVwcsE=
 github.com/gobwas/httphead v0.1.0/go.mod h1:O/RXo79gxV8G+RqlR/otEwx4Q36zl9rqC5u12GKvMCM=
 github.com/gobwas/pool v0.2.1/go.mod h1:q8bcK0KcYlCgd9e7WYLm9LpyS+YeLd8JVDW6WezmKEw=
 github.com/gobwas/ws v1.2.1/go.mod h1:hRKAFb8wOxFROYNsT1bqfWnhX+b5MFeJM9r2ZSwg/KY=
@@ -531,8 +531,8 @@ github.com/openshift-kni/numaresources-operator v0.4.18-0.2024100201.0.202507150
 github.com/openshift-kni/numaresources-operator v0.4.18-0.2024100201.0.20250715062915-7cc48e4830bd/go.mod h1:+h1icfaWdoypIJbkJlKDxAynE9SnPFOBHezdqR1VH1E=
 github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin v0.0.0-20250128160241-57fbcf565b32 h1:ufFJmCmIAN8uI1/BowCryt+tIEzaXC1KbJnRwO3UUFE=
 github.com/openshift-kni/oran-hwmgr-plugin/api/hwmgr-plugin v0.0.0-20250128160241-57fbcf565b32/go.mod h1:IUuPY/mlglIpTHV1MlYbBYPBTRgad5d328i5j/F4AbY=
-github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20250129205116-6838db628c2b h1:/wRJJk8u0+aky96XDRwDuRT1GJxq23L5rMMsvxZ0Y8k=
-github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20250129205116-6838db628c2b/go.mod h1:WIYfQ7jH7QkTIzqVjMEClf1H47Prs6LuoPvSMxBBAGw=
+github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20250130153422-72163e75c543 h1:kHrTMNWBjeV0tC16XniJkfTsWvzXwXJhcPtNQRni11Q=
+github.com/openshift-kni/oran-o2ims/api/hardwaremanagement v0.0.0-20250130153422-72163e75c543/go.mod h1:WIYfQ7jH7QkTIzqVjMEClf1H47Prs6LuoPvSMxBBAGw=
 github.com/openshift-kni/oran-o2ims/api/provisioning v0.0.0-20250123151805-c935b06062f9 h1:AP4psTmffaPv3IS/PkXIqRo2lmC0chWv33piK6m28sU=
 github.com/openshift-kni/oran-o2ims/api/provisioning v0.0.0-20250123151805-c935b06062f9/go.mod h1:7dmhnmqiO1VP3SuqaAdnlFbBdeTLK3FI3vQHapVMNQg=
 github.com/openshift/api v0.0.0-20250529074221-97812373b6b4 h1:jcY1inFa4gsygSbIId2jbCRGnGvEEcCmPZHaMc3PnT4=
