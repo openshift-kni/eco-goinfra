@@ -6,7 +6,7 @@ import (
 
 	"github.com/golang/glog"
 	nmstateV1 "github.com/nmstate/kubernetes-nmstate/api/v1"
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 

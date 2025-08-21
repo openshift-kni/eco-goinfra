@@ -12,10 +12,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/golang/glog"
-	"github.com/openshift-kni/eco-goinfra/pkg/msg"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/msg"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	"github.com/openshift-kni/eco-goinfra/pkg/sriov/sriovtypes"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/sriov/sriovtypes"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	intstrutil "k8s.io/apimachinery/pkg/util/intstr"

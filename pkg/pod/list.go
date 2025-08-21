@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
