@@ -36,6 +36,7 @@ linters-settings:
           - "open-cluster-management.io/multicloud-operators-subscription/pkg/apis/apps/placementrule/v1"
           - "sigs.k8s.io/controller-runtime"
           - $gostd
+          - "github.com/rh-ecosystem-edge/eco-goinfra"
   revive:
     rules:
       - name: indent-error-flow
