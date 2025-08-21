@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/namespace"
-	"github.com/openshift-kni/eco-goinfra/pkg/pod"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/namespace"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/pod"
 	corev1 "k8s.io/api/core/v1"
 )
 

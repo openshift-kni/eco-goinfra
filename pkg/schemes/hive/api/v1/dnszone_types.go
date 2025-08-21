@@ -4,8 +4,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1/aws"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/hive/api/v1/azure"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/hive/api/v1/aws"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/hive/api/v1/azure"
 )
 
 const (

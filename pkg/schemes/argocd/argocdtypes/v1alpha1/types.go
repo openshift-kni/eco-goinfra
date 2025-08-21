@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/health"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/argocd/gitopsengine/synccommon"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/argocd/gitopsengine/health"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/argocd/gitopsengine/synccommon"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

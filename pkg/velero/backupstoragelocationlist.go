@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
 	velerov1 "github.com/vmware-tanzu/velero/pkg/apis/velero/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

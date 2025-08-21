@@ -7,7 +7,7 @@ import (
 	k8sscheme "k8s.io/client-go/kubernetes/scheme"
 	ref "k8s.io/client-go/tools/reference"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/olm/operators/install"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/olm/operators/install"
 )
 
 var scheme = runtime.NewScheme()

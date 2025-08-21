@@ -2,7 +2,7 @@ package v1alpha1
 
 // +kubebuilder:object:generate=true
 import (
-	imagebasedgroupupgrades "github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedgroupupgrades"
+	imagebasedgroupupgrades "github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedgroupupgrades"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"

@@ -1,8 +1,8 @@
 package v1
 
 import (
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/aws"
-	"github.com/openshift-kni/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/azure"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/aws"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/schemes/imagebasedinstall/hive/api/v1/azure"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
