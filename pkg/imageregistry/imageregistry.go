@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
-	"github.com/openshift-kni/eco-goinfra/pkg/msg"
 	imageregistryv1 "github.com/openshift/api/imageregistry/v1"
 	operatorv1 "github.com/openshift/api/operator/v1"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/msg"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"
 

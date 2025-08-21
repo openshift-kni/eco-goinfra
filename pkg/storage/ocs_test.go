@@ -7,8 +7,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
 	ocsoperatorv1 "github.com/red-hat-storage/ocs-operator/api/v1"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"

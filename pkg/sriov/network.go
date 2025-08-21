@@ -7,14 +7,14 @@ import (
 
 	"github.com/golang/glog"
 	clientSrIov "github.com/k8snetworkplumbingwg/sriov-network-operator/pkg/client/clientset/versioned"
-	"github.com/openshift-kni/eco-goinfra/pkg/msg"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/msg"
 
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 
 	srIovV1 "github.com/k8snetworkplumbingwg/sriov-network-operator/api/v1"
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
 	"golang.org/x/exp/slices"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

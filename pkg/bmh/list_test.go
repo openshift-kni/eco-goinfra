@@ -7,7 +7,7 @@ import (
 	"time"
 
 	bmhv1alpha1 "github.com/metal3-io/baremetal-operator/apis/metal3.io/v1alpha1"
-	"github.com/openshift-kni/eco-goinfra/pkg/clients"
+	"github.com/rh-ecosystem-edge/eco-goinfra/pkg/clients"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/labels"
 	goclient "sigs.k8s.io/controller-runtime/pkg/client"

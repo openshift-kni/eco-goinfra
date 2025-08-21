@@ -1,4 +1,4 @@
-module github.com/openshift-kni/eco-goinfra
+module github.com/rh-ecosystem-edge/eco-goinfra
 
 go 1.22
 
